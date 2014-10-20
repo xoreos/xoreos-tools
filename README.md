@@ -14,3 +14,4 @@ Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
 * unerf: Extract BioWare ERF archives
+* unrim: Extract BioWare RIM archives
