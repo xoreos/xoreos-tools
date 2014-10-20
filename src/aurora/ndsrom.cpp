@@ -24,8 +24,6 @@
 
 // Based on http://dsibrew.org/wiki/NDS_Format
 
-#include <boost/algorithm/string.hpp>
-
 #include "common/util.h"
 #include "common/file.h"
 #include "common/stream.h"
