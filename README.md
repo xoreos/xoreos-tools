@@ -16,3 +16,4 @@ Currently, the following tools are included:
 * unerf: Extract BioWare ERF archives
 * unrim: Extract BioWare RIM archives
 * unnds: Extract Nintendo DS roms
+* unkeybif: Extract BioWare KEY/BIF archives

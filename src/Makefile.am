@@ -15,6 +15,7 @@ bin_PROGRAMS = \
                unerf \
                unrim \
                unkeybif \
+               unnds \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -52,3 +53,12 @@ unkeybif_LDADD   = \
                    aurora/libaurora.la \
                    common/libcommon.la \
                    $(EMPTY)
+
+unnds_SOURCES = \
+                unnds.cpp \
+                util.cpp \
+                $(EMPTY)
+unnds_LDADD   = \
+                aurora/libaurora.la \
+                common/libcommon.la \
+                $(EMPTY)
