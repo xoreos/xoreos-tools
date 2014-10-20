@@ -1,0 +1,47 @@
+xoreos-tools - Tools to help with xoreos development
+Copyright (c) 2012-2014 by the following:
+
+Sven Hesse (DrMcCoy) <drmccoy@drmccoy.de>
+Matthew Hoops (clone2727) <clone2727@gmail.com>
+
+
+xoreos-tools is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 3
+of the License, or (at your option) any later version.
+
+xoreos-tools is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
+
+
+The Infinity engine, Aurora engine, Odyssey engine and Eclipse engine are
+registered trademarks of BioWare Corp., a subsidiary of Electronic Arts, Inc.
+The Electron engine and Lycium engine are trademarks of BioWare Corp., a
+subsidiary of Electronic Arts, Inc. Bink is a registered trademark of RAD Game
+Tools, Inc. Neverwinter Nights is a registered trademark of Wizards of the
+Coast, a subsidiary of Hasbro Inc. Star Wars, Knights of the Old Republic and
+The Sith Lords are registered trademarks of Lucasfilm Entertainment Company
+Ltd., a subsidiary of The Walt Disney Company. Jade Empire is a registered
+trademark of BioWare Corp., a subsidiary of Electronic Arts, Inc. Sonic the
+Hedgehog is a registered trademark of Sega Corporation. The Witcher is a
+registered trademark of CD Projekt S.A. Dragon Age is a registered trademark
+of Electronic Arts, Inc. All rights reserved.
+
+
+UTF-8 CPP
+*********
+   xoreos-tools uses the lightweight header-only UTF-8 CPP library
+   (<http://utfcpp.sourceforge.net/>) for handling UTF-8 encoded strings.
+   UTF-8 CPP is licensed under a copyleft license. See utf8cpp/utf8.h for
+   details.
+
+ScummVM code
+************
+   xoreos-tools uses some ScummVM (<http://scummvm.org/>) code, most prominently
+   the endian, singleton and stream code. ScummVM is licensed under version 2 or
+   later of the GNU General Public License.
