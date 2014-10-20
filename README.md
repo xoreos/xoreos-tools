@@ -13,3 +13,4 @@ or (at your option) any later version.
 Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
+* unerf: Extract BioWare ERF archives

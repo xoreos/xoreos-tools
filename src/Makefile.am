@@ -7,10 +7,12 @@ SUBDIRS = \
           $(EMPTY)
 
 noinst_HEADERS = \
+                 util.h \
                  $(EMPTY)
 
 bin_PROGRAMS = \
                gff2xml \
+               unerf \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -21,3 +23,12 @@ gff2xml_LDADD   = \
                   aurora/libaurora.la \
                   common/libcommon.la \
                   $(EMPTY)
+
+unerf_SOURCES = \
+                unerf.cpp \
+                util.cpp \
+                $(EMPTY)
+unerf_LDADD   = \
+                aurora/libaurora.la \
+                common/libcommon.la \
+                $(EMPTY)
