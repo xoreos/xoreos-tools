@@ -9,3 +9,7 @@ repositories](https://github.com/xoreos) for details.
 The tools included here are licensed under the terms of the [GNU General
 Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html)
 or (at your option) any later version.
+
+Currently, the following tools are included:
+
+* gff2xml: Convert BioWare GFF to XML
