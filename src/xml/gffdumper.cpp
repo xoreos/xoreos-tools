@@ -196,13 +196,13 @@ void GFFDumper::dumpField(XMLWriter &xml, const Aurora::GFFStruct &strct, const 
 		case Aurora::GFFStruct::kFieldTypeUint16:
 		case Aurora::GFFStruct::kFieldTypeUint32:
 		case Aurora::GFFStruct::kFieldTypeUint64:
-			xml.setContents(Common::UString::sprintf("%u", strct.getUint(field)));
+			xml.setContents(Common::UString::sprintf("%"PRIu64, Cu64(strct.getUint(field))));
 			break;
 
 		case Aurora::GFFStruct::kFieldTypeSint16:
 		case Aurora::GFFStruct::kFieldTypeSint32:
 		case Aurora::GFFStruct::kFieldTypeSint64:
-			xml.setContents(Common::UString::sprintf("%d", strct.getSint(field)));
+			xml.setContents(Common::UString::sprintf("%"PRId64, Cd64(strct.getSint(field))));
 			break;
 
 		case Aurora::GFFStruct::kFieldTypeFloat:
