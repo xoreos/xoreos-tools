@@ -1,6 +1,6 @@
 AC_PREREQ([2.65])
 
-AC_INIT([xoreos-tools],[0.0.0])
+AC_INIT([xoreos-tools],[0.0.0],[xoreos-devel@xoreos.org],[xoreos-tools],[https://xoreos.org/])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([config.h.in])
