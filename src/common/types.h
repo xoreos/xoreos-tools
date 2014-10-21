@@ -71,6 +71,20 @@
 	#error No way to derive fixed-width variable types
 #endif
 
+#ifndef PRId64
+	#define PRId64   lld
+	#define Cd64(x)  ((signed long long) (x))
+#else
+	#define Cd64(x)  ((int64) (x))
+#endif
+
+#ifndef PRIu64
+	#define PRIu64   llu
+	#define Cu64(x)  ((unsigned long long) (x))
+#else
+	#define Cu64(x)  ((uint64) (x))
+#endif
+
 typedef uint8 byte;
 typedef unsigned int uint;
 
