@@ -54,9 +54,17 @@ bool File::open(const UString &fileName) {
 	if (!(_handle = std::fopen(fileName.c_str(), "rb")))
 		return false;
 
-	seek(0, SEEK_END);
+	if (!seek(0, SEEK_END)) {
+		close();
+		return false;
+	}
+
 	_size = pos();
-	seek(0, SEEK_SET);
+
+	if (!seek(0, SEEK_SET)) {
+		close();
+		return false;
+	}
 
 	return true;
 }
