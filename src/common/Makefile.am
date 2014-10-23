@@ -2,7 +2,8 @@ include $(top_srcdir)/Makefile.common
 
 noinst_LTLIBRARIES = libcommon.la
 
-noinst_HEADERS = system.h \
+noinst_HEADERS = \
+                 system.h \
                  types.h \
                  endianness.h \
                  noncopyable.h \
@@ -13,12 +14,15 @@ noinst_HEADERS = system.h \
                  strutil.h \
                  stream.h \
                  file.h \
-                 filepath.h
+                 filepath.h \
+                 $(EMPTY)
 
-libcommon_la_SOURCES = ustring.cpp \
+libcommon_la_SOURCES = \
+                       ustring.cpp \
                        error.cpp \
                        util.cpp \
                        strutil.cpp \
                        stream.cpp \
                        file.cpp \
-                       filepath.cpp
+                       filepath.cpp \
+                       $(EMPTY)
