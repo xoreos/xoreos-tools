@@ -82,6 +82,7 @@ static const GFFType kGFFTypes[] = {
 	{Aurora::kFileTypeULT , MKID_BE('ULT '), "ULT"},
 	{Aurora::kFileTypeGDA , MKID_BE('GDA '), "GDA"},
 	{Aurora::kFileTypeCRE , MKID_BE('CRE '), "CRE"},
+	{Aurora::kFileTypeCAM , MKID_BE('CAM '), "CAM"},
 	{Aurora::kFileTypeWMP , MKID_BE('WMP '), "WMP"}
 };
 
