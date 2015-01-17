@@ -172,7 +172,7 @@ UString::UString(const char *str, int n) {
 }
 
 UString::UString(iterator sBegin, iterator sEnd) : _size(0) {
-	for (; sBegin != sEnd; ++sBegin)
+	for (; (sBegin != sEnd) && *sBegin; ++sBegin)
 		*this += *sBegin;
 }
 
