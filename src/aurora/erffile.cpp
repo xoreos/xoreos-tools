@@ -30,12 +30,15 @@
 #include "aurora/error.h"
 #include "aurora/util.h"
 
+#include <zlib.h>
+
 static const uint32 kERFID     = MKTAG('E', 'R', 'F', ' ');
 static const uint32 kMODID     = MKTAG('M', 'O', 'D', ' ');
 static const uint32 kHAKID     = MKTAG('H', 'A', 'K', ' ');
 static const uint32 kSAVID     = MKTAG('S', 'A', 'V', ' ');
 static const uint32 kVersion1  = MKTAG('V', '1', '.', '0');
 static const uint32 kVersion2  = MKTAG('V', '2', '.', '0');
+static const uint32 kVersion22 = MKTAG('V', '2', '.', '2');
 
 namespace Aurora {
 
@@ -61,11 +64,11 @@ void ERFFile::load() {
 	if ((_id != kERFID) && (_id != kMODID) && (_id != kHAKID) && (_id != kSAVID))
 		throw Common::Exception("Not an ERF file");
 
-	if ((_version != kVersion1) && (_version != kVersion2))
+	if ((_version != kVersion1) && (_version != kVersion2) && (_version != kVersion22))
 		throw Common::Exception("Unsupported ERF file version %08X", _version);
 
-	if ((_version == kVersion2) && !_utf16le)
-		throw Common::Exception("ERF file version 2.0, but not UTF-16LE");
+	if ((_version != kVersion1) && !_utf16le)
+		throw Common::Exception("ERF file version 2.0+, but not UTF-16LE");
 
 	try {
 
@@ -107,6 +110,8 @@ void ERFFile::readERFHeader(Common::SeekableReadStream &erf, ERFHeader &header) 
 
 		erf.skip(116); // Reserved
 
+		_flags = 0; // No flags in ERF V1.0
+
 	} else if (_version == kVersion2) {
 
 		header.langCount = 0;                  // No description in ERF V2.0
@@ -121,6 +126,25 @@ void ERFFile::readERFHeader(Common::SeekableReadStream &erf, ERFHeader &header) 
 		_buildDay  = erf.readUint32LE();
 
 		erf.skip(4);     // Unknown, always 0xFFFFFFFF?
+
+		_flags = 0; // No flags in ERF V2.0
+
+	} else if (_version == kVersion22) {
+
+		header.langCount = 0;                  // No description in ERF V2.2
+		resCount         = erf.readUint32LE(); // Number of resources in the ERF
+
+		erf.skip(4 + 4); // Build year and day
+		erf.skip(4);     // Unknown, always 0xFFFFFFFF?
+
+		_flags = erf.readUint32LE();
+
+		erf.skip(16); // Password digest
+
+		header.descriptionID   = 0;    // No description in ERF V2.2
+		header.offDescription  = 0;    // No description in ERF V2.2
+		header.offKeyList      = 0;    // No separate key list in ERF V2.2
+		header.offResList      = 0x38; // Resource list always starts at 0x38 in ERF V2.2
 	}
 
 	if (!_noResources) {
@@ -151,6 +175,11 @@ void ERFFile::readResources(Common::SeekableReadStream &erf, const ERFHeader &he
 		// Read the resource list
 		readV2ResList(erf, header);
 
+	} else if (_version == kVersion22) {
+
+		// Read the resource list
+		readV22ResList(erf, header);
+
 	}
 
 }
@@ -174,8 +203,8 @@ void ERFFile::readV1ResList(Common::SeekableReadStream &erf, const ERFHeader &he
 		throw Common::Exception(Common::kSeekError);
 
 	for (IResourceList::iterator res = _iResources.begin(); res != _iResources.end(); ++res) {
-		res->offset = erf.readUint32LE();
-		res->size   = erf.readUint32LE();
+		res->offset                         = erf.readUint32LE();
+		res->packedSize = res->unpackedSize = erf.readUint32LE();
 	}
 }
 
@@ -195,8 +224,31 @@ void ERFFile::readV2ResList(Common::SeekableReadStream &erf, const ERFHeader &he
 		res->type  = getFileType(name);
 		res->index = index;
 
-		iRes->offset = erf.readUint32LE();
-		iRes->size   = erf.readUint32LE();
+		iRes->offset                          = erf.readUint32LE();
+		iRes->packedSize = iRes->unpackedSize = erf.readUint32LE();
+	}
+
+}
+
+void ERFFile::readV22ResList(Common::SeekableReadStream &erf, const ERFHeader &header) {
+	if (!erf.seek(header.offResList))
+		throw Common::Exception(Common::kSeekError);
+
+	uint32 index = 0;
+	ResourceList::iterator   res = _resources.begin();
+	IResourceList::iterator iRes = _iResources.begin();
+	for (; (res != _resources.end()) && (iRes != _iResources.end()); ++index, ++res, ++iRes) {
+		Common::UString name;
+
+		name.readFixedUTF16LE(erf, 32);
+
+		res->name  = setFileType(name, kFileTypeNone);
+		res->type  = getFileType(name);
+		res->index = index;
+
+		iRes->offset       = erf.readUint32LE();
+		iRes->packedSize   = erf.readUint32LE();
+		iRes->unpackedSize = erf.readUint32LE();
 	}
 
 }
@@ -225,13 +277,16 @@ const ERFFile::IResource &ERFFile::getIResource(uint32 index) const {
 }
 
 uint32 ERFFile::getResourceSize(uint32 index) const {
-	return getIResource(index).size;
+	return getIResource(index).unpackedSize;
 }
 
 Common::SeekableReadStream *ERFFile::getResource(uint32 index) const {
 	const IResource &res = getIResource(index);
-	if (res.size == 0)
+	if (res.unpackedSize == 0)
 		return new Common::MemoryReadStream(0, 0);
+
+	if (_flags & 0xF0)
+		throw Common::Exception("Unhandled ERF encryption");
 
 	Common::File erf;
 	open(erf);
@@ -239,14 +294,93 @@ Common::SeekableReadStream *ERFFile::getResource(uint32 index) const {
 	if (!erf.seek(res.offset))
 		throw Common::Exception(Common::kSeekError);
 
-	Common::SeekableReadStream *resStream = erf.readStream(res.size);
+	byte *compressedData = new byte[res.packedSize];
 
-	if (!resStream || (((uint32) resStream->size()) != res.size)) {
-		delete resStream;
+	if (erf.read(compressedData, res.packedSize) != res.packedSize) {
+		delete[] compressedData;
 		throw Common::Exception(Common::kReadError);
 	}
 
-	return resStream;
+	return decompress(compressedData, res.packedSize, res.unpackedSize);
+}
+
+uint32 ERFFile::getCompressionType() const {
+	return (_flags >> 29) & 0x7;
+}
+
+Common::SeekableReadStream *ERFFile::decompress(byte *compressedData, uint32 packedSize, uint32 unpackedSize) const {
+	switch (getCompressionType()) {
+	case 0:
+		// No compression
+		return new Common::MemoryReadStream(compressedData, packedSize, true);
+	case 1:
+		// Bioware Zlib
+		return decompressBiowareZlib(compressedData, packedSize, unpackedSize);
+	case 2:
+	case 3:
+		// Unknown
+		delete[] compressedData;
+		throw Common::Exception("Unknown ERF compression %d", getCompressionType());
+	case 7:
+		// Headerless Zlib
+		return decompressHeaderlessZlib(compressedData, packedSize, unpackedSize);
+	default:
+		// Invalid
+		delete[] compressedData;
+		throw Common::Exception("Invalid ERF compression %d", getCompressionType());
+	}
+}
+
+Common::SeekableReadStream *ERFFile::decompressBiowareZlib(byte *compressedData, uint32 packedSize, uint32 unpackedSize) const {
+	try {
+		Common::SeekableReadStream *stream = decompressZlib(compressedData + 1, packedSize - 1, unpackedSize, *compressedData >> 4);
+		delete[] compressedData;
+		return stream;
+	} catch (Common::Exception &e) {
+		delete[] compressedData;
+		throw;
+	}
+}
+
+Common::SeekableReadStream *ERFFile::decompressHeaderlessZlib(byte *compressedData, uint32 packedSize, uint32 unpackedSize) const {
+	try {
+		Common::SeekableReadStream *stream = decompressZlib(compressedData, packedSize, unpackedSize, MAX_WBITS);
+		delete[] compressedData;
+		return stream;
+	} catch (Common::Exception &e) {
+		delete[] compressedData;
+		throw;
+	}
+}
+
+Common::SeekableReadStream *ERFFile::decompressZlib(byte *compressedData, uint32 packedSize, uint32 unpackedSize, int windowBits) const {
+	// Allocate the decompressed data
+	byte *decompressedData = new byte[unpackedSize];
+
+	z_stream strm;
+	strm.zalloc   = Z_NULL;
+	strm.zfree    = Z_NULL;
+	strm.opaque   = Z_NULL;
+	strm.avail_in = packedSize;
+	strm.next_in  = compressedData;
+
+	// Negative windows bits means there is no zlib header present in the data.
+	int zResult = inflateInit2(&strm, -windowBits);
+	if (zResult != Z_OK) {
+		delete[] decompressedData;
+		throw Common::Exception("Could not initialize zlib inflate");
+	}
+
+	strm.avail_out = unpackedSize;
+	strm.next_out  = decompressedData;
+
+	zResult = inflate(&strm, Z_SYNC_FLUSH);
+	if (zResult != Z_OK && zResult != Z_STREAM_END) {
+		delete[] decompressedData;
+		throw Common::Exception("Failed to inflate: %d", zResult);
+	}
+
+	return new Common::MemoryReadStream(decompressedData, unpackedSize, true);
 }
 
 void ERFFile::open(Common::File &file) const {

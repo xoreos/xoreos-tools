@@ -82,8 +82,9 @@ private:
 
 	/** Internal resource information. */
 	struct IResource {
-		uint32 offset; ///< The offset of the resource within the BIF.
-		uint32 size;   ///< The resource's size.
+		uint32 offset;       ///< The offset of the resource within the ERF.
+		uint32 packedSize;   ///< The resource's packed size.
+		uint32 unpackedSize; ///< The resource's unpacked size.
 	};
 
 	typedef std::vector<IResource> IResourceList;
@@ -107,6 +108,8 @@ private:
 	/** The name of the ERF file. */
 	Common::UString _fileName;
 
+	uint32 _flags;
+
 	void open(Common::File &file) const;
 
 	void load();
@@ -121,6 +124,16 @@ private:
 
 	// V2.0
 	void readV2ResList(Common::SeekableReadStream &erf, const ERFHeader &header);
+
+	// V2.2
+	void readV22ResList(Common::SeekableReadStream &erf, const ERFHeader &header);
+
+	// Compression
+	uint32 getCompressionType() const;
+	Common::SeekableReadStream *decompress(byte *compressedData, uint32 packedSize, uint32 unpackedSize) const;
+	Common::SeekableReadStream *decompressBiowareZlib(byte *compressedData, uint32 packedSize, uint32 unpackedSize) const;
+	Common::SeekableReadStream *decompressHeaderlessZlib(byte *compressedData, uint32 packedSize, uint32 unpackedSize) const;
+	Common::SeekableReadStream *decompressZlib(byte *compressedData, uint32 packedSize, uint32 unpackedSize, int windowBits) const;
 
 	const IResource &getIResource(uint32 index) const;
 };
