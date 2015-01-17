@@ -167,9 +167,9 @@ void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::
 	for (std::list<Common::UString>::const_iterator f = files.begin(); f != files.end(); ++f) {
 		uint32 id = getFileID(*f);
 
-		if      (id == MKID_BE('KEY '))
+		if      (id == MKTAG('K', 'E', 'Y', ' '))
 			keyFiles.push_back(*f);
-		else if (id == MKID_BE('BIFF'))
+		else if (id == MKTAG('B', 'I', 'F', 'F'))
 			bifFiles.push_back(*f);
 		else
 			throw Common::Exception("File \"%s\" is neither a KEY nor a BIF", f->c_str());

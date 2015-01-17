@@ -32,8 +32,8 @@
 #include "aurora/util.h"
 #include "aurora/locstring.h"
 
-static const uint32 kVersion32 = MKID_BE('V3.2');
-static const uint32 kVersion33 = MKID_BE('V3.3'); // Found in The Witcher, different language table
+static const uint32 kVersion32 = MKTAG('V', '3', '.', '2');
+static const uint32 kVersion33 = MKTAG('V', '3', '.', '3'); // Found in The Witcher, different language table
 
 namespace Aurora {
 
