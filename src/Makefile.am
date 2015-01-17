@@ -25,6 +25,7 @@ gff2xml_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  $(LDADD) \
                   $(EMPTY)
 
 unerf_SOURCES = \
@@ -34,6 +35,7 @@ unerf_SOURCES = \
 unerf_LDADD   = \
                 aurora/libaurora.la \
                 common/libcommon.la \
+                $(LDADD) \
                 $(EMPTY)
 
 unrim_SOURCES = \
@@ -43,6 +45,7 @@ unrim_SOURCES = \
 unrim_LDADD   = \
                 aurora/libaurora.la \
                 common/libcommon.la \
+                $(LDADD) \
                 $(EMPTY)
 
 unkeybif_SOURCES = \
@@ -52,6 +55,7 @@ unkeybif_SOURCES = \
 unkeybif_LDADD   = \
                    aurora/libaurora.la \
                    common/libcommon.la \
+                   $(LDADD) \
                    $(EMPTY)
 
 unnds_SOURCES = \
@@ -61,4 +65,5 @@ unnds_SOURCES = \
 unnds_LDADD   = \
                 aurora/libaurora.la \
                 common/libcommon.la \
+                $(LDADD) \
                 $(EMPTY)

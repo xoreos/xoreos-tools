@@ -2,10 +2,10 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EMPTY =
 
-LIBSF_C_CXX = $(XOREOSTOOLS_CFLAGS)
+LIBSF_C_CXX = $(XOREOSTOOLS_CFLAGS) $(ZLIB_CFLAGS)
 LIBSF_CXX   =
 
-LIBSL       = $(XOREOSTOOLS_LIBS) $(LTLIBICONV)
+LIBSL       = $(XOREOSTOOLS_LIBS) $(LTLIBICONV) $(ZLIB_LIBS)
 
 FLAGS_C_CXX = -I$(top_srcdir) -I$(top_srcdir)/src/ -ggdb -Wall -Wno-multichar \
               -Wpointer-arith -Wshadow -Wsign-compare -Wtype-limits \
