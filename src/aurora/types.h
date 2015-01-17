@@ -183,50 +183,53 @@ enum FileType {
 	kFileTypeFPT            = 19002, ///< FoxPro database memo file.
 
 	// Found in NWN2's ZIP files
-	kFileTypeFXA            = 20000, ///< Face bone definitions, FaceFX Actor.
-	kFileTypeFXE            = 20001, ///< Facial animations, FaceFX.
-	kFileTypeFXM            = 20002, ///< Face metadata, FaceFX.
-	kFileTypeFXS            = 20003, ///< Face metadata, FaceFX.
-	kFileTypeXML            = 20004, ///< Extensible Markup Language.
-	kFileTypeWLK            = 20005, ///< Walk mesh.
-	kFileTypeUTR            = 20006, ///< Tree template (user), GFF.
-	kFileTypeSEF            = 20007, ///< Special effect file.
-	kFileTypePFX            = 20008, ///< Particle effect.
-	kFileTypeTFX            = 20009, ///< Trail effect.
-	kFileTypeIFX            = 20010,
-	kFileTypeLFX            = 20011, ///< Line effect.
-	kFileTypeBBX            = 20012, ///< Billboard effect.
-	kFileTypePFB            = 20013, ///< Prefab blueprint.
-	kFileTypeGR2            = 20014, ///< Skeleton animation, Granny 3D.
-	kFileTypeUPE            = 20015,
-	kFileTypeUSC            = 20016,
-	kFileTypeULT            = 20017, ///< Light template (user), GFF.
-	kFileTypeFX             = 20018,
-	kFileTypeMAX            = 20019,
-	kFileTypeDOC            = 20020,
-	kFileTypeSCC            = 20021,
+	kFileTypeZIP            = 20000, ///< Face bone definitions, FaceFX Actor.
+	kFileTypeFXA            = 20001, ///< Face bone definitions, FaceFX Actor.
+	kFileTypeFXE            = 20002, ///< Facial animations, FaceFX.
+	kFileTypeFXM            = 20003, ///< Face metadata, FaceFX.
+	kFileTypeFXS            = 20004, ///< Face metadata, FaceFX.
+	kFileTypeXML            = 20005, ///< Extensible Markup Language.
+	kFileTypeWLK            = 20006, ///< Walk mesh.
+	kFileTypeUTR            = 20007, ///< Tree template (user), GFF.
+	kFileTypeSEF            = 20008, ///< Special effect file.
+	kFileTypePFX            = 20009, ///< Particle effect.
+	kFileTypeTFX            = 20010, ///< Trail effect.
+	kFileTypeIFX            = 20011,
+	kFileTypeLFX            = 20012, ///< Line effect.
+	kFileTypeBBX            = 20013, ///< Billboard effect.
+	kFileTypePFB            = 20014, ///< Prefab blueprint.
+	kFileTypeGR2            = 20015, ///< Skeleton animation, Granny 3D.
+	kFileTypeUPE            = 20016,
+	kFileTypeUSC            = 20017,
+	kFileTypeULT            = 20018, ///< Light template (user), GFF.
+	kFileTypeFX             = 20019,
+	kFileTypeMAX            = 20020,
+	kFileTypeDOC            = 20021,
+	kFileTypeSCC            = 20022,
+	kFileTypeWMP            = 20023, ///< World map, GFF.
 
 	// Found in Sonic Chronicles: The Dark Brotherhood
-	kFileTypePAL            = 21000,
-	kFileTypeCBGT           = 21001,
-	kFileTypeCDPTH          = 21002,
-	kFileTypeVX             = 21003, ///< Video, Actimagine.
-	kFileTypeHERF           = 21004, ///< Archive, hashed ERF.
-	kFileTypeSADL           = 21005,
-	kFileTypeSDAT           = 21006, ///< Nintendo Sound Data File.
-	kFileTypeSMALL          = 21007,
-	kFileTypeNSBCA          = 21008,
-	kFileTypeEMIT           = 21009,
-	kFileTypeSPL            = 21010,
-	kFileTypeNBFP           = 21011,
-	kFileTypeNBFS           = 21012,
-	kFileTypeSMP            = 21013,
-	kFileTypeITM            = 21014,
-	kFileTypeNFTR           = 21015,
-	kFileTypeRAW            = 21016,
-	kFileTypeNCLR           = 21017,
-	kFileTypeNCGR           = 21018,
-	kFileTypeDICT           = 21019, ///< HERF file name dictionary.
+	kFileTypeNDS            = 21000,
+	kFileTypePAL            = 21001,
+	kFileTypeCBGT           = 21002,
+	kFileTypeCDPTH          = 21003,
+	kFileTypeVX             = 21004, ///< Video, Actimagine.
+	kFileTypeHERF           = 21005, ///< Archive, hashed ERF.
+	kFileTypeSADL           = 21006,
+	kFileTypeSDAT           = 21007, ///< Nintendo Sound Data File.
+	kFileTypeSMALL          = 21008,
+	kFileTypeNSBCA          = 21009,
+	kFileTypeEMIT           = 21010,
+	kFileTypeSPL            = 21011,
+	kFileTypeNBFP           = 21012,
+	kFileTypeNBFS           = 21013,
+	kFileTypeSMP            = 21014,
+	kFileTypeITM            = 21015,
+	kFileTypeNFTR           = 21016,
+	kFileTypeRAW            = 21017,
+	kFileTypeNCLR           = 21018,
+	kFileTypeNCGR           = 21019,
+	kFileTypeDICT           = 21020, ///< HERF file name dictionary.
 
 	// Found in Dragon Age: Origins
 	kFileTypeANB            = 22000, ///< Animation blend.
@@ -275,7 +278,36 @@ enum FileType {
 	kFileTypePVD            = 24005,
 	kFileTypeAMP            = 24006,
 	kFileTypePLA            = 24007,
-	kFileTypePK             = 24008
+	kFileTypePK             = 24008,
+
+	// Found in Dragon Age II
+	kFileTypeALS            = 25000,
+	kFileTypeAPL            = 25001,
+	kFileTypeAssembly       = 25002,
+	kFileTypeBAK            = 25003,
+	kFileTypeBNK            = 25004,
+	kFileTypeCL             = 25005,
+	kFileTypeCNV            = 25006,
+	kFileTypeCON            = 25007,
+	kFileTypeDAT            = 25008,
+	kFileTypeDX11           = 25009,
+	kFileTypeIDS            = 25010,
+	kFileTypeLOG            = 25011,
+	kFileTypeMAP            = 25012,
+	kFileTypeMML            = 25013,
+	kFileTypeMP3            = 25014,
+	kFileTypePCK            = 25015,
+	kFileTypeRML            = 25016,
+	kFileTypeS              = 25017,
+	kFileTypeSTA            = 25018,
+	kFileTypeSVR            = 25019,
+	kFileTypeVLM            = 25020,
+	kFileTypeWBD            = 25021,
+	kFileTypeXBX            = 25022,
+	kFileTypeXLS            = 25023,
+
+	// Found in the iOS version of Knights of the Old Republic
+	kFileTypeBZF            = 26000  ///< Game resource data, LZMA-compressed BIF
 };
 
 enum GameID {

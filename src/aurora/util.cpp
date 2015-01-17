@@ -183,6 +183,7 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeCDX,            ".cdx"},
 	{kFileTypeFPT,            ".fpt"},
 
+	{kFileTypeZIP,            ".zip"},
 	{kFileTypeFXA,            ".fxa"},
 	{kFileTypeFXE,            ".fxe"},
 	{kFileTypeFXM,            ".fxm"},
@@ -205,7 +206,9 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeMAX,            ".max"},
 	{kFileTypeDOC,            ".doc"},
 	{kFileTypeSCC,            ".scc"},
+	{kFileTypeWMP,            ".wmp"},
 
+	{kFileTypeNDS,            ".nds"},
 	{kFileTypePAL,            ".pal"},
 	{kFileTypeCBGT,           ".cbgt"},
 	{kFileTypeCDPTH,          ".cdpth"},
@@ -271,7 +274,34 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypePVD,            ".pvd"},
 	{kFileTypeAMP,            ".amp"},
 	{kFileTypePLA,            ".pla"},
-	{kFileTypePK,             ".pk" }
+	{kFileTypePK,             ".pk" },
+
+	{kFileTypeALS,            ".als"},
+	{kFileTypeAPL,            ".apl"},
+	{kFileTypeAssembly,       ".assembly"},
+	{kFileTypeBAK,            ".bak"},
+	{kFileTypeBNK,            ".bnk"},
+	{kFileTypeCL,             ".cl"},
+	{kFileTypeCNV,            ".cnv"},
+	{kFileTypeCON,            ".con"},
+	{kFileTypeDAT,            ".dat"},
+	{kFileTypeDX11,           ".dx11"},
+	{kFileTypeIDS,            ".ids"},
+	{kFileTypeLOG,            ".log"},
+	{kFileTypeMAP,            ".map"},
+	{kFileTypeMML,            ".mml"},
+	{kFileTypeMP3,            ".mp3"},
+	{kFileTypePCK,            ".pck"},
+	{kFileTypeRML,            ".rml"},
+	{kFileTypeS,              ".s"  },
+	{kFileTypeSTA,            ".sta"},
+	{kFileTypeSVR,            ".svr"},
+	{kFileTypeVLM,            ".vlm"},
+	{kFileTypeWBD,            ".wbd"},
+	{kFileTypeXBX,            ".xbx"},
+	{kFileTypeXLS,            ".xls"},
+
+	{kFileTypeBZF,            ".bzf"}
 };
 
 FileType getFileType(const Common::UString &path) {
