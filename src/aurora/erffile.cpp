@@ -37,6 +37,7 @@ static const uint32 kMODID     = MKTAG('M', 'O', 'D', ' ');
 static const uint32 kHAKID     = MKTAG('H', 'A', 'K', ' ');
 static const uint32 kSAVID     = MKTAG('S', 'A', 'V', ' ');
 static const uint32 kVersion1  = MKTAG('V', '1', '.', '0');
+static const uint32 kVersion11 = MKTAG('V', '1', '.', '1');
 static const uint32 kVersion2  = MKTAG('V', '2', '.', '0');
 static const uint32 kVersion22 = MKTAG('V', '2', '.', '2');
 
@@ -64,10 +65,11 @@ void ERFFile::load() {
 	if ((_id != kERFID) && (_id != kMODID) && (_id != kHAKID) && (_id != kSAVID))
 		throw Common::Exception("Not an ERF file");
 
-	if ((_version != kVersion1) && (_version != kVersion2) && (_version != kVersion22))
+	if ((_version != kVersion1) && (_version != kVersion11) &&
+	    (_version != kVersion2) && (_version != kVersion22))
 		throw Common::Exception("Unsupported ERF file version %08X", _version);
 
-	if ((_version != kVersion1) && !_utf16le)
+	if ((_version != kVersion1) && (_version != kVersion11) && !_utf16le)
 		throw Common::Exception("ERF file version 2.0+, but not UTF-16LE");
 
 	try {
@@ -93,7 +95,7 @@ void ERFFile::load() {
 void ERFFile::readERFHeader(Common::SeekableReadStream &erf, ERFHeader &header) {
 	uint32 resCount = 0;
 
-	if        (_version == kVersion1) {
+	if        ((_version == kVersion1) || (_version == kVersion11)) {
 
 		header.langCount = erf.readUint32LE(); // Number of languages for the description
 		erf.skip(4);                           // Number of bytes in the description
@@ -110,7 +112,7 @@ void ERFFile::readERFHeader(Common::SeekableReadStream &erf, ERFHeader &header) 
 
 		erf.skip(116); // Reserved
 
-		_flags = 0; // No flags in ERF V1.0
+		_flags = 0; // No flags in ERF V1.0 / V1.1
 
 	} else if (_version == kVersion2) {
 
@@ -170,6 +172,11 @@ void ERFFile::readResources(Common::SeekableReadStream &erf, const ERFHeader &he
 		readV1KeyList(erf, header); // Read name and type part of the resource list
 		readV1ResList(erf, header); // Read offset and size part of the resource list
 
+	} else if (_version == kVersion11) {
+
+		readV11KeyList(erf, header); // Read name and type part of the resource list
+		readV1ResList (erf, header); // Read offset and size part of the resource list
+
 	} else if (_version == kVersion2) {
 
 		// Read the resource list
@@ -191,6 +198,20 @@ void ERFFile::readV1KeyList(Common::SeekableReadStream &erf, const ERFHeader &he
 	uint32 index = 0;
 	for (ResourceList::iterator res = _resources.begin(); res != _resources.end(); ++index, ++res) {
 		res->name.readFixedASCII(erf, 16);
+		erf.skip(4); // Resource ID
+		res->type = (FileType) erf.readUint16LE();
+		erf.skip(2); // Reserved
+		res->index = index;
+	}
+}
+
+void ERFFile::readV11KeyList(Common::SeekableReadStream &erf, const ERFHeader &header) {
+	if (!erf.seek(header.offKeyList))
+		throw Common::Exception(Common::kSeekError);
+
+	uint32 index = 0;
+	for (ResourceList::iterator res = _resources.begin(); res != _resources.end(); ++index, ++res) {
+		res->name.readFixedASCII(erf, 32);
 		erf.skip(4); // Resource ID
 		res->type = (FileType) erf.readUint16LE();
 		erf.skip(2); // Reserved
