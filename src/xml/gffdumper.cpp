@@ -143,8 +143,9 @@ Common::UString GFFDumper::getTypeName(Aurora::FileType type) {
 	return "";
 }
 
-void GFFDumper::dumpStruct(XMLWriter &xml, const Aurora::GFFStruct &strct) {
+void GFFDumper::dumpStruct(XMLWriter &xml, const Aurora::GFFStruct &strct, const Common::UString &label) {
 	xml.openTag("struct");
+	xml.addProperty("label", label);
 	xml.addProperty("id", Common::UString::sprintf("%u", strct.getID()));
 	xml.breakLine();
 
@@ -186,8 +187,13 @@ void GFFDumper::dumpField(XMLWriter &xml, const Aurora::GFFStruct &strct, const 
 	else
 		typeName = Common::UString::sprintf("fieldtype%d", (int)type);
 
-	xml.openTag(typeName);
-	xml.addProperty("label", field);
+	Common::UString label = field;
+
+	// Structs already open their own tag
+	if (type != Aurora::GFFStruct::kFieldTypeStruct) {
+		xml.openTag(typeName);
+		xml.addProperty("label", label);
+	}
 
 	switch (type) {
 		case Aurora::GFFStruct::kFieldTypeChar:
@@ -235,8 +241,7 @@ void GFFDumper::dumpField(XMLWriter &xml, const Aurora::GFFStruct &strct, const 
 			break;
 
 		case Aurora::GFFStruct::kFieldTypeStruct:
-			xml.breakLine();
-			dumpStruct(xml, strct.getStruct(field));
+			dumpStruct(xml, strct.getStruct(field), label);
 			break;
 
 		case Aurora::GFFStruct::kFieldTypeList:
@@ -303,8 +308,11 @@ void GFFDumper::dumpField(XMLWriter &xml, const Aurora::GFFStruct &strct, const 
 			break;
 	}
 
-	xml.closeTag();
-	xml.breakLine();
+	// Structs already close their own tag
+	if (type != Aurora::GFFStruct::kFieldTypeStruct) {
+		xml.closeTag();
+		xml.breakLine();
+	}
 }
 
 void GFFDumper::dumpList(XMLWriter &xml, const Aurora::GFFList &list) {

@@ -25,6 +25,8 @@
 #ifndef XML_GFFDUMPER_H
 #define XML_GFFDUMPER_H
 
+#include "common/ustring.h"
+
 #include "aurora/types.h"
 
 namespace Common {
@@ -53,7 +55,7 @@ private:
 	static uint32 getID(Aurora::FileType type);
 	static Common::UString getTypeName(Aurora::FileType type);
 
-	static void dumpStruct(XMLWriter &xml, const Aurora::GFFStruct &strct);
+	static void dumpStruct(XMLWriter &xml, const Aurora::GFFStruct &strct, const Common::UString &label = "");
 	static void dumpList(XMLWriter &xml, const Aurora::GFFList &list);
 
 	static void dumpField(XMLWriter &xml, const Aurora::GFFStruct &strct, const Common::UString &field);
