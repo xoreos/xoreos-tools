@@ -44,6 +44,9 @@ bool isLanguageTheWitcher(Language language);
 /** Return the file type of a file name, detected by its extension. */
 FileType getFileType(const Common::UString &path);
 
+/** Alias the file type according to specific rules per game. */
+FileType aliasFileType(FileType type, GameID game);
+
 /** Return the file name with a swapped extensions according to the specified file type. */
 Common::UString setFileType(const Common::UString &path, FileType type);
 
