@@ -49,7 +49,8 @@ enum Command {
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
 void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, std::list<Common::UString> &files);
+bool parseCommandLine(int argc, char **argv, int &returnValue,
+                      Command &command, std::list<Common::UString> &files, Aurora::GameID &game);
 
 uint32 getFileID(const Common::UString &fileName);
 void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::UString> &keyFiles,
@@ -61,16 +62,18 @@ void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::
 void mergeKEYBIF(std::vector<Aurora::KEYFile> &keys, std::vector<Aurora::BIFFile> &bifs,
                  const std::vector<Common::UString> &bifFiles);
 
-void listFiles(const Aurora::KEYFile &key);
-void listFiles(const std::vector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles);
-void extractFiles(const Aurora::BIFFile &bif);
-void extractFiles(const std::vector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles);
+void listFiles(const Aurora::KEYFile &key, Aurora::GameID game);
+void listFiles(const std::vector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
+void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
+void extractFiles(const std::vector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
+	Aurora::GameID game = Aurora::kGameIDUnknown;
+
 	int returnValue;
 	Command command;
 	std::list<Common::UString> files;
-	if (!parseCommandLine(argc, argv, returnValue, command, files))
+	if (!parseCommandLine(argc, argv, returnValue, command, files, game))
 		return returnValue;
 
 	try {
@@ -86,9 +89,9 @@ int main(int argc, char **argv) {
 		mergeKEYBIF(keys, bifs, bifFiles);
 
 		if      (command == kCommandList)
-			listFiles(keys, keyFiles);
+			listFiles(keys, keyFiles, game);
 		else if (command == kCommandExtract)
-			extractFiles(bifs, bifFiles);
+			extractFiles(bifs, bifFiles, game);
 
 	} catch (Common::Exception &e) {
 		Common::printException(e);
@@ -98,7 +101,9 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, std::list<Common::UString> &files) {
+bool parseCommandLine(int argc, char **argv, int &returnValue,
+                      Command &command, std::list<Common::UString> &files, Aurora::GameID &game) {
+
 	files.clear();
 
 	// No command, just display the help
@@ -109,8 +114,24 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 		return false;
 	}
 
+	// Parse options
+	int n;
+	for (n = 1; (n < argc) && (argv[n][0] == '-'); n++) {
+		if        (!strcmp(argv[n], "--nwn2")) {
+			game = Aurora::kGameIDNWN2;
+		} else if (!strcmp(argv[n], "--jade")) {
+			game = Aurora::kGameIDJade;
+		} else {
+			// Unknown option
+			printUsage(stderr, argv[0]);
+			returnValue = -1;
+
+			return false;
+		}
+	}
+
 	// Wrong number of arguments, display the help
-	if (argc < 3) {
+	if ((n + 2) > argc) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
@@ -120,7 +141,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 	// Find out what we should do
 	command = kCommandNone;
 	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(argv[1], kCommandChar[i]))
+		if (!strcmp(argv[n], kCommandChar[i]))
 			command = (Command) i;
 
 	// Unknown command
@@ -132,7 +153,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 	}
 
 // This is a file to use
-	for (int i = 2; i < argc; i++)
+	for (int i = n + 1; i < argc; i++)
 		files.push_back(argv[i]);
 
 	return true;
@@ -141,6 +162,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare KEY/BIF archive extractor\n\n");
 	std::fprintf(stream, "Usage: %s <command> <file> [...]\n\n", name);
+	std::fprintf(stream, "Options:\n");
+	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
+	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  l          List files indexed in KEY archive(s)\n");
 	std::fprintf(stream, "  e          Extract BIF archive(s). Needs KEY file(s) indexing these BIF.\n\n");
@@ -215,7 +239,7 @@ void mergeKEYBIF(std::vector<Aurora::KEYFile> &keys, std::vector<Aurora::BIFFile
 
 }
 
-void listFiles(const Aurora::KEYFile &key) {
+void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
 	const Aurora::KEYFile::ResourceList &resources = key.getResources();
 
 	std::printf("              Filename               | BIF\n");
@@ -232,27 +256,31 @@ void listFiles(const Aurora::KEYFile &key) {
 
 	std::printf("\n");
 
-	for (Aurora::KEYFile::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r)
-		std::printf("%32s%s | %s\n", r->name.c_str(), Aurora::setFileType("", r->type).c_str(),
+	for (Aurora::KEYFile::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
+		const Aurora::FileType type = Aurora::aliasFileType(r->type, game);
+
+		std::printf("%32s%s | %s\n", r->name.c_str(), Aurora::setFileType("", type).c_str(),
 		                             bifs[r->bifIndex].c_str());
+	}
 }
 
-void listFiles(const std::vector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles) {
+void listFiles(const std::vector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
 	for (uint i = 0; i < keys.size(); i++) {
 		std::printf("%s: %u files\n\n", keyFiles[i].c_str(), (uint)keys[i].getResources().size());
-		listFiles(keys[i]);
+		listFiles(keys[i], game);
 
 		if (i < (keys.size() - 1))
 			std::printf("\n");
 	}
 }
 
-void extractFiles(const Aurora::BIFFile &bif) {
+void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = bif.getResources();
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Common::UString fileName = Aurora::setFileType(r->name, r->type);
+		const Aurora::FileType type     = Aurora::aliasFileType(r->type, game);
+		const Common::UString  fileName = Aurora::setFileType(r->name, type);
 
 		std::printf("Extracting %u/%u: %s ... ", i, (uint) resources.size(), fileName.c_str());
 
@@ -272,12 +300,12 @@ void extractFiles(const Aurora::BIFFile &bif) {
 
 }
 
-void extractFiles(const std::vector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles) {
+void extractFiles(const std::vector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
 	for (uint i = 0; i < bifs.size(); i++) {
 		std::printf("%s: %u indexed files (of %u)\n\n", bifFiles[i].c_str(), (uint)bifs[i].getResources().size(),
                 bifs[i].getInternalResourceCount());
 
-		extractFiles(bifs[i]);
+		extractFiles(bifs[i], game);
 
 		if (i < (bifs.size() - 1))
 			std::printf("\n");
