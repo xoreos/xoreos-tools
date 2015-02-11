@@ -172,6 +172,7 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeSTO,            ".sto"},
 	{kFileTypeMDX2,           ".mdx"},
 	{kFileTypeTXB2,           ".txb"},
+	{kFileTypeFSM,            ".fsm"},
 	{kFileTypeART,            ".art"},
 	{kFileTypeBIP,            ".bip"},
 	{kFileType1DA,            ".1da"},
