@@ -275,6 +275,7 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypePVD,            ".pvd"},
 	{kFileTypeAMP,            ".amp"},
 	{kFileTypePLA,            ".pla"},
+	{kFileTypeTRG,            ".trg"},
 	{kFileTypePK,             ".pk" },
 
 	{kFileTypeALS,            ".als"},
