@@ -45,17 +45,20 @@ enum Command {
 const char *kCommandChar[kCommandMAX] = { "i", "l", "e" };
 
 void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file);
+bool parseCommandLine(int argc, char **argv, int &returnValue,
+                      Command &command, Common::UString &file, Aurora::GameID &game);
 
 void displayInfo(Aurora::ERFFile &erf);
-void listFiles(Aurora::ERFFile &erf);
-void extractFiles(Aurora::ERFFile &erf);
+void listFiles(Aurora::ERFFile &rim, Aurora::GameID game);
+void extractFiles(Aurora::ERFFile &rim, Aurora::GameID);
 
 int main(int argc, char **argv) {
+	Aurora::GameID game = Aurora::kGameIDUnknown;
+
 	int returnValue;
 	Command command;
 	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, command, file))
+	if (!parseCommandLine(argc, argv, returnValue, command, file, game))
 		return returnValue;
 
 	try {
@@ -64,9 +67,9 @@ int main(int argc, char **argv) {
 		if      (command == kCommandInfo)
 			displayInfo(erf);
 		else if (command == kCommandList)
-			listFiles(erf);
+			listFiles(erf, game);
 		else if (command == kCommandExtract)
-			extractFiles(erf);
+			extractFiles(erf, game);
 
 	} catch (Common::Exception &e) {
 		Common::printException(e);
@@ -76,7 +79,9 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file) {
+bool parseCommandLine(int argc, char **argv, int &returnValue,
+                      Command &command, Common::UString &file, Aurora::GameID &game) {
+
 	file.clear();
 
 	// No command, just display the help
@@ -87,8 +92,24 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 		return false;
 	}
 
+	// Parse options
+	int n;
+	for (n = 1; (n < argc) && (argv[n][0] == '-'); n++) {
+		if        (!strcmp(argv[n], "--nwn2")) {
+			game = Aurora::kGameIDNWN2;
+		} else if (!strcmp(argv[n], "--jade")) {
+			game = Aurora::kGameIDJade;
+		} else {
+			// Unknown option
+			printUsage(stderr, argv[0]);
+			returnValue = -1;
+
+			return false;
+		}
+	}
+
 	// Wrong number of arguments, display the help
-	if (argc != 3) {
+	if ((n + 2) != argc) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
@@ -98,7 +119,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 	// Find out what we should do
 	command = kCommandNone;
 	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(argv[1], kCommandChar[i]))
+		if (!strcmp(argv[n], kCommandChar[i]))
 			command = (Command) i;
 
 	// Unknown command
@@ -110,7 +131,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 	}
 
 	// This is the file to use
-	file = argv[2];
+	file = argv[n + 1];
 
 	return true;
 }
@@ -118,6 +139,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor\n\n");
 	std::fprintf(stream, "Usage: %s <command> <file>\n\n", name);
+	std::fprintf(stream, "Options:\n");
+	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
+	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  i          Display meta-information\n");
 	std::fprintf(stream, "  l          List archive\n");
@@ -149,7 +173,7 @@ void displayInfo(Aurora::ERFFile &erf) {
 	}
 }
 
-void listFiles(Aurora::ERFFile &erf) {
+void listFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = erf.getResources();
 	const uint32 fileCount = resources.size();
 
@@ -158,12 +182,15 @@ void listFiles(Aurora::ERFFile &erf) {
 	std::printf("              Filename               |    Size\n");
 	std::printf("=====================================|===========\n");
 
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r)
-		std::printf("%32s%s | %10d\n", r->name.c_str(), Aurora::setFileType("", r->type).c_str(),
+	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
+		const Aurora::FileType type = Aurora::aliasFileType(r->type, game);
+
+		std::printf("%32s%s | %10d\n", r->name.c_str(), Aurora::setFileType("", type).c_str(),
 		                               erf.getResourceSize(r->index));
+	}
 }
 
-void extractFiles(Aurora::ERFFile &erf) {
+void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = erf.getResources();
 	const uint32 fileCount = resources.size();
 
@@ -171,7 +198,8 @@ void extractFiles(Aurora::ERFFile &erf) {
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Common::UString fileName = Aurora::setFileType(r->name, r->type);
+		const Aurora::FileType type     = Aurora::aliasFileType(r->type, game);
+		const Common::UString  fileName = Aurora::setFileType(r->name, type);
 
 		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
 
