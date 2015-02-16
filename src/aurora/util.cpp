@@ -316,7 +316,9 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeXBX,            ".xbx"},
 	{kFileTypeXLS,            ".xls"},
 
-	{kFileTypeBZF,            ".bzf"}
+	{kFileTypeBZF,            ".bzf"},
+
+	{kFileTypeADV,            ".adv"}
 };
 
 FileType getFileType(const Common::UString &path) {
