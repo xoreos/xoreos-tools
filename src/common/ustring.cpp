@@ -1002,6 +1002,10 @@ void UString::readUTF8(SeekableReadStream &stream, bool colorCodes) {
 	readASCII(stream, colorCodes);
 }
 
+void UString::readFixedUTF8(SeekableReadStream &stream, uint32 length, bool colorCodes) {
+	readFixedASCII(stream, length, colorCodes);
+}
+
 void UString::readLineUTF8(SeekableReadStream &stream, bool colorCodes) {
 	readLineASCII(stream, colorCodes);
 }

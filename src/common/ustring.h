@@ -200,6 +200,8 @@ public:
 
 	/** Read UTF8 out of a stream. */
 	void readUTF8(SeekableReadStream &stream, bool colorCodes = false);
+	/** Read a number of *bytes* as UTF8 out of a stream. */
+	void readFixedUTF8(SeekableReadStream &stream, uint32 length, bool colorCodes = false);
 	/** Read a line of UTF8 out of a stream. */
 	void readLineUTF8(SeekableReadStream &stream, bool colorCodes = false);
 
