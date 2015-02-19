@@ -998,12 +998,12 @@ void UString::readLineUTF16BE(SeekableReadStream &stream) {
 	recalculateSize();
 }
 
-void UString::readUTF8(SeekableReadStream &stream) {
-	readASCII(stream);
+void UString::readUTF8(SeekableReadStream &stream, bool colorCodes) {
+	readASCII(stream, colorCodes);
 }
 
-void UString::readLineUTF8(SeekableReadStream &stream) {
-	readLineASCII(stream);
+void UString::readLineUTF8(SeekableReadStream &stream, bool colorCodes) {
+	readLineASCII(stream, colorCodes);
 }
 
 void UString::readSingleByte(SeekableReadStream &stream, std::vector<char> &data) {

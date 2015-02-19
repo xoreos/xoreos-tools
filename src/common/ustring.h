@@ -199,9 +199,9 @@ public:
 	void readLineUTF16BE(SeekableReadStream &stream);
 
 	/** Read UTF8 out of a stream. */
-	void readUTF8(SeekableReadStream &stream);
+	void readUTF8(SeekableReadStream &stream, bool colorCodes = false);
 	/** Read a line of UTF8 out of a stream. */
-	void readLineUTF8(SeekableReadStream &stream);
+	void readLineUTF8(SeekableReadStream &stream, bool colorCodes = false);
 
 	/** Formatted printer, works like sprintf(). */
 	static UString sprintf(const char *s, ...);
