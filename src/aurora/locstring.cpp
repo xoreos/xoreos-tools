@@ -170,11 +170,32 @@ const Common::UString &LocString::getString(int n, Language &language) const {
 }
 
 void LocString::readString(Language language, Common::SeekableReadStream &stream) {
+	_languages[mapLanguageToStorage(language)] = language;
+
 	uint32 length = stream.readUint32LE();
 
-	// TODO: Different encodings for different languages, probably
-	_strings[mapLanguageToStorage(language)].readFixedLatin9(stream, length, true);
-	_languages[mapLanguageToStorage(language)] = language;
+	uint32 pos = stream.pos();
+
+	try {
+
+		_strings[mapLanguageToStorage(language)].readFixedUTF8(stream, length, true);
+		return;
+
+	} catch (...) {
+	}
+
+	try {
+
+		stream.seek(pos);
+		_strings[mapLanguageToStorage(language)].readFixedLatin9(stream, length, true);
+		return;
+
+	} catch (...) {
+	}
+
+	stream.seek(pos + length);
+
+	_strings[mapLanguageToStorage(language)] = "[BROKEN STRING ENCODING]";
 }
 
 void LocString::readLocSubString(Common::SeekableReadStream &stream) {
