@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file unrim.cpp
+/** @file
  *  Tool to extract RIM archives.
  */
 

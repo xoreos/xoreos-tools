@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file aurora/locstring.h
+/** @file
  *  Handling BioWare's localized strings.
  */
 

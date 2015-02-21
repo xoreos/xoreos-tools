@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file unerf.cpp
+/** @file
  *  Tool to extract ERF (.erf, .mod, .nwm, .sav) archives.
  */
 

@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file util.cpp
+/** @file
  *  General tool utility functions.
  */
 

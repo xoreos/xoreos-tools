@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file common/filepath.cpp
+/** @file
  *  Utility class for manipulating file paths.
  */
 

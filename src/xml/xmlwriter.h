@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file xml/xmlwriter.h
+/** @file
  *  Utility class for writing XML files.
  */
 

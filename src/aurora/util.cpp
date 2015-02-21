@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file aurora/util.cpp
+/** @file
  *  Utility functions to handle files used in BioWare's Aurora engine.
  */
 

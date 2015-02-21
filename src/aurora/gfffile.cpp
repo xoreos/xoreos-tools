@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file aurora/gfffile.cpp
+/** @file
  *  Handling BioWare's GFFs (generic file format).
  */
 

@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file aurora/biffile.cpp
+/** @file
  *  Handling BioWare's BIFs (resource data files).
  */
 

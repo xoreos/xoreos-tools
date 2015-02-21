@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file aurora/erffile.cpp
+/** @file
  *  Handling BioWare's ERFs (encapsulated resource file).
  */
 

@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file gff2xml.cpp
+/** @file
  *  Tool to convert GFF files into XML.
  */
 

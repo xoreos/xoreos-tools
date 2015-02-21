@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file aurora/rimfile.h
+/** @file
  *  Handling BioWare's RIMs (resource archives).
  */
 

@@ -18,7 +18,7 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file unnds.cpp
+/** @file
  *  Tool to extract files in NDS (Nintendo DS) roms.
  */
 
