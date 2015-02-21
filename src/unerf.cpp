@@ -160,15 +160,12 @@ void displayInfo(Aurora::ERFFile &erf) {
 	std::printf("\nDescription:\n");
 	std::printf("String reference ID: %u\n", description.getID());
 
-	for (int i = 0; i < Aurora::LocString::kStringCount; i++) {
-		Aurora::Language language;
-		const Common::UString &string = description.getString(i, language);
+	std::vector<Aurora::LocString::SubLocString> str;
+	description.getStrings(str);
 
-		if (string.empty())
-			continue;
-
-		std::printf("\n.=== Description in language %d: ===\n", (int)language);
-		std::printf("%s\n", string.c_str());
+	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
+		std::printf("\n.=== Description in language %u: ===\n", s->language);
+		std::printf("%s\n", s->str.c_str());
 		std::printf("'=== ===\n");
 	}
 }

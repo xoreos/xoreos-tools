@@ -27,6 +27,7 @@
 #include "src/common/util.h"
 #include "src/common/file.h"
 #include "src/common/stream.h"
+#include "src/common/encoding.h"
 
 #include "src/aurora/ndsrom.h"
 #include "src/aurora/error.h"
@@ -69,9 +70,9 @@ void NDSFile::load() {
 
 bool NDSFile::readHeader(Common::SeekableReadStream &nds) {
 	nds.seek(0x00);
-	_name.readFixedASCII(nds, 12);
-	_code.readFixedASCII(nds, 4);
-	_maker.readFixedASCII(nds, 2);
+	_name  = Common::readStringFixed(nds, Common::kEncodingASCII, 12);
+	_code  = Common::readStringFixed(nds, Common::kEncodingASCII,  4);
+	_maker = Common::readStringFixed(nds, Common::kEncodingASCII,  2);
 
 	nds.seek(0x20);
 	_arm9CodeOffset = nds.readUint32LE();
@@ -123,10 +124,7 @@ void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 l
 
 		byte nameLength = nds.readByte();
 
-		Common::UString name;
-
-		name.readFixedASCII(nds, nameLength);
-		name.tolower();
+		Common::UString name = Common::readStringFixed(nds, Common::kEncodingASCII, nameLength).toLower();
 
 		res.name  = setFileType(name, kFileTypeNone);
 		res.type  = getFileType(name);

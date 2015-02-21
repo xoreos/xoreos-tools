@@ -325,18 +325,16 @@ void GFFDumper::dumpList(XMLWriter &xml, const Aurora::GFFList &list) {
 }
 
 void GFFDumper::dumpLocString(XMLWriter &xml, const Aurora::LocString &locString) {
-	for (int i = 0; i < Aurora::LocString::kStringCount; i++) {
-		Aurora::Language language;
-		Common::UString string = locString.getString(i, language);
+	std::vector<Aurora::LocString::SubLocString> str;
+	locString.getStrings(str);
 
-		if (!string.empty() && (language != Aurora::kLanguageInvalid)) {
-			xml.openTag("string");
-			xml.addProperty("language", Common::UString::sprintf("%u", (uint)language));
+	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
+		xml.openTag("string");
+		xml.addProperty("language", Common::UString::sprintf("%u", s->language));
 
-			xml.setContents(string);
-			xml.closeTag();
-			xml.breakLine();
-		}
+		xml.setContents(s->str);
+		xml.closeTag();
+		xml.breakLine();
 	}
 }
 

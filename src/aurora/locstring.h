@@ -25,10 +25,11 @@
 #ifndef AURORA_LOCSTRING_H
 #define AURORA_LOCSTRING_H
 
+#include <vector>
+#include <map>
+
 #include "src/common/types.h"
 #include "src/common/ustring.h"
-
-#include "src/aurora/types.h"
 
 namespace Common {
 	class SeekableReadStream;
@@ -39,7 +40,12 @@ namespace Aurora {
 /** A localized string. */
 class LocString {
 public:
-	static const int kStringCount = 23;
+	struct SubLocString {
+		uint32 language;
+		Common::UString str;
+
+		SubLocString(uint32 l = 0, const Common::UString &s = "") : language(l), str(s) { }
+	};
 
 	LocString();
 	~LocString();
@@ -51,13 +57,13 @@ public:
 	/** Set the string ID / StrRef. */
 	void setID(uint32 id);
 
-	/** Does the LocString have a string of this language? */
-	bool hasString(Language language) const;
+	/** Does the LocString have a string of this language ID (gendered)? */
+	bool hasString(uint32 languageID) const;
 
-	/** Get the string of that language. */
-	const Common::UString &getString(Language language) const;
-	/** Set the string of that language. */
-	void setString(Language language, const Common::UString &str);
+	/** Get the string of that language ID (gendered). */
+	const Common::UString &getString(uint32 languageID) const;
+	/** Set the string of that language ID (gendered). */
+	void setString(uint32 languageID, const Common::UString &str);
 
 	/** Get the string the StrRef points to. */
 	const Common::UString &getStrRefString() const;
@@ -68,11 +74,11 @@ public:
 	/** Try to get the most appropriate string. */
 	const Common::UString &getString() const;
 
-	/** Get a string by storage space. */
-	const Common::UString &getString(int n, Language &language) const;
+	/** Return all strings. */
+	void getStrings(std::vector<SubLocString> &str) const;
 
 	/** Read a string out of a stream. */
-	void readString(Language language, Common::SeekableReadStream &stream);
+	void readString(uint32 languageID, Common::SeekableReadStream &stream);
 	/** Read a LocSubString (substring of a LocString in game data) out of a stream. */
 	void readLocSubString(Common::SeekableReadStream &stream);
 	/** Read a LocString out of a stream. */
@@ -81,10 +87,11 @@ public:
 	void readLocString(Common::SeekableReadStream &stream);
 
 private:
+	typedef std::map<uint32, Common::UString> StringMap;
+
 	uint32 _id; ///< The string's ID / StrRef. */
 
-	Language _languages[kStringCount];
-	Common::UString _strings[kStringCount]; /** The localized strings. */
+	StringMap _strings;
 };
 
 } // End of namespace Aurora

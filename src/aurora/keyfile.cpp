@@ -25,6 +25,7 @@
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/stream.h"
+#include "src/common/encoding.h"
 #include "src/common/file.h"
 
 #include "src/aurora/keyfile.h"
@@ -109,7 +110,9 @@ void KEYFile::readBIFList(Common::SeekableReadStream &key, uint32 offset) {
 		}
 
 		uint32 curPos = key.seekTo(nameOffset);
-		bif->readFixedASCII(key, nameSize);
+
+		*bif = Common::readStringFixed(key, Common::kEncodingASCII, nameSize);
+
 		key.seekTo(curPos);
 
 		AuroraFile::cleanupPath(*bif);
@@ -121,7 +124,7 @@ void KEYFile::readResList(Common::SeekableReadStream &key, uint32 offset) {
 		throw Common::Exception(Common::kSeekError);
 
 	for (ResourceList::iterator res = _resources.begin(); res != _resources.end(); ++res) {
-		res->name.readFixedASCII(key, 16);
+		res->name = Common::readStringFixed(key, Common::kEncodingASCII, 16);
 		res->type = (FileType) key.readUint16LE();
 
 		uint32 id = key.readUint32LE();

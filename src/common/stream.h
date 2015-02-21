@@ -183,8 +183,11 @@ public:
 		writeUint64BE((uint64)convertIEEEDouble(value));
 	}
 
+	/** Copy n bytes of the given stream into the stream. */
+	uint32 writeStream(ReadStream &stream, uint32 n);
+
 	/** Copy the complete contents of the given stream. */
-	void writeStream(ReadStream &stream);
+	uint32 writeStream(ReadStream &stream);
 
 	/**
 	 *  Write the given string to the stream.
@@ -525,7 +528,7 @@ public:
 			delete _parentStream;
 	}
 
-	virtual bool eos() const { return _eos; }
+	virtual bool eos() const { return _eos | _parentStream->eos(); }
 	virtual bool err() const { return _parentStream->err(); }
 	virtual void clearErr() { _eos = false; _parentStream->clearErr(); }
 	virtual uint32 read(void *dataPtr, uint32 dataSize);
@@ -772,13 +775,14 @@ private:
 	uint32 _pos;
 	bool _disposeMemory;
 
-	void ensureCapacity(uint32 new_len) {
-		if (new_len <= _capacity)
+public:
+	void reserve(uint32 s) {
+		if (s <= _capacity)
 			return;
 
 		byte *old_data = _data;
 
-		_capacity = new_len + 32;
+		_capacity = s + 32;
 		_data = new byte[_capacity];
 		_ptr = _data + _pos;
 
@@ -787,9 +791,18 @@ private:
 			std::memcpy(_data, old_data, _size);
 			delete[] old_data;
 		}
+	}
+
+private:
+	void ensureCapacity(uint32 new_len) {
+		if (new_len <= _capacity)
+			return;
+
+		reserve(new_len);
 
 		_size = new_len;
 	}
+
 public:
 	MemoryWriteStreamDynamic(bool disposeMemory = false) : _capacity(0), _size(0), _ptr(0), _data(0), _pos(0), _disposeMemory(disposeMemory) {}
 

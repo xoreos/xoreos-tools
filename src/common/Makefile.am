@@ -12,6 +12,7 @@ noinst_HEADERS = \
                  error.h \
                  util.h \
                  strutil.h \
+                 encoding.h \
                  stream.h \
                  file.h \
                  filepath.h \
@@ -22,6 +23,7 @@ libcommon_la_SOURCES = \
                        error.cpp \
                        util.cpp \
                        strutil.cpp \
+                       encoding.cpp \
                        stream.cpp \
                        file.cpp \
                        filepath.cpp \
