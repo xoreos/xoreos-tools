@@ -25,14 +25,14 @@
 #include <cstring>
 #include <cstdio>
 
-#include "common/ustring.h"
-#include "common/error.h"
-#include "common/file.h"
+#include "src/common/ustring.h"
+#include "src/common/error.h"
+#include "src/common/file.h"
 
-#include "aurora/util.h"
-#include "aurora/rimfile.h"
+#include "src/aurora/util.h"
+#include "src/aurora/rimfile.h"
 
-#include "util.h"
+#include "src/util.h"
 
 enum Command {
 	kCommandNone    = -1,

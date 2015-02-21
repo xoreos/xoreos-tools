@@ -25,9 +25,9 @@
 #ifndef XML_GFFDUMPER_H
 #define XML_GFFDUMPER_H
 
-#include "common/ustring.h"
+#include "src/common/ustring.h"
 
-#include "aurora/types.h"
+#include "src/aurora/types.h"
 
 namespace Common {
 	class SeekableReadStream;

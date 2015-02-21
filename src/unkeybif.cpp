@@ -27,17 +27,17 @@
 #include <list>
 #include <vector>
 
-#include "common/util.h"
-#include "common/ustring.h"
-#include "common/error.h"
-#include "common/file.h"
-#include "common/filepath.h"
+#include "src/common/util.h"
+#include "src/common/ustring.h"
+#include "src/common/error.h"
+#include "src/common/file.h"
+#include "src/common/filepath.h"
 
-#include "aurora/util.h"
-#include "aurora/keyfile.h"
-#include "aurora/biffile.h"
+#include "src/aurora/util.h"
+#include "src/aurora/keyfile.h"
+#include "src/aurora/biffile.h"
 
-#include "util.h"
+#include "src/util.h"
 
 enum Command {
 	kCommandNone    = -1,

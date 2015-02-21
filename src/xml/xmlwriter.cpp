@@ -22,10 +22,10 @@
  *  Utility class for writing XML files.
  */
 
-#include "common/ustring.h"
-#include "common/stream.h"
+#include "src/common/ustring.h"
+#include "src/common/stream.h"
 
-#include "xml/xmlwriter.h"
+#include "src/xml/xmlwriter.h"
 
 namespace XML {
 

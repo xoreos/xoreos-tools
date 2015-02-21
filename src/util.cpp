@@ -22,12 +22,12 @@
  *  General tool utility functions.
  */
 
-#include "common/error.h"
-#include "common/ustring.h"
-#include "common/stream.h"
-#include "common/file.h"
+#include "src/common/error.h"
+#include "src/common/ustring.h"
+#include "src/common/stream.h"
+#include "src/common/file.h"
 
-#include "util.h"
+#include "src/util.h"
 
 void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName) {
 	Common::DumpFile file;

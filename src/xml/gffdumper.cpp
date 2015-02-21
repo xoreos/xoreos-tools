@@ -22,15 +22,15 @@
  *  Dump GFFs into XML files.
  */
 
-#include "common/stream.h"
-#include "common/util.h"
-#include "common/error.h"
+#include "src/common/stream.h"
+#include "src/common/util.h"
+#include "src/common/error.h"
 
-#include "aurora/locstring.h"
-#include "aurora/gfffile.h"
+#include "src/aurora/locstring.h"
+#include "src/aurora/gfffile.h"
 
-#include "xml/xmlwriter.h"
-#include "xml/gffdumper.h"
+#include "src/xml/xmlwriter.h"
+#include "src/xml/gffdumper.h"
 
 struct GFFType {
 	Aurora::FileType type;

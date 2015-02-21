@@ -22,7 +22,7 @@
  *  Utility templates and functions.
  */
 
-#include "common/util.h"
+#include "src/common/util.h"
 
 #include <cstdarg>
 #include <cstdio>

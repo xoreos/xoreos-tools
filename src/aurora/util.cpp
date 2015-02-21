@@ -22,11 +22,11 @@
  *  Utility functions to handle files used in BioWare's Aurora engine.
  */
 
-#include "common/util.h"
-#include "common/ustring.h"
-#include "common/filepath.h"
+#include "src/common/util.h"
+#include "src/common/ustring.h"
+#include "src/common/filepath.h"
 
-#include "aurora/util.h"
+#include "src/aurora/util.h"
 
 namespace Aurora {
 

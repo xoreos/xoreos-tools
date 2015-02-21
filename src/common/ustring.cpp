@@ -28,11 +28,11 @@
 
 #include <iconv.h>
 
-#include "common/ustring.h"
-#include "common/error.h"
-#include "common/singleton.h"
-#include "common/stream.h"
-#include "common/util.h"
+#include "src/common/ustring.h"
+#include "src/common/error.h"
+#include "src/common/singleton.h"
+#include "src/common/stream.h"
+#include "src/common/util.h"
 
 namespace Common {
 

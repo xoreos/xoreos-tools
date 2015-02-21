@@ -25,14 +25,14 @@
 #include <cstring>
 #include <cstdio>
 
-#include "common/ustring.h"
-#include "common/stream.h"
-#include "common/util.h"
-#include "common/strutil.h"
-#include "common/error.h"
-#include "common/file.h"
+#include "src/common/ustring.h"
+#include "src/common/stream.h"
+#include "src/common/util.h"
+#include "src/common/strutil.h"
+#include "src/common/error.h"
+#include "src/common/file.h"
 
-#include "xml/gffdumper.h"
+#include "src/xml/gffdumper.h"
 
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file);

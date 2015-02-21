@@ -24,10 +24,10 @@
 
 #include <cstdio>
 
-#include "common/strutil.h"
-#include "common/util.h"
-#include "common/error.h"
-#include "common/stream.h"
+#include "src/common/strutil.h"
+#include "src/common/util.h"
+#include "src/common/error.h"
+#include "src/common/stream.h"
 
 namespace Common {
 

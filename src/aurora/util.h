@@ -25,7 +25,7 @@
 #ifndef AURORA_UTIL_H
 #define AURORA_UTIL_H
 
-#include "aurora/types.h"
+#include "src/aurora/types.h"
 
 namespace Aurora {
 

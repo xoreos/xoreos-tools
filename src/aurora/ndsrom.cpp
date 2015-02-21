@@ -24,13 +24,13 @@
 
 // Based on http://dsibrew.org/wiki/NDS_Format
 
-#include "common/util.h"
-#include "common/file.h"
-#include "common/stream.h"
+#include "src/common/util.h"
+#include "src/common/file.h"
+#include "src/common/stream.h"
 
-#include "aurora/ndsrom.h"
-#include "aurora/error.h"
-#include "aurora/util.h"
+#include "src/aurora/ndsrom.h"
+#include "src/aurora/error.h"
+#include "src/aurora/util.h"
 
 namespace Aurora {
 
