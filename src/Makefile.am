@@ -13,6 +13,7 @@ noinst_HEADERS = \
 bin_PROGRAMS = \
                gff2xml \
                unerf \
+               unherf \
                unrim \
                unkeybif \
                unnds \
@@ -37,6 +38,16 @@ unerf_LDADD   = \
                 common/libcommon.la \
                 $(LDADD) \
                 $(EMPTY)
+
+unherf_SOURCES = \
+                 unherf.cpp \
+                 util.cpp \
+                 $(EMPTY)
+unherf_LDADD   = \
+                 aurora/libaurora.la \
+                 common/libcommon.la \
+                 $(LDADD) \
+                 $(EMPTY)
 
 unrim_SOURCES = \
                 unrim.cpp \
