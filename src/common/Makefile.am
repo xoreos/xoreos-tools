@@ -9,6 +9,7 @@ noinst_HEADERS = \
                  noncopyable.h \
                  singleton.h \
                  ustring.h \
+                 hash.h \
                  error.h \
                  util.h \
                  strutil.h \
