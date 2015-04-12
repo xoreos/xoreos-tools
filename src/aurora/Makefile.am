@@ -14,6 +14,7 @@ noinst_HEADERS = \
                  keyfile.h \
                  biffile.h \
                  ndsrom.h \
+                 herffile.h \
                  locstring.h \
                  gfffile.h \
                  $(EMPTY)
@@ -29,6 +30,7 @@ libaurora_la_SOURCES = \
                        keyfile.cpp \
                        biffile.cpp \
                        ndsrom.cpp \
+                       herffile.cpp \
                        locstring.cpp \
                        gfffile.cpp \
                        $(EMPTY)
