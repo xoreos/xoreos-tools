@@ -33,6 +33,15 @@ namespace Common {
 /** Utility class for manipulating file paths. */
 class FilePath {
 public:
+	/** Return a file name's stem.
+	 *
+	 *  Example: "/path/to/file.ext" -> "file"
+	 *
+	 *  @param  p The path to manipulate.
+	 *  @return The path's stem.
+	 */
+	static UString getStem(const UString &p);
+
 	/** Return a file name's extension.
 	 *
 	 *  Example: "/path/to/file.ext" -> ".ext"

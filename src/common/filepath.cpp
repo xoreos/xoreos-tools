@@ -26,6 +26,12 @@
 
 namespace Common {
 
+UString FilePath::getStem(const UString &p) {
+	UString file = getFile(p);
+
+	return UString(file.begin(), file.findLast('.'));
+}
+
 UString FilePath::getExtension(const UString &p) {
 	return UString(p.findLast('.'), p.end());
 }
