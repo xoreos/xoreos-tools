@@ -161,7 +161,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare KEY/BIF archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s <command> <file> [...]\n\n", name);
+	std::fprintf(stream, "Usage: %s [<options>] <command> <file> [...]\n\n", name);
 	std::fprintf(stream, "Options:\n");
 	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
 	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
