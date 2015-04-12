@@ -29,6 +29,7 @@
 
 #include "src/common/types.h"
 #include "src/common/ustring.h"
+#include "src/common/hash.h"
 
 #include "src/aurora/types.h"
 
@@ -44,8 +45,11 @@ public:
 	/** A resource within the archive. */
 	struct Resource {
 		Common::UString name;  ///< The resource's name.
+		uint64          hash;  ///< The resource's hashed name.
 		FileType        type;  ///< The resource's type.
 		uint32          index; ///< The resource's local index within the archive.
+
+		Resource();
 	};
 
 	typedef std::list<Resource> ResourceList;
@@ -64,6 +68,9 @@ public:
 
 	/** Return a stream of the resource's contents. */
 	virtual Common::SeekableReadStream *getResource(uint32 index) const = 0;
+
+	/** Return with which algorithm the name is hashed. */
+	virtual Common::HashAlgo getNameHashAlgo() const;
 };
 
 } // End of namespace Aurora
