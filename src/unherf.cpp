@@ -19,20 +19,25 @@
  */
 
 /** @file
- *  Tool to extract HERF (.erf, .mod, .nwm, .sav) archives.
+ *  Tool to extract HERF archives.
  */
 
 #include <cstring>
 #include <cstdio>
 
+#include <map>
+
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/file.h"
+#include "src/common/filepath.h"
+#include "src/common/hash.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/herffile.h"
 
 #include "src/util.h"
+#include "src/files_sonic.h"
 
 enum Command {
 	kCommandNone    = -1,
@@ -41,14 +46,20 @@ enum Command {
 	kCommandMAX
 };
 
+typedef std::map<uint32, Common::UString> HashRegistry;
+
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Command &command, Common::UString &file);
 
-void listFiles(Aurora::HERFFile &rim);
-void extractFiles(Aurora::HERFFile &rim);
+void createHashRegistry(HashRegistry &hashRegistry);
+bool findHashedName(const HashRegistry &hashRegistry, uint32 hash,
+                    Common::UString &name, Common::UString &ext);
+
+void listFiles(Aurora::HERFFile &rim, const HashRegistry &hashRegistry);
+void extractFiles(Aurora::HERFFile &rim, const HashRegistry &hashRegistry);
 
 int main(int argc, char **argv) {
 	int returnValue;
@@ -60,10 +71,13 @@ int main(int argc, char **argv) {
 	try {
 		Aurora::HERFFile herf(file);
 
+		HashRegistry hashRegistry;
+		createHashRegistry(hashRegistry);
+
 		if      (command == kCommandList)
-			listFiles(herf);
+			listFiles(herf, hashRegistry);
 		else if (command == kCommandExtract)
-			extractFiles(herf);
+			extractFiles(herf, hashRegistry);
 
 	} catch (Common::Exception &e) {
 		Common::printException(e);
@@ -122,8 +136,28 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "  e          Extract files to current directory\n");
 }
 
-void listFiles(Aurora::HERFFile &erf) {
-	const Aurora::Archive::ResourceList &resources = erf.getResources();
+void createHashRegistry(HashRegistry &hashRegistry) {
+	for (int i = 0; i < ARRAYSIZE(kFilesSonic); i++)
+		hashRegistry[Common::hashStringDJB2(kFilesSonic[i])] = kFilesSonic[i];
+}
+
+bool findHashedName(const HashRegistry &hashRegistry, uint32 hash,
+                    Common::UString &name, Common::UString &ext) {
+
+	HashRegistry::const_iterator h = hashRegistry.find(hash);
+	if (h != hashRegistry.end()) {
+		name = Common::FilePath::getStem(h->second);
+		ext  = Common::FilePath::getExtension(h->second);
+		return true;
+	}
+
+	name = Common::UString::sprintf("0x%08X", hash);
+	ext  = "";
+	return false;
+}
+
+void listFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
+	const Aurora::Archive::ResourceList &resources = herf.getResources();
 	const uint32 fileCount = resources.size();
 
 	std::printf("Number of files: %u\n\n", fileCount);
@@ -132,34 +166,33 @@ void listFiles(Aurora::HERFFile &erf) {
 	std::printf("=======================================|===========\n");
 
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		Common::UString fileName = r->name;
+		Common::UString fileName = r->name, fileExt = Aurora::setFileType("", r->type);
 		if (fileName.empty())
-			fileName = Common::UString::sprintf("0x%08X", (uint32) r->hash);
+			findHashedName(hashRegistry, r->hash, fileName, fileExt);
 
-		std::printf("%32s%-6s | %10d\n", fileName.c_str(), Aurora::setFileType("", r->type).c_str(),
-		                                erf.getResourceSize(r->index));
+		std::printf("%32s%-6s | %10d\n", fileName.c_str(), fileExt.c_str(), herf.getResourceSize(r->index));
 	}
 }
 
-void extractFiles(Aurora::HERFFile &erf) {
-	const Aurora::Archive::ResourceList &resources = erf.getResources();
+void extractFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
+	const Aurora::Archive::ResourceList &resources = herf.getResources();
 	const uint32 fileCount = resources.size();
 
 	std::printf("Number of files: %u\n\n", fileCount);
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		Common::UString fileName = r->name;
+		Common::UString fileName = r->name, fileExt = Aurora::setFileType("", r->type);
 		if (fileName.empty())
-			fileName = Common::UString::sprintf("0x%08X", (uint32) r->hash);
+			findHashedName(hashRegistry, r->hash, fileName, fileExt);
 
-		fileName += Aurora::setFileType("", r->type);
+		fileName = fileName + fileExt;
 
 		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
 
 		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = erf.getResource(r->index);
+			stream = herf.getResource(r->index);
 
 			dumpStream(*stream, fileName);
 
