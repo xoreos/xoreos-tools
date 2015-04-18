@@ -127,6 +127,20 @@ protected:
 	int32 _size;        ///< The file's size.
 };
 
+/** A simple stream to write to stdout. */
+class StdOutStream : public WriteStream, public NonCopyable {
+public:
+	StdOutStream();
+	~StdOutStream();
+
+	bool err() const;
+	void clearErr();
+
+	bool flush();
+
+	uint32 write(const void *dataPtr, uint32 dataSize);
+};
+
 } // End of namespace Common
 
 #endif // COMMON_FILE_H

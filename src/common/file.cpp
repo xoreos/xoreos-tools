@@ -186,4 +186,28 @@ uint32 DumpFile::write(const void *dataPtr, uint32 dataSize) {
 	return std::fwrite(dataPtr, 1, dataSize, _handle);
 }
 
+
+StdOutStream::StdOutStream() {
+}
+
+StdOutStream::~StdOutStream() {
+	flush();
+}
+
+bool StdOutStream::err() const {
+	return std::ferror(stdout) != 0;
+}
+
+void StdOutStream::clearErr() {
+	std::clearerr(stdout);
+}
+
+bool StdOutStream::flush() {
+	return std::fflush(stdout) == 0;
+}
+
+uint32 StdOutStream::write(const void *dataPtr, uint32 dataSize) {
+	return std::fwrite(dataPtr, 1, dataSize, stdout);
+}
+
 } // End of namespace Common
