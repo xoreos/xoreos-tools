@@ -126,8 +126,6 @@ void dumpGFF(const Common::UString &file) {
 
 	XML::GFFDumper dumper;
 
-	Common::MemoryWriteStreamDynamic xml;
+	Common::StdOutStream xml;
 	dumper.dump(xml, gff);
-
-	Common::printStream(xml);
 }
