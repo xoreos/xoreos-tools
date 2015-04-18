@@ -103,4 +103,20 @@ void printStream(MemoryWriteStreamDynamic &stream) {
 	printStream(readStream);
 }
 
+UString tagToString(uint32 tag, bool trim) {
+	tag = TO_BE_32(tag);
+
+	const char *tS = (const char *) &tag;
+	if (std::isprint(tS[0]) && std::isprint(tS[1]) && std::isprint(tS[2]) && std::isprint(tS[3])) {
+		UString tagStr = UString::sprintf("%c%c%c%c", tS[0], tS[1], tS[2], tS[3]);
+
+		if (trim)
+			tagStr.trim();
+
+		return tagStr;
+	}
+
+	return UString::sprintf("0x%08X", FROM_BE_32(tag));
+}
+
 } // End of namespace Common

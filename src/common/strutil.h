@@ -43,6 +43,14 @@ void printStream(SeekableReadStream &stream);
 /** Print a quick dump of the given (text) stream. */
 void printStream(MemoryWriteStreamDynamic &stream);
 
+/** Create a readable string from an integer tag.
+ *
+ *  Try to read the 4 bytes of the integer as a 4 character string.
+ *  If that fails, print the integer tag in its hexadecimal represention,
+ *  so that we at least have something readable in the end.
+ */
+UString tagToString(uint32 tag, bool trim = false);
+
 } // End of namespace Common
 
 #endif // COMMON_STRUTIL_H
