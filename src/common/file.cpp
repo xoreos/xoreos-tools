@@ -54,14 +54,14 @@ bool File::open(const UString &fileName) {
 	if (!(_handle = std::fopen(fileName.c_str(), "rb")))
 		return false;
 
-	if (!seek(0, SEEK_END)) {
+	if (std::fseek(_handle, 0, SEEK_END) != 0) {
 		close();
 		return false;
 	}
 
 	_size = pos();
 
-	if (!seek(0, SEEK_SET)) {
+	if (std::fseek(_handle, 0, SEEK_SET) != 0) {
 		close();
 		return false;
 	}
@@ -115,9 +115,16 @@ int32 File::size() const {
 
 bool File::seek(int32 offs, int whence) {
 	if (!_handle)
-		return false;
+		throw Exception(kSeekError);
 
-	return std::fseek(_handle, offs, whence) == 0;
+	if (std::fseek(_handle, offs, whence) != 0)
+		throw Exception(kSeekError);
+
+	long p = std::ftell(_handle);
+	if ((p < 0) || (p > _size))
+		throw Exception(kSeekError);
+
+	return true;
 }
 
 uint32 File::read(void *dataPtr, uint32 dataSize) {
