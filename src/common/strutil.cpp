@@ -80,8 +80,7 @@ void printDataHex(SeekableReadStream &stream) {
 	}
 
 	// Seek back
-	if (!stream.seek(pos))
-		throw Exception(kSeekError);
+	stream.seek(pos);
 }
 
 void printDataHex(const byte *data, uint32 size) {
