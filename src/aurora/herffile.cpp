@@ -101,8 +101,7 @@ void HERFFile::readDictionary(Common::SeekableReadStream &herf, std::map<uint32,
 
 	uint32 pos = herf.pos();
 
-	if (!herf.seek(_dictOffset))
-		return;
+	herf.seek(_dictOffset);
 
 	uint32 magic = herf.readUint32LE();
 	if (magic != 0x00F1A5C0)
@@ -170,8 +169,7 @@ Common::SeekableReadStream *HERFFile::getResource(uint32 index) const {
 	Common::File herf;
 	open(herf);
 
-	if (!herf.seek(res.offset))
-		throw Common::Exception(Common::kSeekError);
+	herf.seek(res.offset);
 
 	Common::SeekableReadStream *resStream = herf.readStream(res.size);
 
