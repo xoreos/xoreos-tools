@@ -92,11 +92,9 @@ void printDataHex(const byte *data, uint32 size) {
 }
 
 void printStream(SeekableReadStream &stream) {
-	char c = stream.readByte();
-	while (!stream.eos()) {
-		std::printf("%c", c);
-		c = stream.readByte();
-	}
+	uint32 c;
+	while ((c = stream.readChar()) != kEOF)
+		std::printf("%c", (char) c);
 }
 
 void printStream(MemoryWriteStreamDynamic &stream) {
