@@ -115,8 +115,7 @@ bool NDSFile::readHeader(Common::SeekableReadStream &nds) {
 }
 
 void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 length) {
-	if (!nds.seek(offset + 8))
-		throw Common::Exception(Common::kSeekError);
+	nds.seek(offset + 8);
 
 	uint32 index = 0;
 	while (((uint32) nds.pos()) < (offset + length)) {
@@ -138,8 +137,7 @@ void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 l
 }
 
 void NDSFile::readFAT(Common::SeekableReadStream &nds, uint32 offset) {
-	if (!nds.seek(offset))
-		throw Common::Exception(Common::kSeekError);
+	nds.seek(offset);
 
 	_iResources.resize(_resources.size());
 	for (IResourceList::iterator res = _iResources.begin(); res != _iResources.end(); ++res) {
@@ -171,8 +169,7 @@ Common::SeekableReadStream *NDSFile::getResource(uint32 index) const {
 	Common::File nds;
 	open(nds);
 
-	if (!nds.seek(res.offset))
-		throw Common::Exception(Common::kSeekError);
+	nds.seek(res.offset);
 
 	Common::SeekableReadStream *resStream = nds.readStream(res.size);
 
