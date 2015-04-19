@@ -170,6 +170,8 @@ void SeekableSubReadStream::seek(int32 offset, int whence) {
 	if ((newPos < _begin) || (newPos > _end))
 		throw Exception(kSeekError);
 
+	_pos = newPos;
+
 	_parentStream->seek(_pos);
 	_eos = false; // reset eos on successful seek
 }
