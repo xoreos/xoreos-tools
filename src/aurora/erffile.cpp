@@ -158,8 +158,7 @@ void ERFFile::readERFHeader(Common::SeekableReadStream &erf, ERFHeader &header) 
 
 void ERFFile::readDescription(Common::SeekableReadStream &erf, const ERFHeader &header) {
 	if (_version == kVersion1) {
-		if (!erf.seek(header.offDescription))
-			throw Common::Exception(Common::kSeekError);
+		erf.seek(header.offDescription);
 
 		_description.readLocString(erf, header.descriptionID, header.langCount);
 	}
@@ -193,8 +192,7 @@ void ERFFile::readResources(Common::SeekableReadStream &erf, const ERFHeader &he
 }
 
 void ERFFile::readV1KeyList(Common::SeekableReadStream &erf, const ERFHeader &header) {
-	if (!erf.seek(header.offKeyList))
-		throw Common::Exception(Common::kSeekError);
+	erf.seek(header.offKeyList);
 
 	uint32 index = 0;
 	for (ResourceList::iterator res = _resources.begin(); res != _resources.end(); ++index, ++res) {
@@ -207,8 +205,7 @@ void ERFFile::readV1KeyList(Common::SeekableReadStream &erf, const ERFHeader &he
 }
 
 void ERFFile::readV11KeyList(Common::SeekableReadStream &erf, const ERFHeader &header) {
-	if (!erf.seek(header.offKeyList))
-		throw Common::Exception(Common::kSeekError);
+	erf.seek(header.offKeyList);
 
 	uint32 index = 0;
 	for (ResourceList::iterator res = _resources.begin(); res != _resources.end(); ++index, ++res) {
@@ -221,8 +218,7 @@ void ERFFile::readV11KeyList(Common::SeekableReadStream &erf, const ERFHeader &h
 }
 
 void ERFFile::readV1ResList(Common::SeekableReadStream &erf, const ERFHeader &header) {
-	if (!erf.seek(header.offResList))
-		throw Common::Exception(Common::kSeekError);
+	erf.seek(header.offResList);
 
 	for (IResourceList::iterator res = _iResources.begin(); res != _iResources.end(); ++res) {
 		res->offset                         = erf.readUint32LE();
@@ -231,8 +227,7 @@ void ERFFile::readV1ResList(Common::SeekableReadStream &erf, const ERFHeader &he
 }
 
 void ERFFile::readV2ResList(Common::SeekableReadStream &erf, const ERFHeader &header) {
-	if (!erf.seek(header.offResList))
-		throw Common::Exception(Common::kSeekError);
+	erf.seek(header.offResList);
 
 	uint32 index = 0;
 	ResourceList::iterator   res = _resources.begin();
@@ -251,8 +246,7 @@ void ERFFile::readV2ResList(Common::SeekableReadStream &erf, const ERFHeader &he
 }
 
 void ERFFile::readV22ResList(Common::SeekableReadStream &erf, const ERFHeader &header) {
-	if (!erf.seek(header.offResList))
-		throw Common::Exception(Common::kSeekError);
+	erf.seek(header.offResList);
 
 	uint32 index = 0;
 	ResourceList::iterator   res = _resources.begin();
@@ -309,8 +303,7 @@ Common::SeekableReadStream *ERFFile::getResource(uint32 index) const {
 	Common::File erf;
 	open(erf);
 
-	if (!erf.seek(res.offset))
-		throw Common::Exception(Common::kSeekError);
+	erf.seek(res.offset);
 
 	byte *compressedData = new byte[res.packedSize];
 
