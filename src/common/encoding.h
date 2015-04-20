@@ -62,6 +62,12 @@ Common::UString readStringFixed(SeekableReadStream &stream, Encoding encoding, u
 /** Read a line with the given encoding out of a stream. */
 Common::UString readStringLine(SeekableReadStream &stream, Encoding encoding);
 
+/** Return the number of bytes per codepoint in this encoding.
+ *
+ *  Note: This will throw on encodings with a variable number of bytes per codepoint.
+ */
+uint32 getBytesPerCodepoint(Encoding encoding);
+
 } // End of namespace Common
 
 #endif // COMMON_ENCODING_H
