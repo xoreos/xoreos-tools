@@ -44,7 +44,8 @@ public:
 	~GFF4Dumper();
 
 	/** Dump the GFF into XML. */
-	void dump(Common::WriteStream &output, Common::SeekableReadStream &input);
+	void dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+	          Common::Encoding encoding);
 
 private:
 	struct GFF4Field {
@@ -63,6 +64,8 @@ private:
 
 	Aurora::GFF4File *_gff4;
 	XMLWriter *_xml;
+
+	Common::Encoding _encoding;
 
 	IDSet _structIDs;
 

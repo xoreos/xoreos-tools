@@ -31,22 +31,26 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/file.h"
+#include "src/common/encoding.h"
 
 #include "src/xml/gffdumper.h"
 
 void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file);
+bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
+                      Common::Encoding &encoding);
 
-void dumpGFF(const Common::UString &file);
+void dumpGFF(const Common::UString &file, Common::Encoding encoding);
 
 int main(int argc, char **argv) {
+	Common::Encoding encoding = Common::kEncodingUTF16LE;
+
 	int returnValue;
 	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file))
+	if (!parseCommandLine(argc, argv, returnValue, file, encoding))
 		return returnValue;
 
 	try {
-		dumpGFF(file);
+		dumpGFF(file, encoding);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return -1;
@@ -55,7 +59,9 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file) {
+bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
+                      Common::Encoding &encoding) {
+
 	file.clear();
 
 	if (argc < 2) {
@@ -67,6 +73,8 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 
 	bool optionsEnd = false;
 	for (int i = 1; i < argc; i++) {
+		bool isOption = false;
+
 		// A "--" marks an end to all options
 		if (!strcmp(argv[i], "--")) {
 			optionsEnd = true;
@@ -83,14 +91,25 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 				return false;
 			}
 
-			// An options, but we already checked for all known ones
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			if (!strcmp(argv[i], "--cp1252")) {
+				// Set the GFF4 string encoding to CP1252
+
+				isOption = true;
+				encoding = Common::kEncodingCP1252;
+
+			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			  // An options, but we already checked for all known ones
+
 				printUsage(stderr, argv[0]);
 				returnValue = -1;
 
 				return false;
 			}
 		}
+
+		// Was this a valid option? If so, don't try to use it as a file
+		if (isOption)
+			continue;
 
 		// We already have a file => error
 		if (!file.empty()) {
@@ -119,15 +138,16 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare GFF to XML converter\n\n");
 	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n");
 }
 
-void dumpGFF(const Common::UString &file) {
+void dumpGFF(const Common::UString &file, Common::Encoding encoding) {
 	Common::File gff(file);
 
 	XML::GFFDumper *dumper = XML::GFFDumper::identify(gff);
 
 	Common::StdOutStream xml;
-	dumper->dump(xml, gff);
+	dumper->dump(xml, gff, encoding);
 
 	delete dumper;
 }

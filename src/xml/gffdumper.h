@@ -25,6 +25,8 @@
 #ifndef XML_GFFDUMPER_H
 #define XML_GFFDUMPER_H
 
+#include "src/common/encoding.h"
+
 namespace Common {
 	class SeekableReadStream;
 	class WriteStream;
@@ -41,7 +43,8 @@ public:
 	static GFFDumper *identify(Common::SeekableReadStream &input);
 
 	/** Dump the GFF into XML. */
-	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream &input) = 0;
+	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+	                  Common::Encoding encoding) = 0;
 };
 
 } // End of namespace XML

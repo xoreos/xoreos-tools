@@ -55,7 +55,11 @@ void GFF4Dumper::clear() {
 	_structIDs.clear();
 }
 
-void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input) {
+void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+                      Common::Encoding encoding) {
+
+	_encoding = encoding;
+
 	try {
 		_gff4 = new Aurora::GFF4File(input);
 		_xml  = new XMLWriter(output);
@@ -205,7 +209,7 @@ void GFF4Dumper::dumpFieldDouble(const GFF4Field &field) {
 
 void GFF4Dumper::dumpFieldString(const GFF4Field &field) {
 	std::vector<Common::UString> values;
-	if (!field.strct->getString(field.field, values))
+	if (!field.strct->getString(field.field, _encoding, values))
 		throw Common::Exception(Common::kReadError);
 
 	if (field.isList && !values.empty())
@@ -222,7 +226,7 @@ void GFF4Dumper::dumpFieldTlk(const GFF4Field &field) {
 	std::vector<uint32> strRefs;
 	std::vector<Common::UString> strs;
 
-	if (!field.strct->getTalkString(field.field, strRefs, strs))
+	if (!field.strct->getTalkString(field.field, _encoding, strRefs, strs))
 		throw Common::Exception(Common::kReadError);
 
 	if (field.isList && !strRefs.empty())
