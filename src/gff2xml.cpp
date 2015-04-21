@@ -124,8 +124,10 @@ void printUsage(FILE *stream, const char *name) {
 void dumpGFF(const Common::UString &file) {
 	Common::File gff(file);
 
-	XML::GFFDumper dumper;
+	XML::GFFDumper *dumper = XML::GFFDumper::identify(gff);
 
 	Common::StdOutStream xml;
-	dumper.dump(xml, gff);
+	dumper->dump(xml, gff);
+
+	delete dumper;
 }

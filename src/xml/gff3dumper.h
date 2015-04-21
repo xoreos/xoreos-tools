@@ -19,31 +19,47 @@
  */
 
 /** @file
- *  Dump GFFs into XML files.
+ *  Dump GFF V3.2/V3.3 into XML files.
  */
 
-#ifndef XML_GFFDUMPER_H
-#define XML_GFFDUMPER_H
+#ifndef XML_GFF3DUMPER_H
+#define XML_GFF3DUMPER_H
 
-namespace Common {
-	class SeekableReadStream;
-	class WriteStream;
+#include "src/common/ustring.h"
+
+#include "src/aurora/types.h"
+
+#include "src/xml/gffdumper.h"
+
+namespace Aurora {
+	class LocString;
 }
 
 namespace XML {
 
-class GFFDumper {
-public:
-	GFFDumper();
-	virtual ~GFFDumper();
+class XMLWriter;
 
-	/** Factory function: identifies the version of the GFF and returns a proper dumper instance. */
-	static GFFDumper *identify(Common::SeekableReadStream &input);
+/** Dump GFF V3.2/V3.3 into XML files. */
+class GFF3Dumper : public GFFDumper {
+public:
+	GFF3Dumper();
+	~GFF3Dumper();
 
 	/** Dump the GFF into XML. */
-	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream &input) = 0;
+	void dump(Common::WriteStream &output, Common::SeekableReadStream &input);
+
+private:
+	Aurora::GFFFile *_gff;
+	XMLWriter *_xml;
+
+	void dumpLocString(const Aurora::LocString &locString);
+	void dumpField(const Aurora::GFFStruct &strct, const Common::UString &field);
+	void dumpStruct(const Aurora::GFFStruct &strct, const Common::UString &label = "");
+	void dumpList(const Aurora::GFFList &list);
+
+	void clear();
 };
 
 } // End of namespace XML
 
-#endif // XML_GFFDUMPER_H
+#endif // XML_GFF3DUMPER_H

@@ -26,69 +26,73 @@
 #include "src/common/util.h"
 #include "src/common/error.h"
 
-#include "src/aurora/locstring.h"
-#include "src/aurora/gfffile.h"
+#include "src/aurora/types.h"
 
-#include "src/xml/xmlwriter.h"
 #include "src/xml/gffdumper.h"
+#include "src/xml/gff3dumper.h"
+#include "src/xml/gff4dumper.h"
 
 struct GFFType {
 	Aurora::FileType type;
 	uint32 id;
-	const char *name;
 };
 
 static const GFFType kGFFTypes[] = {
-	{Aurora::kFileTypeRES , MKTAG('R', 'E', 'S', ' '), "RES"},
-	{Aurora::kFileTypeARE , MKTAG('A', 'R', 'E', ' '), "ARE"},
-	{Aurora::kFileTypeIFO , MKTAG('I', 'F', 'O', ' '), "IFO"},
-	{Aurora::kFileTypeBIC , MKTAG('B', 'I', 'C', ' '), "BIC"},
-	{Aurora::kFileTypeGIT , MKTAG('G', 'I', 'T', ' '), "GIT"},
-	{Aurora::kFileTypeBTI , MKTAG('B', 'T', 'I', ' '), "BTI"},
-	{Aurora::kFileTypeUTI , MKTAG('U', 'T', 'I', ' '), "UTI"},
-	{Aurora::kFileTypeBTC , MKTAG('B', 'T', 'C', ' '), "BTC"},
-	{Aurora::kFileTypeUTC , MKTAG('U', 'T', 'C', ' '), "UTC"},
-	{Aurora::kFileTypeDLG , MKTAG('D', 'L', 'G', ' '), "DLG"},
-	{Aurora::kFileTypeITP , MKTAG('I', 'T', 'P', ' '), "ITP"},
-	{Aurora::kFileTypeBTT , MKTAG('B', 'T', 'T', ' '), "BTT"},
-	{Aurora::kFileTypeUTT , MKTAG('U', 'T', 'T', ' '), "UTT"},
-	{Aurora::kFileTypeBTS , MKTAG('B', 'T', 'S', ' '), "BTS"},
-	{Aurora::kFileTypeUTS , MKTAG('U', 'T', 'S', ' '), "UTS"},
-	{Aurora::kFileTypeGFF , MKTAG('G', 'F', 'F', ' '), "GFF"},
-	{Aurora::kFileTypeFAC , MKTAG('F', 'A', 'C', ' '), "FAC"},
-	{Aurora::kFileTypeBTE , MKTAG('B', 'T', 'E', ' '), "BTE"},
-	{Aurora::kFileTypeUTE , MKTAG('U', 'T', 'E', ' '), "UTE"},
-	{Aurora::kFileTypeBTD , MKTAG('B', 'T', 'D', ' '), "BTD"},
-	{Aurora::kFileTypeUTD , MKTAG('U', 'T', 'D', ' '), "UTD"},
-	{Aurora::kFileTypeBTP , MKTAG('B', 'T', 'P', ' '), "BTP"},
-	{Aurora::kFileTypeUTP , MKTAG('U', 'T', 'P', ' '), "UTP"},
-	{Aurora::kFileTypeGIC , MKTAG('G', 'I', 'C', ' '), "GIC"},
-	{Aurora::kFileTypeGUI , MKTAG('G', 'U', 'I', ' '), "GUI"},
-	{Aurora::kFileTypeBTM , MKTAG('B', 'T', 'M', ' '), "BTM"},
-	{Aurora::kFileTypeUTM , MKTAG('U', 'T', 'M', ' '), "UTM"},
-	{Aurora::kFileTypeBTG , MKTAG('B', 'T', 'G', ' '), "BTG"},
-	{Aurora::kFileTypeUTG , MKTAG('U', 'T', 'G', ' '), "UTG"},
-	{Aurora::kFileTypeJRL , MKTAG('J', 'R', 'L', ' '), "JRL"},
-	{Aurora::kFileTypeUTW , MKTAG('U', 'T', 'W', ' '), "UTW"},
-	{Aurora::kFileTypePTM , MKTAG('P', 'T', 'M', ' '), "PTM"},
-	{Aurora::kFileTypePTT , MKTAG('P', 'T', 'T', ' '), "PTT"},
-	{Aurora::kFileTypeCUT , MKTAG('C', 'U', 'T', ' '), "CUT"},
-	{Aurora::kFileTypeQDB , MKTAG('Q', 'D', 'B', ' '), "QDB"},
-	{Aurora::kFileTypeQST , MKTAG('Q', 'S', 'T', ' '), "QST"},
-	{Aurora::kFileTypePTH , MKTAG('P', 'T', 'H', ' '), "PTH"},
-	{Aurora::kFileTypeQST2, MKTAG('Q', 'S', 'T', ' '), "QST"},
-	{Aurora::kFileTypeSTO , MKTAG('S', 'T', 'O', ' '), "STO"},
-	{Aurora::kFileTypeUTR , MKTAG('U', 'T', 'R', ' '), "UTR"},
-	{Aurora::kFileTypeULT , MKTAG('U', 'L', 'T', ' '), "ULT"},
-	{Aurora::kFileTypeGDA , MKTAG('G', 'D', 'A', ' '), "GDA"},
-	{Aurora::kFileTypeCRE , MKTAG('C', 'R', 'E', ' '), "CRE"},
-	{Aurora::kFileTypeCAM , MKTAG('C', 'A', 'M', ' '), "CAM"},
-	{Aurora::kFileTypeFSM , MKTAG('F', 'S', 'M', ' '), "FSM"},
-	{Aurora::kFileTypePLA , MKTAG('P', 'L', 'A', ' '), "PLA"},
-	{Aurora::kFileTypeTRG , MKTAG('T', 'R', 'G', ' '), "TRG"},
-	{Aurora::kFileTypeWMP , MKTAG('W', 'M', 'P', ' '), "WMP"},
-	{Aurora::kFileTypeMMD , MKTAG('M', 'M', 'D', ' '), "MMD"}
+	{Aurora::kFileTypeRES , MKTAG('R', 'E', 'S', ' ')},
+	{Aurora::kFileTypeARE , MKTAG('A', 'R', 'E', ' ')},
+	{Aurora::kFileTypeIFO , MKTAG('I', 'F', 'O', ' ')},
+	{Aurora::kFileTypeBIC , MKTAG('B', 'I', 'C', ' ')},
+	{Aurora::kFileTypeGIT , MKTAG('G', 'I', 'T', ' ')},
+	{Aurora::kFileTypeBTI , MKTAG('B', 'T', 'I', ' ')},
+	{Aurora::kFileTypeUTI , MKTAG('U', 'T', 'I', ' ')},
+	{Aurora::kFileTypeBTC , MKTAG('B', 'T', 'C', ' ')},
+	{Aurora::kFileTypeUTC , MKTAG('U', 'T', 'C', ' ')},
+	{Aurora::kFileTypeDLG , MKTAG('D', 'L', 'G', ' ')},
+	{Aurora::kFileTypeITP , MKTAG('I', 'T', 'P', ' ')},
+	{Aurora::kFileTypeBTT , MKTAG('B', 'T', 'T', ' ')},
+	{Aurora::kFileTypeUTT , MKTAG('U', 'T', 'T', ' ')},
+	{Aurora::kFileTypeBTS , MKTAG('B', 'T', 'S', ' ')},
+	{Aurora::kFileTypeUTS , MKTAG('U', 'T', 'S', ' ')},
+	{Aurora::kFileTypeGFF , MKTAG('G', 'F', 'F', ' ')},
+	{Aurora::kFileTypeFAC , MKTAG('F', 'A', 'C', ' ')},
+	{Aurora::kFileTypeBTE , MKTAG('B', 'T', 'E', ' ')},
+	{Aurora::kFileTypeUTE , MKTAG('U', 'T', 'E', ' ')},
+	{Aurora::kFileTypeBTD , MKTAG('B', 'T', 'D', ' ')},
+	{Aurora::kFileTypeUTD , MKTAG('U', 'T', 'D', ' ')},
+	{Aurora::kFileTypeBTP , MKTAG('B', 'T', 'P', ' ')},
+	{Aurora::kFileTypeUTP , MKTAG('U', 'T', 'P', ' ')},
+	{Aurora::kFileTypeGIC , MKTAG('G', 'I', 'C', ' ')},
+	{Aurora::kFileTypeGUI , MKTAG('G', 'U', 'I', ' ')},
+	{Aurora::kFileTypeBTM , MKTAG('B', 'T', 'M', ' ')},
+	{Aurora::kFileTypeUTM , MKTAG('U', 'T', 'M', ' ')},
+	{Aurora::kFileTypeBTG , MKTAG('B', 'T', 'G', ' ')},
+	{Aurora::kFileTypeUTG , MKTAG('U', 'T', 'G', ' ')},
+	{Aurora::kFileTypeJRL , MKTAG('J', 'R', 'L', ' ')},
+	{Aurora::kFileTypeUTW , MKTAG('U', 'T', 'W', ' ')},
+	{Aurora::kFileTypePTM , MKTAG('P', 'T', 'M', ' ')},
+	{Aurora::kFileTypePTT , MKTAG('P', 'T', 'T', ' ')},
+	{Aurora::kFileTypeCUT , MKTAG('C', 'U', 'T', ' ')},
+	{Aurora::kFileTypeQDB , MKTAG('Q', 'D', 'B', ' ')},
+	{Aurora::kFileTypeQST , MKTAG('Q', 'S', 'T', ' ')},
+	{Aurora::kFileTypePTH , MKTAG('P', 'T', 'H', ' ')},
+	{Aurora::kFileTypeQST2, MKTAG('Q', 'S', 'T', ' ')},
+	{Aurora::kFileTypeSTO , MKTAG('S', 'T', 'O', ' ')},
+	{Aurora::kFileTypeUTR , MKTAG('U', 'T', 'R', ' ')},
+	{Aurora::kFileTypeULT , MKTAG('U', 'L', 'T', ' ')},
+	{Aurora::kFileTypeGDA , MKTAG('G', 'D', 'A', ' ')},
+	{Aurora::kFileTypeCRE , MKTAG('C', 'R', 'E', ' ')},
+	{Aurora::kFileTypeCAM , MKTAG('C', 'A', 'M', ' ')},
+	{Aurora::kFileTypeFSM , MKTAG('F', 'S', 'M', ' ')},
+	{Aurora::kFileTypePLA , MKTAG('P', 'L', 'A', ' ')},
+	{Aurora::kFileTypeTRG , MKTAG('T', 'R', 'G', ' ')},
+	{Aurora::kFileTypeWMP , MKTAG('W', 'M', 'P', ' ')},
+	{Aurora::kFileTypeMMD , MKTAG('M', 'M', 'D', ' ')}
 };
+
+static const uint32 kVersion32 = MKTAG('V', '3', '.', '2');
+static const uint32 kVersion33 = MKTAG('V', '3', '.', '3');
+static const uint32 kVersion40 = MKTAG('V', '4', '.', '0');
+static const uint32 kVersion41 = MKTAG('V', '4', '.', '1');
 
 namespace XML {
 
@@ -98,244 +102,40 @@ GFFDumper::GFFDumper() {
 GFFDumper::~GFFDumper() {
 }
 
-void GFFDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input) {
-	Aurora::FileType type = identify(input);
-	if (type == Aurora::kFileTypeNone)
+static int identifyGFF(Common::SeekableReadStream &input, uint32 &version) {
+	try {
+		uint32 pos = input.pos();
+
+		uint32 id;
+		id      = input.readUint32BE();
+		version = input.readUint32BE();
+
+		if (input.err() || input.eos())
+			return -1;
+
+		input.seek(pos);
+
+		for (int i = 0; i < ARRAYSIZE(kGFFTypes); i++)
+			if (kGFFTypes[i].id == id)
+				return i;
+	} catch (...) {
+	}
+
+	return -1;
+}
+
+GFFDumper *GFFDumper::identify(Common::SeekableReadStream &input) {
+	uint32 version;
+	int type = identifyGFF(input, version);
+	if (type < 0)
 		throw Common::Exception("Not a GFF file");
 
-	Aurora::GFFFile gff(input, getID(type));
-
-	XMLWriter xmlWriter(output);
-
-	xmlWriter.openTag("gff");
-	xmlWriter.addProperty("type", getTypeName(type));
-	xmlWriter.breakLine();
-
-	dumpStruct(xmlWriter, gff.getTopLevel());
-
-	xmlWriter.closeTag();
-	xmlWriter.breakLine();
-
-	xmlWriter.flush();
-}
-
-Aurora::FileType GFFDumper::identify(Common::SeekableReadStream &input) {
-	uint32 pos = input.pos();
-	uint32 id  = input.readUint32BE();
-	input.seek(pos);
-
-	for (uint i = 0; i < ARRAYSIZE(kGFFTypes); i++)
-		if (kGFFTypes[i].id == id)
-			return kGFFTypes[i].type;
-
-	return Aurora::kFileTypeNone;
-}
-
-uint32 GFFDumper::getID(Aurora::FileType type) {
-	for (uint i = 0; i < ARRAYSIZE(kGFFTypes); i++)
-		if (kGFFTypes[i].type == type)
-			return kGFFTypes[i].id;
-
-	return 0;
-}
-
-Common::UString GFFDumper::getTypeName(Aurora::FileType type) {
-	for (uint i = 0; i < ARRAYSIZE(kGFFTypes); i++)
-		if (kGFFTypes[i].type == type)
-			return kGFFTypes[i].name;
-
-	return "";
-}
-
-void GFFDumper::dumpStruct(XMLWriter &xml, const Aurora::GFFStruct &strct, const Common::UString &label) {
-	xml.openTag("struct");
-	xml.addProperty("label", label);
-	xml.addProperty("id", Common::UString::sprintf("%u", strct.getID()));
-	xml.breakLine();
-
-	for (Aurora::GFFStruct::iterator f = strct.begin(); f != strct.end(); ++f)
-		dumpField(xml, strct, *f);
-
-	xml.closeTag();
-	xml.breakLine();
-}
-
-static const char *kGFFFieldTypeNames[] = {
-	"byte",
-	"char",
-	"uint16",
-	"sint16",
-	"uint32",
-	"sint32",
-	"uint64",
-	"sint64",
-	"float",
-	"double",
-	"exostring",
-	"resref",
-	"locstring",
-	"data",
-	"struct",
-	"list",
-	"orientation",
-	"vector",
-	"strref"
-};
-
-void GFFDumper::dumpField(XMLWriter &xml, const Aurora::GFFStruct &strct, const Common::UString &field) {
-	Aurora::GFFStruct::FieldType type = strct.getType(field);
-
-	Common::UString typeName;
-	if ((type >= 0) && (type < ARRAYSIZE(kGFFFieldTypeNames)))
-		typeName = kGFFFieldTypeNames[(int)type];
+	if      ((version == kVersion32) || (version == kVersion33))
+		return new GFF3Dumper();
+	else if ((version == kVersion40) || (version == kVersion41))
+		return new GFF4Dumper();
 	else
-		typeName = Common::UString::sprintf("fieldtype%d", (int)type);
-
-	Common::UString label = field;
-
-	// Structs already open their own tag
-	if (type != Aurora::GFFStruct::kFieldTypeStruct) {
-		xml.openTag(typeName);
-		xml.addProperty("label", label);
-	}
-
-	switch (type) {
-		case Aurora::GFFStruct::kFieldTypeChar:
-			xml.setContents(Common::UString::sprintf("%c", strct.getChar(field)));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeByte:
-		case Aurora::GFFStruct::kFieldTypeUint16:
-		case Aurora::GFFStruct::kFieldTypeUint32:
-		case Aurora::GFFStruct::kFieldTypeUint64:
-			xml.setContents(Common::UString::sprintf("%"PRIu64, Cu64(strct.getUint(field))));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeSint16:
-		case Aurora::GFFStruct::kFieldTypeSint32:
-		case Aurora::GFFStruct::kFieldTypeSint64:
-			xml.setContents(Common::UString::sprintf("%"PRId64, Cd64(strct.getSint(field))));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeFloat:
-		case Aurora::GFFStruct::kFieldTypeDouble:
-			xml.setContents(Common::UString::sprintf("%.6f", strct.getDouble(field)));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeExoString:
-		case Aurora::GFFStruct::kFieldTypeResRef:
-		case Aurora::GFFStruct::kFieldTypeStrRef:
-			xml.setContents(strct.getString(field));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeLocString:
-			{
-				Aurora::LocString locString;
-
-				strct.getLocString(field, locString);
-				xml.addProperty("strref", Common::UString::sprintf("%u", locString.getID()));
-				xml.breakLine();
-
-				dumpLocString(xml, locString);
-			}
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeVoid:
-			xml.setContents(*strct.getData(field));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeStruct:
-			dumpStruct(xml, strct.getStruct(field), label);
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeList:
-			xml.breakLine();
-			dumpList(xml, strct.getList(field));
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeOrientation:
-			{
-				double a, b, c, d;
-
-				strct.getOrientation(field, a, b, c, d);
-
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", a));
-				xml.closeTag();
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", b));
-				xml.closeTag();
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", c));
-				xml.closeTag();
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", d));
-				xml.closeTag();
-				xml.breakLine();
-			}
-			break;
-
-		case Aurora::GFFStruct::kFieldTypeVector:
-			{
-				double x, y, z;
-
-				strct.getVector(field, x, y, z);
-
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", x));
-				xml.closeTag();
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", y));
-				xml.closeTag();
-				xml.breakLine();
-
-				xml.openTag("double");
-				xml.setContents(Common::UString::sprintf("%.6f", z));
-				xml.closeTag();
-				xml.breakLine();
-			}
-			break;
-
-		default:
-			break;
-	}
-
-	// Structs already close their own tag
-	if (type != Aurora::GFFStruct::kFieldTypeStruct) {
-		xml.closeTag();
-		xml.breakLine();
-	}
-}
-
-void GFFDumper::dumpList(XMLWriter &xml, const Aurora::GFFList &list) {
-	for (Aurora::GFFList::const_iterator e = list.begin(); e != list.end(); ++e)
-		dumpStruct(xml, **e);
-}
-
-void GFFDumper::dumpLocString(XMLWriter &xml, const Aurora::LocString &locString) {
-	std::vector<Aurora::LocString::SubLocString> str;
-	locString.getStrings(str);
-
-	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
-		xml.openTag("string");
-		xml.addProperty("language", Common::UString::sprintf("%u", s->language));
-
-		xml.setContents(s->str);
-		xml.closeTag();
-		xml.breakLine();
-	}
+		throw Common::Exception("Invalid GFF version 0x%08X", version);
 }
 
 } // End of namespace XML
