@@ -112,6 +112,8 @@ private:
 	void readStructs();
 	void readLists();
 
+	void clear();
+
 	friend class GFFStruct;
 };
 
