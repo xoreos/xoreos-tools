@@ -124,6 +124,10 @@ void GFFFile::load(uint32 id) {
 
 }
 
+uint32 GFFFile::getType() const {
+	return _id;
+}
+
 const GFFStruct &GFFFile::getTopLevel() const {
 	return getStruct(0);
 }

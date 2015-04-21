@@ -51,6 +51,8 @@ public:
 	GFFFile(Common::SeekableReadStream &gff, uint32 id);
 	~GFFFile();
 
+	uint32 getType() const;
+
 	/** Returns the top-level struct. */
 	const GFFStruct &getTopLevel() const;
 
