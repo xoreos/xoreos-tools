@@ -17,6 +17,7 @@ noinst_HEADERS = \
                  herffile.h \
                  locstring.h \
                  gfffile.h \
+                 gff4file.h \
                  $(EMPTY)
 
 libaurora_la_SOURCES = \
@@ -33,4 +34,5 @@ libaurora_la_SOURCES = \
                        herffile.cpp \
                        locstring.cpp \
                        gfffile.cpp \
+                       gff4file.cpp \
                        $(EMPTY)
