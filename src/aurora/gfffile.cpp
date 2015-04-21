@@ -95,7 +95,7 @@ void GFFFile::load(uint32 id) {
 
 	try {
 
-		if (_id != id)
+		if ((id != 0xFFFFFFFF) && (_id != id))
 			throw Common::Exception("GFF has invalid ID (want 0x%08X, got 0x%08X)", id, _id);
 		if ((_version != kVersion32) && (_version != kVersion33))
 			throw Common::Exception("Unsupported GFF file version %08X", _version);
