@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Dump GFFs into XML files.
+ *  Dump GFF V3.2/V3.3 into XML files.
  */
 
 #include "src/common/stream.h"
