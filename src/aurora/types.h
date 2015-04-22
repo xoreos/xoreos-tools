@@ -26,7 +26,6 @@
 #define AURORA_TYPES_H
 
 #include <vector>
-#include <list>
 
 #include "src/common/types.h"
 
@@ -380,7 +379,7 @@ class TwoDAFile;
 class TwoDARow;
 
 class GFFStruct;
-typedef std::list<GFFStruct *> GFFList;
+typedef std::vector<GFFStruct *> GFFList;
 class GFFFile;
 
 class GFF4Struct;
