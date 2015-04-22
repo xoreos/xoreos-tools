@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Handling version 4.0/4.1 of BioWare's GFFs (generic file format).
+ *  Handling version V4.0/V4.1 of BioWare's GFFs (generic file format).
  */
 
 #include "src/common/error.h"
