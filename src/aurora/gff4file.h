@@ -363,4 +363,4 @@ private:
 
 } // End of namespace Aurora
 
-#endif // AURORA_GFFFILE_H
+#endif // AURORA_GFF4FILE_H
