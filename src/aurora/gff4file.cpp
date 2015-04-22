@@ -107,8 +107,10 @@ void GFF4File::load() {
 		if (_stream->err() || _stream->eos())
 			throw Common::Exception(Common::kReadError);
 
-	} catch (...) {
+	} catch (Common::Exception &e) {
 		clear();
+
+		e.add("Failed reading GFF4 file");
 		throw;
 	}
 }
@@ -194,7 +196,7 @@ void GFF4File::registerStruct(uint32 offset, GFF4Struct *strct) {
 
 	result = _structs.insert(std::make_pair(offset, strct));
 	if (!result.second)
-		throw Common::Exception("Duplicate GFF4 struct");
+		throw Common::Exception("GFF4: Duplicate struct");
 }
 
 void GFF4File::unregisterStruct(uint32 offset) {
