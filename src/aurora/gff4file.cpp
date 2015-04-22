@@ -265,7 +265,7 @@ GFF4Struct::Field::~Field() {
 
 
 GFF4Struct::GFF4Struct(GFF4File &parent, uint32 offset, const GFF4File::StructTemplate &tmplt) :
-	_parent(&parent), _id(offset), _refCount(0) {
+	_parent(&parent), _label(tmplt.label), _id(offset), _refCount(0) {
 
 	parent.registerStruct(offset, this);
 
@@ -278,7 +278,7 @@ GFF4Struct::GFF4Struct(GFF4File &parent, uint32 offset, const GFF4File::StructTe
 }
 
 GFF4Struct::GFF4Struct(GFF4File &parent, const Field &genericParent) :
-	_parent(&parent), _id(genericParent.offset), _refCount(0) {
+	_parent(&parent), _label(0), _id(genericParent.offset), _refCount(0) {
 
 	parent.registerStruct(genericParent.offset, this);
 
@@ -300,8 +300,6 @@ uint32 GFF4Struct::getLabel() const {
 // --- Loader ---
 
 void GFF4Struct::load(GFF4File &parent, uint32 offset, const GFF4File::StructTemplate &tmplt) {
-	_label = tmplt.label;
-
 	for (uint32 i = 0; i < tmplt.fields.size(); i++) {
 		const GFF4File::StructTemplate::Field &field = tmplt.fields[i];
 
@@ -364,14 +362,13 @@ void GFF4Struct::loadGeneric(GFF4File &parent, Field &field) {
 }
 
 void GFF4Struct::load(GFF4File &parent, const Field &genericParent) {
-	_label = 0;
+	static const uint32 kGenericSize = 8;
 
 	Common::SeekableReadStream &data = parent.getStream(genericParent.offset);
 
 	const uint32 genericCount = genericParent.isList ? data.readUint32LE() : 1;
 	const uint32 genericStart = data.pos();
 
-	static const uint32 kGenericSize = 8;
 	for (uint32 i = 0; i < genericCount; i++) {
 		data.seek(genericStart + i * kGenericSize);
 
