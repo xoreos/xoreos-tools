@@ -90,9 +90,6 @@ private:
 	StructArray _structs; ///< Our structs.
 	ListArray   _lists;   ///< Our lists.
 
-	/** The size of each GFF list. */
-	std::vector<uint32> _listSizes;
-
 	/** To convert list offsets found in GFF to real indices. */
 	std::vector<uint32> _listOffsetToIndex;
 
