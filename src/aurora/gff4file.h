@@ -138,7 +138,7 @@ private:
 	void unregisterStruct(uint32 offset);
 	GFF4Struct *findStruct(uint32 offset);
 
-	Common::SeekableReadStream &getStream() const;
+	Common::SeekableReadStream &getStream(uint32 offset) const;
 	const StructTemplate &getStructTemplate(uint32 i) const;
 	uint32 getDataOffset() const;
 

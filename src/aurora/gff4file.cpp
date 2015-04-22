@@ -209,7 +209,9 @@ GFF4Struct *GFF4File::findStruct(uint32 offset) {
 	return s->second;
 }
 
-Common::SeekableReadStream &GFF4File::getStream() const {
+Common::SeekableReadStream &GFF4File::getStream(uint32 offset) const {
+	_stream->seek(offset);
+
 	return *_stream;
 }
 
@@ -323,10 +325,9 @@ void GFF4Struct::loadStructs(GFF4File &parent, Field &field) {
 	if (field.offset == 0xFFFFFFFF)
 		return;
 
-	Common::SeekableReadStream &data = parent.getStream();
-	data.seek(field.offset);
-
 	const GFF4File::StructTemplate &tmplt = parent.getStructTemplate(field.structIndex);
+
+	Common::SeekableReadStream &data = parent.getStream(field.offset);
 
 	const uint32 structCount = getListCount(data, field);
 	const uint32 structSize  = field.isReference ? 4 : tmplt.size;
@@ -365,14 +366,12 @@ void GFF4Struct::loadGeneric(GFF4File &parent, Field &field) {
 void GFF4Struct::load(GFF4File &parent, const Field &genericParent) {
 	_label = 0;
 
-	Common::SeekableReadStream &data = parent.getStream();
-	data.seek(genericParent.offset);
-
-	static const uint32 kGenericSize = 8;
+	Common::SeekableReadStream &data = parent.getStream(genericParent.offset);
 
 	const uint32 genericCount = genericParent.isList ? data.readUint32LE() : 1;
 	const uint32 genericStart = data.pos();
 
+	static const uint32 kGenericSize = 8;
 	for (uint32 i = 0; i < genericCount; i++) {
 		data.seek(genericStart + i * kGenericSize);
 
@@ -457,8 +456,7 @@ uint32 GFF4Struct::getDataOffset(bool isReference, uint32 offset) const {
 	if (!isReference || (offset == 0xFFFFFFFF))
 		return offset;
 
-	Common::SeekableReadStream &data = _parent->getStream();
-	data.seek(offset);
+	Common::SeekableReadStream &data = _parent->getStream(offset);
 
 	offset = data.readUint32LE();
 	if (offset == 0xFFFFFFFF)
@@ -475,15 +473,11 @@ uint32 GFF4Struct::getDataOffset(const Field &field) const {
 }
 
 Common::SeekableReadStream *GFF4Struct::getData(const Field &field) const {
-	Common::SeekableReadStream &data = _parent->getStream();
-
 	const uint32 offset = getDataOffset(field);
 	if (offset == 0xFFFFFFFF)
 		return 0;
 
-	data.seek(offset);
-
-	return &data;
+	return &_parent->getStream(offset);
 }
 
 Common::SeekableReadStream *GFF4Struct::getField(uint32 fieldID, const Field *&field) const {
