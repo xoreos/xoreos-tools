@@ -29,7 +29,6 @@
 #include "src/common/ustring.h"
 
 #include "src/aurora/gff3file.h"
-#include "src/aurora/error.h"
 #include "src/aurora/util.h"
 #include "src/aurora/locstring.h"
 
