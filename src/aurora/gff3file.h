@@ -203,14 +203,13 @@ private:
 	uint32 _fieldIndex; ///< Field / Field indices index.
 	uint32 _fieldCount; ///< Field count.
 
-	mutable FieldMap _fields; ///< The fields, indexed by their label.
+	FieldMap      _fields;     ///< The fields, indexed by their label.
+	FieldNameList _fieldNames;
 
-	mutable FieldNameList _fieldNames;
-
-	GFF3Struct(const GFF3File &parent, Common::SeekableReadStream &gff);
+	GFF3Struct(const GFF3File &parent, uint32 offset);
 	~GFF3Struct();
 
-	void load() const;
+	void load(uint32 offset);
 
 	/** Returns the field with this tag. */
 	const Field *getField(const Common::UString &name) const;
@@ -218,8 +217,8 @@ private:
 	Common::SeekableReadStream &getData(const Field &field) const;
 
 	// Loading helpers
-	void readField  (Common::SeekableReadStream &gff, uint32 index) const;
-	void readFields (Common::SeekableReadStream &gff, uint32 index, uint32 count) const;
+	void readField  (Common::SeekableReadStream &gff, uint32 index);
+	void readFields (Common::SeekableReadStream &gff, uint32 index, uint32 count);
 	void readIndices(Common::SeekableReadStream &gff,
 	                 std::vector<uint32> &indices, uint32 count) const;
 	Common::UString readLabel(Common::SeekableReadStream &gff, uint32 index) const;
