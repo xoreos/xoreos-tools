@@ -28,7 +28,7 @@
 #include "src/common/encoding.h"
 #include "src/common/ustring.h"
 
-#include "src/aurora/gfffile.h"
+#include "src/aurora/gff3file.h"
 #include "src/aurora/error.h"
 #include "src/aurora/util.h"
 #include "src/aurora/locstring.h"
@@ -38,11 +38,11 @@ static const uint32 kVersion33 = MKTAG('V', '3', '.', '3'); // Found in The Witc
 
 namespace Aurora {
 
-GFFFile::Header::Header() {
+GFF3File::Header::Header() {
 	clear();
 }
 
-void GFFFile::Header::clear() {
+void GFF3File::Header::clear() {
 	structOffset       = 0;
 	structCount        = 0;
 	fieldOffset        = 0;
@@ -57,7 +57,7 @@ void GFFFile::Header::clear() {
 	listIndicesCount   = 0;
 }
 
-void GFFFile::Header::read(Common::SeekableReadStream &gff) {
+void GFF3File::Header::read(Common::SeekableReadStream &gff) {
 	structOffset       = gff.readUint32LE();
 	structCount        = gff.readUint32LE();
 	fieldOffset        = gff.readUint32LE();
@@ -73,15 +73,15 @@ void GFFFile::Header::read(Common::SeekableReadStream &gff) {
 }
 
 
-GFFFile::GFFFile(Common::SeekableReadStream &gff, uint32 id) : _stream(&gff) {
+GFF3File::GFF3File(Common::SeekableReadStream &gff, uint32 id) : _stream(&gff) {
 	load(id);
 }
 
-GFFFile::~GFFFile() {
+GFF3File::~GFF3File() {
 	clear();
 }
 
-void GFFFile::clear() {
+void GFF3File::clear() {
 	_stream = 0;
 
 	for (StructArray::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
@@ -90,7 +90,7 @@ void GFFFile::clear() {
 	_structs.clear();
 }
 
-void GFFFile::load(uint32 id) {
+void GFF3File::load(uint32 id) {
 	readHeader(*_stream);
 
 	try {
@@ -124,21 +124,21 @@ void GFFFile::load(uint32 id) {
 
 }
 
-uint32 GFFFile::getType() const {
+uint32 GFF3File::getType() const {
 	return _id;
 }
 
-const GFFStruct &GFFFile::getTopLevel() const {
+const GFF3Struct &GFF3File::getTopLevel() const {
 	return getStruct(0);
 }
 
-const GFFStruct &GFFFile::getStruct(uint32 i) const {
+const GFF3Struct &GFF3File::getStruct(uint32 i) const {
 	assert(i < _structs.size());
 
 	return *_structs[i];
 }
 
-const GFFList &GFFFile::getList(uint32 i) const {
+const GFF3List &GFF3File::getList(uint32 i) const {
 	assert(i < _listOffsetToIndex.size());
 
 	i = _listOffsetToIndex[i];
@@ -148,13 +148,13 @@ const GFFList &GFFFile::getList(uint32 i) const {
 	return _lists[i];
 }
 
-void GFFFile::readStructs() {
+void GFF3File::readStructs() {
 	_structs.reserve(_header.structCount);
 	for (uint32 i = 0; i < _header.structCount; i++)
-		_structs.push_back(new GFFStruct(*this, *_stream));
+		_structs.push_back(new GFF3Struct(*this, *_stream));
 }
 
-void GFFFile::readLists() {
+void GFF3File::readLists() {
 	_stream->seek(_header.listIndicesOffset);
 
 	// Read list array
@@ -192,21 +192,21 @@ void GFFFile::readLists() {
 	}
 }
 
-Common::SeekableReadStream &GFFFile::getStream() const {
+Common::SeekableReadStream &GFF3File::getStream() const {
 	return *_stream;
 }
 
-Common::SeekableReadStream &GFFFile::getFieldData() const {
+Common::SeekableReadStream &GFF3File::getFieldData() const {
 	_stream->seek(_header.fieldDataOffset);
 
 	return *_stream;
 }
 
 
-GFFStruct::Field::Field() : type(kFieldTypeNone), data(0), extended(false) {
+GFF3Struct::Field::Field() : type(kFieldTypeNone), data(0), extended(false) {
 }
 
-GFFStruct::Field::Field(FieldType t, uint32 d) : type(t), data(d) {
+GFF3Struct::Field::Field(FieldType t, uint32 d) : type(t), data(d) {
 	// These field types need extended field data
 	extended = (type == kFieldTypeUint64     ) ||
 	           (type == kFieldTypeSint64     ) ||
@@ -221,7 +221,7 @@ GFFStruct::Field::Field(FieldType t, uint32 d) : type(t), data(d) {
 }
 
 
-GFFStruct::GFFStruct(const GFFFile &parent, Common::SeekableReadStream &gff) :
+GFF3Struct::GFF3Struct(const GFF3File &parent, Common::SeekableReadStream &gff) :
 	_parent(&parent) {
 
 	_id         = gff.readUint32LE();
@@ -229,10 +229,10 @@ GFFStruct::GFFStruct(const GFFFile &parent, Common::SeekableReadStream &gff) :
 	_fieldCount = gff.readUint32LE();
 }
 
-GFFStruct::~GFFStruct() {
+GFF3Struct::~GFF3Struct() {
 }
 
-void GFFStruct::load() const {
+void GFF3Struct::load() const {
 	if (!_fields.empty())
 		return;
 
@@ -245,7 +245,7 @@ void GFFStruct::load() const {
 		readFields(gff, _fieldIndex, _fieldCount);
 }
 
-void GFFStruct::readField(Common::SeekableReadStream &gff, uint32 index) const {
+void GFF3Struct::readField(Common::SeekableReadStream &gff, uint32 index) const {
 	// Sanity check
 	if (index > _parent->_header.fieldCount)
 		throw Common::Exception("Field index out of range (%d/%d)",
@@ -267,8 +267,8 @@ void GFFStruct::readField(Common::SeekableReadStream &gff, uint32 index) const {
 	_fieldNames.push_back(name);
 }
 
-void GFFStruct::readFields(Common::SeekableReadStream &gff,
-                           uint32 index, uint32 count) const {
+void GFF3Struct::readFields(Common::SeekableReadStream &gff,
+                            uint32 index, uint32 count) const {
 	// Sanity check
 	if (index > _parent->_header.fieldIndicesCount)
 		throw Common::Exception("Field indices index out of range (%d/%d)",
@@ -286,20 +286,20 @@ void GFFStruct::readFields(Common::SeekableReadStream &gff,
 		readField(gff, *i);
 }
 
-void GFFStruct::readIndices(Common::SeekableReadStream &gff,
-                            std::vector<uint32> &indices, uint32 count) const {
+void GFF3Struct::readIndices(Common::SeekableReadStream &gff,
+                             std::vector<uint32> &indices, uint32 count) const {
 	indices.reserve(count);
 	while (count-- > 0)
 		indices.push_back(gff.readUint32LE());
 }
 
-Common::UString GFFStruct::readLabel(Common::SeekableReadStream &gff, uint32 index) const {
+Common::UString GFF3Struct::readLabel(Common::SeekableReadStream &gff, uint32 index) const {
 	gff.seek(_parent->_header.labelOffset + index * 16);
 
 	return Common::readStringFixed(gff, Common::kEncodingASCII, 16);
 }
 
-Common::SeekableReadStream &GFFStruct::getData(const Field &field) const {
+Common::SeekableReadStream &GFF3Struct::getData(const Field &field) const {
 	assert(field.extended);
 
 	Common::SeekableReadStream &data = _parent->getFieldData();
@@ -309,7 +309,7 @@ Common::SeekableReadStream &GFFStruct::getData(const Field &field) const {
 	return data;
 }
 
-const GFFStruct::Field *GFFStruct::getField(const Common::UString &name) const {
+const GFF3Struct::Field *GFF3Struct::getField(const Common::UString &name) const {
 	FieldMap::const_iterator field = _fields.find(name);
 	if (field == _fields.end())
 		return 0;
@@ -317,19 +317,19 @@ const GFFStruct::Field *GFFStruct::getField(const Common::UString &name) const {
 	return &field->second;
 }
 
-GFFStruct::iterator GFFStruct::begin() const {
+GFF3Struct::iterator GFF3Struct::begin() const {
 	load();
 
 	return _fieldNames.begin();
 }
 
-GFFStruct::iterator GFFStruct::end() const {
+GFF3Struct::iterator GFF3Struct::end() const {
 	load();
 
 	return _fieldNames.end();
 }
 
-GFFStruct::FieldType GFFStruct::getType(const Common::UString &field) const {
+GFF3Struct::FieldType GFF3Struct::getType(const Common::UString &field) const {
 	load();
 
 	const Field *f = getField(field);
@@ -339,21 +339,21 @@ GFFStruct::FieldType GFFStruct::getType(const Common::UString &field) const {
 	return f->type;
 }
 
-uint GFFStruct::getFieldCount() const {
+uint GFF3Struct::getFieldCount() const {
 	return _fields.size();
 }
 
-bool GFFStruct::hasField(const Common::UString &field) const {
+bool GFF3Struct::hasField(const Common::UString &field) const {
 	load();
 
 	return getField(field) != 0;
 }
 
-uint32 GFFStruct::getID() const {
+uint32 GFF3Struct::getID() const {
 	return _id;
 }
 
-char GFFStruct::getChar(const Common::UString &field, char def) const {
+char GFF3Struct::getChar(const Common::UString &field, char def) const {
 	load();
 
 	const Field *f = getField(field);
@@ -365,7 +365,7 @@ char GFFStruct::getChar(const Common::UString &field, char def) const {
 	return (char) f->data;
 }
 
-uint64 GFFStruct::getUint(const Common::UString &field, uint64 def) const {
+uint64 GFF3Struct::getUint(const Common::UString &field, uint64 def) const {
 	load();
 
 	const Field *f = getField(field);
@@ -402,7 +402,7 @@ uint64 GFFStruct::getUint(const Common::UString &field, uint64 def) const {
 	throw Common::Exception("Field is not an int type");
 }
 
-int64 GFFStruct::getSint(const Common::UString &field, int64 def) const {
+int64 GFF3Struct::getSint(const Common::UString &field, int64 def) const {
 	load();
 
 	const Field *f = getField(field);
@@ -439,13 +439,13 @@ int64 GFFStruct::getSint(const Common::UString &field, int64 def) const {
 	throw Common::Exception("Field is not an int type");
 }
 
-bool GFFStruct::getBool(const Common::UString &field, bool def) const {
+bool GFF3Struct::getBool(const Common::UString &field, bool def) const {
 	load();
 
 	return getUint(field, def) != 0;
 }
 
-double GFFStruct::getDouble(const Common::UString &field, double def) const {
+double GFF3Struct::getDouble(const Common::UString &field, double def) const {
 	load();
 
 	const Field *f = getField(field);
@@ -460,8 +460,8 @@ double GFFStruct::getDouble(const Common::UString &field, double def) const {
 	throw Common::Exception("Field is not a double type");
 }
 
-Common::UString GFFStruct::getString(const Common::UString &field,
-                                        const Common::UString &def) const {
+Common::UString GFF3Struct::getString(const Common::UString &field,
+                                      const Common::UString &def) const {
 	load();
 
 	const Field *f = getField(field);
@@ -524,7 +524,7 @@ Common::UString GFFStruct::getString(const Common::UString &field,
 	throw Common::Exception("Field is not a string(able) type");
 }
 
-void GFFStruct::getLocString(const Common::UString &field, LocString &str) const {
+void GFF3Struct::getLocString(const Common::UString &field, LocString &str) const {
 	load();
 
 	const Field *f = getField(field);
@@ -542,7 +542,7 @@ void GFFStruct::getLocString(const Common::UString &field, LocString &str) const
 	str.readLocString(gff);
 }
 
-Common::SeekableReadStream *GFFStruct::getData(const Common::UString &field) const {
+Common::SeekableReadStream *GFF3Struct::getData(const Common::UString &field) const {
 	load();
 
 	const Field *f = getField(field);
@@ -558,8 +558,8 @@ Common::SeekableReadStream *GFFStruct::getData(const Common::UString &field) con
 	return data.readStream(size);
 }
 
-void GFFStruct::getVector(const Common::UString &field,
-                          float &x, float &y, float &z) const {
+void GFF3Struct::getVector(const Common::UString &field,
+                           float &x, float &y, float &z) const {
 	load();
 
 	const Field *f = getField(field);
@@ -575,8 +575,8 @@ void GFFStruct::getVector(const Common::UString &field,
 	z = data.readIEEEFloatLE();
 }
 
-void GFFStruct::getOrientation(const Common::UString &field,
-                               float &a, float &b, float &c, float &d) const {
+void GFF3Struct::getOrientation(const Common::UString &field,
+                                float &a, float &b, float &c, float &d) const {
 	load();
 
 	const Field *f = getField(field);
@@ -593,8 +593,8 @@ void GFFStruct::getOrientation(const Common::UString &field,
 	d = data.readIEEEFloatLE();
 }
 
-void GFFStruct::getVector(const Common::UString &field,
-                          double &x, double &y, double &z) const {
+void GFF3Struct::getVector(const Common::UString &field,
+                           double &x, double &y, double &z) const {
 	load();
 
 	const Field *f = getField(field);
@@ -610,8 +610,8 @@ void GFFStruct::getVector(const Common::UString &field,
 	z = data.readIEEEFloatLE();
 }
 
-void GFFStruct::getOrientation(const Common::UString &field,
-                               double &a, double &b, double &c, double &d) const {
+void GFF3Struct::getOrientation(const Common::UString &field,
+                                double &a, double &b, double &c, double &d) const {
 	load();
 
 	const Field *f = getField(field);
@@ -628,7 +628,7 @@ void GFFStruct::getOrientation(const Common::UString &field,
 	d = data.readIEEEFloatLE();
 }
 
-const GFFStruct &GFFStruct::getStruct(const Common::UString &field) const {
+const GFF3Struct &GFF3Struct::getStruct(const Common::UString &field) const {
 	load();
 
 	const Field *f = getField(field);
@@ -641,7 +641,7 @@ const GFFStruct &GFFStruct::getStruct(const Common::UString &field) const {
 	return _parent->getStruct(f->data);
 }
 
-const GFFList &GFFStruct::getList(const Common::UString &field) const {
+const GFF3List &GFF3Struct::getList(const Common::UString &field) const {
 	load();
 
 	const Field *f = getField(field);

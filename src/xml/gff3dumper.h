@@ -50,13 +50,13 @@ public:
 	          Common::Encoding encoding);
 
 private:
-	Aurora::GFFFile *_gff;
+	Aurora::GFF3File *_gff3;
 	XMLWriter *_xml;
 
 	void dumpLocString(const Aurora::LocString &locString);
-	void dumpField(const Aurora::GFFStruct &strct, const Common::UString &field);
-	void dumpStruct(const Aurora::GFFStruct &strct, const Common::UString &label = "");
-	void dumpList(const Aurora::GFFList &list);
+	void dumpField(const Aurora::GFF3Struct &strct, const Common::UString &field);
+	void dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label = "");
+	void dumpList(const Aurora::GFF3List &list);
 
 	void clear();
 };

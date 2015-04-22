@@ -22,8 +22,8 @@
  *  Handling BioWare's GFFs (generic file format).
  */
 
-#ifndef AURORA_GFFFILE_H
-#define AURORA_GFFFILE_H
+#ifndef AURORA_GFF3FILE_H
+#define AURORA_GFF3FILE_H
 
 #include <vector>
 #include <list>
@@ -42,17 +42,17 @@ namespace Common {
 namespace Aurora {
 
 class LocString;
-class GFFStruct;
+class GFF3Struct;
 
-class GFFFile : public AuroraBase {
+class GFF3File : public AuroraBase {
 public:
-	GFFFile(Common::SeekableReadStream &gff, uint32 id);
-	~GFFFile();
+	GFF3File(Common::SeekableReadStream &gff, uint32 id);
+	~GFF3File();
 
 	uint32 getType() const;
 
 	/** Returns the top-level struct. */
-	const GFFStruct &getTopLevel() const;
+	const GFF3Struct &getTopLevel() const;
 
 private:
 	/** A GFF header. */
@@ -79,8 +79,8 @@ private:
 		void read(Common::SeekableReadStream &gff);
 	};
 
-	typedef std::vector<GFFStruct *> StructArray;
-	typedef std::vector<GFFList> ListArray;
+	typedef std::vector<GFF3Struct *> StructArray;
+	typedef std::vector<GFF3List> ListArray;
 
 
 	Common::SeekableReadStream *_stream;
@@ -100,9 +100,9 @@ private:
 	Common::SeekableReadStream &getFieldData() const;
 
 	/** Return a struct within the GFF. */
-	const GFFStruct &getStruct(uint32 i) const;
+	const GFF3Struct &getStruct(uint32 i) const;
 	/** Return a list within the GFF. */
-	const GFFList   &getList  (uint32 i) const;
+	const GFF3List   &getList  (uint32 i) const;
 
 	// Loading helpers
 	void load(uint32 id);
@@ -111,11 +111,11 @@ private:
 
 	void clear();
 
-	friend class GFFStruct;
+	friend class GFF3Struct;
 };
 
 /** A struct within a GFF. */
-class GFFStruct {
+class GFF3Struct {
 public:
 	typedef std::list<Common::UString> FieldNameList;
 	typedef FieldNameList::const_iterator iterator;
@@ -181,8 +181,8 @@ public:
 	void getOrientation(const Common::UString &field,
 			double &a, double &b, double &c, double &d) const;
 
-	const GFFStruct &getStruct(const Common::UString &field) const;
-	const GFFList   &getList  (const Common::UString &field) const;
+	const GFF3Struct &getStruct(const Common::UString &field) const;
+	const GFF3List   &getList  (const Common::UString &field) const;
 
 private:
 	/** A GFF field. */
@@ -197,7 +197,7 @@ private:
 
 	typedef std::map<Common::UString, Field> FieldMap;
 
-	const GFFFile *_parent; ///< The parent GFF.
+	const GFF3File *_parent; ///< The parent GFF.
 
 	uint32 _id;         ///< The struct's ID.
 	uint32 _fieldIndex; ///< Field / Field indices index.
@@ -207,8 +207,8 @@ private:
 
 	mutable FieldNameList _fieldNames;
 
-	GFFStruct(const GFFFile &parent, Common::SeekableReadStream &gff);
-	~GFFStruct();
+	GFF3Struct(const GFF3File &parent, Common::SeekableReadStream &gff);
+	~GFF3Struct();
 
 	void load() const;
 
@@ -224,9 +224,9 @@ private:
 	                 std::vector<uint32> &indices, uint32 count) const;
 	Common::UString readLabel(Common::SeekableReadStream &gff, uint32 index) const;
 
-	friend class GFFFile;
+	friend class GFF3File;
 };
 
 } // End of namespace Aurora
 
-#endif // AURORA_GFFFILE_H
+#endif // AURORA_GFF3FILE_H
