@@ -2215,9 +2215,8 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{  16609, "SavegameAOEDuration"                             },
 	{  16610, "SavegameAOEDurationType"                         },
 	{  16611, "SavegameAOELinked"                               },
-	{  16750, "SavegameAOEAbilityID"                            },
 
-	{   16612, "SavegameCreatureRank"                            },
+	{  16612, "SavegameCreatureRank"                            },
 
 	{  16613, "SavegameEffectID"                                },
 	{  16614, "SavegameEffectType"                              },
