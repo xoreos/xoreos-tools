@@ -26,6 +26,7 @@
 #define XML_GFF4DUMPER_H
 
 #include <set>
+#include <map>
 
 #include "src/common/ustring.h"
 
@@ -60,7 +61,10 @@ private:
 	};
 
 	typedef std::set<uint32> IDSet;
+	typedef std::map<uint32, Common::UString> FieldNames;
 
+
+	FieldNames _fieldNames;
 
 	Aurora::GFF4File *_gff4;
 	XMLWriter *_xml;
@@ -74,8 +78,11 @@ private:
 
 	Common::UString getIFieldTypeName(uint32 type, bool isList) const;
 
-	void openFieldTag (uint32 type, bool isList);
-	void openFieldTag (uint32 type, bool isList, uint32 label);
+	void openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
+
+	void openFieldTag(uint32 type, bool isList);
+	void openFieldTagLabel(uint32 type, bool isList, uint32 label);
+	void openFieldTagIndex(uint32 type, bool isList, uint32 index);
 	void closeFieldTag(bool doBreak = true);
 
 	void dumpFieldUint  (const GFF4Field &field);
@@ -90,7 +97,9 @@ private:
 
 	void dumpField(const Aurora::GFF4Struct &strct, uint32 field);
 
-	void dumpStruct(const Aurora::GFF4Struct *strct, uint32 label = 0);
+	void dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
+
+	Common::UString findFieldName(uint32 label) const;
 
 	void clear();
 };

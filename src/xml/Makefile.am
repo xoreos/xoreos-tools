@@ -7,6 +7,7 @@ noinst_HEADERS = \
                  gffdumper.h \
                  gff3dumper.h \
                  gff4dumper.h \
+                 gff4fields.h \
                  $(EMPTY)
 
 libxml_la_SOURCES = \
