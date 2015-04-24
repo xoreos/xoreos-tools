@@ -12,7 +12,7 @@ env:
    - coverity_scan_script_test_mode=false
 
 before_script:
-  - echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu saucy main universe restricted multiverse"
+  - echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty main universe restricted multiverse"
   - sudo apt-get update -qq
   - sudo apt-get -qq install zlib1g-dev
 
