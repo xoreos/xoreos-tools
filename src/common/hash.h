@@ -40,36 +40,36 @@ enum HashAlgo {
 };
 
 /** djb2 hash function by Daniel J. Bernstein. */
-static inline uint32 hashStringDJB2(const Common::UString &string) {
+static inline uint32 hashStringDJB2(const UString &string) {
 	uint32 hash = 5381;
 
-	for (Common::UString::iterator it = string.begin(); it != string.end(); ++it)
+	for (UString::iterator it = string.begin(); it != string.end(); ++it)
 		hash = ((hash << 5) + hash) + *it;
 
 	return hash;
 }
 
 /** 32bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo. */
-static inline uint32 hashStringFNV32(const Common::UString &string) {
+static inline uint32 hashStringFNV32(const UString &string) {
 	uint32 hash = 0x811C9DC5;
 
-	for (Common::UString::iterator it = string.begin(); it != string.end(); ++it)
+	for (UString::iterator it = string.begin(); it != string.end(); ++it)
 		hash = (hash * 16777619) ^ *it;
 
 	return hash;
 }
 
 /** 64bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo. */
-static inline uint64 hashStringFNV64(const Common::UString &string) {
+static inline uint64 hashStringFNV64(const UString &string) {
 	uint64 hash = 0xCBF29CE484222325LL;
 
-	for (Common::UString::iterator it = string.begin(); it != string.end(); ++it)
+	for (UString::iterator it = string.begin(); it != string.end(); ++it)
 		hash = (hash * 1099511628211LL) ^ *it;
 
 	return hash;
 }
 
-static inline uint64 hashString(const Common::UString &string, HashAlgo algo) {
+static inline uint64 hashString(const UString &string, HashAlgo algo) {
 	switch (algo) {
 		case kHashDJB2:
 			return hashStringDJB2(string);
@@ -87,8 +87,8 @@ static inline uint64 hashString(const Common::UString &string, HashAlgo algo) {
 	return 0;
 }
 
-static inline Common::UString formatHash(uint64 hash) {
-	return Common::UString::sprintf("0x%04X%04X%04X%04X",
+static inline UString formatHash(uint64 hash) {
+	return UString::sprintf("0x%04X%04X%04X%04X",
 			(uint) ((hash >> 48) & 0xFFFF),
 			(uint) ((hash >> 32) & 0xFFFF),
 			(uint) ((hash >> 16) & 0xFFFF),

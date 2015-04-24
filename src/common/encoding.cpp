@@ -64,7 +64,7 @@ public:
 				iconv_close(_context[i]);
 	}
 
-	Common::UString convert(Encoding encoding, byte *data, uint32 n) {
+	UString convert(Encoding encoding, byte *data, uint32 n) {
 		if (((uint) encoding) >= kEncodingMAX)
 			throw Exception("Invalid encoding %d", encoding);
 
@@ -74,7 +74,7 @@ public:
 private:
 	iconv_t _context[kEncodingMAX];
 
-	Common::UString convert(iconv_t &ctx, byte *data, uint32 nIn, uint32 nOut) {
+	UString convert(iconv_t &ctx, byte *data, uint32 nIn, uint32 nOut) {
 		if (ctx == ((iconv_t) -1))
 			return "[!!!]";
 
@@ -97,7 +97,7 @@ private:
 		}
 
 		convData[nOut - outBytes] = '\0';
-		Common::UString convStr((const char *) convData);
+		UString convStr((const char *) convData);
 
 		delete[] convData;
 
@@ -183,12 +183,12 @@ static void writeFakeChar(std::vector<byte> &output, uint32 c, Encoding encoding
 	}
 }
 
-static Common::UString createString(std::vector<byte> &output, Encoding encoding) {
+static UString createString(std::vector<byte> &output, Encoding encoding) {
 	switch (encoding) {
 		case kEncodingASCII:
 		case kEncodingUTF8:
 			output.push_back('\0');
-			return Common::UString((const char *) &output[0]);
+			return UString((const char *) &output[0]);
 
 		default:
 			return ConvMan.convert(encoding, (byte *) &output[0], output.size());
@@ -197,7 +197,7 @@ static Common::UString createString(std::vector<byte> &output, Encoding encoding
 	return "";
 }
 
-Common::UString readString(SeekableReadStream &stream, Encoding encoding) {
+UString readString(SeekableReadStream &stream, Encoding encoding) {
 	std::vector<byte> output;
 
 	uint32 c;
@@ -207,7 +207,7 @@ Common::UString readString(SeekableReadStream &stream, Encoding encoding) {
 	return createString(output, encoding);
 }
 
-Common::UString readStringFixed(SeekableReadStream &stream, Encoding encoding, uint32 length) {
+UString readStringFixed(SeekableReadStream &stream, Encoding encoding, uint32 length) {
 	std::vector<byte> output;
 	output.resize(length);
 
@@ -217,7 +217,7 @@ Common::UString readStringFixed(SeekableReadStream &stream, Encoding encoding, u
 	return createString(output, encoding);
 }
 
-Common::UString readStringLine(SeekableReadStream &stream, Encoding encoding) {
+UString readStringLine(SeekableReadStream &stream, Encoding encoding) {
 	std::vector<byte> output;
 
 	uint32 c;
