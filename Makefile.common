@@ -8,6 +8,7 @@ LIBSF_CXX   =
 LIBSL       = $(XOREOSTOOLS_LIBS) $(LTLIBICONV) $(ZLIB_LIBS)
 
 FLAGS_C_CXX = -I$(top_srcdir) -ggdb -Wall -Wno-multichar \
+              -Wignored-qualifiers \
               -Wpointer-arith -Wshadow -Wsign-compare -Wtype-limits \
               -Wuninitialized -Wunused-parameter $(WERROR)
 FLAGS_C     =
