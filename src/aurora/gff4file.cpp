@@ -505,6 +505,7 @@ GFF4Struct::FieldType GFF4Struct::convertFieldType(IFieldType type) const {
 			return kFieldTypeDouble;
 
 		case kIFieldTypeString:
+		case kIFieldTypeASCIIString:
 			return kFieldTypeString;
 
 		case kIFieldTypeTlkString:
@@ -604,6 +605,10 @@ uint32 GFF4Struct::getFieldSize(IFieldType type) const {
 			// The raw form is a pointer...
 			return 4;
 
+		case kIFieldTypeASCIIString:
+			// Actually depending on the content...
+			return 4;
+
 		default:
 			break;
 	}
@@ -628,6 +633,7 @@ uint64 GFF4Struct::getUint(Common::SeekableReadStream &data, IFieldType type) co
 			return (uint64) ((int64) data.readSint16LE());
 
 		case kIFieldTypeUint32:
+		case kIFieldTypeUnknown18:
 			return (uint64) data.readUint32LE();
 
 		case kIFieldTypeSint32:
@@ -661,6 +667,7 @@ int64 GFF4Struct::getSint(Common::SeekableReadStream &data, IFieldType type) con
 			return (int64) data.readSint16LE();
 
 		case kIFieldTypeUint32:
+		case kIFieldTypeUnknown18:
 			return (int64) ((uint64) data.readUint32LE());
 
 		case kIFieldTypeSint32:
@@ -714,7 +721,7 @@ Common::UString GFF4Struct::getString(Common::SeekableReadStream &data, Common::
 	if (_parent->hasSharedStrings())
 		return _parent->getSharedString(offset);
 
-	const uint32 pos = data.seekTo(_parent->getDataOffset() + offset);
+	const uint32 pos = data.seekTo(offset);
 
 	Common::UString str = getString(data, encoding);
 
@@ -731,8 +738,11 @@ Common::UString GFF4Struct::getString(Common::SeekableReadStream &data, IFieldTy
 		if (offset == 0xFFFFFFFF)
 			return "";
 
-		return getString(data, encoding, offset);
+		return getString(data, encoding, _parent->getDataOffset() + offset);
 	}
+
+	if (type == kIFieldTypeASCIIString)
+		return getString(data, Common::kEncodingASCII, data.pos());
 
 	throw Common::Exception("GFF4: Field is not a string type");
 }
@@ -780,7 +790,7 @@ double GFF4Struct::getDouble(uint32 field, double def) const {
 }
 
 Common::UString GFF4Struct::getString(uint32 field, Common::Encoding encoding,
-                                     const Common::UString &def) const {
+                                      const Common::UString &def) const {
 
 	const Field *f;
 	Common::SeekableReadStream *data = getField(field, f);
@@ -816,7 +826,7 @@ bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
 
 	str.clear();
 	if ((offset != 0xFFFFFFFF) && (offset != 0))
-		str = getString(*data, encoding, offset);
+		str = getString(*data, encoding, _parent->getDataOffset() + offset);
 
 	return true;
 }
@@ -963,8 +973,14 @@ bool GFF4Struct::getString(uint32 field, Common::Encoding encoding,
 
 	const Field *f;
 	Common::SeekableReadStream *data = getField(field, f);
-	if (!data)
+	if (!data) {
+		if (f && !f->isList) {
+			list.push_back("");
+			return true;
+		}
+
 		return false;
+	}
 
 	const uint32 count = getListCount(*data, *f);
 
@@ -1004,7 +1020,7 @@ bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
 
 		const uint32 offset = getUint(*data, kIFieldTypeUint32);
 		if ((offset != 0xFFFFFFFF) && (offset != 0))
-			strs[i] = getString(*data, encoding, offset);
+			strs[i] = getString(*data, encoding, _parent->getDataOffset() + offset);
 	}
 
 	return true;
