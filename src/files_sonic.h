@@ -26,6 +26,7 @@
 #define FILES_SONIC_H
 
 static const char *kFilesSonic[] = {
+	// test_[efigs].herf
 	"attack1_bs.tga",
 	"chap10scr_bot.tga",
 	"chap1scr_bot.tga",
@@ -41,6 +42,12 @@ static const char *kFilesSonic[] = {
 	"chap9_scy_scr_bot.tga",
 	"introscr_bot.tga",
 	"introscr_top.tga",
+	"cbt_victory.ncgr.small",
+	"cbt_trapd_ms.ncgr.small",
+	"cbt_rndround0.ncgr.small",
+	"cbt_rndround1.ncgr.small",
+
+	// test.herf
 	"2da.gda",
 	"3x3panel64x64.gui",
 	"a1c1_amy.dlg",
