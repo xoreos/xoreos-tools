@@ -154,7 +154,10 @@ static const char *kGFF4IFieldTypeNames[] = {
 	"string",
 	"color4f",
 	"matrix4x4f",
-	"tlkstring"
+	"tlkstring",
+	"fieldtype18",
+	"fieldtype19",
+	"ascii"
 };
 
 Common::UString GFF4Dumper::getIFieldTypeName(uint32 type, bool isList) const {
@@ -335,6 +338,7 @@ void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field) {
 		case Aurora::GFF4Struct::kIFieldTypeUint16:
 		case Aurora::GFF4Struct::kIFieldTypeUint32:
 		case Aurora::GFF4Struct::kIFieldTypeUint64:
+		case Aurora::GFF4Struct::kIFieldTypeUnknown18:
 			dumpFieldUint(f);
 			break;
 
@@ -351,6 +355,7 @@ void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field) {
 			break;
 
 		case Aurora::GFF4Struct::kIFieldTypeString:
+		case Aurora::GFF4Struct::kIFieldTypeASCIIString:
 			dumpFieldString(f);
 			break;
 
