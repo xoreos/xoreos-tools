@@ -2451,6 +2451,12 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{  19002, "TalkStringID"                                    },
 	{  19003, "TalkString"                                      },
 
+	{  19004, "HuffTalkStringID"                                },
+	{  19005, "HuffTalkStringBitOffset"                         },
+	{  19006, "HuffTalkStringList"                              },
+	{  19007, "HuffTalkStringHuffTree"                          },
+	{  19008, "HuffTalkStringBitStream"                         },
+
 	{  20000, "PlaceableStatesList"                             },
 
 	{  21000, "VFXChildList"                                    },
