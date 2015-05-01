@@ -59,8 +59,8 @@ void GFF4File::Header::read(Common::SeekableReadStream &gff4, uint32 version) {
 }
 
 
-GFF4File::GFF4File(Common::SeekableReadStream &gff4) : _stream(&gff4), _topLevelStruct(0) {
-	load();
+GFF4File::GFF4File(Common::SeekableReadStream &gff4, uint32 type) : _stream(&gff4), _topLevelStruct(0) {
+	load(type);
 }
 
 GFF4File::~GFF4File() {
@@ -97,10 +97,10 @@ const GFF4Struct &GFF4File::getTopLevel() const {
 
 // --- Loader ---
 
-void GFF4File::load() {
+void GFF4File::load(uint32 type) {
 	try {
 
-		loadHeader();
+		loadHeader(type);
 		loadStructs();
 		loadStrings();
 
@@ -115,7 +115,7 @@ void GFF4File::load() {
 	}
 }
 
-void GFF4File::loadHeader() {
+void GFF4File::loadHeader(uint32 type) {
 	readHeader(*_stream);
 
 	if (_id != kGFFID)
@@ -125,6 +125,9 @@ void GFF4File::loadHeader() {
 		throw Common::Exception("Unsupported GFF4 file version %08X", _version);
 
 	_header.read(*_stream, _version);
+
+	if ((type != 0xFFFFFFFF) && (_header.type != type))
+		throw Common::Exception("GFF4 has invalid type (want 0x%08X, got 0x%08X)", type, _header.type);
 }
 
 void GFF4File::loadStructs() {

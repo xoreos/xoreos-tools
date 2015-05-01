@@ -17,6 +17,7 @@ noinst_HEADERS = \
                  locstring.h \
                  gff3file.h \
                  gff4file.h \
+                 gff4fields.h \
                  $(EMPTY)
 
 libaurora_la_SOURCES = \

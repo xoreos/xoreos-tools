@@ -35,6 +35,7 @@
 
 #include "src/aurora/types.h"
 #include "src/aurora/aurorafile.h"
+#include "src/aurora/gff4fields.h"
 
 namespace Common {
 	class SeekableReadStream;
@@ -57,7 +58,7 @@ class GFF4Struct;
  */
 class GFF4File : public AuroraBase {
 public:
-	GFF4File(Common::SeekableReadStream &gff4);
+	GFF4File(Common::SeekableReadStream &gff4, uint32 type = 0xFFFFFFFF);
 	~GFF4File();
 
 	/** Return the GFF4's specific type. */
@@ -125,8 +126,8 @@ private:
 
 
 	// .--- Loading helpers
-	void load();
-	void loadHeader();
+	void load(uint32 type);
+	void loadHeader(uint32 type);
 	void loadStructs();
 	void loadStrings();
 
