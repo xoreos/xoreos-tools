@@ -12,6 +12,7 @@ noinst_HEADERS = \
 
 bin_PROGRAMS = \
                gff2xml \
+               tlk2xml \
                unerf \
                unherf \
                unrim \
@@ -23,6 +24,16 @@ gff2xml_SOURCES = \
                   gff2xml.cpp \
                   $(EMPTY)
 gff2xml_LDADD   = \
+                  xml/libxml.la \
+                  aurora/libaurora.la \
+                  common/libcommon.la \
+                  $(LDADD) \
+                  $(EMPTY)
+
+tlk2xml_SOURCES = \
+                  tlk2xml.cpp \
+                  $(EMPTY)
+tlk2xml_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \

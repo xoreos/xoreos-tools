@@ -38,6 +38,7 @@ Makefile.in
 
 # Unix binaries
 /src/gff2xml
+/src/tlk2xml
 /src/unerf
 /src/unherf
 /src/unrim
@@ -46,6 +47,7 @@ Makefile.in
 
 # Windows binaries
 /src/gff2xml.exe
+/src/tlk2xml.exe
 /src/unerf.exe
 /src/unherf.exe
 /src/unrim.exe
