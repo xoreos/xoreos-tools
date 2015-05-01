@@ -97,9 +97,7 @@ void TalkTable_TLK::readEntryTableV3() {
 		entry.length         = _tlk->readUint32LE();
 		entry.soundLength    = _tlk->readIEEEFloatLE();
 
-		readString(entry);
-
-		if (!entry.text.empty())
+		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
 			_strRefs.push_back(i);
 	}
 }
@@ -113,34 +111,33 @@ void TalkTable_TLK::readEntryTableV4() {
 		entry.length  = _tlk->readUint16LE();
 		entry.flags   = kFlagTextPresent;
 
-		readString(entry);
-
-		if (!entry.text.empty())
+		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
 			_strRefs.push_back(i);
 	}
 }
 
-void TalkTable_TLK::readString(Entry &entry) const {
-	if (!entry.text.empty() || (entry.length == 0) || !(entry.flags & kFlagTextPresent))
-		// We already have the string
-		return;
+Common::UString TalkTable_TLK::readString(const Entry &entry) const {
+	if ((entry.length == 0) || !(entry.flags & kFlagTextPresent))
+		return "";
+
+	if (_encoding == Common::kEncodingInvalid)
+		return "";
 
 	_tlk->seek(entry.offset);
 
 	uint32 length = MIN<uint32>(entry.length, _tlk->size() - _tlk->pos());
 	if (length == 0)
-		return;
+		return "";
 
 	Common::MemoryReadStream *data   = _tlk->readStream(length);
 	Common::MemoryReadStream *parsed = preParseColorCodes(*data);
 
-	if (_encoding != Common::kEncodingInvalid)
-		entry.text = Common::readString(*parsed, _encoding);
-	else
-		entry.text = "[???]";
+	Common::UString str = Common::readString(*parsed, _encoding);
 
 	delete parsed;
 	delete data;
+
+	return str;
 }
 
 uint32 TalkTable_TLK::getLanguageID() const {
@@ -155,7 +152,7 @@ bool TalkTable_TLK::getString(uint32 strRef, Common::UString &string, Common::US
 	if (strRef >= _entries.size())
 		return false;
 
-	string      = _entries[strRef].text;
+	string      = readString(_entries[strRef]);
 	soundResRef = _entries[strRef].soundResRef;
 
 	return true;

@@ -51,11 +51,19 @@ TalkTable *TalkTable::load(Common::SeekableReadStream &tlk, Common::Encoding enc
 
 	tlk.seek(pos);
 
-	if (id == kTLKID)
-		return new TalkTable_TLK(tlk, encoding);
+	if (id == kTLKID) {
+		if (encoding == Common::kEncodingInvalid)
+			encoding = Common::kEncodingCP1252;
 
-	if (id == kGFFID)
+		return new TalkTable_TLK(tlk, encoding);
+	}
+
+	if (id == kGFFID) {
+		if (encoding == Common::kEncodingInvalid)
+			encoding = Common::kEncodingUTF16LE;
+
 		return new TalkTable_GFF(tlk, encoding);
+	}
 
 	return 0;
 }

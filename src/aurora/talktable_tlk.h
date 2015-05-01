@@ -93,7 +93,7 @@ private:
 	void readEntryTableV3();
 	void readEntryTableV4();
 
-	void readString(Entry &entry) const;
+	Common::UString readString(const Entry &entry) const;
 };
 
 } // End of namespace Aurora

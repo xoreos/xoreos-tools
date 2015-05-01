@@ -54,7 +54,7 @@ bool TalkTable_GFF::getString(uint32 strRef, Common::UString &string, Common::US
 	if (e == _entries.end())
 		return false;
 
-	string      = e->second->text;
+	string      = readString(*e->second);
 	soundResRef = "";
 
 	return true;
@@ -97,13 +97,8 @@ void TalkTable_GFF::load02(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		Entry *entry = new Entry(*s);
-		readString(*entry);
-
-		_entries[strRef] = entry;
-
-		if (!entry->text.empty())
-			_strRefs.push_back(strRef);
+		_entries[strRef] = new Entry(*s);
+		_strRefs.push_back(strRef);
 	}
 }
 
@@ -123,50 +118,47 @@ void TalkTable_GFF::load05(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		Entry *entry = new Entry(*s);
-		readString(*entry);
-
-		_entries[strRef] = entry;
-
-		if (!entry->text.empty())
-			_strRefs.push_back(strRef);
+		_entries[strRef] = new Entry(*s);
+		_strRefs.push_back(strRef);
 	}
 }
 
-void TalkTable_GFF::readString(Entry &entry) const {
+Common::UString TalkTable_GFF::readString(const Entry &entry) const {
 	if (!entry.strct)
-		return;
+		return "";
 
 	if      (_gff->getTypeVersion() == kVersion02)
-		readString02(entry);
+		return readString02(entry);
 	else if (_gff->getTypeVersion() == kVersion05)
-		readString05(entry);
+		return readString05(entry);
 
-	entry.strct = 0;
+	return "";
 }
 
-void TalkTable_GFF::readString02(Entry &entry) const {
+Common::UString TalkTable_GFF::readString02(const Entry &entry) const {
 	if (_encoding != Common::kEncodingInvalid)
-		entry.text = entry.strct->getString(kGFF4TalkString, _encoding);
-	else
-		entry.text = "[???]";
+		return "[???]";
+
+	return entry.strct->getString(kGFF4TalkString, _encoding);
 }
 
-void TalkTable_GFF::readString05(Entry &entry) const {
+Common::UString TalkTable_GFF::readString05(const Entry &entry) const {
 	Common::SeekableReadStream *huffTree  = _gff->getTopLevel().getData(kGFF4HuffTalkStringHuffTree);
 	Common::SeekableReadStream *bitStream = _gff->getTopLevel().getData(kGFF4HuffTalkStringBitStream);
 
-	readString05(huffTree, bitStream, entry);
+	Common::UString str = readString05(huffTree, bitStream, entry);
 
 	delete huffTree;
 	delete bitStream;
+
+	return str;
 }
 
-void TalkTable_GFF::readString05(Common::SeekableReadStream *huffTree,
-                                 Common::SeekableReadStream *bitStream, Entry &entry) const {
-
+Common::UString TalkTable_GFF::readString05(Common::SeekableReadStream *huffTree,
+                                            Common::SeekableReadStream *bitStream,
+                                            const Entry &entry) const {
 	if (!huffTree || !bitStream)
-		return;
+		return "";
 
 	/* Read a string encoded in a Huffman'd bitstream.
 	 *
@@ -207,7 +199,7 @@ void TalkTable_GFF::readString05(Common::SeekableReadStream *huffTree,
 	const byte  *data = (const byte *) &utf16Str[0];
 	const uint32 size = utf16Str.size() * 2;
 
-	entry.text = Common::readString(data, size, Common::kEncodingUTF16LE);
+	return Common::readString(data, size, Common::kEncodingUTF16LE);
 }
 
 } // End of namespace Aurora
