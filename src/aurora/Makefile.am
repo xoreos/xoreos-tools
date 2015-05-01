@@ -18,6 +18,9 @@ noinst_HEADERS = \
                  gff3file.h \
                  gff4file.h \
                  gff4fields.h \
+                 talktable.h \
+                 talktable_tlk.h \
+                 talktable_gff.h \
                  $(EMPTY)
 
 libaurora_la_SOURCES = \
@@ -34,4 +37,7 @@ libaurora_la_SOURCES = \
                        locstring.cpp \
                        gff3file.cpp \
                        gff4file.cpp \
+                       talktable.cpp \
+                       talktable_tlk.cpp \
+                       talktable_gff.cpp \
                        $(EMPTY)
