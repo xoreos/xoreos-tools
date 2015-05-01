@@ -33,6 +33,8 @@ class UString;
 class SeekableReadStream;
 
 enum Encoding {
+	kEncodingInvalid = -1,
+
 	kEncodingASCII,   ///< Plain, unextended ASCII (7bit clean).
 
 	kEncodingUTF8,    ///< UTF-8.
@@ -61,6 +63,12 @@ UString readStringFixed(SeekableReadStream &stream, Encoding encoding, uint32 le
 
 /** Read a line with the given encoding out of a stream. */
 UString readStringLine(SeekableReadStream &stream, Encoding encoding);
+
+/** Read a string with the given encoding from the raw buffer. */
+UString readString(const byte *data, uint32 size, Encoding encoding);
+
+/** Convert a string into the given encoding. */
+SeekableReadStream *convertString(const UString &str, Encoding encoding);
 
 /** Return the number of bytes per codepoint in this encoding.
  *
