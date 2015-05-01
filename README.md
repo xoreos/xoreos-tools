@@ -13,7 +13,9 @@ or (at your option) any later version.
 Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
+* tlk2xml: Convert BioWare TLK to XML
 * unerf: Extract BioWare ERF archives
+* unherf: Extract BioWare HERF archives
 * unrim: Extract BioWare RIM archives
 * unnds: Extract Nintendo DS roms
 * unkeybif: Extract BioWare KEY/BIF archives
