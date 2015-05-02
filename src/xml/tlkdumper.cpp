@@ -24,6 +24,7 @@
 
 #include "src/common/stream.h"
 
+#include "src/aurora/language.h"
 #include "src/aurora/talktable.h"
 
 #include "src/xml/tlkdumper.h"
@@ -44,9 +45,13 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &in
 	if (!tlk)
 		return;
 
+	const uint32 languageID = tlk->getLanguageID();
+
 	XMLWriter xml(output);
 
 	xml.openTag("tlk");
+	if (languageID != Aurora::kLanguageInvalid)
+		xml.addProperty("language", Common::UString::sprintf("%u", languageID));
 	xml.breakLine();
 
 	const std::list<uint32> &strRefs = tlk->getStrRefs();

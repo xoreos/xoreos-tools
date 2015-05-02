@@ -29,6 +29,7 @@
 #include "src/aurora/talktable.h"
 #include "src/aurora/talktable_tlk.h"
 #include "src/aurora/talktable_gff.h"
+#include "src/aurora/language.h"
 
 static const uint32 kTLKID = MKTAG('T', 'L', 'K', ' ');
 static const uint32 kGFFID = MKTAG('G', 'F', 'F', ' ');
@@ -39,6 +40,10 @@ TalkTable::TalkTable(Common::Encoding encoding) : _encoding(encoding) {
 }
 
 TalkTable::~TalkTable() {
+}
+
+uint32 TalkTable::getLanguageID() const {
+	return kLanguageInvalid;
 }
 
 TalkTable *TalkTable::load(Common::SeekableReadStream &tlk, Common::Encoding encoding) {

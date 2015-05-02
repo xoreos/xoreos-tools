@@ -42,6 +42,8 @@ class TalkTable {
 public:
 	virtual ~TalkTable();
 
+	virtual uint32 getLanguageID() const;
+
 	virtual const std::list<uint32> &getStrRefs() const = 0;
 	virtual bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
 
