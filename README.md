@@ -19,5 +19,6 @@ Currently, the following tools are included:
 * unrim: Extract BioWare RIM archives
 * unnds: Extract Nintendo DS roms
 * unkeybif: Extract BioWare KEY/BIF archives
+* desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
 
 Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)

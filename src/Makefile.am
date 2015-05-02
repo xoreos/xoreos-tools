@@ -18,6 +18,7 @@ bin_PROGRAMS = \
                unrim \
                unkeybif \
                unnds \
+               desmall \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -89,3 +90,13 @@ unnds_LDADD   = \
                 common/libcommon.la \
                 $(LDADD) \
                 $(EMPTY)
+
+
+desmall_SOURCES = \
+                  desmall.cpp \
+                  $(EMPTY)
+desmall_LDADD   = \
+                  aurora/libaurora.la \
+                  common/libcommon.la \
+                  $(LDADD) \
+                  $(EMPTY)

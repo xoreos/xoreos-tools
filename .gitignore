@@ -44,6 +44,7 @@ Makefile.in
 /src/unrim
 /src/unkeybif
 /src/unnds
+/src/desmall
 
 # Windows binaries
 /src/gff2xml.exe
@@ -53,3 +54,4 @@ Makefile.in
 /src/unrim.exe
 /src/unkeybif.exe
 /src/unnds.exe
+/src/desmall.exe
