@@ -136,7 +136,7 @@ Common::UString TalkTable_GFF::readString(const Entry &entry) const {
 }
 
 Common::UString TalkTable_GFF::readString02(const Entry &entry) const {
-	if (_encoding != Common::kEncodingInvalid)
+	if (_encoding == Common::kEncodingInvalid)
 		return "[???]";
 
 	return entry.strct->getString(kGFF4TalkString, _encoding);
