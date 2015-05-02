@@ -141,6 +141,8 @@ Common::UString XMLWriter::escape(const Common::UString &str) {
 			escaped += "&lt;";
 		else if (c == '>')
 			escaped += "&gt;";
+		else if (c == '\r')
+			escaped += "&#13;";
 		else
 			escaped += c;
 
