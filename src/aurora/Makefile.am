@@ -21,6 +21,7 @@ noinst_HEADERS = \
                  talktable.h \
                  talktable_tlk.h \
                  talktable_gff.h \
+                 smallfile.h \
                  $(EMPTY)
 
 libaurora_la_SOURCES = \
@@ -40,4 +41,5 @@ libaurora_la_SOURCES = \
                        talktable.cpp \
                        talktable_tlk.cpp \
                        talktable_gff.cpp \
+                       smallfile.cpp \
                        $(EMPTY)
