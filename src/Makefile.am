@@ -4,6 +4,7 @@ SUBDIRS = \
           common \
           aurora \
           xml \
+          images \
           $(EMPTY)
 
 noinst_HEADERS = \
