@@ -49,6 +49,20 @@ DDS::DDS(Common::SeekableReadStream &dds) {
 DDS::~DDS() {
 }
 
+bool DDS::detect(Common::SeekableReadStream &dds) {
+	uint32 pos = dds.pos();
+
+	uint32 fourCC = 0;
+	try {
+		fourCC = dds.readUint32BE();
+	} catch (...) {
+	}
+
+	dds.seek(pos);
+
+	return fourCC == kDDSID;
+}
+
 void DDS::load(Common::SeekableReadStream &dds) {
 	try {
 

@@ -42,6 +42,9 @@ public:
 	DDS(Common::SeekableReadStream &dds);
 	~DDS();
 
+	/** Return true if the data within this stream is a DDS image. */
+	static bool detect(Common::SeekableReadStream &dds);
+
 private:
 	/** The specific pixel format of the included image data. */
 	struct DDSPixelFormat {
