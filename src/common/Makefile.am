@@ -6,6 +6,7 @@ noinst_HEADERS = \
                  system.h \
                  types.h \
                  endianness.h \
+                 maths.h \
                  noncopyable.h \
                  singleton.h \
                  ustring.h \
@@ -20,6 +21,7 @@ noinst_HEADERS = \
                  $(EMPTY)
 
 libcommon_la_SOURCES = \
+                       maths.cpp \
                        ustring.cpp \
                        error.cpp \
                        util.cpp \
