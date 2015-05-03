@@ -20,6 +20,7 @@ bin_PROGRAMS = \
                unkeybif \
                unnds \
                desmall \
+               texture2tga \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -92,7 +93,6 @@ unnds_LDADD   = \
                 $(LDADD) \
                 $(EMPTY)
 
-
 desmall_SOURCES = \
                   desmall.cpp \
                   $(EMPTY)
@@ -101,3 +101,13 @@ desmall_LDADD   = \
                   common/libcommon.la \
                   $(LDADD) \
                   $(EMPTY)
+
+texture2tga_SOURCES = \
+                      texture2tga.cpp \
+                      $(EMPTY)
+texture2tga_LDADD   = \
+                      images/libimages.la \
+                      aurora/libaurora.la \
+                      common/libcommon.la \
+                      $(LDADD) \
+                      $(EMPTY)

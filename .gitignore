@@ -45,6 +45,7 @@ Makefile.in
 /src/unkeybif
 /src/unnds
 /src/desmall
+/src/texture2tga
 
 # Windows binaries
 /src/gff2xml.exe
@@ -55,3 +56,4 @@ Makefile.in
 /src/unkeybif.exe
 /src/unnds.exe
 /src/desmall.exe
+/src/texture2tga.exe
