@@ -157,7 +157,7 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 
 	// Bit 5 of imageDesc set means the origin in upper-left corner
 	if (imageDesc & 0x20)
-		flipVertically(_mipMaps[0]->data, _mipMaps[0]->width, _mipMaps[0]->height, pixelDepth / 8);
+		::Images::flipVertically(_mipMaps[0]->data, _mipMaps[0]->width, _mipMaps[0]->height, pixelDepth / 8);
 }
 
 void TGA::readRLE(Common::SeekableReadStream &tga, byte pixelDepth) {

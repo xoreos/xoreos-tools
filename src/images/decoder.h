@@ -72,6 +72,11 @@ public:
 	/** Dump the image into a TGA. */
 	bool dumpTGA(const Common::UString &fileName) const;
 
+	/** Flip the whole image horizontally. */
+	void flipHorizontally();
+	/** Flip the whole image vertically. */
+	void flipVertically();
+
 protected:
 	PixelFormat _format;
 

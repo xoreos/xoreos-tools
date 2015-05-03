@@ -54,7 +54,7 @@ void SBM::load(Common::SeekableReadStream &sbm) {
 	}
 
 	// Flip SBM image data to make their origin the lower left corner too
-	flipVertically(_mipMaps[0]->data, _mipMaps[0]->width, _mipMaps[0]->height, 4);
+	::Images::flipVertically(_mipMaps[0]->data, _mipMaps[0]->width, _mipMaps[0]->height, 4);
 }
 
 void SBM::readData(Common::SeekableReadStream &sbm) {

@@ -29,7 +29,29 @@
 #include "src/common/util.h"
 #include "src/common/maths.h"
 
+#include "src/images/types.h"
+
 namespace Images {
+
+/** Return the number of bytes per pixel in this format. */
+static inline int getBPP(PixelFormat format) {
+	switch (format) {
+		case kPixelFormatR8G8B8:
+		case kPixelFormatB8G8R8:
+			return 3;
+
+		case kPixelFormatR8G8B8A8:
+		case kPixelFormatB8G8R8A8:
+			return 4;
+
+		case kPixelFormatA1R5G5B5:
+		case kPixelFormatR5G6B5:
+			return 2;
+
+		default:
+			return 0;
+	}
+}
 
 /** Flip an image horizontally. */
 static inline void flipHorizontally(byte *data, int width, int height, int bpp) {

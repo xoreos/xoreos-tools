@@ -27,6 +27,7 @@
 #include "src/common/stream.h"
 
 #include "src/images/decoder.h"
+#include "src/images/util.h"
 #include "src/images/s3tc.h"
 #include "src/images/dumptga.h"
 
@@ -131,6 +132,20 @@ bool Decoder::dumpTGA(const Common::UString &fileName) const {
 	Images::dumpTGA(fileName, mipMap.data, mipMap.width, mipMap.height, kPixelFormatR8G8B8A8);
 
 	return true;
+}
+
+void Decoder::flipHorizontally() {
+	decompress();
+
+	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
+		::Images::flipHorizontally((*m)->data, (*m)->width, (*m)->height, getBPP(_format));
+}
+
+void Decoder::flipVertically() {
+	decompress();
+
+	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
+		::Images::flipVertically((*m)->data, (*m)->width, (*m)->height, getBPP(_format));
 }
 
 } // End of namespace Images
