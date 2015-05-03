@@ -44,19 +44,21 @@
 
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
-                      Common::UString &outFile, Aurora::FileType &type);
+                      Common::UString &outFile, Aurora::FileType &type, bool &flip);
 
-void convert(const Common::UString &inFile, const Common::UString &outFile, Aurora::FileType type);
+void convert(const Common::UString &inFile, const Common::UString &outFile,
+             Aurora::FileType type, bool flip);
 
 int main(int argc, char **argv) {
 	int returnValue;
 	Common::UString inFile, outFile;
 	Aurora::FileType type = Aurora::kFileTypeNone;
-	if (!parseCommandLine(argc, argv, returnValue, inFile, outFile, type))
+	bool flip = false;
+	if (!parseCommandLine(argc, argv, returnValue, inFile, outFile, type, flip))
 		return returnValue;
 
 	try {
-		convert(inFile, outFile, type);
+		convert(inFile, outFile, type, flip);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return -1;
@@ -66,7 +68,7 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
-                      Common::UString &outFile, Aurora::FileType &type) {
+                      Common::UString &outFile, Aurora::FileType &type, bool &flip) {
 
 	if (argc < 2) {
 		printUsage(stderr, argv[0]);
@@ -112,9 +114,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 			} else if (!strcmp(argv[i], "--txb")) {
 				isOption = true;
 				type     = Aurora::kFileTypeTXB;
-			} else if (!strcmp(argv[i], "--tga")) {
+			} else if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "--flip")) {
 				isOption = true;
-				type     = Aurora::kFileTypeTGA;
+				flip     = true;
 			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
 			  // An options, but we already checked for all known ones
 
@@ -149,6 +151,7 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare textures to TGA converter\n");
 	std::fprintf(stream, "Usage: %s [options] <input file> <output file>\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "  -f      --flip              Flip the image vertically\n");
 	std::fprintf(stream, "          --auto              Autodetect input type (default)\n");
 	std::fprintf(stream, "          --dds               Input file is DDS\n");
 	std::fprintf(stream, "          --sbm               Input file is SBM\n");
@@ -206,7 +209,9 @@ Images::Decoder *openImage(Common::SeekableReadStream &stream, Aurora::FileType 
 	}
 }
 
-void convert(const Common::UString &inFile, const Common::UString &outFile, Aurora::FileType type) {
+void convert(const Common::UString &inFile, const Common::UString &outFile,
+             Aurora::FileType type, bool flip) {
+
 	Common::File in(inFile);
 
 	if (type == Aurora::kFileTypeNone) {
@@ -223,6 +228,8 @@ void convert(const Common::UString &inFile, const Common::UString &outFile, Auro
 	}
 
 	Images::Decoder *image = openImage(in, type);
+	if (flip)
+		image->flipVertically();
 
 	try {
 		image->dumpTGA(outFile);
