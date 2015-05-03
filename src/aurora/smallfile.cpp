@@ -29,14 +29,14 @@
 
 namespace Aurora {
 
-static void readSmallHeader(Common::SeekableReadStream &small, int32 &type, int32 &size) {
+static void readSmallHeader(Common::SeekableReadStream &small, uint32 &type, uint32 &size) {
 	uint32 data = small.readUint32LE();
 
 	type = data & 0x000000FF;
 	size = data >> 8;
 }
 
-static void decompress00(Common::SeekableReadStream &small, Common::WriteStream &out, int32 size) {
+static void decompress00(Common::SeekableReadStream &small, Common::WriteStream &out, uint32 size) {
 	out.writeStream(small, size);
 }
 
@@ -47,12 +47,14 @@ static void decompress00(Common::SeekableReadStream &small, Common::WriteStream 
  * See <https://github.com/gravgun/dsdecmp/blob/master/CSharp/DSDecmp/Formats/Nitro/LZ10.cs#L121>
  * and <https://code.google.com/p/dsdecmp/>.
  */
-static void decompress10(Common::SeekableReadStream &small, Common::WriteStream &out, int32 size) {
+static void decompress10(Common::SeekableReadStream &small, Common::WriteStream &out, uint32 size) {
 	byte   buffer[0x10000];
 	uint32 bufferPos = 0;
 
 	uint16 flags = 0xFF00;
-	while (size > 0) {
+
+	uint32 outSize = 0;
+	while (outSize < size) {
 		// Only our canaries left => Read flags for the next 8 blocks
 		if (flags == 0xFF00)
 			flags = (small.readByte() << 8) | 0x00FF;
@@ -68,14 +70,17 @@ static void decompress10(Common::SeekableReadStream &small, Common::WriteStream 
 			const uint16 offset = (((data1 & 0x0F) << 8) | data2) + 1;
 
 			// Direct offset. Add size of the buffer once, to protect from overroll
-			const uint32 copyOffset = bufferPos + sizeof(buffer) - offset;
+			uint32 copyOffset = bufferPos + sizeof(buffer) - offset;
 
 			// Copy length bytes (and store each back into the buffer)
-			for (uint8 i = 0; i < length; i++) {
-				const byte data = buffer[(copyOffset + i) % sizeof(buffer)];
+			for (uint8 i = 0; i < length; i++, copyOffset++) {
+				if ((copyOffset % sizeof(buffer)) >= outSize)
+					throw Common::Exception("Tried to copy past the buffer");
+
+				const byte data = buffer[copyOffset % sizeof(buffer)];
 
 				out.writeByte(data);
-				size--;
+				outSize++;
 
 				buffer[bufferPos] = data;
 				bufferPos = (bufferPos + 1) % sizeof(buffer);
@@ -87,7 +92,7 @@ static void decompress10(Common::SeekableReadStream &small, Common::WriteStream 
 			const byte data = small.readByte();
 
 			out.writeByte(data);
-			size--;
+			outSize++;
 
 			buffer[bufferPos] = data;
 			bufferPos = (bufferPos + 1) % sizeof(buffer);
@@ -96,12 +101,12 @@ static void decompress10(Common::SeekableReadStream &small, Common::WriteStream 
 		flags <<= 1;
 	}
 
-	if (size != 0)
+	if (outSize != size)
 		throw Common::Exception("Invalid \"small\" data");
 }
 
 static void decompress(Common::SeekableReadStream &small, Common::WriteStream &out,
-                       int32 type, int32 size) {
+                       uint32 type, uint32 size) {
 
 	if      (type == 0x00)
 		decompress00(small, out, size);
@@ -112,7 +117,7 @@ static void decompress(Common::SeekableReadStream &small, Common::WriteStream &o
 }
 
 void Small::decompress(Common::SeekableReadStream &small, Common::WriteStream &out) {
-	int32 type, size;
+	uint32 type, size;
 	readSmallHeader(small, type, size);
 
 	try {
@@ -125,8 +130,12 @@ void Small::decompress(Common::SeekableReadStream &small, Common::WriteStream &o
 }
 
 Common::SeekableReadStream *Small::decompress(Common::SeekableReadStream *small) {
-	int32 type, size;
+	uint32 type, size;
 	readSmallHeader(*small, type, size);
+
+	if (type == 0x00)
+		// Uncompressed. Just return a sub stream for the raw data
+		return new Common::SeekableSubReadStream(small, small->pos(), small->pos() + size, true);
 
 	Common::MemoryWriteStreamDynamic out(false, size);
 
