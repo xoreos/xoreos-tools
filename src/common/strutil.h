@@ -51,6 +51,15 @@ void printStream(MemoryWriteStreamDynamic &stream);
  */
 UString tagToString(uint32 tag, bool trim = false);
 
+/** Create an elaborate string from an integer tag, for debugging purposes.
+ *
+ *  If all 4 bytes of the integer are printable characters, return
+ *  "0xXXXX ('cccc')"
+ *  Otherwise, return
+ *  "0xXXXX"
+ */
+UString debugTag(uint32 tag, bool trim = false);
+
 } // End of namespace Common
 
 #endif // COMMON_STRUTIL_H
