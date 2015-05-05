@@ -17,6 +17,7 @@ noinst_HEADERS = \
                  tpc.h \
                  txb.h \
                  sbm.h \
+                 xoreositex.h \
                  $(EMPTY)
 
 libimages_la_SOURCES = \
@@ -29,6 +30,7 @@ libimages_la_SOURCES = \
                        tpc.cpp \
                        txb.cpp \
                        sbm.cpp \
+                       xoreositex.cpp \
                        $(EMPTY)
 
 libimages_la_LIBADD = \
