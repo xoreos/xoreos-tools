@@ -324,7 +324,9 @@ static const FileExtension fileExtensions[] = {
 
 	{kFileTypeBZF,            ".bzf"},
 
-	{kFileTypeADV,            ".adv"}
+	{kFileTypeADV,            ".adv"},
+
+	{kFileTypeXEOSITEX,       ".xoreositex"}
 };
 
 FileType getFileType(const Common::UString &path) {
