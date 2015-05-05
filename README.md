@@ -18,6 +18,7 @@ Currently, the following tools are included:
 * unherf: Extract BioWare HERF archives
 * unrim: Extract BioWare RIM archives
 * unnds: Extract Nintendo DS roms
+* unnsbtx: Extract Nintendo NSBTX textures into TGA images
 * unkeybif: Extract BioWare KEY/BIF archives
 * desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
 * texture2tga: Convert BioWare's texture formats into TGA

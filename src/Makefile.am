@@ -19,6 +19,7 @@ bin_PROGRAMS = \
                unrim \
                unkeybif \
                unnds \
+               unnsbtx \
                desmall \
                texture2tga \
                $(EMPTY)
@@ -92,6 +93,17 @@ unnds_LDADD   = \
                 common/libcommon.la \
                 $(LDADD) \
                 $(EMPTY)
+
+unnsbtx_SOURCES = \
+                  unnsbtx.cpp \
+                  util.cpp \
+                  $(EMPTY)
+unnsbtx_LDADD   = \
+                  images/libimages.la \
+                  aurora/libaurora.la \
+                  common/libcommon.la \
+                  $(LDADD) \
+                  $(EMPTY)
 
 desmall_SOURCES = \
                   desmall.cpp \
