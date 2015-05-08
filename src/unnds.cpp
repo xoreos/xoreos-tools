@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::NDSFile nds(file);
+		Aurora::NDSFile nds(new Common::File(file));
 
 		if      (command == kCommandInfo)
 			displayInfo(nds);
@@ -125,7 +125,7 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 void displayInfo(Aurora::NDSFile &nds) {
-	std::printf("Game name: \"%s\"\n", nds.getName().c_str());
+	std::printf("Game name: \"%s\"\n", nds.getTitle().c_str());
 	std::printf("Game code: \"%s\"\n", nds.getCode().c_str());
 	std::printf("Game maker: \"%s\"\n", nds.getMaker().c_str());
 }
@@ -139,9 +139,12 @@ void listFiles(Aurora::NDSFile &nds) {
 	std::printf("               Filename                |    Size\n");
 	std::printf("=======================================|===========\n");
 
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r)
-		std::printf("%32s%-6s | %10d\n", r->name.c_str(), Aurora::setFileType("", r->type).c_str(),
+	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
+		const Aurora::FileType type = TypeMan.aliasFileType(r->type);
+
+		std::printf("%32s%-6s | %10d\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
 		                               nds.getResourceSize(r->index));
+	}
 }
 
 void extractFiles(Aurora::NDSFile &nds) {
@@ -152,7 +155,8 @@ void extractFiles(Aurora::NDSFile &nds) {
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Common::UString fileName = Aurora::setFileType(r->name, r->type);
+		const Aurora::FileType type     = TypeMan.aliasFileType(r->type);
+		const Common::UString fileName = TypeMan.setFileType(r->name, type);
 
 		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
 

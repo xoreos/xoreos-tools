@@ -184,7 +184,7 @@ static Aurora::FileType detectType(Common::SeekableReadStream &file) {
 }
 
 static Aurora::FileType detectType(const Common::UString &file) {
-	Aurora::FileType type = Aurora::getFileType(file);
+	Aurora::FileType type = TypeMan.getFileType(file);
 	if (isValidType(type))
 		return type;
 

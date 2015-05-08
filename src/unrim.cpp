@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::RIMFile rim(file);
+		Aurora::RIMFile rim(new Common::File(file));
 
 		if      (command == kCommandList)
 			listFiles(rim, game);
@@ -153,9 +153,9 @@ void listFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 	std::printf("=====================================|===========\n");
 
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = Aurora::aliasFileType(r->type, game);
+		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
 
-		std::printf("%32s%s | %10d\n", r->name.c_str(), Aurora::setFileType("", type).c_str(),
+		std::printf("%32s%s | %10d\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
 		                               rim.getResourceSize(r->index));
 	}
 }
@@ -168,8 +168,8 @@ void extractFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Aurora::FileType type     = Aurora::aliasFileType(r->type, game);
-		const Common::UString  fileName = Aurora::setFileType(r->name, type);
+		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
+		const Common::UString  fileName = TypeMan.setFileType(r->name, type);
 
 		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
 

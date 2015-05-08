@@ -28,6 +28,7 @@
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/file.h"
+#include "src/common/hash.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/erffile.h"
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::ERFFile erf(file);
+		Aurora::ERFFile erf(new Common::File(file));
 
 		if      (command == kCommandInfo)
 			displayInfo(erf);
@@ -180,10 +181,14 @@ void listFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	std::printf("=====================================|===========\n");
 
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = Aurora::aliasFileType(r->type, game);
+		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
 
-		std::printf("%32s%s | %10d\n", r->name.c_str(), Aurora::setFileType("", type).c_str(),
-		                               erf.getResourceSize(r->index));
+		Common::UString name = r->name;
+		if (name.empty())
+			name = Common::formatHash(r->hash);
+
+		std::printf("%32s%-4s | %10d\n", name.c_str(), TypeMan.setFileType("", type).c_str(),
+		                                erf.getResourceSize(r->index));
 	}
 }
 
@@ -195,8 +200,12 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Aurora::FileType type     = Aurora::aliasFileType(r->type, game);
-		const Common::UString  fileName = Aurora::setFileType(r->name, type);
+		Common::UString name = r->name;
+		if (name.empty())
+			name = Common::formatHash(r->hash);
+
+		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
+		const Common::UString  fileName = TypeMan.setFileType(name, type);
 
 		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
 

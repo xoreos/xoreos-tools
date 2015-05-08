@@ -37,11 +37,7 @@ static const uint32 kVersion11 = MKTAG('V', '1', '.', '1');
 
 namespace Aurora {
 
-KEYFile::KEYFile(const Common::UString &fileName) {
-	Common::File key;
-	if (!key.open(fileName))
-		throw Common::Exception(Common::kOpenError);
-
+KEYFile::KEYFile(Common::SeekableReadStream &key) {
 	load(key);
 }
 
@@ -86,7 +82,7 @@ void KEYFile::load(Common::SeekableReadStream &key) {
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading KEY file");
-		throw e;
+		throw;
 	}
 
 }
@@ -114,7 +110,9 @@ void KEYFile::readBIFList(Common::SeekableReadStream &key, uint32 offset) {
 
 		key.seekTo(curPos);
 
-		AuroraFile::cleanupPath(*bif);
+		bif->replaceAll('\\', '/');
+		if (bif->beginsWith("/"))
+			bif->erase(bif->begin());
 	}
 }
 

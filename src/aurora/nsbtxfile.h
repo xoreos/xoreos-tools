@@ -36,7 +36,6 @@ namespace Common {
 	class SeekableReadStream;
 	class SeekableSubReadStreamEndian;
 	class WriteStream;
-	class File;
 }
 
 namespace Aurora {
@@ -44,11 +43,8 @@ namespace Aurora {
 /** Class to hold resource data of an HERF file. */
 class NSBTXFile : public Archive {
 public:
-	NSBTXFile(const Common::UString &fileName);
+	NSBTXFile(Common::SeekableReadStream *nsbtx);
 	~NSBTXFile();
-
-	/** Clear the resource list. */
-	void clear();
 
 	/** Return the list of resources. */
 	const ResourceList &getResources() const;
@@ -57,7 +53,7 @@ public:
 	uint32 getResourceSize(uint32 index) const;
 
 	/** Return a stream of the resource's contents. */
-	Common::SeekableReadStream *getResource(uint32 index) const;
+	Common::SeekableReadStream *getResource(uint32 index, bool tryNoCopy = false) const;
 
 private:
 	enum Format {
@@ -108,7 +104,7 @@ private:
 		Common::SeekableSubReadStreamEndian *nsbtx;
 		Common::WriteStream *stream;
 
-		ReadContext(const Texture &t, Common::WriteStream &s);
+		ReadContext(Common::SeekableSubReadStreamEndian &n, const Texture &t, Common::WriteStream &s);
 		~ReadContext();
 	};
 
@@ -117,7 +113,7 @@ private:
 
 
 	/** The name of the NSBTX file. */
-	Common::UString _fileName;
+	Common::SeekableSubReadStreamEndian *_nsbtx;
 
 	/** External list of resource names and types. */
 	ResourceList _resources;
@@ -134,7 +130,7 @@ private:
 	Palettes _palettes;
 
 
-	void load();
+	void load(Common::SeekableSubReadStreamEndian &nsbtx);
 
 	void readHeader    (Common::SeekableSubReadStreamEndian &nsbtx);
 	void readFileHeader(Common::SeekableSubReadStreamEndian &nsbtx);
@@ -144,7 +140,7 @@ private:
 
 	void createResourceList();
 
-	Common::SeekableSubReadStreamEndian *open() const;
+	Common::SeekableSubReadStreamEndian *open(Common::SeekableReadStream *nsbtx) const;
 
 	const Palette *findPalette(const Texture &texture) const;
 	void getPalette(ReadContext &ctx) const;

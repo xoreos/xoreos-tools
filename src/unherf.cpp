@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::HERFFile herf(file);
+		Aurora::HERFFile herf(new Common::File(file));
 
 		HashRegistry hashRegistry;
 		createHashRegistry(hashRegistry);
@@ -166,7 +166,7 @@ void listFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
 	std::printf("=======================================|===========\n");
 
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		Common::UString fileName = r->name, fileExt = Aurora::setFileType("", r->type);
+		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
 		if (fileName.empty())
 			findHashedName(hashRegistry, r->hash, fileName, fileExt);
 
@@ -182,7 +182,7 @@ void extractFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		Common::UString fileName = r->name, fileExt = Aurora::setFileType("", r->type);
+		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
 		if (fileName.empty())
 			findHashedName(hashRegistry, r->hash, fileName, fileExt);
 

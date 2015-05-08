@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::NSBTXFile nsbtx(file);
+		Aurora::NSBTXFile nsbtx(new Common::File(file));
 
 		if      (command == kCommandList)
 			listFiles(nsbtx);

@@ -24,7 +24,6 @@
 
 #include "src/common/util.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
 #include "src/common/filepath.h"
 #include "src/common/stream.h"
 #include "src/common/encoding.h"
@@ -35,23 +34,22 @@
 
 namespace Aurora {
 
-HERFFile::HERFFile(const Common::UString &fileName) : _fileName(fileName),
-	_dictOffset(0xFFFFFFFF), _dictSize(0) {
+HERFFile::HERFFile(Common::SeekableReadStream *herf) : _herf(herf), _dictOffset(0xFFFFFFFF), _dictSize(0) {
+	assert(_herf);
 
-	load();
+	try {
+		load(*_herf);
+	} catch (...) {
+		delete _herf;
+		throw;
+	}
 }
 
 HERFFile::~HERFFile() {
+	delete _herf;
 }
 
-void HERFFile::clear() {
-	_resources.clear();
-}
-
-void HERFFile::load() {
-	Common::File herf;
-	open(herf);
-
+void HERFFile::load(Common::SeekableReadStream &herf) {
 	uint32 magic = herf.readUint32LE();
 	if (magic != 0x00F1A5C0)
 		throw Common::Exception("Invalid HERF file (0x%08X)", magic);
@@ -66,14 +64,13 @@ void HERFFile::load() {
 		searchDictionary(herf, resCount);
 		readResList(herf);
 
-	if (herf.err())
-		throw Common::Exception(Common::kReadError);
+		if (herf.err())
+			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading HERF file");
 		throw;
 	}
-
 }
 
 void HERFFile::searchDictionary(Common::SeekableReadStream &herf, uint32 resCount) {
@@ -141,7 +138,7 @@ void HERFFile::readResList(Common::SeekableReadStream &herf) {
 		std::map<uint32, Common::UString>::const_iterator name = dict.find(res->hash);
 		if (name != dict.end()) {
 			res->name = Common::FilePath::getStem(name->second);
-			res->type = getFileType(name->second);
+			res->type = TypeMan.getFileType(name->second);
 		}
 	}
 }
@@ -161,33 +158,19 @@ uint32 HERFFile::getResourceSize(uint32 index) const {
 	return getIResource(index).size;
 }
 
-Common::SeekableReadStream *HERFFile::getResource(uint32 index) const {
+Common::SeekableReadStream *HERFFile::getResource(uint32 index, bool tryNoCopy) const {
 	const IResource &res = getIResource(index);
-	if (res.size == 0)
-		return new Common::MemoryReadStream(0, 0);
 
-	Common::File herf;
-	open(herf);
+	if (tryNoCopy)
+		return new Common::SeekableSubReadStream(_herf, res.offset, res.offset + res.size);
 
-	herf.seek(res.offset);
+	_herf->seek(res.offset);
 
-	Common::SeekableReadStream *resStream = herf.readStream(res.size);
-
-	if (!resStream || (((uint32) resStream->size()) != res.size)) {
-		delete resStream;
-		throw Common::Exception(Common::kReadError);
-	}
-
-	return resStream;
+	return _herf->readStream(res.size);
 }
 
 Common::HashAlgo HERFFile::getNameHashAlgo() const {
 	return Common::kHashDJB2;
-}
-
-void HERFFile::open(Common::File &file) const {
-	if (!file.open(_fileName))
-		throw Common::Exception(Common::kOpenError);
 }
 
 } // End of namespace Aurora

@@ -28,15 +28,11 @@
 
 #include "src/aurora/util.h"
 
+DECLARE_SINGLETON(Aurora::FileTypeManager)
+
 namespace Aurora {
 
-/** File type <-> extension mapping. */
-struct FileExtension {
-	FileType type;
-	const char *extension;
-};
-
-static const FileExtension fileExtensions[] = {
+const FileTypeManager::Type FileTypeManager::types[] = {
 	{kFileTypeNone,           ""    },
 	{kFileTypeRES,            ".res"},
 	{kFileTypeBMP,            ".bmp"},
@@ -168,26 +164,27 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeRSV,            ".rsv"},
 	{kFileTypeSIG,            ".sig"},
 	{kFileTypeMAB,            ".mab"},
-	{kFileTypeQST2,           ".qst"},
+	{kFileTypeQST2,           ".qst2"},
 	{kFileTypeSTO,            ".sto"},
-	{kFileTypeMDX2,           ".mdx"},
-	{kFileTypeTXB2,           ".txb"},
+	{kFileTypeMDX2,           ".mdx2"},
+	{kFileTypeTXB2,           ".txb2"},
 	{kFileTypeFSM,            ".fsm"},
 	{kFileTypeART,            ".art"},
 	{kFileTypeBIP,            ".bip"},
-	{kFileTypeMDB2,           ".mdb"},
-	{kFileTypeMDA2,           ".mda"},
-	{kFileTypeSPT2,           ".spt"},
+	{kFileTypeMDB2,           ".mdb2"},
+	{kFileTypeMDA2,           ".mda2"},
+	{kFileTypeSPT2,           ".spt2"},
 	{kFileTypeGR2,            ".gr2"},
 	{kFileTypeFXA,            ".fxa"},
 	{kFileTypeFXE,            ".fxe"},
-	{kFileTypeJPG2,           ".jpg"},
+	{kFileTypeJPG2,           ".jpg2"},
 	{kFileTypePWC,            ".pwc"},
 	{kFileType1DA,            ".1da"},
 	{kFileTypeERF,            ".erf"},
 	{kFileTypeBIF,            ".bif"},
 	{kFileTypeKEY,            ".key"},
 
+	{kFileTypeEXE,            ".exe"},
 	{kFileTypeDBF,            ".dbf"},
 	{kFileTypeCDX,            ".cdx"},
 	{kFileTypeFPT,            ".fpt"},
@@ -279,6 +276,8 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeFEV,            ".fev"},
 	{kFileTypeFSB,            ".fsb"},
 	{kFileTypeOPF,            ".opf"},
+	{kFileTypeCRF,            ".crf"},
+	{kFileTypeRIMP,           ".rimp"},
 
 	{kFileTypeMOV,            ".mov"},
 	{kFileTypeCURS,           ".curs"},
@@ -329,17 +328,14 @@ static const FileExtension fileExtensions[] = {
 	{kFileTypeXEOSITEX,       ".xoreositex"}
 };
 
-FileType getFileType(const Common::UString &path) {
-	const Common::UString ext = Common::FilePath::getExtension(path);
 
-	for (int i = 0; i < ARRAYSIZE(fileExtensions); i++)
-		if (ext.equalsIgnoreCase(fileExtensions[i].extension))
-			return fileExtensions[i].type;
-
-	return kFileTypeNone;
+FileTypeManager::FileTypeManager() {
 }
 
-FileType aliasFileType(FileType type, GameID game) {
+FileTypeManager::~FileTypeManager() {
+}
+
+FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 	switch (game) {
 		case kGameIDNWN2:
 			switch ((int) type) {
@@ -417,19 +413,95 @@ FileType aliasFileType(FileType type, GameID game) {
 			break;
 	}
 
+	switch (type) {
+		case kFileTypeQST2:
+			return kFileTypeQST;
+		case kFileTypeMDX2:
+			return kFileTypeMDX;
+		case kFileTypeTXB2:
+			return kFileTypeTXB;
+		case kFileTypeMDB2:
+			return kFileTypeMDB;
+		case kFileTypeMDA2:
+			return kFileTypeMDA;
+		case kFileTypeSPT2:
+			return kFileTypeSPT2;
+		case kFileTypeJPG2:
+			return kFileTypeJPG2;
+		default:
+			break;
+	}
+
 	return type;
 }
 
-Common::UString setFileType(const Common::UString &path, FileType type) {
-	Common::UString ext;
+FileType FileTypeManager::getFileType(const Common::UString &path) {
+	buildExtensionLookup();
 
-	for (int i = 0; i < ARRAYSIZE(fileExtensions); i++)
-		if (fileExtensions[i].type == type) {
-			ext = fileExtensions[i].extension;
-			break;
-		}
+	Common::UString ext = Common::FilePath::getExtension(path).toLower();
+
+	ExtensionLookup::const_iterator t = _extensionLookup.find(ext);
+	if (t != _extensionLookup.end())
+		return t->second->type;
+
+	return kFileTypeNone;
+}
+
+Common::UString FileTypeManager::addFileType(const Common::UString &path, FileType type) {
+	return setFileType(path + ".", type);
+}
+
+Common::UString FileTypeManager::setFileType(const Common::UString &path, FileType type) {
+	buildTypeLookup();
+
+	Common::UString ext;
+	TypeLookup::const_iterator t = _typeLookup.find(type);
+	if (t != _typeLookup.end())
+		ext = t->second->extension;
 
 	return Common::FilePath::changeExtension(path, ext);
+}
+
+FileType FileTypeManager::getFileType(Common::HashAlgo algo, uint64 hashedExtension) {
+	if ((algo < 0) || (algo >= Common::kHashMAX))
+		return kFileTypeNone;
+
+	buildHashLookup(algo);
+
+	HashLookup::const_iterator t = _hashLookup[algo].find(hashedExtension);
+	if (t != _hashLookup[algo].end())
+		return t->second->type;
+
+	return kFileTypeNone;
+}
+
+void FileTypeManager::buildExtensionLookup() {
+	if (!_extensionLookup.empty())
+		return;
+
+	for (int i = 0; i < ARRAYSIZE(types); i++)
+		_extensionLookup.insert(std::make_pair(Common::UString(types[i].extension), &types[i]));
+}
+
+void FileTypeManager::buildTypeLookup() {
+	if (!_typeLookup.empty())
+		return;
+
+	for (int i = 0; i < ARRAYSIZE(types); i++)
+		_typeLookup.insert(std::make_pair(types[i].type, &types[i]));
+}
+
+void FileTypeManager::buildHashLookup(Common::HashAlgo algo) {
+	if (!_hashLookup[algo].empty())
+		return;
+
+	for (int i = 0; i < ARRAYSIZE(types); i++) {
+		const char *ext = types[i].extension;
+		if (ext[0] == '.')
+			ext++;
+
+		_hashLookup[algo].insert(std::make_pair(Common::hashString(ext, algo), &types[i]));
+	}
 }
 
 Common::UString getPlatformDescription(Platform platform) {

@@ -37,7 +37,6 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/stream.h"
-#include "src/common/file.h"
 #include "src/common/encoding.h"
 
 #include "src/aurora/nsbtxfile.h"
@@ -53,25 +52,30 @@ static const uint32 kTEX0ID = MKTAG('T', 'E', 'X', '0');
 
 namespace Aurora {
 
-NSBTXFile::ReadContext::ReadContext(const Texture &t, Common::WriteStream &s) :
-	texture(&t), palette(0), nsbtx(0), stream(&s) {
+NSBTXFile::ReadContext::ReadContext(Common::SeekableSubReadStreamEndian &n, const Texture &t,
+                                    Common::WriteStream &s) :
+	texture(&t), palette(0), nsbtx(&n), stream(&s) {
 }
 
 NSBTXFile::ReadContext::~ReadContext() {
-	delete nsbtx;
 	delete[] palette;
 }
 
 
-NSBTXFile::NSBTXFile(const Common::UString &fileName) : _fileName(fileName) {
-	load();
+NSBTXFile::NSBTXFile(Common::SeekableReadStream *nsbtx) : _nsbtx(0) {
+	assert(nsbtx);
+
+	try {
+		_nsbtx = open(nsbtx);
+		load(*_nsbtx);
+	} catch (...) {
+		delete _nsbtx;
+		throw;
+	}
 }
 
 NSBTXFile::~NSBTXFile() {
-}
-
-void NSBTXFile::clear() {
-	_resources.clear();
+	delete _nsbtx;
 }
 
 const Archive::ResourceList &NSBTXFile::getResources() const {
@@ -307,17 +311,15 @@ void NSBTXFile::getTexture(const ReadContext &ctx) {
 	}
 }
 
-Common::SeekableReadStream *NSBTXFile::getResource(uint32 index) const {
+Common::SeekableReadStream *NSBTXFile::getResource(uint32 index, bool UNUSED(tryNoCopy)) const {
 	if (index >= _textures.size())
 		throw Common::Exception("Texture index out of range (%d/%d)", index, _textures.size());
 
 	Common::MemoryWriteStreamDynamic stream(false, getITEXSize(_textures[index]));
 
 	try {
-		ReadContext ctx(_textures[index], stream);
+		ReadContext ctx(*_nsbtx, _textures[index], stream);
 		writeITEXHeader(ctx);
-
-		ctx.nsbtx = open();
 
 		getPalette(ctx);
 		getTexture(ctx);
@@ -330,30 +332,25 @@ Common::SeekableReadStream *NSBTXFile::getResource(uint32 index) const {
 	return new Common::MemoryReadStream(stream.getData(), stream.size(), true);
 }
 
-void NSBTXFile::load() {
-	Common::SeekableSubReadStreamEndian *nsbtx = open();
-
+void NSBTXFile::load(Common::SeekableSubReadStreamEndian &nsbtx) {
 	try {
 
-		readHeader(*nsbtx);
-		readTextures(*nsbtx);
-		readPalettes(*nsbtx);
+		readHeader(nsbtx);
+		readTextures(nsbtx);
+		readPalettes(nsbtx);
 
 		createResourceList();
 
-	} catch (Common::Exception &e) {
-		delete nsbtx;
+		if (nsbtx.err())
+			throw Common::Exception(Common::kReadError);
 
+	} catch (Common::Exception &e) {
 		e.add("Failed reading NSBTX file");
 		throw;
 	}
-
-	delete nsbtx;
 }
 
-Common::SeekableSubReadStreamEndian *NSBTXFile::open() const {
-	Common::File *nsbtx = new Common::File(_fileName);
-
+Common::SeekableSubReadStreamEndian *NSBTXFile::open(Common::SeekableReadStream *nsbtx) const {
 	bool bigEndian = false;
 	try {
 		const uint32 tag = nsbtx->readUint32BE();

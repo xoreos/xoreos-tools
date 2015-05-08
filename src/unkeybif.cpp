@@ -203,15 +203,18 @@ void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::
 void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile> &keys) {
 	keys.reserve(keyFiles.size());
 
-	for (std::vector<Common::UString>::const_iterator f = keyFiles.begin(); f != keyFiles.end(); ++f)
-		keys.push_back(Aurora::KEYFile(*f));
+	for (std::vector<Common::UString>::const_iterator f = keyFiles.begin(); f != keyFiles.end(); ++f) {
+		Common::File key(*f);
+
+		keys.push_back(Aurora::KEYFile(key));
+	}
 }
 
 void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile> &bifs) {
 	bifs.reserve(bifFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = bifFiles.begin(); f != bifFiles.end(); ++f)
-		bifs.push_back(Aurora::BIFFile(*f));
+		bifs.push_back(Aurora::BIFFile(new Common::File(*f)));
 }
 
 void mergeKEYBIF(std::vector<Aurora::KEYFile> &keys, std::vector<Aurora::BIFFile> &bifs,
@@ -257,9 +260,9 @@ void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
 	std::printf("\n");
 
 	for (Aurora::KEYFile::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = Aurora::aliasFileType(r->type, game);
+		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
 
-		std::printf("%32s%s | %s\n", r->name.c_str(), Aurora::setFileType("", type).c_str(),
+		std::printf("%32s%s | %s\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
 		                             bifs[r->bifIndex].c_str());
 	}
 }
@@ -279,8 +282,8 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
 
 	uint i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Aurora::FileType type     = Aurora::aliasFileType(r->type, game);
-		const Common::UString  fileName = Aurora::setFileType(r->name, type);
+		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
+		const Common::UString  fileName = TypeMan.setFileType(r->name, type);
 
 		std::printf("Extracting %u/%u: %s ... ", i, (uint) resources.size(), fileName.c_str());
 

@@ -25,9 +25,10 @@
 // Based on http://dsibrew.org/wiki/NDS_Format
 
 #include "src/common/util.h"
+#include "src/common/ustring.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
 #include "src/common/stream.h"
+#include "src/common/file.h"
 #include "src/common/encoding.h"
 
 #include "src/aurora/ndsrom.h"
@@ -35,83 +36,56 @@
 
 namespace Aurora {
 
-NDSFile::NDSFile(const Common::UString &fileName) : _fileName(fileName) {
-	load();
+NDSFile::NDSFile(const Common::UString &fileName) : _nds(0) {
+	_nds = new Common::File(fileName);
+
+	try {
+		load(*_nds);
+	} catch (...) {
+		delete _nds;
+		throw;
+	}
+}
+
+NDSFile::NDSFile(Common::SeekableReadStream *nds) : _nds(nds) {
+	assert(_nds);
+
+	try {
+		load(*_nds);
+	} catch (...) {
+		delete _nds;
+		throw;
+	}
 }
 
 NDSFile::~NDSFile() {
+	delete _nds;
 }
 
-void NDSFile::clear() {
-	_resources.clear();
-}
+void NDSFile::load(Common::SeekableReadStream &nds) {
+	if (!isNDS(nds, _title, _code, _maker))
+		throw Common::Exception("Not a support NDS ROM file");
 
-void NDSFile::load() {
-	Common::File nds;
-	open(nds);
+	nds.seek(0x40);
 
-	if (!readHeader(nds))
-		throw Common::Exception("Not a valid NDS ROM file");
+	uint32 fileNameTableOffset = nds.readUint32LE();
+	uint32 fileNameTableLength = nds.readUint32LE();
+	uint32 fatOffset           = nds.readUint32LE();
+	//uint32 fatLength = nds.readUint32LE();
 
 	try {
 
-		readNames(nds, _fileNameTableOffset, _fileNameTableLength);
-		readFAT(nds, _fatOffset);
+		readNames(nds, fileNameTableOffset, fileNameTableLength);
+		readFAT(nds, fatOffset);
 
-	if (nds.err())
-		throw Common::Exception(Common::kReadError);
+		if (nds.err())
+			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading NDS file");
 		throw;
 	}
 
-}
-
-bool NDSFile::readHeader(Common::SeekableReadStream &nds) {
-	nds.seek(0x00);
-	_name  = Common::readStringFixed(nds, Common::kEncodingASCII, 12);
-	_code  = Common::readStringFixed(nds, Common::kEncodingASCII,  4);
-	_maker = Common::readStringFixed(nds, Common::kEncodingASCII,  2);
-
-	nds.seek(0x20);
-	_arm9CodeOffset = nds.readUint32LE();
-	nds.skip(8);
-	_arm9CodeSize = nds.readUint32LE();
-
-	nds.seek(0x30);
-	_arm7CodeOffset = nds.readUint32LE();
-	nds.skip(8);
-	_arm7CodeSize = nds.readUint32LE();
-
-	nds.seek(0x40);
-	_fileNameTableOffset = nds.readUint32LE();
-	_fileNameTableLength = nds.readUint32LE();
-	_fatOffset           = nds.readUint32LE();
-	_fatLength           = nds.readUint32LE();
-
-	nds.seek(0x80);
-	_romSize    = nds.readUint32LE();
-	_headerSize = nds.readUint32LE();
-
-	const uint32 size = nds.size();
-
-	if ((_fileNameTableOffset >= size) || ((_fileNameTableOffset + _fileNameTableLength) > size))
-		return false;
-	if ((_fatOffset >= size) || ((_fatOffset + _fatLength) > size))
-		return false;
-
-	if ((_arm9CodeOffset >= size) || ((_arm9CodeOffset + _arm9CodeSize) > size))
-		return false;
-	if ((_arm7CodeOffset >= size) || ((_arm7CodeOffset + _arm7CodeSize) > size))
-		return false;
-
-	if (_romSize > size)
-		return false;
-	if (_headerSize > size)
-		return false;
-
-	return true;
 }
 
 void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 length) {
@@ -125,15 +99,12 @@ void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 l
 
 		Common::UString name = Common::readStringFixed(nds, Common::kEncodingASCII, nameLength).toLower();
 
-		res.name  = setFileType(name, kFileTypeNone);
-		res.type  = getFileType(name);
+		res.name  = TypeMan.setFileType(name, kFileTypeNone);
+		res.type  = TypeMan.getFileType(name);
 		res.index = index++;
 
 		_resources.push_back(res);
 	}
-
-	while (!_resources.empty() && _resources.back().name.empty())
-		_resources.pop_back();
 }
 
 void NDSFile::readFAT(Common::SeekableReadStream &nds, uint32 offset) {
@@ -144,6 +115,47 @@ void NDSFile::readFAT(Common::SeekableReadStream &nds, uint32 offset) {
 		res->offset = nds.readUint32LE();
 		res->size   = nds.readUint32LE() - res->offset; // Value is the end offset
 	}
+}
+
+const Common::UString &NDSFile::getTitle() const {
+	return _title;
+}
+
+const Common::UString &NDSFile::getCode() const {
+	return _code;
+}
+
+const Common::UString &NDSFile::getMaker() const {
+	return _maker;
+}
+
+bool NDSFile::isNDS(Common::SeekableReadStream &stream,
+                    Common::UString &title, Common::UString &code, Common::UString &maker) {
+
+	if (stream.size() < 0x40)
+		return false;
+
+	try {
+		stream.seek(0);
+
+		title = Common::readStringFixed(stream, Common::kEncodingASCII, 12);
+		code  = Common::readStringFixed(stream, Common::kEncodingASCII,  4);
+		maker = Common::readStringFixed(stream, Common::kEncodingASCII,  2);
+	} catch (...) {
+		return false;
+	}
+
+	return true;
+}
+
+bool NDSFile::hasResource(Common::UString name) const {
+	name.makeLower();
+
+	for (ResourceList::const_iterator r = _resources.begin(); r != _resources.end(); ++r)
+		if (TypeMan.setFileType(r->name, r->type) == name)
+			return true;
+
+	return false;
 }
 
 const Archive::ResourceList &NDSFile::getResources() const {
@@ -161,41 +173,17 @@ uint32 NDSFile::getResourceSize(uint32 index) const {
 	return getIResource(index).size;
 }
 
-Common::SeekableReadStream *NDSFile::getResource(uint32 index) const {
+Common::SeekableReadStream *NDSFile::getResource(uint32 index, bool tryNoCopy) const {
 	const IResource &res = getIResource(index);
-	if (res.size == 0)
-		return new Common::MemoryReadStream(0, 0);
 
-	Common::File nds;
-	open(nds);
+	_nds->seek(res.offset);
 
-	nds.seek(res.offset);
+	if (tryNoCopy)
+		return new Common::SeekableSubReadStream(_nds, res.offset, res.offset + res.size);
 
-	Common::SeekableReadStream *resStream = nds.readStream(res.size);
+	_nds->seek(res.offset);
 
-	if (!resStream || (((uint32) resStream->size()) != res.size)) {
-		delete resStream;
-		throw Common::Exception(Common::kReadError);
-	}
-
-	return resStream;
-}
-
-void NDSFile::open(Common::File &file) const {
-	if (!file.open(_fileName))
-		throw Common::Exception(Common::kOpenError);
-}
-
-const Common::UString &NDSFile::getName() const {
-	return _name;
-}
-
-const Common::UString &NDSFile::getCode() const {
-	return _code;
-}
-
-const Common::UString &NDSFile::getMaker() const {
-	return _maker;
+	return _nds->readStream(res.size);
 }
 
 } // End of namespace Aurora

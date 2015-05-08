@@ -25,24 +25,65 @@
 #ifndef AURORA_UTIL_H
 #define AURORA_UTIL_H
 
+#include <map>
+
+#include "src/common/singleton.h"
+#include "src/common/hash.h"
+#include "src/common/ustring.h"
+
 #include "src/aurora/types.h"
 
 namespace Aurora {
 
-class UString;
-
 /** Return the human readable string of a Platform. */
 Common::UString getPlatformDescription(Platform platform);
 
-/** Return the file type of a file name, detected by its extension. */
-FileType getFileType(const Common::UString &path);
 
-/** Alias the file type according to specific rules per game. */
-FileType aliasFileType(FileType type, GameID game);
+class FileTypeManager : public Common::Singleton<FileTypeManager> {
+public:
+	FileTypeManager();
+	~FileTypeManager();
 
-/** Return the file name with a swapped extensions according to the specified file type. */
-Common::UString setFileType(const Common::UString &path, FileType type);
+	FileType aliasFileType(FileType type, GameID game = kGameIDUnknown) const;
+
+	/** Return the file type of a file name, detected by its extension. */
+	FileType getFileType(const Common::UString &path);
+
+	/** Return the file type of a file name, detected by its hashed extension. */
+	FileType getFileType(Common::HashAlgo algo, uint64 hashedExtension);
+
+	/** Return the file name with an added extensions according to the specified file type. */
+	Common::UString addFileType(const Common::UString &path, FileType type);
+	/** Return the file name with a swapped extensions according to the specified file type. */
+	Common::UString setFileType(const Common::UString &path, FileType type);
+
+
+private:
+	/** File type <-> extension mapping. */
+	struct Type {
+		FileType type;
+		const char *extension;
+	};
+
+	static const Type types[];
+
+	typedef std::map<Common::UString, const Type *> ExtensionLookup;
+	typedef std::map<FileType       , const Type *> TypeLookup;
+	typedef std::map<uint64         , const Type *> HashLookup;
+
+	ExtensionLookup _extensionLookup;
+	TypeLookup      _typeLookup;
+	HashLookup      _hashLookup[Common::kHashMAX];
+
+
+	void buildExtensionLookup();
+	void buildTypeLookup();
+	void buildHashLookup(Common::HashAlgo algo);
+};
 
 } // End of namespace Aurora
+
+/** Shortcut for accessing the file type manager. */
+#define TypeMan ::Aurora::FileTypeManager::instance()
 
 #endif // AURORA_UTIL_H
