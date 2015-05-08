@@ -47,6 +47,7 @@ Makefile.in
 /src/unnsbtx
 /src/desmall
 /src/texture2tga
+/src/nbfs2tga
 
 # Windows binaries
 /src/gff2xml.exe
@@ -59,3 +60,4 @@ Makefile.in
 /src/unnsbtx.exe
 /src/desmall.exe
 /src/texture2tga.exe
+/src/nbfs2tga.exe
