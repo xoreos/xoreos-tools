@@ -56,16 +56,16 @@ uint32 getFileID(const Common::UString &fileName);
 void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::UString> &keyFiles,
                    std::vector<Common::UString> &bifFiles);
 
-void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile> &keys);
-void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile> &bifs);
+void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile *> &keys);
+void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile *> &bifs);
 
-void mergeKEYBIF(std::vector<Aurora::KEYFile> &keys, std::vector<Aurora::BIFFile> &bifs,
+void mergeKEYBIF(std::vector<Aurora::KEYFile *> &keys, std::vector<Aurora::BIFFile *> &bifs,
                  const std::vector<Common::UString> &bifFiles);
 
 void listFiles(const Aurora::KEYFile &key, Aurora::GameID game);
-void listFiles(const std::vector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
+void listFiles(const std::vector<Aurora::KEYFile *> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
 void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
-void extractFiles(const std::vector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
+void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
 	Aurora::GameID game = Aurora::kGameIDUnknown;
@@ -76,14 +76,15 @@ int main(int argc, char **argv) {
 	if (!parseCommandLine(argc, argv, returnValue, command, files, game))
 		return returnValue;
 
+	std::vector<Aurora::KEYFile *> keys;
+	std::vector<Aurora::BIFFile *> bifs;
+
 	try {
 		std::vector<Common::UString> keyFiles, bifFiles;
 		identifyFiles(files, keyFiles, bifFiles);
 
-		std::vector<Aurora::KEYFile> keys;
 		openKEYs(keyFiles, keys);
 
-		std::vector<Aurora::BIFFile> bifs;
 		openBIFs(bifFiles, bifs);
 
 		mergeKEYBIF(keys, bifs, bifFiles);
@@ -94,9 +95,19 @@ int main(int argc, char **argv) {
 			extractFiles(bifs, bifFiles, game);
 
 	} catch (Common::Exception &e) {
+		for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
+			delete *k;
+		for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
+			delete *b;
+
 		Common::printException(e);
 		return -1;
 	}
+
+	for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
+		delete *k;
+	for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
+		delete *b;
 
 	return 0;
 }
@@ -200,31 +211,31 @@ void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::
 	}
 }
 
-void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile> &keys) {
+void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile *> &keys) {
 	keys.reserve(keyFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = keyFiles.begin(); f != keyFiles.end(); ++f) {
 		Common::File key(*f);
 
-		keys.push_back(Aurora::KEYFile(key));
+		keys.push_back(new Aurora::KEYFile(key));
 	}
 }
 
-void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile> &bifs) {
+void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile *> &bifs) {
 	bifs.reserve(bifFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = bifFiles.begin(); f != bifFiles.end(); ++f)
-		bifs.push_back(Aurora::BIFFile(new Common::File(*f)));
+		bifs.push_back(new Aurora::BIFFile(new Common::File(*f)));
 }
 
-void mergeKEYBIF(std::vector<Aurora::KEYFile> &keys, std::vector<Aurora::BIFFile> &bifs,
+void mergeKEYBIF(std::vector<Aurora::KEYFile *> &keys, std::vector<Aurora::BIFFile *> &bifs,
                  const std::vector<Common::UString> &bifFiles) {
 
 	// Go over all KEYs
-	for (std::vector<Aurora::KEYFile>::iterator k = keys.begin(); k != keys.end(); ++k) {
+	for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k) {
 
 		// Go over all BIFs handled by the KEY
-		const Aurora::KEYFile::BIFList &keyBifs = k->getBIFs();
+		const Aurora::KEYFile::BIFList &keyBifs = (*k)->getBIFs();
 		for (uint kb = 0; kb < keyBifs.size(); kb++) {
 
 			// Go over all BIFs
@@ -232,7 +243,7 @@ void mergeKEYBIF(std::vector<Aurora::KEYFile> &keys, std::vector<Aurora::BIFFile
 
 				// If they match, merge
 				if (Common::FilePath::getFile(keyBifs[kb]).equalsIgnoreCase(Common::FilePath::getFile(bifFiles[b])))
-					bifs[b].mergeKEY(*k, kb);
+					bifs[b]->mergeKEY(**k, kb);
 
 			}
 
@@ -267,10 +278,10 @@ void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
 	}
 }
 
-void listFiles(const std::vector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
+void listFiles(const std::vector<Aurora::KEYFile *> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
 	for (uint i = 0; i < keys.size(); i++) {
-		std::printf("%s: %u files\n\n", keyFiles[i].c_str(), (uint)keys[i].getResources().size());
-		listFiles(keys[i], game);
+		std::printf("%s: %u files\n\n", keyFiles[i].c_str(), (uint)keys[i]->getResources().size());
+		listFiles(*keys[i], game);
 
 		if (i < (keys.size() - 1))
 			std::printf("\n");
@@ -303,12 +314,12 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
 
 }
 
-void extractFiles(const std::vector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
+void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
 	for (uint i = 0; i < bifs.size(); i++) {
-		std::printf("%s: %u indexed files (of %u)\n\n", bifFiles[i].c_str(), (uint)bifs[i].getResources().size(),
-                bifs[i].getInternalResourceCount());
+		std::printf("%s: %u indexed files (of %u)\n\n", bifFiles[i].c_str(), (uint)bifs[i]->getResources().size(),
+                bifs[i]->getInternalResourceCount());
 
-		extractFiles(bifs[i], game);
+		extractFiles(*bifs[i], game);
 
 		if (i < (bifs.size() - 1))
 			std::printf("\n");
