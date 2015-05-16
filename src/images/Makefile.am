@@ -20,6 +20,7 @@ noinst_HEADERS = \
                  xoreositex.h \
                  nbfs.h \
                  nclr.h \
+                 ncgr.h \
                  $(EMPTY)
 
 libimages_la_SOURCES = \
@@ -35,6 +36,7 @@ libimages_la_SOURCES = \
                        xoreositex.cpp \
                        nbfs.cpp \
                        nclr.cpp \
+                       ncgr.cpp \
                        $(EMPTY)
 
 libimages_la_LIBADD = \
