@@ -23,5 +23,6 @@ Currently, the following tools are included:
 * desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
 * texture2tga: Convert BioWare's texture formats into TGA
 * nbfs2tga: Convert Nintendo's raw NBFS images into TGA
+* ncgr2tga: Convert Nintendo's NCGR images into TGA
 
 Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)

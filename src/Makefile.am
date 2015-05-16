@@ -23,6 +23,7 @@ bin_PROGRAMS = \
                desmall \
                texture2tga \
                nbfs2tga \
+               ncgr2tga \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -129,6 +130,16 @@ nbfs2tga_SOURCES = \
                    nbfs2tga.cpp \
                    $(EMPTY)
 nbfs2tga_LDADD   = \
+                   images/libimages.la \
+                   aurora/libaurora.la \
+                   common/libcommon.la \
+                   $(LDADD) \
+                   $(EMPTY)
+
+ncgr2tga_SOURCES = \
+                   ncgr2tga.cpp \
+                   $(EMPTY)
+ncgr2tga_LDADD   = \
                    images/libimages.la \
                    aurora/libaurora.la \
                    common/libcommon.la \
