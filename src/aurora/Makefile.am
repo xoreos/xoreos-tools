@@ -21,6 +21,7 @@ noinst_HEADERS = \
                  talktable.h \
                  talktable_tlk.h \
                  talktable_gff.h \
+                 2dafile.h \
                  smallfile.h \
                  nitrofile.h \
                  nsbtxfile.h \
@@ -43,6 +44,7 @@ libaurora_la_SOURCES = \
                        talktable.cpp \
                        talktable_tlk.cpp \
                        talktable_gff.cpp \
+                       2dafile.cpp \
                        smallfile.cpp \
                        nitrofile.cpp \
                        nsbtxfile.cpp \
