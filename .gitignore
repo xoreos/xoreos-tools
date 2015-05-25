@@ -49,6 +49,7 @@ Makefile.in
 /src/texture2tga
 /src/nbfs2tga
 /src/ncgr2tga
+/src/cbgt2tga
 
 # Windows binaries
 /src/gff2xml.exe
@@ -63,3 +64,4 @@ Makefile.in
 /src/texture2tga.exe
 /src/nbfs2tga.exe
 /src/ncgr2tga.exe
+/src/cbgt2tga.exe
