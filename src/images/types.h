@@ -38,6 +38,8 @@ enum PixelFormat {
 
 	kPixelFormatR5G6B5,
 
+	kPixelFormatDepth16,
+
 	kPixelFormatDXT1,
 	kPixelFormatDXT3,
 	kPixelFormatDXT5

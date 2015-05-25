@@ -46,6 +46,7 @@ static inline int getBPP(PixelFormat format) {
 
 		case kPixelFormatA1R5G5B5:
 		case kPixelFormatR5G6B5:
+		case kPixelFormatDepth16:
 			return 2;
 
 		default:
