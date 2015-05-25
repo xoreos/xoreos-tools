@@ -50,6 +50,7 @@ Makefile.in
 /src/nbfs2tga
 /src/ncgr2tga
 /src/cbgt2tga
+/src/cdpth2tga
 
 # Windows binaries
 /src/gff2xml.exe
@@ -65,3 +66,4 @@ Makefile.in
 /src/nbfs2tga.exe
 /src/ncgr2tga.exe
 /src/cbgt2tga.exe
+/src/cdpth2tga.exe

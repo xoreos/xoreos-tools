@@ -25,6 +25,7 @@ bin_PROGRAMS = \
                nbfs2tga \
                ncgr2tga \
                cbgt2tga \
+               cdpth2tga \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -156,3 +157,13 @@ cbgt2tga_LDADD   = \
                    common/libcommon.la \
                    $(LDADD) \
                    $(EMPTY)
+
+cdpth2tga_SOURCES = \
+                    cdpth2tga.cpp \
+                    $(EMPTY)
+cdpth2tga_LDADD   = \
+                    images/libimages.la \
+                    aurora/libaurora.la \
+                    common/libcommon.la \
+                    $(LDADD) \
+                    $(EMPTY)
