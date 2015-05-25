@@ -72,6 +72,14 @@ static void writePixel(Common::DumpFile &file, const byte *&data, PixelFormat fo
 		file.writeByte((color & 0x7C00) >> 10);
 		file.writeByte((color & 0x8000) ? 0xFF : 0x00);
 		data += 2;
+	} else if (format == kPixelFormatDepth16) {
+		uint16 color = READ_LE_UINT16(data);
+		file.writeByte(color / 128);
+		file.writeByte(color / 128);
+		file.writeByte(color / 128);
+		file.writeByte((color >= 0x7FFF) ? 0x00 : 0xFF);
+
+		data += 2;
 	} else
 		throw Common::Exception("Unsupported pixel format: %d", (int) format);
 
