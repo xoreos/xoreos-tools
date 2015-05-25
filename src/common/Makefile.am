@@ -16,6 +16,7 @@ noinst_HEADERS = \
                  strutil.h \
                  encoding.h \
                  stream.h \
+                 streamtokenizer.h \
                  file.h \
                  filepath.h \
                  $(EMPTY)
@@ -28,6 +29,7 @@ libcommon_la_SOURCES = \
                        strutil.cpp \
                        encoding.cpp \
                        stream.cpp \
+                       streamtokenizer.cpp \
                        file.cpp \
                        filepath.cpp \
                        $(EMPTY)
