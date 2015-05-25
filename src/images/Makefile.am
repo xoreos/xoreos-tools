@@ -22,6 +22,7 @@ noinst_HEADERS = \
                  nclr.h \
                  ncgr.h \
                  cbgt.h \
+                 cdpth.h \
                  $(EMPTY)
 
 libimages_la_SOURCES = \
@@ -39,6 +40,7 @@ libimages_la_SOURCES = \
                        nclr.cpp \
                        ncgr.cpp \
                        cbgt.cpp \
+                       cdpth.cpp \
                        $(EMPTY)
 
 libimages_la_LIBADD = \
