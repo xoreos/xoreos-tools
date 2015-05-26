@@ -102,6 +102,13 @@ int main(int argc, char **argv) {
 
 		Common::printException(e);
 		return -1;
+	} catch (std::exception &e) {
+		for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
+			delete *k;
+		for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
+			delete *b;
+
+		error("%s", e.what());
 	}
 
 	for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
