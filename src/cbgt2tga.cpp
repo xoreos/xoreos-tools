@@ -77,8 +77,6 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 
 	bool optionsEnd = false;
 	for (int i = 1; i < argc; i++) {
-		bool isOption = false;
-
 		// A "--" marks an end to all options
 		if (!strcmp(argv[i], "--")) {
 			optionsEnd = true;
@@ -104,10 +102,6 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 				return false;
 			}
 		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
 
 		args.push_back(argv[i]);
 	}
