@@ -1131,7 +1131,7 @@ static const GDAHeaderHash kGDAHeaderHashes[] = {
 	{2687893746, "PlotNum"                    },
 	{2693800414, "Warrior"                    },
 	{2698827660, "Game_RunSpeed"              },
-	{2700095129, "Xp"                         },
+	{2700095129, "XP"                         },
 	{2703648311, "AmmoType"                   },
 	{2705070242, "Material6"                  },
 	{2711913808, "AddAnimation"               },
