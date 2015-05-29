@@ -1689,7 +1689,7 @@ static const GDAHeaderHash kGDAHeaderHashes[] = {
 	{4040075570, "AffectImmortal"             },
 	{4040813163, "Text"                       },
 	{4040874411, "Above10_MainSystem"         },
-	{4041832710, "Hp"                         },
+	{4041832710, "HP"                         },
 	{4043451597, "Den971ar_Franderel_Estate_2"},
 	{4045941194, "Effect2_Duration"           },
 	{4046337976, "Y1"                         },
