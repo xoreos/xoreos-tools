@@ -42,6 +42,7 @@ namespace Common {
 namespace Aurora {
 
 class TwoDAFile;
+class GDAFile;
 
 class TwoDARow {
 public:
@@ -72,6 +73,7 @@ private:
 class TwoDAFile : public AuroraBase {
 public:
 	TwoDAFile(Common::SeekableReadStream &twoda);
+	TwoDAFile(const GDAFile &gda);
 	~TwoDAFile();
 
 	/** Return the number of rows in the array. */
@@ -125,6 +127,9 @@ private:
 	void readHeaders2b (Common::SeekableReadStream &twoda);
 	void skipRowNames2b(Common::SeekableReadStream &twoda);
 	void readRows2b    (Common::SeekableReadStream &twoda);
+
+	// GDA loading/conversion helpers
+	void load(const GDAFile &gda);
 
 	void createHeaderMap();
 
