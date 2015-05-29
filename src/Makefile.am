@@ -9,6 +9,7 @@ SUBDIRS = \
 
 noinst_HEADERS = \
                  util.h \
+                 files_sonic.h \
                  $(EMPTY)
 
 bin_PROGRAMS = \
@@ -61,6 +62,7 @@ unerf_LDADD   = \
 unherf_SOURCES = \
                  unherf.cpp \
                  util.cpp \
+                 files_sonic.cpp \
                  $(EMPTY)
 unherf_LDADD   = \
                  aurora/libaurora.la \

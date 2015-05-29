@@ -46,20 +46,16 @@ enum Command {
 	kCommandMAX
 };
 
-typedef std::map<uint32, Common::UString> HashRegistry;
-
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Command &command, Common::UString &file);
 
-void createHashRegistry(HashRegistry &hashRegistry);
-bool findHashedName(const HashRegistry &hashRegistry, uint32 hash,
-                    Common::UString &name, Common::UString &ext);
+bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext);
 
-void listFiles(Aurora::HERFFile &rim, const HashRegistry &hashRegistry);
-void extractFiles(Aurora::HERFFile &rim, const HashRegistry &hashRegistry);
+void listFiles(Aurora::HERFFile &rim);
+void extractFiles(Aurora::HERFFile &rim);
 
 int main(int argc, char **argv) {
 	int returnValue;
@@ -71,13 +67,10 @@ int main(int argc, char **argv) {
 	try {
 		Aurora::HERFFile herf(new Common::File(file));
 
-		HashRegistry hashRegistry;
-		createHashRegistry(hashRegistry);
-
 		if      (command == kCommandList)
-			listFiles(herf, hashRegistry);
+			listFiles(herf);
 		else if (command == kCommandExtract)
-			extractFiles(herf, hashRegistry);
+			extractFiles(herf);
 
 	} catch (Common::Exception &e) {
 		Common::printException(e);
@@ -138,18 +131,11 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "  e          Extract files to current directory\n");
 }
 
-void createHashRegistry(HashRegistry &hashRegistry) {
-	for (int i = 0; i < ARRAYSIZE(kFilesSonic); i++)
-		hashRegistry[Common::hashStringDJB2(kFilesSonic[i])] = kFilesSonic[i];
-}
-
-bool findHashedName(const HashRegistry &hashRegistry, uint32 hash,
-                    Common::UString &name, Common::UString &ext) {
-
-	HashRegistry::const_iterator h = hashRegistry.find(hash);
-	if (h != hashRegistry.end()) {
-		name = Common::FilePath::getStem(h->second);
-		ext  = Common::FilePath::getExtension(h->second);
+bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext) {
+	const char *fileName = findSonicFile(hash);
+	if (fileName != 0) {
+		name = Common::FilePath::getStem(fileName);
+		ext  = Common::FilePath::getExtension(fileName);
 		return true;
 	}
 
@@ -158,7 +144,7 @@ bool findHashedName(const HashRegistry &hashRegistry, uint32 hash,
 	return false;
 }
 
-void listFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
+void listFiles(Aurora::HERFFile &herf) {
 	const Aurora::Archive::ResourceList &resources = herf.getResources();
 	const uint32 fileCount = resources.size();
 
@@ -170,13 +156,13 @@ void listFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
 		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
 		if (fileName.empty())
-			findHashedName(hashRegistry, r->hash, fileName, fileExt);
+			findHashedName(r->hash, fileName, fileExt);
 
 		std::printf("%32s%-6s | %10d\n", fileName.c_str(), fileExt.c_str(), herf.getResourceSize(r->index));
 	}
 }
 
-void extractFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
+void extractFiles(Aurora::HERFFile &herf) {
 	const Aurora::Archive::ResourceList &resources = herf.getResources();
 	const uint32 fileCount = resources.size();
 
@@ -186,7 +172,7 @@ void extractFiles(Aurora::HERFFile &herf, const HashRegistry &hashRegistry) {
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
 		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
 		if (fileName.empty())
-			findHashedName(hashRegistry, r->hash, fileName, fileExt);
+			findHashedName(r->hash, fileName, fileExt);
 
 		fileName = fileName + fileExt;
 
