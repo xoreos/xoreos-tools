@@ -35,6 +35,7 @@
 
 namespace Common {
 	class SeekableReadStream;
+	class WriteStream;
 	class StreamTokenizer;
 }
 
@@ -88,6 +89,8 @@ public:
 	/** Get a row. */
 	const TwoDARow &getRow(uint32 row) const;
 
+	/** Dump the 2DA data into an V2.0 ASCII 2DA. */
+	void dumpASCII(Common::WriteStream &out) const;
 	/** Dump the 2DA data into an V2.0 ASCII 2DA. */
 	bool dumpASCII(const Common::UString &fileName) const;
 

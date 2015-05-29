@@ -311,17 +311,13 @@ const TwoDARow &TwoDAFile::getRow(uint32 row) const {
 	return *_rows[row];
 }
 
-bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
-	Common::DumpFile file;
-	if (!file.open(fileName))
-		return false;
-
+void TwoDAFile::dumpASCII(Common::WriteStream &out) const {
 	// Write header
 
-	file.writeString("2DA V2.0\n");
+	out.writeString("2DA V2.0\n");
 	if (!_defaultString.empty())
-		file.writeString(Common::UString::sprintf("DEFAULT: %s", _defaultString.c_str()));
-	file.writeByte('\n');
+		out.writeString(Common::UString::sprintf("DEFAULT: %s", _defaultString.c_str()));
+	out.writeByte('\n');
 
 	// Calculate column lengths
 
@@ -345,17 +341,17 @@ bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
 
 	// Write column headers
 
-	file.writeString(Common::UString::sprintf("%-*s", colLength[0], ""));
+	out.writeString(Common::UString::sprintf("%-*s", colLength[0], ""));
 
 	for (uint32 i = 0; i < _headers.size(); i++)
-		file.writeString(Common::UString::sprintf(" %-*s", colLength[i + 1], _headers[i].c_str()));
+		out.writeString(Common::UString::sprintf(" %-*s", colLength[i + 1], _headers[i].c_str()));
 
-	file.writeByte('\n');
+	out.writeByte('\n');
 
 	// Write array
 
 	for (uint32 i = 0; i < _rows.size(); i++) {
-		file.writeString(Common::UString::sprintf("%*d", colLength[0], i));
+		out.writeString(Common::UString::sprintf("%*d", colLength[0], i));
 
 		for (uint32 j = 0; j < _rows[i]->_data.size(); j++) {
 			const bool needQuote = _rows[i]->_data[j].contains(' ');
@@ -366,14 +362,22 @@ bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
 			else
 				cellString = _rows[i]->_data[j];
 
-			file.writeString(Common::UString::sprintf(" %-*s", colLength[j + 1], cellString.c_str()));
+			out.writeString(Common::UString::sprintf(" %-*s", colLength[j + 1], cellString.c_str()));
 
 		}
 
-		file.writeByte('\n');
+		out.writeByte('\n');
 	}
 
-	file.flush();
+	out.flush();
+}
+
+bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
+	Common::DumpFile file;
+	if (!file.open(fileName))
+		return false;
+
+	dumpASCII(file);
 	file.close();
 
 	return true;
