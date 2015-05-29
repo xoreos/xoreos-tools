@@ -14,6 +14,7 @@ Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
 * tlk2xml: Convert BioWare TLK to XML
+* convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
 * unerf: Extract BioWare ERF archives
 * unherf: Extract BioWare HERF archives
 * unrim: Extract BioWare RIM archives

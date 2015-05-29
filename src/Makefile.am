@@ -15,6 +15,7 @@ noinst_HEADERS = \
 bin_PROGRAMS = \
                gff2xml \
                tlk2xml \
+               convert2da \
                unerf \
                unherf \
                unrim \
@@ -48,6 +49,15 @@ tlk2xml_LDADD   = \
                   common/libcommon.la \
                   $(LDADD) \
                   $(EMPTY)
+
+convert2da_SOURCES = \
+                     convert2da.cpp \
+                     $(EMPTY)
+convert2da_LDADD   = \
+                     aurora/libaurora.la \
+                     common/libcommon.la \
+                     $(LDADD) \
+                     $(EMPTY)
 
 unerf_SOURCES = \
                 unerf.cpp \
