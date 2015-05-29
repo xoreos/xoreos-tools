@@ -41,7 +41,7 @@ template<typename TK, typename TV>
 const BinSearchValue<TK, TV> *binarySearch(const BinSearchValue<TK, TV> *map, size_t size, const TK &value) {
 	size_t low = 0, high = size - 1, midpoint = 0;
 
-	while (low <= high) {
+	while ((low <= high) && (high < size) && (low < size)) {
 		midpoint = low + ((high - low) / 2);
 
 		if      (value == map[midpoint].key)
