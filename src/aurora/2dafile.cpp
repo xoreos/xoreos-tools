@@ -168,7 +168,7 @@ void TwoDAFile::readDefault2a(Common::SeekableReadStream &twoda,
 	std::vector<Common::UString> defaultRow;
 	tokenize.getTokens(twoda, defaultRow, 2);
 
-	if (defaultRow[0] == "Default:")
+	if (defaultRow[0].equalsIgnoreCase("Default:"))
 		_defaultString = defaultRow[1];
 
 	tokenize.nextChunk(twoda);
