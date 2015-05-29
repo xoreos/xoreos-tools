@@ -19,6 +19,7 @@ noinst_HEADERS = \
                  streamtokenizer.h \
                  file.h \
                  filepath.h \
+                 binsearch.h \
                  $(EMPTY)
 
 libcommon_la_SOURCES = \
