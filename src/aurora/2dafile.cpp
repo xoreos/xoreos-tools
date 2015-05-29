@@ -383,4 +383,59 @@ bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
 	return true;
 }
 
+void TwoDAFile::dumpCSV(Common::WriteStream &out) const {
+	// Write column headers
+
+	for (uint32 i = 0; i < _headers.size(); i++) {
+		const bool needQuote = _headers[i].contains(',');
+		if (needQuote)
+			out.writeByte('"');
+
+		out.writeString(_headers[i]);
+
+		if (needQuote)
+			out.writeByte('"');
+
+		if (i < (_headers.size() - 1))
+			out.writeByte(',');
+	}
+
+	out.writeByte('\n');
+
+	// Write array
+
+	for (uint32 i = 0; i < _rows.size(); i++) {
+		for (uint32 j = 0; j < _rows[i]->_data.size(); j++) {
+			const bool needQuote = _rows[i]->_data[j].contains(',');
+
+			if (needQuote)
+				out.writeByte('"');
+
+			if (_rows[i]->_data[j] != "****")
+				out.writeString(_rows[i]->_data[j]);
+
+			if (needQuote)
+				out.writeByte('"');
+
+			if (j < (_rows[i]->_data.size() - 1))
+				out.writeByte(',');
+		}
+
+		out.writeByte('\n');
+	}
+
+	out.flush();
+}
+
+bool TwoDAFile::dumpCSV(const Common::UString &fileName) const {
+	Common::DumpFile file;
+	if (!file.open(fileName))
+		return false;
+
+	dumpCSV(file);
+	file.close();
+
+	return true;
+}
+
 } // End of namespace Aurora

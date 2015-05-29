@@ -94,6 +94,11 @@ public:
 	/** Dump the 2DA data into an V2.0 ASCII 2DA. */
 	bool dumpASCII(const Common::UString &fileName) const;
 
+	/** Dump the 2DA data into a CSV stream. */
+	void dumpCSV(Common::WriteStream &out) const;
+	/** Dump the 2DA data into a CSV file. */
+	bool dumpCSV(const Common::UString &fileName) const;
+
 private:
 	typedef std::map<Common::UString, uint32, Common::UString::iless> HeaderMap;
 
