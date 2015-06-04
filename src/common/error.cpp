@@ -24,6 +24,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 
 #include "src/common/error.h"
 #include "src/common/util.h"
@@ -97,8 +98,9 @@ void printException(Exception &e, const UString &prefix) {
 			status("    Because: %s", stack.top().c_str());
 			stack.pop();
 		}
-	} catch (std::exception &se) {
-		error(se.what());
+	} catch (...) {
+		status("FATAL ERROR: Exception while printing exception stack");
+		std::exit(-1);
 	}
 }
 
