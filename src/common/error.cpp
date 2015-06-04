@@ -100,7 +100,7 @@ void printException(Exception &e, const UString &prefix) {
 		}
 	} catch (...) {
 		status("FATAL ERROR: Exception while printing exception stack");
-		std::exit(-1);
+		std::exit(1);
 	}
 }
 
