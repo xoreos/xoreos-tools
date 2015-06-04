@@ -80,6 +80,9 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 	std::vector<Aurora::LocString::SubLocString> str;
 	locString.getStrings(str);
 
+	if (!str.empty())
+		_xml->breakLine();
+
 	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
 		_xml->openTag("string");
 		_xml->addProperty("language", Common::UString::sprintf("%u", s->language));
@@ -164,7 +167,6 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 				strct.getLocString(field, locString);
 				_xml->addProperty("strref", Common::UString::sprintf("%u", locString.getID()));
-				_xml->breakLine();
 
 				dumpLocString(locString);
 			}
