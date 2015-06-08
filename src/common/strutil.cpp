@@ -110,7 +110,7 @@ static bool tagToString(uint32 tag, bool trim, Common::UString &str) {
 	if (!std::isprint(tS[0]) || !std::isprint(tS[1]) || !std::isprint(tS[2]) || !std::isprint(tS[3]))
 		return false;
 
-	str = UString::sprintf("%c%c%c%c", tS[0], tS[1], tS[2], tS[3]);
+	str = UString::format("%c%c%c%c", tS[0], tS[1], tS[2], tS[3]);
 	if (trim)
 		str.trim();
 
@@ -122,15 +122,15 @@ UString tagToString(uint32 tag, bool trim) {
 	if (tagToString(tag, trim, str))
 		return str;
 
-	return UString::sprintf("0x%08X", FROM_BE_32(tag));
+	return UString::format("0x%08X", FROM_BE_32(tag));
 }
 
 UString debugTag(uint32 tag, bool trim) {
 	Common::UString str;
 	if (tagToString(tag, trim, str))
-		return UString::sprintf("0x%08X ('%s')", FROM_BE_32(tag), str.c_str());
+		return UString::format("0x%08X ('%s')", FROM_BE_32(tag), str.c_str());
 
-	return UString::sprintf("0x%08X", FROM_BE_32(tag));
+	return UString::format("0x%08X", FROM_BE_32(tag));
 }
 
 } // End of namespace Common

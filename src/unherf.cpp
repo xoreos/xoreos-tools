@@ -139,7 +139,7 @@ bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext) {
 		return true;
 	}
 
-	name = Common::UString::sprintf("0x%08X", hash);
+	name = Common::UString::format("0x%08X", hash);
 	ext  = "";
 	return false;
 }

@@ -109,7 +109,7 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 	_xml->addProperty("name", strct ? Common::tagToString(strct->getLabel()) : "");
 
 	if (hasLabel) {
-		_xml->addProperty("label", Common::UString::sprintf("%u", label));
+		_xml->addProperty("label", Common::UString::format("%u", label));
 
 		Common::UString alias = findFieldName(label);
 		if (!alias.empty())
@@ -117,19 +117,19 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 	}
 
 	if (hasIndex)
-		_xml->addProperty("index", Common::UString::sprintf("%u", index));
+		_xml->addProperty("index", Common::UString::format("%u", index));
 
 	if (strct) {
 		if (insertID(strct->getID())) {
 			if (strct->getRefCount() > 1)
-				_xml->addProperty("id", Common::UString::sprintf("%u", strct->getID()));
+				_xml->addProperty("id", Common::UString::format("%u", strct->getID()));
 
 			_xml->breakLine();
 
 			for (Aurora::GFF4Struct::iterator f = strct->begin(); f != strct->end(); ++f)
 				dumpField(*strct, *f);
 		} else
-			_xml->addProperty("ref_id", Common::UString::sprintf("%u", strct->getID()));
+			_xml->addProperty("ref_id", Common::UString::format("%u", strct->getID()));
 	}
 
 	_xml->closeTag();
@@ -170,7 +170,7 @@ Common::UString GFF4Dumper::getIFieldTypeName(uint32 type, bool isList) const {
 	else if (type < ARRAYSIZE(kGFF4IFieldTypeNames))
 		typeString = kGFF4IFieldTypeNames[type];
 
-	return Common::UString::sprintf("%s%s", typeString, listString);
+	return Common::UString::format("%s%s", typeString, listString);
 }
 
 void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label,
@@ -179,7 +179,7 @@ void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 
 	_xml->openTag(getIFieldTypeName(type, typeList));
 
 	if (hasLabel) {
-		_xml->addProperty("label", Common::UString::sprintf("%u", label));
+		_xml->addProperty("label", Common::UString::format("%u", label));
 
 		Common::UString alias = findFieldName(label);
 		if (!alias.empty())
@@ -187,7 +187,7 @@ void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 
 	}
 
 	if (hasIndex)
-		_xml->addProperty("index", Common::UString::sprintf("%u", index));
+		_xml->addProperty("index", Common::UString::format("%u", index));
 }
 
 void GFF4Dumper::closeFieldTag(bool doBreak) {
@@ -206,7 +206,7 @@ void GFF4Dumper::dumpFieldUint(const GFF4Field &field) {
 
 	for (uint32 i = 0; i < values.size(); i++) {
 		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
-		_xml->setContents(Common::UString::sprintf("%"PRIu64, Cu64(values[i])));
+		_xml->setContents(Common::UString::format("%"PRIu64, Cu64(values[i])));
 		closeFieldTag();
 	}
 }
@@ -221,7 +221,7 @@ void GFF4Dumper::dumpFieldSint(const GFF4Field &field) {
 
 	for (uint32 i = 0; i < values.size(); i++) {
 		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
-		_xml->setContents(Common::UString::sprintf("%"PRId64, Cd64(values[i])));
+		_xml->setContents(Common::UString::format("%"PRId64, Cd64(values[i])));
 		closeFieldTag();
 	}
 }
@@ -236,7 +236,7 @@ void GFF4Dumper::dumpFieldDouble(const GFF4Field &field) {
 
 	for (uint32 i = 0; i < values.size(); i++) {
 		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
-		_xml->setContents(Common::UString::sprintf("%.6f", values[i]));
+		_xml->setContents(Common::UString::format("%.6f", values[i]));
 		closeFieldTag();
 	}
 }
@@ -270,7 +270,7 @@ void GFF4Dumper::dumpFieldTlk(const GFF4Field &field) {
 		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
 
 		openFieldTag(Aurora::GFF4Struct::kIFieldTypeUint32, false, false, 0, false, 0);
-		_xml->setContents(Common::UString::sprintf("%u", strRefs[i]));
+		_xml->setContents(Common::UString::format("%u", strRefs[i]));
 		closeFieldTag(false);
 
 		openFieldTag(Aurora::GFF4Struct::kIFieldTypeString, false, false, 0, false, 0);
@@ -296,7 +296,7 @@ void GFF4Dumper::dumpFieldVector(const GFF4Field &field) {
 		for (uint32 j = 0; j < values[i].size(); j++) {
 
 			openFieldTag(Aurora::GFF4Struct::kIFieldTypeFloat32, false, false, 0, false, 0);
-			_xml->setContents(Common::UString::sprintf("%.6f", values[i][j]));
+			_xml->setContents(Common::UString::format("%.6f", values[i][j]));
 			closeFieldTag(false);
 
 			if ((j == (values[i].size() - 1)) || ((j % 4) == 3))

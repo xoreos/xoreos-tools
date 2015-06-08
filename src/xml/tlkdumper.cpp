@@ -51,7 +51,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &in
 
 	xml.openTag("tlk");
 	if (languageID != Aurora::kLanguageInvalid)
-		xml.addProperty("language", Common::UString::sprintf("%u", languageID));
+		xml.addProperty("language", Common::UString::format("%u", languageID));
 	xml.breakLine();
 
 	const std::list<uint32> &strRefs = tlk->getStrRefs();
@@ -66,7 +66,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &in
 			continue;
 
 		xml.openTag("string");
-		xml.addProperty("id", Common::UString::sprintf("%u", strRef));
+		xml.addProperty("id", Common::UString::format("%u", strRef));
 
 		if (!sound.empty())
 			xml.addProperty("sound", sound);

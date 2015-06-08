@@ -85,7 +85,7 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 
 	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
 		_xml->openTag("string");
-		_xml->addProperty("language", Common::UString::sprintf("%u", s->language));
+		_xml->addProperty("language", Common::UString::format("%u", s->language));
 
 		_xml->setContents(s->str);
 		_xml->closeTag();
@@ -122,7 +122,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 	if ((type >= 0) && (type < ARRAYSIZE(kGFF3FieldTypeNames)))
 		typeName = kGFF3FieldTypeNames[(int)type];
 	else
-		typeName = Common::UString::sprintf("fieldtype%d", (int)type);
+		typeName = Common::UString::format("fieldtype%d", (int)type);
 
 	Common::UString label = field;
 
@@ -134,25 +134,25 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 	switch (type) {
 		case Aurora::GFF3Struct::kFieldTypeChar:
-			_xml->setContents(Common::UString::sprintf("%c", strct.getChar(field)));
+			_xml->setContents(Common::UString::format("%c", strct.getChar(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeByte:
 		case Aurora::GFF3Struct::kFieldTypeUint16:
 		case Aurora::GFF3Struct::kFieldTypeUint32:
 		case Aurora::GFF3Struct::kFieldTypeUint64:
-			_xml->setContents(Common::UString::sprintf("%"PRIu64, Cu64(strct.getUint(field))));
+			_xml->setContents(Common::UString::format("%"PRIu64, Cu64(strct.getUint(field))));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeSint16:
 		case Aurora::GFF3Struct::kFieldTypeSint32:
 		case Aurora::GFF3Struct::kFieldTypeSint64:
-			_xml->setContents(Common::UString::sprintf("%"PRId64, Cd64(strct.getSint(field))));
+			_xml->setContents(Common::UString::format("%"PRId64, Cd64(strct.getSint(field))));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeFloat:
 		case Aurora::GFF3Struct::kFieldTypeDouble:
-			_xml->setContents(Common::UString::sprintf("%.6f", strct.getDouble(field)));
+			_xml->setContents(Common::UString::format("%.6f", strct.getDouble(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeExoString:
@@ -166,7 +166,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				Aurora::LocString locString;
 
 				strct.getLocString(field, locString);
-				_xml->addProperty("strref", Common::UString::sprintf("%u", locString.getID()));
+				_xml->addProperty("strref", Common::UString::format("%u", locString.getID()));
 
 				dumpLocString(locString);
 			}
@@ -194,22 +194,22 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", a));
+				_xml->setContents(Common::UString::format("%.6f", a));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", b));
+				_xml->setContents(Common::UString::format("%.6f", b));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", c));
+				_xml->setContents(Common::UString::format("%.6f", c));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", d));
+				_xml->setContents(Common::UString::format("%.6f", d));
 				_xml->closeTag();
 				_xml->breakLine();
 			}
@@ -224,17 +224,17 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", x));
+				_xml->setContents(Common::UString::format("%.6f", x));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", y));
+				_xml->setContents(Common::UString::format("%.6f", y));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::sprintf("%.6f", z));
+				_xml->setContents(Common::UString::format("%.6f", z));
 				_xml->closeTag();
 				_xml->breakLine();
 			}
@@ -254,7 +254,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label) {
 	_xml->openTag("struct");
 	_xml->addProperty("label", label);
-	_xml->addProperty("id", Common::UString::sprintf("%u", strct.getID()));
+	_xml->addProperty("id", Common::UString::format("%u", strct.getID()));
 	_xml->breakLine();
 
 	for (Aurora::GFF3Struct::iterator f = strct.begin(); f != strct.end(); ++f)
