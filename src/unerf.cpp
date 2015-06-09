@@ -26,6 +26,7 @@
 #include <cstdio>
 
 #include "src/common/ustring.h"
+#include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/file.h"
 #include "src/common/hash.h"
@@ -152,6 +153,7 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 void displayInfo(Aurora::ERFFile &erf) {
+	std::printf("Version: %s\n", Common::debugTag(erf.getVersion()).c_str());
 	std::printf("Build Year: %d\n", erf.getBuildYear());
 	std::printf("Build Day: %d\n", erf.getBuildDay());
 	std::printf("Number of files: %u\n", (uint)erf.getResources().size());
