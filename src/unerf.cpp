@@ -29,12 +29,14 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/file.h"
+#include "src/common/filepath.h"
 #include "src/common/hash.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/erffile.h"
 
 #include "src/util.h"
+#include "src/files_dragonage.h"
 
 enum Command {
 	kCommandNone    = -1,
@@ -49,6 +51,8 @@ const char *kCommandChar[kCommandMAX] = { "i", "l", "e" };
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Command &command, Common::UString &file, Aurora::GameID &game);
+
+bool findHashedName(uint64 hash, Common::UString &name);
 
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &rim, Aurora::GameID game);
@@ -152,6 +156,17 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "  e          Extract files to current directory\n");
 }
 
+bool findHashedName(uint64 hash, Common::UString &name) {
+	const char *fileName = findDragonAgeFile(hash);
+	if (fileName) {
+		name = Common::FilePath::getStem(fileName);
+		return true;
+	}
+
+	name = Common::formatHash(hash);
+	return false;
+}
+
 void displayInfo(Aurora::ERFFile &erf) {
 	std::printf("Version: %s\n", Common::debugTag(erf.getVersion()).c_str());
 	std::printf("Build Year: %d\n", erf.getBuildYear());
@@ -189,10 +204,10 @@ void listFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 
 		Common::UString name = r->name;
 		if (name.empty())
-			name = Common::formatHash(r->hash);
+			findHashedName(r->hash, name);
 
 		std::printf("%32s%-4s | %10d\n", name.c_str(), TypeMan.setFileType("", type).c_str(),
-		                                erf.getResourceSize(r->index));
+		                                 erf.getResourceSize(r->index));
 	}
 }
 
@@ -206,7 +221,7 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
 		Common::UString name = r->name;
 		if (name.empty())
-			name = Common::formatHash(r->hash);
+			findHashedName(r->hash, name);
 
 		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
 		const Common::UString  fileName = TypeMan.addFileType(name, type);

@@ -10,6 +10,7 @@ SUBDIRS = \
 noinst_HEADERS = \
                  util.h \
                  files_sonic.h \
+                 files_dragonage.h \
                  $(EMPTY)
 
 bin_PROGRAMS = \
@@ -62,6 +63,7 @@ convert2da_LDADD   = \
 unerf_SOURCES = \
                 unerf.cpp \
                 util.cpp \
+                files_dragonage.cpp \
                 $(EMPTY)
 unerf_LDADD   = \
                 aurora/libaurora.la \
