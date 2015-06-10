@@ -209,7 +209,7 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 			name = Common::formatHash(r->hash);
 
 		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
-		const Common::UString  fileName = TypeMan.setFileType(name, type);
+		const Common::UString  fileName = TypeMan.addFileType(name, type);
 
 		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
 
