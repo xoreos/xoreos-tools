@@ -274,6 +274,8 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 		if (name.empty())
 			findHashedName(r->hash, name);
 
+		name = Common::FilePath::getFile(name);
+
 		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
 		const Common::UString  fileName = TypeMan.addFileType(name, type);
 
