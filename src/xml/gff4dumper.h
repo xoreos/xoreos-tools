@@ -56,8 +56,9 @@ private:
 		uint32 label;
 		Aurora::GFF4Struct::IFieldType type;
 		bool isList;
+		bool isGeneric;
 
-		GFF4Field(const Aurora::GFF4Struct &s, uint32 f);
+		GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g);
 	};
 
 	typedef std::set<uint32> IDSet;
@@ -95,9 +96,10 @@ private:
 	void dumpFieldGeneric(const GFF4Field &field);
 	void dumpFieldList   (const GFF4Field &field);
 
-	void dumpField(const Aurora::GFF4Struct &strct, uint32 field);
+	void dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool isGeneric);
 
-	void dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
+	void dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label,
+	                bool hasIndex, uint32 index, bool isGeneric);
 
 	Common::UString findFieldName(uint32 label) const;
 

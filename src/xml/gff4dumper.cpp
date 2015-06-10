@@ -33,7 +33,9 @@
 
 namespace XML {
 
-GFF4Dumper::GFF4Field::GFF4Field(const Aurora::GFF4Struct &s, uint32 f) : strct(&s), field(f) {
+GFF4Dumper::GFF4Field::GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g) :
+	strct(&s), field(f), isGeneric(g) {
+
 	if (!strct->getProperties(field, type, label, isList))
 		throw Common::Exception(Common::kReadError);
 }
@@ -81,7 +83,7 @@ void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &i
 		_xml->addProperty("platform", Common::tagToString(_gff4->getPlatform()   , true));
 		_xml->breakLine();
 
-		dumpStruct(&_gff4->getTopLevel(), false, 0, false, 0);
+		dumpStruct(&_gff4->getTopLevel(), false, 0, false, 0, false);
 
 		_xml->closeTag();
 		_xml->breakLine();
@@ -103,7 +105,7 @@ bool GFF4Dumper::insertID(uint32 id) {
 }
 
 void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label,
-                            bool hasIndex, uint32 index) {
+                            bool hasIndex, uint32 index, bool isGeneric) {
 
 	_xml->openTag("struct");
 	_xml->addProperty("name", strct ? Common::tagToString(strct->getLabel()) : "");
@@ -111,9 +113,11 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 	if (hasLabel) {
 		_xml->addProperty("label", Common::UString::format("%u", label));
 
-		Common::UString alias = findFieldName(label);
-		if (!alias.empty())
-			_xml->addProperty("alias", alias);
+		if (!isGeneric) {
+			Common::UString alias = findFieldName(label);
+			if (!alias.empty())
+				_xml->addProperty("alias", alias);
+		}
 	}
 
 	if (hasIndex)
@@ -127,7 +131,7 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 			_xml->breakLine();
 
 			for (Aurora::GFF4Struct::iterator f = strct->begin(); f != strct->end(); ++f)
-				dumpField(*strct, *f);
+				dumpField(*strct, *f, false);
 		} else
 			_xml->addProperty("ref_id", Common::UString::format("%u", strct->getID()));
 	}
@@ -314,7 +318,7 @@ void GFF4Dumper::dumpFieldList(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (uint32 i = 0; i < lst.size(); i++)
-		dumpStruct(lst[i], !field.isList, field.label, field.isList, i);
+		dumpStruct(lst[i], !field.isList, field.label, field.isList, i, field.isGeneric);
 }
 
 void GFF4Dumper::dumpFieldGeneric(const GFF4Field &field) {
@@ -324,11 +328,11 @@ void GFF4Dumper::dumpFieldGeneric(const GFF4Field &field) {
 
 	_xml->breakLine();
 	for (Aurora::GFF4Struct::iterator f = generic->begin(); f != generic->end(); ++f)
-		dumpField(*generic, *f);
+		dumpField(*generic, *f, true);
 }
 
-void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field) {
-	GFF4Field f(strct, field);
+void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool isGeneric) {
+	GFF4Field f(strct, field, isGeneric);
 
 	if (f.isList)
 		openFieldTag(f.type, true, true, f.label, false, 0);
