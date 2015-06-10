@@ -44,10 +44,16 @@ enum Command {
 	kCommandList            ,
 	kCommandListVerbose     ,
 	kCommandExtract         ,
+	kCommandExtractSub      ,
 	kCommandMAX
 };
 
-const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e" };
+enum ExtractMode {
+	kExtractModeStrip,
+	kExtractModeSubstitute
+};
+
+const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "s" };
 
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue,
@@ -58,7 +64,7 @@ bool findHashedName(uint64 hash, Common::UString &name);
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &rim, Aurora::GameID game);
 void listVerboseFiles(Aurora::ERFFile &rim, Aurora::GameID game);
-void extractFiles(Aurora::ERFFile &rim, Aurora::GameID);
+void extractFiles(Aurora::ERFFile &rim, Aurora::GameID, ExtractMode mode);
 
 int main(int argc, char **argv) {
 	Aurora::GameID game = Aurora::kGameIDUnknown;
@@ -79,7 +85,9 @@ int main(int argc, char **argv) {
 		else if (command == kCommandListVerbose)
 			listVerboseFiles(erf, game);
 		else if (command == kCommandExtract)
-			extractFiles(erf, game);
+			extractFiles(erf, game, kExtractModeStrip);
+		else if (command == kCommandExtractSub)
+			extractFiles(erf, game, kExtractModeSubstitute);
 
 	} catch (Common::Exception &e) {
 		Common::printException(e);
@@ -159,6 +167,7 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "  l          List archive\n");
 	std::fprintf(stream, "  v          List archive verbosely (show directory names)\n");
 	std::fprintf(stream, "  e          Extract files to current directory\n");
+	std::fprintf(stream, "  s          Extract files to current directory with full name\n");
 }
 
 bool findHashedName(uint64 hash, Common::UString &name) {
@@ -262,7 +271,7 @@ void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 		std::printf("%-*s| %10d\n", nameLength, f->file.c_str(), f->size);
 }
 
-void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
+void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game, ExtractMode mode) {
 	const Aurora::Archive::ResourceList &resources = erf.getResources();
 	const uint32 fileCount = resources.size();
 
@@ -274,7 +283,10 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 		if (name.empty())
 			findHashedName(r->hash, name);
 
-		name = Common::FilePath::getFile(name);
+		if (mode == kExtractModeStrip)
+			name = Common::FilePath::getFile(name);
+		else if (mode == kExtractModeSubstitute)
+			name.replaceAll('\\', '=');
 
 		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
 		const Common::UString  fileName = TypeMan.addFileType(name, type);
