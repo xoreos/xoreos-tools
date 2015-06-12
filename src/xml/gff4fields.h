@@ -2770,6 +2770,18 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{  26110, "SaveprofileFileVersion"                          },
 	{  26111, "SaveprofileAddinTokenList"                       },
 
+	{  33012, "MAOMaterial"                                     },
+	{  33013, "MAODefaultSemantic"                              },
+	{  33016, "MAOFloats"                                       },
+	{  33002, "MAOFloatName"                                    },
+	{  33003, "MAOFloatValue"                                   },
+	{  33017, "MAOVectors"                                      },
+	{  33004, "MAOVectorName"                                   },
+	{  33005, "MAOVectorValue"                                  },
+	{  33020, "MAOTextures"                                     },
+	{  33010, "MAOTextureName"                                  },
+	{  33011, "MAOTextureResource"                              },
+
 	{ 250100, "CharMOP"                                         },
 	{ 250101, "CharApp"                                         },
 	{ 250102, "CharGender"                                      },
