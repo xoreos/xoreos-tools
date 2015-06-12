@@ -2744,20 +2744,6 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{  25001, "DepResRef"                                       },
 	{  25002, "DepDependencyList"                               },
 
-	{ 250100, "CharMOP"                                         },
-	{ 250101, "CharApp"                                         },
-	{ 250102, "CharGender"                                      },
-	{ 250103, "CharRace"                                        },
-	{ 250104, "CharClass"                                       },
-	{ 250105, "CharBack"                                        },
-	{ 250106, "CharAttributes"                                  },
-	{ 250107, "CharAbilities"                                   },
-	{ 250108, "CharName"                                        },
-	{ 250109, "CharHeadName"                                    },
-	{ 250110, "CharAttributeID"                                 },
-	{ 250111, "CharAttributePoints"                             },
-	{ 250112, "CharPortrait"                                    },
-
 	{  26000, "SaveprofileBuildNumber"                          },
 	{  26001, "SaveprofileInitialBuildNumber"                   },
 	{  26002, "SaveprofileLastUsedProfile"                      },
@@ -2782,7 +2768,21 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{  26108, "SaveprofileFileName"                             },
 	{  26109, "SaveprofileFileData"                             },
 	{  26110, "SaveprofileFileVersion"                          },
-	{  26111, "SaveprofileAddinTokenList"                       }
+	{  26111, "SaveprofileAddinTokenList"                       },
+
+	{ 250100, "CharMOP"                                         },
+	{ 250101, "CharApp"                                         },
+	{ 250102, "CharGender"                                      },
+	{ 250103, "CharRace"                                        },
+	{ 250104, "CharClass"                                       },
+	{ 250105, "CharBack"                                        },
+	{ 250106, "CharAttributes"                                  },
+	{ 250107, "CharAbilities"                                   },
+	{ 250108, "CharName"                                        },
+	{ 250109, "CharHeadName"                                    },
+	{ 250110, "CharAttributeID"                                 },
+	{ 250111, "CharAttributePoints"                             },
+	{ 250112, "CharPortrait"                                    }
 };
 
 } // End of namespace XML
