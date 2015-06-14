@@ -293,12 +293,13 @@ private:
 
 		bool isList;      ///< Is this field a singular item or a list?
 		bool isReference; ///< Is this field a reference (pointer) to another field?
+		bool isGeneric;   ///< Is this field found in a generic?
 
 		uint16   structIndex; ///< Index of the field's struct type (if kIFieldTypeStruct).
 		GFF4List structs;     ///< List of GFF4Struct (if kIFieldTypeStruct).
 
 		Field();
-		Field(uint32 l, uint16 t, uint16 f, uint32 o);
+		Field(uint32 l, uint16 t, uint16 f, uint32 o, bool g = false);
 		~Field();
 	};
 
@@ -356,7 +357,7 @@ private:
 	Common::UString getString(Common::SeekableReadStream &data, Common::Encoding encoding) const;
 	Common::UString getString(Common::SeekableReadStream &data, Common::Encoding encoding,
 	                          uint32 offset) const;
-	Common::UString getString(Common::SeekableReadStream &data, IFieldType type,
+	Common::UString getString(Common::SeekableReadStream &data, const Field &field,
 	                          Common::Encoding encoding) const;
 
 	uint32 getVectorMatrixLength(const Field &field, uint32 maxLength) const;
