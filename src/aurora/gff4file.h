@@ -312,6 +312,8 @@ private:
 	uint32 _id;
 	uint32 _refCount;
 
+	uint32 _fieldCount;
+
 	FieldMap       _fields;
 	FieldLabelList _fieldLabels;
 

@@ -275,7 +275,7 @@ GFF4Struct::Field::~Field() {
 
 
 GFF4Struct::GFF4Struct(GFF4File &parent, uint32 offset, const GFF4File::StructTemplate &tmplt) :
-	_parent(&parent), _label(tmplt.label), _id(offset), _refCount(0) {
+	_parent(&parent), _label(tmplt.label), _id(offset), _refCount(0), _fieldCount(0) {
 
 	parent.registerStruct(offset, this);
 
@@ -288,7 +288,7 @@ GFF4Struct::GFF4Struct(GFF4File &parent, uint32 offset, const GFF4File::StructTe
 }
 
 GFF4Struct::GFF4Struct(GFF4File &parent, const Field &genericParent) :
-	_parent(&parent), _label(0), _id(genericParent.offset), _refCount(0) {
+	_parent(&parent), _label(0), _id(genericParent.offset), _refCount(0), _fieldCount(0) {
 
 	parent.registerStruct(genericParent.offset, this);
 
@@ -327,6 +327,8 @@ void GFF4Struct::load(GFF4File &parent, uint32 offset, const GFF4File::StructTem
 		if (f.type == kIFieldTypeGeneric)
 			loadGeneric(parent, f);
 	}
+
+	_fieldCount = _fields.size();
 }
 
 void GFF4Struct::loadStructs(GFF4File &parent, Field &field) {
@@ -382,18 +384,23 @@ void GFF4Struct::load(GFF4File &parent, const Field &genericParent) {
 	for (uint32 i = 0; i < genericCount; i++) {
 		data.seek(genericStart + i * kGenericSize);
 
-		_fieldLabels.push_back(i);
-
 		const uint16 fieldType   = data.readUint16LE();
 		const uint16 fieldFlags  = data.readUint16LE();
 
 		const uint32 fieldOffset = getDataOffset(genericParent.isReference, data.pos());
+
+		if (fieldOffset == 0xFFFFFFFF)
+			continue;
+
+		_fieldLabels.push_back(i);
 
 		// Load the field and its struct(s), if any
 		Field &f = _fields[i] = Field(i, fieldType, fieldFlags, fieldOffset);
 		if (f.type == kIFieldTypeStruct)
 			loadStructs(parent, f);
 	}
+
+	_fieldCount = genericCount;
 }
 
 // --- Field properties ---
@@ -427,7 +434,7 @@ uint32 GFF4Struct::getRefCount() const {
 }
 
 uint GFF4Struct::getFieldCount() const {
-	return _fields.size();
+	return _fieldCount;
 }
 
 bool GFF4Struct::hasField(uint32 field) const {
@@ -1070,7 +1077,7 @@ bool GFF4Struct::getVectorMatrix(uint32 field, std::vector< std::vector<double> 
 const GFF4Struct *GFF4Struct::getStruct(uint32 field) const {
 	const Field *f = getField(field);
 	if (!f)
-		throw Common::Exception("GFF4: No such field");
+		return 0;
 
 	if (f->type != kIFieldTypeStruct)
 		throw Common::Exception("GFF4: Field is not of struct type");
@@ -1088,7 +1095,7 @@ const GFF4Struct *GFF4Struct::getStruct(uint32 field) const {
 const GFF4Struct *GFF4Struct::getGeneric(uint32 field) const {
 	const Field *f = getField(field);
 	if (!f)
-		throw Common::Exception("GFF4: No such field");
+		return 0;
 
 	if (f->type != kIFieldTypeGeneric)
 		throw Common::Exception("GFF4: Field is not of generic type");
