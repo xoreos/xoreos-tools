@@ -26,150 +26,158 @@
 #include "src/common/stream.h"
 
 #include "src/aurora/language.h"
+#include "src/aurora/language_strings.h"
+
+DECLARE_SINGLETON(Aurora::LanguageManager)
 
 namespace Aurora {
 
-uint32 getLanguageID(GameID game, Language language) {
-	switch (game) {
-		// The Witcher supports different languages than other Aurora games
-		case kGameIDWitcher:
-			switch (language) {
-				case kLanguageEnglish:
-					return  3;
-				case kLanguageFrench:
-					return 11;
-				case kLanguageGerman:
-					return 10;
-				case kLanguageItalian:
-					return 13;
-				case kLanguageSpanish:
-					return 12;
-				case kLanguagePolish:
-					return  5;
-				case kLanguageCzech:
-					return 15;
-				case kLanguageHungarian:
-					return 16;
-				case kLanguageRussian:
-					return 14;
-				case kLanguageKorean:
-					return 20;
-				case kLanguageChineseTraditional:
-					return 21;
-				case kLanguageChineseSimplified:
-					return 22;
-				default:
-					break;
-			}
-			break;
+LanguageManager::LanguageManager() :
+	_currentLanguageText(kLanguageInvalid), _currentLanguageVoice(kLanguageInvalid),
+	_currentGender(kLanguageGenderMale) {
 
-		default:
-			switch (language) {
-				case kLanguageEnglish:
-					return   0;
-				case kLanguageFrench:
-					return   1;
-				case kLanguageGerman:
-					return   2;
-				case kLanguageItalian:
-					return   3;
-				case kLanguageSpanish:
-					return   4;
-				case kLanguagePolish:
-					return   5;
-				case kLanguageKorean:
-					return 128;
-				case kLanguageChineseTraditional:
-					return 129;
-				case kLanguageChineseSimplified:
-					return 130;
-				case kLanguageJapanese:
-					return 131;
-				default:
-					break;
-			}
-		break;
-	}
-
-	return kLanguageInvalid;
 }
 
-uint32 getLanguageID(GameID game, Language language, LanguageGender gender) {
-	return convertLanguageIDToGendered(getLanguageID(game, language), gender);
+LanguageManager::~LanguageManager() {
 }
 
-Language getLanguage(GameID game, uint32 languageID) {
-	switch (game) {
-		// The Witcher supports different languages than other Aurora games
-		case kGameIDWitcher:
-			switch (languageID) {
-				case  3:
-					return kLanguageEnglish;
-				case  5:
-					return kLanguagePolish;
-				case 10:
-					return kLanguageGerman;
-				case 11:
-					return kLanguageFrench;
-				case 12:
-					return kLanguageSpanish;
-				case 13:
-					return kLanguageItalian;
-				case 14:
-					return kLanguageRussian;
-				case 15:
-					return kLanguageCzech;
-				case 16:
-					return kLanguageHungarian;
-				case 20:
-					return kLanguageKorean;
-				case 21:
-					return kLanguageChineseTraditional;
-				case 22:
-					return kLanguageChineseSimplified;
-				default:
-					break;
-			}
-			break;
+void LanguageManager::clear() {
+	_langByID.clear();
+	_langByLang.clear();
 
-		default:
-			switch (languageID) {
-				case   0:
-					return kLanguageEnglish;
-				case   1:
-					return kLanguageFrench;
-				case   2:
-					return kLanguageGerman;
-				case   3:
-					return kLanguageItalian;
-				case   4:
-					return kLanguageSpanish;
-				case   5:
-					return kLanguagePolish;
-				case 128:
-					return kLanguageKorean;
-				case 129:
-					return kLanguageChineseTraditional;
-				case 130:
-					return kLanguageChineseSimplified;
-				case 131:
-					return kLanguageJapanese;
-				default:
-					break;
-			}
-		break;
-	}
+	_currentLanguageText  = kLanguageInvalid;
+	_currentLanguageVoice = kLanguageInvalid;
 
-	return kLanguageInvalid;
+	_currentGender = kLanguageGenderMale;
 }
 
-Language getLanguage(GameID game, uint32 languageID, LanguageGender &gender) {
+void LanguageManager::addLanguage(Language language, uint32 id, Common::Encoding encoding) {
+	Declaration declaration;
+
+	declaration.language = language;
+	declaration.id       = id;
+	declaration.encoding = encoding;
+
+	addLanguage(declaration);
+}
+
+void LanguageManager::addLanguage(const Declaration &languageDeclaration) {
+	if (languageDeclaration.id != kLanguageInvalid)
+		_langByID[languageDeclaration.id] = languageDeclaration;
+
+	if (languageDeclaration.language != kLanguageInvalid)
+		_langByLang[languageDeclaration.language] = languageDeclaration;
+}
+
+void LanguageManager::addLanguages(const Declaration *languageDeclarations, size_t count) {
+	while (count-- > 0)
+		addLanguage(*languageDeclarations++);
+}
+
+const LanguageManager::Declaration *LanguageManager::find(Language language) const {
+	LanguageByLanguage::const_iterator l = _langByLang.find(language);
+	if (l != _langByLang.end())
+		return &l->second;
+
+	return 0;
+}
+
+const LanguageManager::Declaration *LanguageManager::find(uint32 id) const {
+	LanguageByID::const_iterator l = _langByID.find(id);
+	if (l != _langByID.end())
+		return &l->second;
+
+	return 0;
+}
+
+uint32 LanguageManager::getLanguageID(Language language) const {
+	const Declaration *l = find(language);
+	if (!l)
+		return kLanguageInvalid;
+
+	return l->id;
+}
+
+uint32 LanguageManager::getLanguageID(Language language, LanguageGender gender) const {
+	const Declaration *l = find(language);
+	if (!l)
+		return kLanguageInvalid;
+
+	return convertLanguageIDToGendered(l->id, gender);
+}
+
+Language LanguageManager::getLanguage(uint32 languageID) const {
+	const Declaration *l = find(languageID);
+	if (!l)
+		return kLanguageInvalid;
+
+	return l->language;
+}
+
+Language LanguageManager::getLanguage(uint32 languageID, LanguageGender &gender) const {
 	gender = getLanguageGender(languageID);
 
-	return getLanguage(game, convertLanguageIDToUngendered(languageID));
+	const Declaration *l = find(convertLanguageIDToUngendered(languageID));
+	if (!l)
+		return kLanguageInvalid;
+
+	return l->language;
 }
 
-uint32 convertLanguageIDToGendered(uint32 languageID, LanguageGender gender) {
+Language LanguageManager::getLanguageGendered(uint32 languageID) const {
+	LanguageGender gender;
+	return getLanguage(languageID, gender);
+}
+
+Common::Encoding LanguageManager::getEncoding(Language language) const {
+	const Declaration *l = find(language);
+	if (!l)
+		return Common::kEncodingInvalid;
+
+	return l->encoding;
+}
+
+void LanguageManager::setCurrentLanguage(Language language) {
+	setCurrentLanguageText(language);
+	setCurrentLanguageVoice(language);
+}
+
+void LanguageManager::setCurrentLanguage(Language languageText, Language languageVoice) {
+	setCurrentLanguageText(languageText);
+	setCurrentLanguageVoice(languageVoice);
+}
+
+void LanguageManager::setCurrentGender(LanguageGender gender) {
+	_currentGender = gender;
+}
+
+Language LanguageManager::getCurrentLanguageText() const {
+	return _currentLanguageText;
+}
+
+Language LanguageManager::getCurrentLanguageVoice() const {
+	return _currentLanguageVoice;
+}
+
+void LanguageManager::setCurrentLanguageText(Language language) {
+	_currentLanguageText = language;
+}
+
+void LanguageManager::setCurrentLanguageVoice(Language language) {
+	_currentLanguageVoice = language;
+}
+
+LanguageGender LanguageManager::getCurrentGender() const {
+	return _currentGender;
+}
+
+Common::Encoding LanguageManager::getCurrentEncoding() const {
+	return getEncoding(getCurrentLanguageText());
+}
+
+uint32 LanguageManager::convertLanguageIDToGendered(uint32 languageID, LanguageGender gender) {
+	assert(((uint) gender) < kLanguageGenderMAX);
+
 	if (languageID == kLanguageInvalid)
 		return kLanguageInvalid;
 
@@ -180,40 +188,57 @@ uint32 convertLanguageIDToGendered(uint32 languageID, LanguageGender gender) {
 	return languageID * 2 + ((uint) gender);
 }
 
-uint32 convertLanguageIDToUngendered(uint32 languageID) {
+uint32 LanguageManager::convertLanguageIDToUngendered(uint32 languageID) {
 	if (languageID == kLanguageInvalid)
 		return kLanguageInvalid;
 
 	return languageID / 2;
 }
 
-LanguageGender getLanguageGender(uint32 languageID) {
+LanguageGender LanguageManager::getLanguageGender(uint32 languageID) {
 	if (languageID == kLanguageInvalid)
 		return kLanguageGenderMale;
 
 	return (LanguageGender) (languageID % 2);
 }
 
-uint32 swapLanguageGender(uint32 languageID) {
+uint32 LanguageManager::swapLanguageGender(uint32 languageID) {
 	if (languageID == kLanguageInvalid)
 		return kLanguageInvalid;
 
 	return languageID ^ 1;
 }
 
-Common::UString getLanguageName(Language language) {
+Common::UString LanguageManager::getLanguageName(Language language) {
+	if (language == kLanguageChinese)
+		return "Chinese";
+
 	if (((uint32) language >= kLanguageMAX))
 		return "Invalid";
 
-	static const char *names[] = {
-		"English", "French", "German", "Italian", "Spanish", "Polish", "Czech", "Hungarian",
-		"Russian", "Korean", "Traditional Chinese", "Simplified Chinese", "Japanese"
-	};
-
-	return names[language];
+	return kLanguageNames[language];
 }
 
-Common::MemoryReadStream *preParseColorCodes(Common::SeekableReadStream &stream) {
+Language LanguageManager::parseLanguage(Common::UString str) {
+	if (str.empty())
+		return kLanguageInvalid;
+
+	str.makeLower();
+
+	for (uint i = 0; i < ARRAYSIZE(kLanguageStrings); i++) {
+		for (uint j = 0; j < ARRAYSIZE(kLanguageStrings[i].strings); j++) {
+			if (!kLanguageStrings[i].strings[j])
+				break;
+
+			if (str == kLanguageStrings[i].strings[j])
+				return kLanguageStrings[i].language;
+		}
+	}
+
+	return kLanguageInvalid;
+}
+
+Common::MemoryReadStream *LanguageManager::preParseColorCodes(Common::SeekableReadStream &stream) {
 	Common::MemoryWriteStreamDynamic output;
 
 	output.reserve(stream.size());
