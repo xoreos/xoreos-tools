@@ -27,13 +27,13 @@
 
 #include "src/common/error.h"
 #include "src/common/ustring.h"
-#include "src/common/file.h"
+#include "src/common/writefile.h"
 
 #include "src/images/decoder.h"
 
 namespace Images {
 
-static void writePixel(Common::DumpFile &file, const byte *&data, PixelFormat format) {
+static void writePixel(Common::WriteFile &file, const byte *&data, PixelFormat format) {
 	if (format == kPixelFormatR8G8B8) {
 		file.writeByte(data[2]);
 		file.writeByte(data[1]);
@@ -89,7 +89,7 @@ void dumpTGA(const Common::UString &fileName, const byte *data, int width, int h
 	if ((width <= 0) || (height <= 0) || !data)
 		throw Common::Exception("Invalid image data (%dx%d %d)", width, height, data != 0);
 
-	Common::DumpFile file(fileName);
+	Common::WriteFile file(fileName);
 
 	file.writeByte(0); // ID Length
 	file.writeByte(0); // Palette size
@@ -109,9 +109,6 @@ void dumpTGA(const Common::UString &fileName, const byte *data, int width, int h
 	uint32 count = width * height;
 	for (uint32 i = 0; i < count; i++)
 		writePixel(file, data, format);
-
-	if (file.err())
-		throw Common::Exception("Write error");
 }
 
 void dumpTGA(const Common::UString &fileName, const Decoder &image) {

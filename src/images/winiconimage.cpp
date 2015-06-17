@@ -23,7 +23,7 @@
  */
 
 #include "src/common/util.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 #include "src/common/error.h"
 
 #include "src/images/winiconimage.h"
@@ -42,9 +42,6 @@ void WinIconImage::load(Common::SeekableReadStream &cur) {
 
 		readHeader(cur);
 		readData  (cur);
-
-		if (cur.err())
-			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading CUR file");

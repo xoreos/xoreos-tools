@@ -15,9 +15,14 @@ noinst_HEADERS = \
                  util.h \
                  strutil.h \
                  encoding.h \
-                 stream.h \
+                 readstream.h \
+                 memreadstream.h \
+                 writestream.h \
+                 memwritestream.h \
+                 stdoutstream.h \
                  streamtokenizer.h \
-                 file.h \
+                 readfile.h \
+                 writefile.h \
                  filepath.h \
                  binsearch.h \
                  $(EMPTY)
@@ -29,8 +34,13 @@ libcommon_la_SOURCES = \
                        util.cpp \
                        strutil.cpp \
                        encoding.cpp \
-                       stream.cpp \
+                       readstream.cpp \
+                       memreadstream.cpp \
+                       writestream.cpp \
+                       memwritestream.cpp \
+                       stdoutstream.cpp \
                        streamtokenizer.cpp \
-                       file.cpp \
+                       readfile.cpp \
+                       writefile.cpp \
                        filepath.cpp \
                        $(EMPTY)

@@ -22,10 +22,12 @@
  *  TPC (BioWare's own texture format) loading.
  */
 
+#include <cstring>
+
 #include "src/common/util.h"
 #include "src/common/maths.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
 
 #include "src/images/tpc.h"
 #include "src/images/util.h"
@@ -53,9 +55,6 @@ void TPC::load(Common::SeekableReadStream &tpc) {
 		readHeader (tpc, encoding);
 		readData   (tpc, encoding);
 		readTXIData(tpc);
-
-		if (tpc.err())
-			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading TPC file");
@@ -147,7 +146,7 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	} else
 		throw Common::Exception("Unknown TPC encoding: %d (%d)", encoding, dataSize);
 
-	uint32 fullDataSize = tpc.size() - 128;
+	size_t fullDataSize = tpc.size() - 128;
 
 	_mipMaps.reserve(mipMapCount);
 	for (uint32 i = 0; i < mipMapCount; i++) {

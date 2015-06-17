@@ -26,11 +26,10 @@
 #include <cstdlib>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readfile.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -130,7 +129,7 @@ void printUsage(FILE *stream, const char *name) {
 void convert(const Common::UString &cbgtFile , const Common::UString &palFile,
              const Common::UString &twoDAFile, const Common::UString &outFile) {
 
-	Common::File cbgt(cbgtFile), pal(palFile), twoDA(twoDAFile);
+	Common::ReadFile cbgt(cbgtFile), pal(palFile), twoDA(twoDAFile);
 	Images::CBGT image(cbgt, pal, twoDA);
 
 	image.flipVertically();

@@ -30,7 +30,8 @@
 #include "src/common/util.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/readfile.h"
 #include "src/common/filepath.h"
 
 #include "src/aurora/util.h"
@@ -195,7 +196,7 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 uint32 getFileID(const Common::UString &fileName) {
-	Common::File file(fileName);
+	Common::ReadFile file(fileName);
 
 	return file.readUint32BE();
 }
@@ -222,7 +223,7 @@ void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::
 	keys.reserve(keyFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = keyFiles.begin(); f != keyFiles.end(); ++f) {
-		Common::File key(*f);
+		Common::ReadFile key(*f);
 
 		keys.push_back(new Aurora::KEYFile(key));
 	}
@@ -232,7 +233,7 @@ void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::
 	bifs.reserve(bifFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = bifFiles.begin(); f != bifFiles.end(); ++f)
-		bifs.push_back(new Aurora::BIFFile(new Common::File(*f)));
+		bifs.push_back(new Aurora::BIFFile(new Common::ReadFile(*f)));
 }
 
 void mergeKEYBIF(std::vector<Aurora::KEYFile *> &keys, std::vector<Aurora::BIFFile *> &bifs,

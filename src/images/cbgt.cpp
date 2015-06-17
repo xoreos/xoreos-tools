@@ -22,9 +22,12 @@
  *  Compressed BackGround Tiles, a BioWare image format found in Sonic.
  */
 
+#include <cstdio>
+#include <cstring>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 
 #include "src/aurora/2dafile.h"
 #include "src/aurora/smallfile.h"
@@ -79,11 +82,11 @@ void CBGT::readPalettes(ReadContext &ctx) {
 	try {
 		ctx.pal->seek(0);
 
-		uint32 size = ctx.pal->size();
+		size_t size = ctx.pal->size();
 		ctx.palettes.reserve((size + 1) / 512);
 
 		while (size > 0) {
-			const uint32 paletteSize = MIN<uint32>(512, size);
+			const uint32 paletteSize = MIN<size_t>(512, size);
 
 			ctx.palettes.push_back(new byte[768]);
 			byte *palette = ctx.palettes.back();
@@ -185,7 +188,7 @@ void CBGT::readCells(ReadContext &ctx) {
 			if (size == 0)
 				continue;
 
-			uint32 pos = ctx.cbgt->pos();
+			size_t pos = ctx.cbgt->pos();
 
 			Common::SeekableSubReadStream cellData(ctx.cbgt, offset, offset + size);
 			ctx.cells.back() = Aurora::Small::decompress(cellData);

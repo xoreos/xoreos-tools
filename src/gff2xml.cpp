@@ -26,11 +26,11 @@
 #include <cstdio>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readfile.h"
+#include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 
 #include "src/xml/gffdumper.h"
@@ -144,7 +144,7 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 void dumpGFF(const Common::UString &file, Common::Encoding encoding) {
-	Common::File gff(file);
+	Common::ReadFile gff(file);
 
 	XML::GFFDumper *dumper = XML::GFFDumper::identify(gff);
 

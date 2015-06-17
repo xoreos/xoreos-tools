@@ -27,7 +27,7 @@
  */
 
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 #include "src/common/hash.h"
 
 #include "src/aurora/gdafile.h"
@@ -45,11 +45,11 @@ GDAFile::~GDAFile() {
 	clear();
 }
 
-uint32 GDAFile::getColumnCount() const {
+size_t GDAFile::getColumnCount() const {
 	return _columns->size();
 }
 
-uint32 GDAFile::getRowCount() const {
+size_t GDAFile::getRowCount() const {
 	return _rows->size();
 }
 
@@ -57,30 +57,34 @@ const GDAFile::Headers &GDAFile::getHeaders() const {
 	return _headers;
 }
 
-const GFF4Struct *GDAFile::getRow(uint32 row) const {
+bool GDAFile::hasRow(size_t row) const {
+	return getRow(row) != 0;
+}
+
+const GFF4Struct *GDAFile::getRow(size_t row) const {
 	if (row >= _rows->size())
 		return 0;
 
 	return (*_rows)[row];
 }
 
-uint32 GDAFile::findColumn(const Common::UString &name) const {
+size_t GDAFile::findColumn(const Common::UString &name) const {
 	ColumnNameMap::const_iterator c = _columnNameMap.find(name);
 	if (c != _columnNameMap.end())
 		return c->second;
 
-	uint32 column = findColumn(Common::hashStringCRC32(name.toLower(), Common::kEncodingUTF16LE));
+	size_t column = findColumn(Common::hashStringCRC32(name.toLower(), Common::kEncodingUTF16LE));
 	_columnNameMap[name] = column;
 
 	return column;
 }
 
-uint32 GDAFile::findColumn(uint32 hash) const {
+size_t GDAFile::findColumn(uint32 hash) const {
 	ColumnHashMap::const_iterator c = _columnHashMap.find(hash);
 	if (c != _columnHashMap.end())
 		return c->second;
 
-	for (uint32 i = 0; i < _columns->size(); i++) {
+	for (size_t i = 0; i < _columns->size(); i++) {
 		if (!(*_columns)[i])
 			continue;
 
@@ -91,8 +95,79 @@ uint32 GDAFile::findColumn(uint32 hash) const {
 		}
 	}
 
-	_columnHashMap[hash] = 0xFFFFFFFF;
-	return 0xFFFFFFFF;
+	_columnHashMap[hash] = kInvalidColumn;
+	return kInvalidColumn;
+}
+
+const GFF4Struct *GDAFile::getRowColumn(size_t row, uint32 hash, size_t &column) const {
+	const GFF4Struct *gdaRow = getRow(row);
+	if (!gdaRow || ((column = findColumn(hash)) == kInvalidColumn))
+		return 0;
+
+	return gdaRow;
+}
+
+const GFF4Struct *GDAFile::getRowColumn(size_t row, const Common::UString &name, size_t &column) const {
+	const GFF4Struct *gdaRow = getRow(row);
+	if (!gdaRow || ((column = findColumn(name)) == kInvalidColumn))
+		return 0;
+
+	return gdaRow;
+}
+
+Common::UString GDAFile::getString(size_t row, uint32 columnHash, const Common::UString &def) const {
+	size_t gdaColumn;
+	const GFF4Struct *gdaRow = getRowColumn(row, columnHash, gdaColumn);
+	if (!gdaRow)
+		return def;
+
+	return gdaRow->getString(gdaColumn, def);
+}
+
+Common::UString GDAFile::getString(size_t row, const Common::UString &columnName,
+                                   const Common::UString &def) const {
+	size_t gdaColumn;
+	const GFF4Struct *gdaRow = getRowColumn(row, columnName, gdaColumn);
+	if (!gdaRow)
+		return def;
+
+	return gdaRow->getString(gdaColumn, def);
+}
+
+int32 GDAFile::getInt(size_t row, uint32 columnHash, int32 def) const {
+	size_t gdaColumn;
+	const GFF4Struct *gdaRow = getRowColumn(row, columnHash, gdaColumn);
+	if (!gdaRow)
+		return def;
+
+	return gdaRow->getSint(gdaColumn, def);
+}
+
+int32 GDAFile::getInt(size_t row, const Common::UString &columnName, int32 def) const {
+	size_t gdaColumn;
+	const GFF4Struct *gdaRow = getRowColumn(row, columnName, gdaColumn);
+	if (!gdaRow)
+		return def;
+
+	return gdaRow->getSint(gdaColumn, def);
+}
+
+float GDAFile::getFloat(size_t row, uint32 columnHash, float def) const {
+	size_t gdaColumn;
+	const GFF4Struct *gdaRow = getRowColumn(row, columnHash, gdaColumn);
+	if (!gdaRow)
+		return def;
+
+	return gdaRow->getDouble(gdaColumn, def);
+}
+
+float GDAFile::getFloat(size_t row, const Common::UString &columnName, float def) const {
+	size_t gdaColumn;
+	const GFF4Struct *gdaRow = getRowColumn(row, columnName, gdaColumn);
+	if (!gdaRow)
+		return def;
+
+	return gdaRow->getDouble(gdaColumn, def);
 }
 
 void GDAFile::load(Common::SeekableReadStream &gda) {
@@ -105,7 +180,7 @@ void GDAFile::load(Common::SeekableReadStream &gda) {
 		_rows    = &top.getList(kGFF4G2DARowList);
 
 		_headers.resize(_columns->size());
-		for (uint32 i = 0; i < _columns->size(); i++) {
+		for (size_t i = 0; i < _columns->size(); i++) {
 			if (!(*_columns)[i])
 				continue;
 

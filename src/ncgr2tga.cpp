@@ -27,11 +27,11 @@
 #include <cstdlib>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/readfile.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -146,15 +146,15 @@ void printUsage(FILE *stream, const char *name) {
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
              Common::UString &outFile, uint32 width, uint32 height) {
 
-	Common::File nclr(nclrFile);
+	Common::ReadFile nclr(nclrFile);
 
 	std::vector<Common::SeekableReadStream *> ncgrs;
 	ncgrs.resize(ncgrFiles.size(), 0);
 
 	try {
-		for (uint32 i = 0; i < ncgrFiles.size(); i++)
+		for (size_t i = 0; i < ncgrFiles.size(); i++)
 			if (!ncgrFiles[i].empty())
-				ncgrs[i] = new Common::File(ncgrFiles[i]);
+				ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
 
 		Images::NCGR image(ncgrs, width, height, nclr);
 
@@ -163,12 +163,12 @@ void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
 		image.dumpTGA(outFile);
 
 	} catch (...) {
-		for (uint32 i = 0; i < ncgrs.size(); i++)
+		for (size_t i = 0; i < ncgrs.size(); i++)
 			delete ncgrs[i];
 
 		throw;
 	}
 
-	for (uint32 i = 0; i < ncgrs.size(); i++)
+	for (size_t i = 0; i < ncgrs.size(); i++)
 		delete ncgrs[i];
 }

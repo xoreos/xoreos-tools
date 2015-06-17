@@ -26,11 +26,11 @@
 #include <cstdio>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readfile.h"
+#include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 
 #include "src/aurora/aurorafile.h"
@@ -153,7 +153,7 @@ static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
 void convert2DA(const Common::UString &file, Format format) {
-	Common::File fileStream(file);
+	Common::ReadFile fileStream(file);
 
 	uint32 id = Aurora::AuroraBase::readHeaderID(fileStream);
 	fileStream.seek(0);

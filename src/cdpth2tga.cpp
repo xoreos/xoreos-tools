@@ -26,11 +26,10 @@
 #include <cstdlib>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readfile.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -127,7 +126,7 @@ void printUsage(FILE *stream, const char *name) {
 
 static void getDimensions(const Common::UString &twoDAFile, uint32 &width, uint32 &height) {
 
-	Common::File twoDAStream(twoDAFile);
+	Common::ReadFile twoDAStream(twoDAFile);
 	Aurora::TwoDAFile twoDA(twoDAStream);
 
 	width  = twoDA.getColumnCount() * 64;
@@ -140,7 +139,7 @@ void convert(const Common::UString &cdpthFile, const Common::UString &twoDAFile,
 	uint32 width, height;
 	getDimensions(twoDAFile, width, height);
 
-	Common::File cdpth(cdpthFile);
+	Common::ReadFile cdpth(cdpthFile);
 	Images::CDPTH image(cdpth, width, height);
 
 	image.flipVertically();

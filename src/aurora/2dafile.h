@@ -47,12 +47,12 @@ class GDAFile;
 class TwoDARow {
 public:
 	/** Return the contents of a cell as a string. */
-	const Common::UString &getString(uint32 column) const;
+	const Common::UString &getString(size_t column) const;
 	/** Return the contents of a cell as a string. */
 	const Common::UString &getString(const Common::UString &column) const;
 
 	/** Check if the cell is empty. */
-	bool empty(uint32 column) const;
+	bool empty(size_t column) const;
 	/** Check if the cell is empty. */
 	bool empty(const Common::UString &column) const;
 
@@ -64,7 +64,7 @@ private:
 	TwoDARow(TwoDAFile &parent);
 	~TwoDARow();
 
-	const Common::UString &getCell(uint32 n) const;
+	const Common::UString &getCell(size_t n) const;
 
 	friend class TwoDAFile;
 };
@@ -77,19 +77,19 @@ public:
 	~TwoDAFile();
 
 	/** Return the number of rows in the array. */
-	uint32 getRowCount() const;
+	size_t getRowCount() const;
 
 	/** Return the number of columns in the array. */
-	uint32 getColumnCount() const;
+	size_t getColumnCount() const;
 
 	/** Return the columns' headers. */
 	const std::vector<Common::UString> &getHeaders() const;
 
 	/** Translate a column header to a column index. */
-	uint32 headerToColumn(const Common::UString &header) const;
+	size_t headerToColumn(const Common::UString &header) const;
 
 	/** Get a row. */
-	const TwoDARow &getRow(uint32 row) const;
+	const TwoDARow &getRow(size_t row) const;
 
 	/** Dump the 2DA data into an V2.0 ASCII 2DA. */
 	void dumpASCII(Common::WriteStream &out) const;
@@ -102,7 +102,7 @@ public:
 	bool dumpCSV(const Common::UString &fileName) const;
 
 private:
-	typedef std::map<Common::UString, uint32, Common::UString::iless> HeaderMap;
+	typedef std::map<Common::UString, size_t, Common::UString::iless> HeaderMap;
 
 	Common::UString _defaultString; ///< The default string to return should a cell not exist.
 

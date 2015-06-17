@@ -26,11 +26,11 @@
 #include <cstdio>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readfile.h"
+#include "src/common/writefile.h"
 
 #include "src/aurora/smallfile.h"
 
@@ -121,8 +121,8 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 void desmall(const Common::UString &inFile, const Common::UString &outFile) {
-	Common::File in(inFile);
-	Common::DumpFile out(outFile);
+	Common::ReadFile  in(inFile);
+	Common::WriteFile out(outFile);
 
 	Aurora::Small::decompress(in, out);
 }

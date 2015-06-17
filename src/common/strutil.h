@@ -36,7 +36,7 @@ class MemoryWriteStreamDynamic;
 /** Print a quick hex dump of the given data. */
 void printDataHex(SeekableReadStream &stream);
 /** Print a quick hex dump of the given data. */
-void printDataHex(const byte *data, uint32 size);
+void printDataHex(const byte *data, size_t size);
 
 /** Print a quick dump of the given (text) stream. */
 void printStream(SeekableReadStream &stream);

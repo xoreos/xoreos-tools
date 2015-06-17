@@ -22,9 +22,11 @@
  *  Compressed DePTH, a BioWare image-ish format found in Sonic.
  */
 
+#include <cstring>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 
 #include "src/aurora/smallfile.h"
 

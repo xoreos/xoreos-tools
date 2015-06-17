@@ -28,8 +28,8 @@
 
 #include "src/common/util.h"
 #include "src/common/strutil.h"
-#include "src/common/stream.h"
-#include "src/common/file.h"
+#include "src/common/memreadstream.h"
+#include "src/common/readfile.h"
 #include "src/common/error.h"
 
 #include "src/aurora/talktable_tlk.h"
@@ -58,7 +58,7 @@ void TalkTable_TLK::load() {
 			throw Common::Exception("Not a TLK file (%s)", Common::debugTag(_id).c_str());
 
 		if (_version != kVersion3 && _version != kVersion4)
-			throw Common::Exception("Unsupported TLK file version  %s", Common::debugTag(_version).c_str());
+			throw Common::Exception("Unsupported TLK file version %s", Common::debugTag(_version).c_str());
 
 		_languageID = _tlk->readUint32LE();
 
@@ -81,9 +81,6 @@ void TalkTable_TLK::load() {
 		else
 			readEntryTableV4();
 
-		if (_tlk->err())
-			throw Common::Exception(Common::kReadError);
-
 	} catch (Common::Exception &e) {
 		e.add("Failed reading TLK file");
 		throw;
@@ -91,7 +88,7 @@ void TalkTable_TLK::load() {
 }
 
 void TalkTable_TLK::readEntryTableV3() {
-	for (uint32 i = 0; i < _entries.size(); i++) {
+	for (size_t i = 0; i < _entries.size(); i++) {
 		Entry &entry = _entries[i];
 
 		entry.flags          = _tlk->readUint32LE();
@@ -108,7 +105,7 @@ void TalkTable_TLK::readEntryTableV3() {
 }
 
 void TalkTable_TLK::readEntryTableV4() {
-	for (uint32 i = 0; i < _entries.size(); i++) {
+	for (size_t i = 0; i < _entries.size(); i++) {
 		Entry &entry = _entries[i];
 
 		entry.soundID = _tlk->readUint32LE();
@@ -130,7 +127,7 @@ Common::UString TalkTable_TLK::readString(const Entry &entry) const {
 
 	_tlk->seek(entry.offset);
 
-	uint32 length = MIN<uint32>(entry.length, _tlk->size() - _tlk->pos());
+	size_t length = MIN<size_t>(entry.length, _tlk->size() - _tlk->pos());
 	if (length == 0)
 		return "";
 
@@ -176,7 +173,7 @@ uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
 }
 
 uint32 TalkTable_TLK::getLanguageID(const Common::UString &file) {
-	Common::File tlk;
+	Common::ReadFile tlk;
 	if (!tlk.open(file))
 		return kLanguageInvalid;
 

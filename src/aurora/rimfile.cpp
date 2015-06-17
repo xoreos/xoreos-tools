@@ -22,9 +22,11 @@
  *  Handling BioWare's RIMs (resource archives).
  */
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
 #include "src/common/error.h"
 #include "src/common/encoding.h"
 
@@ -70,9 +72,6 @@ void RIMFile::load(Common::SeekableReadStream &rim) {
 
 		// Read the resource list
 		readResList(rim, offResList);
-
-		if (rim.err())
-			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading RIM file");

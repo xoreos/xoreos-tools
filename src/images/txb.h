@@ -43,10 +43,10 @@ public:
 	Common::SeekableReadStream *getTXI() const;
 
 private:
-	uint32 _dataSize;
+	size_t _dataSize;
 
 	byte  *_txiData;
-	uint32 _txiDataSize;
+	size_t _txiDataSize;
 
 	// Loading helpers
 	void load(Common::SeekableReadStream &txb);

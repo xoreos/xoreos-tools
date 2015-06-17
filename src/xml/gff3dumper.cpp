@@ -22,10 +22,11 @@
  *  Dump GFF V3.2/V3.3 into XML files.
  */
 
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/readstream.h"
+#include "src/common/writestream.h"
 
 #include "src/aurora/locstring.h"
 #include "src/aurora/gff3file.h"
@@ -119,7 +120,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 	Aurora::GFF3Struct::FieldType type = strct.getType(field);
 
 	Common::UString typeName;
-	if ((type >= 0) && (type < ARRAYSIZE(kGFF3FieldTypeNames)))
+	if (((size_t) type) < ARRAYSIZE(kGFF3FieldTypeNames))
 		typeName = kGFF3FieldTypeNames[(int)type];
 	else
 		typeName = Common::UString::format("fieldtype%d", (int)type);

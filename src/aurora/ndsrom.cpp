@@ -24,11 +24,13 @@
 
 // Based on http://dsibrew.org/wiki/NDS_Format
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
-#include "src/common/file.h"
+#include "src/common/memreadstream.h"
+#include "src/common/readfile.h"
 #include "src/common/encoding.h"
 
 #include "src/aurora/ndsrom.h"
@@ -37,7 +39,7 @@
 namespace Aurora {
 
 NDSFile::NDSFile(const Common::UString &fileName) : _nds(0) {
-	_nds = new Common::File(fileName);
+	_nds = new Common::ReadFile(fileName);
 
 	try {
 		load(*_nds);
@@ -78,9 +80,6 @@ void NDSFile::load(Common::SeekableReadStream &nds) {
 		readNames(nds, fileNameTableOffset, fileNameTableLength);
 		readFAT(nds, fatOffset);
 
-		if (nds.err())
-			throw Common::Exception(Common::kReadError);
-
 	} catch (Common::Exception &e) {
 		e.add("Failed reading NDS file");
 		throw;
@@ -92,7 +91,7 @@ void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 l
 	nds.seek(offset + 8);
 
 	uint32 index = 0;
-	while (((uint32) nds.pos()) < (offset + length)) {
+	while (((size_t)nds.pos()) < (offset + length)) {
 		Resource res;
 
 		byte nameLength = nds.readByte();

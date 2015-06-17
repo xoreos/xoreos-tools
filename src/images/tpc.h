@@ -44,7 +44,7 @@ public:
 
 private:
 	byte  *_txiData;
-	uint32 _txiDataSize;
+	size_t _txiDataSize;
 
 	// Loading helpers
 	void load(Common::SeekableReadStream &tpc);

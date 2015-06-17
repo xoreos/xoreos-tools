@@ -22,7 +22,8 @@
  *  Dump TLKs into XML files.
  */
 
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
+#include "src/common/writestream.h"
 
 #include "src/aurora/language.h"
 #include "src/aurora/talktable.h"

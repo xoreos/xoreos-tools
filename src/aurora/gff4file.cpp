@@ -26,8 +26,10 @@
  * (<http://social.bioware.com/wiki/datoolset/index.php/GFF>).
  */
 
+#include <cassert>
+
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 #include "src/common/encoding.h"
 #include "src/common/strutil.h"
 
@@ -58,8 +60,6 @@ void GFF4File::Header::read(Common::SeekableReadStream &gff4, uint32 version) {
 
 	dataOffset = gff4.readUint32LE();
 
-	if (gff4.err() || gff4.eos())
-		throw Common::Exception(Common::kReadError);
 }
 
 
@@ -107,9 +107,6 @@ void GFF4File::load(uint32 type) {
 		loadHeader(type);
 		loadStructs();
 		loadStrings();
-
-		if (_stream->err() || _stream->eos())
-			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		clear();
@@ -178,9 +175,6 @@ void GFF4File::loadStructs() {
 			field.offset = _stream->readUint32LE();
 		}
 	}
-
-	if (_stream->err() || _stream->eos())
-		throw Common::Exception(Common::kReadError);
 
 	// And load the top level struct, which itself recurses into field structs
 	_topLevelStruct = new GFF4Struct(*this, _header.dataOffset, _structTemplates[0]);
@@ -312,7 +306,7 @@ uint32 GFF4Struct::getLabel() const {
 // --- Loader ---
 
 void GFF4Struct::load(GFF4File &parent, uint32 offset, const GFF4File::StructTemplate &tmplt) {
-	for (uint32 i = 0; i < tmplt.fields.size(); i++) {
+	for (size_t i = 0; i < tmplt.fields.size(); i++) {
 		const GFF4File::StructTemplate::Field &field = tmplt.fields[i];
 
 		_fieldLabels.push_back(field.label);
@@ -435,7 +429,7 @@ uint32 GFF4Struct::getRefCount() const {
 	return _refCount;
 }
 
-uint GFF4Struct::getFieldCount() const {
+size_t GFF4Struct::getFieldCount() const {
 	return _fieldCount;
 }
 
@@ -722,19 +716,19 @@ double GFF4Struct::getDouble(Common::SeekableReadStream &data, IFieldType type) 
 Common::UString GFF4Struct::getString(Common::SeekableReadStream &data, Common::Encoding encoding) const {
 	/* When the string is encoded in UTF-8, then length field specifies the length in bytes.
 	 * Otherwise, it's the length in characters. */
-	const uint32 lengthMult = encoding == Common::kEncodingUTF8 ? 1 : Common::getBytesPerCodepoint(encoding);
+	const size_t lengthMult = encoding == Common::kEncodingUTF8 ? 1 : Common::getBytesPerCodepoint(encoding);
 
-	const uint32 offset = data.pos();
+	const size_t offset = data.pos();
 
 	const uint32 length = data.readUint32LE();
-	const uint32 size   = length * lengthMult;
+	const size_t size   = length * lengthMult;
 
 	try {
 		return readStringFixed(data, encoding, size);
 	} catch (...) {
 	}
 
-	return Common::UString::format("GFF4: Invalid string encoding (0x%08X)", offset);
+	return Common::UString::format("GFF4: Invalid string encoding (0x%08X)", (uint) offset);
 }
 
 Common::UString GFF4Struct::getString(Common::SeekableReadStream &data, Common::Encoding encoding,
@@ -743,7 +737,7 @@ Common::UString GFF4Struct::getString(Common::SeekableReadStream &data, Common::
 	if (_parent->hasSharedStrings())
 		return _parent->getSharedString(offset);
 
-	const uint32 pos = data.seekTo(offset);
+	const uint32 pos = data.seek(offset);
 
 	Common::UString str = getString(data, encoding);
 

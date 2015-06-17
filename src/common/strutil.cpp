@@ -27,13 +27,14 @@
 #include "src/common/strutil.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 
 namespace Common {
 
 void printDataHex(SeekableReadStream &stream) {
-	uint32 pos  = stream.pos();
-	uint32 size = stream.size() - pos;
+	size_t pos  = stream.pos();
+	size_t size = stream.size() - pos;
 
 	if (size == 0)
 		return;
@@ -43,7 +44,7 @@ void printDataHex(SeekableReadStream &stream) {
 
 	while (size > 0) {
 		// At max 16 bytes printed per row
-		uint32 n = MIN<uint32>(size, 16);
+		uint32 n = MIN<size_t>(size, 16);
 		if (stream.read(rowData, n) != n)
 			throw Exception(kReadError);
 
@@ -83,7 +84,7 @@ void printDataHex(SeekableReadStream &stream) {
 	stream.seek(pos);
 }
 
-void printDataHex(const byte *data, uint32 size) {
+void printDataHex(const byte *data, size_t size) {
 	if (!data || (size == 0))
 		return;
 
@@ -93,17 +94,17 @@ void printDataHex(const byte *data, uint32 size) {
 
 void printStream(SeekableReadStream &stream) {
 	uint32 c;
-	while ((c = stream.readChar()) != kEOF)
+	while ((c = stream.readChar()) != ReadStream::kEOF)
 		std::printf("%c", (char) c);
 }
 
 void printStream(MemoryWriteStreamDynamic &stream) {
-	Common::MemoryReadStream readStream(stream.getData(), stream.size());
+	MemoryReadStream readStream(stream.getData(), stream.size());
 
 	printStream(readStream);
 }
 
-static bool tagToString(uint32 tag, bool trim, Common::UString &str) {
+static bool tagToString(uint32 tag, bool trim, UString &str) {
 	tag = TO_BE_32(tag);
 
 	const char *tS = (const char *) &tag;
@@ -118,7 +119,7 @@ static bool tagToString(uint32 tag, bool trim, Common::UString &str) {
 }
 
 UString tagToString(uint32 tag, bool trim) {
-	Common::UString str;
+	UString str;
 	if (tagToString(tag, trim, str))
 		return str;
 
@@ -126,7 +127,7 @@ UString tagToString(uint32 tag, bool trim) {
 }
 
 UString debugTag(uint32 tag, bool trim) {
-	Common::UString str;
+	UString str;
 	if (tagToString(tag, trim, str))
 		return UString::format("0x%08X ('%s')", FROM_BE_32(tag), str.c_str());
 

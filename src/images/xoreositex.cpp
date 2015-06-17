@@ -25,7 +25,7 @@
 
 #include "src/common/util.h"
 #include "src/common/strutil.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 #include "src/common/error.h"
 
 #include "src/images/xoreositex.h"
@@ -47,9 +47,6 @@ void XEOSITEX::load(Common::SeekableReadStream &xeositex) {
 
 		readHeader(xeositex);
 		readMipMaps(xeositex);
-
-		if (xeositex.err())
-			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading XEOSITEX file");
@@ -84,12 +81,14 @@ void XEOSITEX::readHeader(Common::SeekableReadStream &xeositex) {
 
 	_coordTransform = xeositex.readByte();
 
+	xeositex.skip(1); // Filter
+
 	const uint32 mipMaps = xeositex.readUint32LE();
 	_mipMaps.resize(mipMaps, 0);
 }
 
 void XEOSITEX::readMipMaps(Common::SeekableReadStream &xeositex) {
-	for (uint32 i = 0; i < _mipMaps.size(); i++) {
+	for (size_t i = 0; i < _mipMaps.size(); i++) {
 		_mipMaps[i] = new MipMap;
 
 		_mipMaps[i]->width  = xeositex.readUint32LE();

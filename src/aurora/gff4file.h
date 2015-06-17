@@ -210,7 +210,7 @@ public:
 	uint32 getLabel() const;
 
 	/** Return the number of fields in this struct. */
-	uint getFieldCount() const;
+	size_t getFieldCount() const;
 	/** Does this specific field exist? */
 	bool hasField(uint32 field) const;
 
@@ -313,7 +313,7 @@ private:
 	uint32 _id;
 	uint32 _refCount;
 
-	uint32 _fieldCount;
+	size_t _fieldCount;
 
 	FieldMap       _fields;
 	FieldLabelList _fieldLabels;

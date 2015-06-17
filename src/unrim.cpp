@@ -27,7 +27,8 @@
 
 #include "src/common/ustring.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/readfile.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/rimfile.h"
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::RIMFile rim(new Common::File(file));
+		Aurora::RIMFile rim(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
 			listFiles(rim, game);
@@ -147,9 +148,9 @@ void printUsage(FILE *stream, const char *name) {
 
 void listFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = rim.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
 	std::printf("              Filename               |    Size\n");
 	std::printf("=====================================|===========\n");
@@ -164,16 +165,16 @@ void listFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 
 void extractFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = rim.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
-	uint i = 1;
+	size_t i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
 		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
 		const Common::UString  fileName = TypeMan.setFileType(r->name, type);
 
-		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
+		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
 		Common::SeekableReadStream *stream = 0;
 		try {

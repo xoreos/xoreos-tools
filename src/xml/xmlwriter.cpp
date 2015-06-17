@@ -23,7 +23,8 @@
  */
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
+#include "src/common/writestream.h"
 
 #include "src/xml/xmlwriter.h"
 
@@ -115,11 +116,11 @@ void XMLWriter::writeTag() {
 	}
 }
 
-void XMLWriter::indent(uint level) {
+void XMLWriter::indent(size_t level) {
 	if (!_needIndent)
 		return;
 
-	for (uint i = 0; i < level; i++)
+	while (level-- > 0)
 		_stream->writeString("  ");
 
 	_needIndent = false;
@@ -177,7 +178,7 @@ void XMLWriter::setContents(const Common::UString &contents) {
 	tag.empty    = false;
 }
 
-void XMLWriter::setContents(const byte *data, uint32 size) {
+void XMLWriter::setContents(const byte *data, size_t size) {
 	if (_openTags.empty())
 		return;
 

@@ -26,9 +26,10 @@
  * (<https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware>)
  */
 
-#include "src/common/endianness.h"
+#include <cassert>
+
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
 #include "src/common/encoding.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
@@ -95,9 +96,6 @@ void GFF3File::load(uint32 id) {
 		loadStructs();
 		loadLists();
 
-		if (_stream->err() || _stream->eos())
-			throw Common::Exception(Common::kReadError);
-
 	} catch (Common::Exception &e) {
 		clear();
 
@@ -138,7 +136,7 @@ void GFF3File::loadLists() {
 
 	// Counting the actual amount of lists
 	uint32 listCount = 0;
-	for (uint32 i = 0; i < rawLists.size(); i++) {
+	for (size_t i = 0; i < rawLists.size(); i++) {
 		uint32 n = rawLists[i];
 
 		if ((i + n) > rawLists.size())
@@ -153,7 +151,7 @@ void GFF3File::loadLists() {
 
 	// Converting the raw list array into real, useable lists
 	uint32 listIndex = 0;
-	for (uint32 i = 0; i < rawLists.size(); listIndex++) {
+	for (size_t i = 0; i < rawLists.size(); listIndex++) {
 		_listOffsetToIndex[i] = listIndex;
 
 		const uint32 n = rawLists[i++];
@@ -292,8 +290,7 @@ Common::SeekableReadStream &GFF3Struct::getData(const Field &field) const {
 	assert(field.extended);
 
 	Common::SeekableReadStream &data = _parent->getFieldData();
-
-	data.seek(field.data, SEEK_CUR);
+	data.skip(field.data);
 
 	return data;
 }
@@ -308,7 +305,7 @@ GFF3Struct::iterator GFF3Struct::end() const {
 	return _fieldNames.end();
 }
 
-uint GFF3Struct::getFieldCount() const {
+size_t GFF3Struct::getFieldCount() const {
 	return _fields.size();
 }
 

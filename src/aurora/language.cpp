@@ -22,8 +22,11 @@
  *  Types and functions related to language.
  */
 
+#include <cassert>
+
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 
 #include "src/aurora/language.h"
 #include "src/aurora/language_strings.h"
@@ -176,7 +179,7 @@ Common::Encoding LanguageManager::getCurrentEncoding() const {
 }
 
 uint32 LanguageManager::convertLanguageIDToGendered(uint32 languageID, LanguageGender gender) {
-	assert(((uint) gender) < kLanguageGenderMAX);
+	assert(((size_t) gender) < kLanguageGenderMAX);
 
 	if (languageID == kLanguageInvalid)
 		return kLanguageInvalid;
@@ -185,7 +188,7 @@ uint32 LanguageManager::convertLanguageIDToGendered(uint32 languageID, LanguageG
 	// - ID * 2 + 0  for male
 	// - ID * 2 + 1  for female
 
-	return languageID * 2 + ((uint) gender);
+	return languageID * 2 + ((size_t) gender);
 }
 
 uint32 LanguageManager::convertLanguageIDToUngendered(uint32 languageID) {
@@ -225,8 +228,8 @@ Language LanguageManager::parseLanguage(Common::UString str) {
 
 	str.makeLower();
 
-	for (uint i = 0; i < ARRAYSIZE(kLanguageStrings); i++) {
-		for (uint j = 0; j < ARRAYSIZE(kLanguageStrings[i].strings); j++) {
+	for (size_t i = 0; i < ARRAYSIZE(kLanguageStrings); i++) {
+		for (size_t j = 0; j < ARRAYSIZE(kLanguageStrings[i].strings); j++) {
 			if (!kLanguageStrings[i].strings[j])
 				break;
 

@@ -29,9 +29,8 @@
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 #include "src/common/encoding.h"
-#include "src/common/file.h"
 
 #include "src/aurora/keyfile.h"
 
@@ -81,9 +80,6 @@ void KEYFile::load(Common::SeekableReadStream &key) {
 		_resources.resize(resCount);
 		readResList(key, offResTable);
 
-		if (key.err())
-			throw Common::Exception(Common::kReadError);
-
 	} catch (Common::Exception &e) {
 		e.add("Failed reading KEY file");
 		throw;
@@ -108,11 +104,11 @@ void KEYFile::readBIFList(Common::SeekableReadStream &key, uint32 offset) {
 			key.skip(2); // Location of the bif (HD, CD, ...)
 		}
 
-		uint32 curPos = key.seekTo(nameOffset);
+		uint32 curPos = key.seek(nameOffset);
 
 		*bif = Common::readStringFixed(key, Common::kEncodingASCII, nameSize);
 
-		key.seekTo(curPos);
+		key.seek(curPos);
 
 		bif->replaceAll('\\', '/');
 		if (bif->beginsWith("/"))

@@ -54,7 +54,7 @@ public:
 	/** Set contents to this string, which will be properly escaped. */
 	void setContents(const Common::UString &contents);
 	/** Set the contents to binary data, which will be base64 encoded. */
-	void setContents(const byte *data, uint32 size);
+	void setContents(const byte *data, size_t size);
 	/** Set the contents to binary data, which will be base64 encoded. */
 	void setContents(Common::SeekableReadStream &stream);
 
@@ -87,7 +87,7 @@ private:
 
 	void writeHeader();
 
-	void indent(uint level);
+	void indent(size_t level);
 	void writeTag();
 
 	Common::UString escape(const Common::UString &str);

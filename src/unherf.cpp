@@ -29,7 +29,8 @@
 
 #include "src/common/ustring.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/readfile.h"
 #include "src/common/filepath.h"
 #include "src/common/hash.h"
 
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::HERFFile herf(new Common::File(file));
+		Aurora::HERFFile herf(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
 			listFiles(herf);
@@ -146,9 +147,9 @@ bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext) {
 
 void listFiles(Aurora::HERFFile &herf) {
 	const Aurora::Archive::ResourceList &resources = herf.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
 	std::printf("               Filename                |    Size\n");
 	std::printf("=======================================|===========\n");
@@ -164,11 +165,11 @@ void listFiles(Aurora::HERFFile &herf) {
 
 void extractFiles(Aurora::HERFFile &herf) {
 	const Aurora::Archive::ResourceList &resources = herf.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
-	uint i = 1;
+	size_t i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
 		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
 		if (fileName.empty())
@@ -176,7 +177,7 @@ void extractFiles(Aurora::HERFFile &herf) {
 
 		fileName = fileName + fileExt;
 
-		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
+		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
 		Common::SeekableReadStream *stream = 0;
 		try {

@@ -22,10 +22,12 @@
  *  BioWare's HERF (hashed ERF) file parsing.
  */
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/filepath.h"
-#include "src/common/stream.h"
+#include "src/common/memreadstream.h"
 #include "src/common/encoding.h"
 #include "src/common/hash.h"
 
@@ -64,9 +66,6 @@ void HERFFile::load(Common::SeekableReadStream &herf) {
 		searchDictionary(herf, resCount);
 		readResList(herf);
 
-		if (herf.err())
-			throw Common::Exception(Common::kReadError);
-
 	} catch (Common::Exception &e) {
 		e.add("Failed reading HERF file");
 		throw;
@@ -76,7 +75,7 @@ void HERFFile::load(Common::SeekableReadStream &herf) {
 void HERFFile::searchDictionary(Common::SeekableReadStream &herf, uint32 resCount) {
 	const uint32 dictHash = Common::hashStringDJB2("erf.dict");
 
-	uint32 pos = herf.pos();
+	const size_t pos = herf.pos();
 
 	for (uint32 i = 0; i < resCount; i++) {
 		uint32 hash = herf.readUint32LE();
@@ -96,7 +95,7 @@ void HERFFile::readDictionary(Common::SeekableReadStream &herf, std::map<uint32,
 	if (_dictOffset == 0xFFFFFFFF)
 		return;
 
-	uint32 pos = herf.pos();
+	size_t pos = herf.pos();
 
 	herf.seek(_dictOffset);
 
@@ -107,7 +106,7 @@ void HERFFile::readDictionary(Common::SeekableReadStream &herf, std::map<uint32,
 	uint32 hashCount = herf.readUint32LE();
 
 	for (uint32 i = 0; i < hashCount; i++) {
-		if ((uint32)herf.pos() >= (_dictOffset + _dictSize))
+		if ((size_t)herf.pos() >= (_dictOffset + _dictSize))
 			break;
 
 		uint32 hash = herf.readUint32LE();

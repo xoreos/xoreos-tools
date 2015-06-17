@@ -24,20 +24,18 @@
 
 #include "src/common/error.h"
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/writefile.h"
 
 #include "src/util.h"
 
 void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName) {
-	Common::DumpFile file;
+	Common::WriteFile file;
 	if (!file.open(fileName))
 		throw Common::Exception(Common::kOpenError);
 
 	file.writeStream(stream);
 	file.flush();
-	if (file.err())
-		throw Common::Exception(Common::kWriteError);
 
 	file.close();
 }

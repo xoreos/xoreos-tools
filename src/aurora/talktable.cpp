@@ -23,7 +23,7 @@
  */
 
 #include "src/common/util.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/talktable.h"
@@ -47,7 +47,7 @@ uint32 TalkTable::getLanguageID() const {
 }
 
 TalkTable *TalkTable::load(Common::SeekableReadStream &tlk, Common::Encoding encoding) {
-	uint32 pos = tlk.pos();
+	size_t pos = tlk.pos();
 
 	uint32 id, version;
 	bool utf16le;

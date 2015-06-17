@@ -22,8 +22,10 @@
  *  Parse tokens out of a stream.
  */
 
+#include <cassert>
+
 #include "src/common/streamtokenizer.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 #include "src/common/error.h"
 
 namespace Common {
@@ -66,11 +68,11 @@ UString StreamTokenizer::getToken(SeekableReadStream &stream) {
 
 	// Run through the stream, character by character
 	uint32 c;
-	while ((c = stream.readChar()) != kEOF) {
+	while ((c = stream.readChar()) != ReadStream::kEOF) {
 
 		if (isIn(c, _chunkEnds)) {
 			// This is a end character, seek back and break
-			stream.seek(-1, SEEK_CUR);
+			stream.seek(-1, SeekableReadStream::kOriginCurrent);
 			chunkEnd = true;
 			break;
 		}
@@ -130,13 +132,13 @@ UString StreamTokenizer::getToken(SeekableReadStream &stream) {
 	if (!chunkEnd && (_conSepRule != kRuleHeed)) {
 		// We have to look for consecutive separators
 
-		while ((c = stream.readChar()) != kEOF) {
+		while ((c = stream.readChar()) != ReadStream::kEOF) {
 
 			// Use the rule to determine when we should abort skipping consecutive separators
 			if (((_conSepRule == kRuleIgnoreSame) && (c != separator)) ||
 			    ((_conSepRule == kRuleIgnoreAll ) && !isIn(c, _separators))) {
 
-				stream.seek(-1, SEEK_CUR);
+				stream.seek(-1, SeekableReadStream::kOriginCurrent);
 				break;
 			}
 		}
@@ -147,29 +149,29 @@ UString StreamTokenizer::getToken(SeekableReadStream &stream) {
 	return token;
 }
 
-int StreamTokenizer::getTokens(SeekableReadStream &stream, std::vector<UString> &list,
-		int min, int max, const UString &def) {
+size_t StreamTokenizer::getTokens(SeekableReadStream &stream, std::vector<UString> &list,
+		size_t min, size_t max, const UString &def) {
 
-	assert((min >= 0) && ((max == -1) || (max >= min)));
+	assert(max >= min);
 
 	list.clear();
 	list.reserve(min);
 
-	int realTokenCount;
-	for (realTokenCount = 0; !isChunkEnd(stream) && ((max < 0) || (realTokenCount < max)); realTokenCount++) {
+	size_t realTokenCount;
+	for (realTokenCount = 0; !isChunkEnd(stream) && (realTokenCount < max); realTokenCount++) {
 		UString token = getToken(stream);
 
 		if (!token.empty() || (_conSepRule != kRuleIgnoreAll))
 			list.push_back(token);
 	}
 
-	while (list.size() < ((uint32) min))
+	while (list.size() < min)
 		list.push_back(def);
 
 	return realTokenCount;
 }
 
-void StreamTokenizer::skipToken(SeekableReadStream &stream, uint32 n) {
+void StreamTokenizer::skipToken(SeekableReadStream &stream, size_t n) {
 	while (n-- > 0)
 		UString token = getToken(stream);
 }
@@ -178,36 +180,33 @@ void StreamTokenizer::skipChunk(SeekableReadStream &stream) {
 	assert(!_chunkEnds.empty());
 
 	uint32 c;
-	while ((c = stream.readChar()) != kEOF) {
+	while ((c = stream.readChar()) != ReadStream::kEOF) {
 		if (isIn(c, _chunkEnds)) {
-			stream.seek(-1, SEEK_CUR);
+			stream.seek(-1, SeekableReadStream::kOriginCurrent);
 			break;
 		}
 	}
-
-	if (stream.err())
-		throw Exception(kReadError);
 }
 
 void StreamTokenizer::nextChunk(SeekableReadStream &stream) {
 	skipChunk(stream);
 
 	uint32 c = stream.readChar();
-	if (c == kEOF)
+	if (c == ReadStream::kEOF)
 		return;
 
 	if (!isIn(c, _chunkEnds))
-		stream.seek(-1, SEEK_CUR);
+		stream.seek(-1, SeekableReadStream::kOriginCurrent);
 }
 
 bool StreamTokenizer::isChunkEnd(SeekableReadStream &stream) {
 	uint32 c = stream.readChar();
-	if (c == kEOF)
+	if (c == ReadStream::kEOF)
 		return true;
 
 	bool chunkEnd = isIn(c, _chunkEnds);
 
-	stream.seek(-1, SEEK_CUR);
+	stream.seek(-1, SeekableReadStream::kOriginCurrent);
 
 	return chunkEnd;
 }

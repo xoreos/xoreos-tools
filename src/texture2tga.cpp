@@ -26,11 +26,11 @@
 #include <cstdio>
 
 #include "src/common/ustring.h"
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/readfile.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -214,7 +214,7 @@ Images::Decoder *openImage(Common::SeekableReadStream &stream, Aurora::FileType 
 void convert(const Common::UString &inFile, const Common::UString &outFile,
              Aurora::FileType type, bool flip) {
 
-	Common::File in(inFile);
+	Common::ReadFile in(inFile);
 
 	if (type == Aurora::kFileTypeNone) {
 		// Detect by file contents

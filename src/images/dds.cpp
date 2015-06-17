@@ -24,7 +24,7 @@
 
 #include "src/common/util.h"
 #include "src/common/error.h"
-#include "src/common/stream.h"
+#include "src/common/readstream.h"
 
 #include "src/images/dds.h"
 
@@ -68,9 +68,6 @@ void DDS::load(Common::SeekableReadStream &dds) {
 
 		readHeader(dds);
 		readData  (dds);
-
-		if (dds.err())
-			throw Common::Exception(Common::kReadError);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading DDS file");
@@ -178,7 +175,7 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds) {
 	dds.skip(4); // Some float
 
 	// Number of bytes left for the image data
-	uint32 fullDataSize = dds.size() - dds.pos();
+	size_t fullDataSize = dds.size() - dds.pos();
 
 	// Detect how many mip maps are in the DDS
 	do {

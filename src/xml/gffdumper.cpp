@@ -22,9 +22,9 @@
  *  Dump GFFs into XML files.
  */
 
-#include "src/common/stream.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
+#include "src/common/readstream.h"
 
 #include "src/aurora/types.h"
 
@@ -104,18 +104,15 @@ GFFDumper::~GFFDumper() {
 
 static int identifyGFF(Common::SeekableReadStream &input, uint32 &version) {
 	try {
-		uint32 pos = input.pos();
+		size_t pos = input.pos();
 
 		uint32 id;
 		id      = input.readUint32BE();
 		version = input.readUint32BE();
 
-		if (input.err() || input.eos())
-			return -1;
-
 		input.seek(pos);
 
-		for (int i = 0; i < ARRAYSIZE(kGFFTypes); i++)
+		for (size_t i = 0; i < ARRAYSIZE(kGFFTypes); i++)
 			if (kGFFTypes[i].id == id)
 				return i;
 	} catch (...) {

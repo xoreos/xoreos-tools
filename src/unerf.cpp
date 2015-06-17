@@ -31,7 +31,8 @@
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/file.h"
+#include "src/common/readstream.h"
+#include "src/common/readfile.h"
 #include "src/common/filepath.h"
 #include "src/common/hash.h"
 
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
 		return returnValue;
 
 	try {
-		Aurora::ERFFile erf(new Common::File(archive));
+		Aurora::ERFFile erf(new Common::ReadFile(archive));
 
 		if      (command == kCommandInfo)
 			displayInfo(erf);
@@ -247,9 +248,9 @@ void displayInfo(Aurora::ERFFile &erf) {
 
 void listFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = erf.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
 	std::printf("              Filename               |    Size\n");
 	std::printf("=====================================|===========\n");
@@ -277,14 +278,14 @@ struct FileEntry {
 
 void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	const Aurora::Archive::ResourceList &resources = erf.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
 	std::vector<FileEntry> fileEntries;
 	fileEntries.reserve(fileCount);
 
-	uint32 nameLength = 10;
+	size_t nameLength = 10;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
 		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
 
@@ -296,7 +297,7 @@ void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 
 		name = TypeMan.addFileType(name, type);
 
-		nameLength = MAX<uint32>(nameLength, name.size() + 1);
+		nameLength = MAX<size_t>(nameLength, name.size() + 1);
 
 		fileEntries.push_back(FileEntry(name, erf.getResourceSize(r->index)));
 	}
@@ -309,18 +310,18 @@ void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
 	std::printf("%s|===========\n", Common::UString('=', nameLength).c_str());
 
 	for (std::vector<FileEntry>::const_iterator f = fileEntries.begin(); f != fileEntries.end(); ++f)
-		std::printf("%-*s| %10d\n", nameLength, f->file.c_str(), f->size);
+		std::printf("%-*s| %10d\n", (int)nameLength, f->file.c_str(), f->size);
 }
 
 void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
                   std::set<Common::UString> &files, ExtractMode mode) {
 
 	const Aurora::Archive::ResourceList &resources = erf.getResources();
-	const uint32 fileCount = resources.size();
+	const size_t fileCount = resources.size();
 
-	std::printf("Number of files: %u\n\n", fileCount);
+	std::printf("Number of files: %u\n\n", (uint)fileCount);
 
-	uint i = 1;
+	size_t i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
 		Common::UString name = r->name;
 		if (name.empty())
@@ -340,7 +341,7 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 		if (mode == kExtractModeSubstitute)
 			fileName.replaceAll('/', '=');
 
-		std::printf("Extracting %d/%d: %s ... ", i, fileCount, fileName.c_str());
+		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
 		Common::SeekableReadStream *stream = 0;
 		try {
