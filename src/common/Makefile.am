@@ -11,6 +11,7 @@ noinst_HEADERS = \
                  singleton.h \
                  ustring.h \
                  hash.h \
+                 md5.h \
                  error.h \
                  util.h \
                  strutil.h \
@@ -30,6 +31,7 @@ noinst_HEADERS = \
 libcommon_la_SOURCES = \
                        maths.cpp \
                        ustring.cpp \
+                       md5.cpp \
                        error.cpp \
                        util.cpp \
                        strutil.cpp \
