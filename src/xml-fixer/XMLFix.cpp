@@ -230,19 +230,20 @@ std::string fixOpenQuotes(std::string line){
 			line.insert(i+1, "\"");
 		}
 
-		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"')// && isalpha(line.at(i-1))) //Only if "Local" method (see above)
-		{//A closed quote should be proceeded by &quot; See above.
+		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"' && line.at(i-1) != '(')// && isalpha(line.at(i-1))) //Only if "Local" method (see above)
+		{//A closed quote should be preceeded by &quot; See above.
 		//There are some exceptions to this, like when we have one quoted element
 		//In a 2 element parenthesis set. This is always a number.
+		//Or when we have () empty.
 
 			line.insert(i,"\"");
 		}
 		if(i > 0 && line.at(i) == ',' && line.at(i-1) != '"')
-		{//No quote before, add it in.
+		{//No quote before , add it in.
 			line.insert(i, "\"");//I swear this is the most frequently typed line of code in this documents.
 		}
 		if(line.at(i) == ',' && line.at(i+1) != '"')
-		{
+		{//No quote after a comma
 			line.insert(i+1, "\""); //Followed by this one.
 		}
 
