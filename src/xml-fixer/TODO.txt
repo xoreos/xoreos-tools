@@ -1,0 +1,16 @@
+handle parameters (h, --help, at leat)
+
+Also test on a bunch of files
+
+Also restyle.
+
+Also clean up commented code, etc.
+
+Remove unused functions.
+
+See if automate
+
+see if replace countoccurances with std::count
+
+See if output folder
+

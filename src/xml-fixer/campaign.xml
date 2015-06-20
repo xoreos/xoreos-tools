@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!-- Neverwinter Nights 2 -->
+<!-- Copyright (c) 2006 Obsidian Entertainment, Inc. -->
+
+<UIScene name="SCREEN_CAMPAIGNLIST" fadeout="0.3" fadein="0.3"
+	OnAdd=UIScene_OnAdd_CreateCampaignList("CampaignListBox") priority="SCENE_FE_FULLSCREEN" fullscreen=true />
+	
+	<!-- Title Pane -->
+    <UIPane name="TitlePane" x=ALIGN_CENTER y=ALIGN_TOP width=984 height="74" capturemouseclicks="false" ignoreevents="true" >
+        <UIText name="TITLE_TEXT" strref="181228" x=ALIGN_CENTER y=12 width=356 height=30 align="center" valign="middle" 
+	        fontfamily="Special_Font" style="4" />
+        <UIIcon img="main_sub_titles.tga" x="0" y="0" width="PARENT_WIDTH" height="PARENT_HEIGHT"/>
+    </UIPane>
+
+	<UIPane name="CONTENTS_PANE" x=ALIGN_CENTER y=ALIGN_CENTER width=1024 height=768 usescalar=true >
+
+		<!-- Campaign Listbox -->
+		<UIListbox name="CampaignListBox" x=20 y=418 width=596 height=286 yPadding=2 xPadding=5
+			showpartialchild=false scrollbaronright=true selectonleftclick=true hidescrollbarwhennotneeded=false >
+
+			<UIButton name="PROTO_BUTTON" x=0 y=0 height=36 style="STYLE_LIST_BUTTON" prototype=true
+				OnLeftClick=UIObject_Misc_StoreObjectData(Local:0) 
+				OnLeftDoubleClick=UIButton_Input_StartModule("SCREEN_CHARCHOICE",Local:0) >
+			</UIButton>
+
+			<UIScrollBar name="SB" style="STYLE_SB_THIN"></UIScrollBar>	
+		</UIListbox>
+	
+		<!-- Campaign Frame and Title Bar-->
+		<UIText name="CampaignTitleTX" strref="181228" x=240 y=393 width=360 height=17 align=right fontfamily="Title_Font" style="4"/>	
+		<UIIcon img="title_large02.tga" x=21 y=388 width=600 height=31 />
+		<UIFrame x=ALIGN_LEFT y=356 width=644 height="370" topleft="frame_main_TL.tga" topright="frame_main_TR.tga" 
+			bottomleft="frame_main_d_BL.tga" bottomright="frame_main_BR.tga" top="frame_main_T.tga" bottom="frame_main_b.tga"
+			left="frame_main_l.tga" right="frame_main_r.tga" fillstyle="tile" fill="frame_main_bg.tga"  border="64" />	
+	
+
+		<!-- Campaign Description Listbox -->
+		<UIListBox name="CAMP_DESC_LISTBOX" x=634 y=418 width=365 height=286 yPadding=2 xPadding=5 showpartialchild=true
+			unequalcontrols=true scrollsegmentsize=30 hidescrollbarwhennotneeded=false >
+
+			<UIText name="CAMP_DESCRIPTION" width=PARENT_WIDTH height=DYNAMIC align=left valign=top fontfamily="NWN1_Dialog" style="bold" multiline=true 
+				update=true OnUpdate=UIText_OnUpdate_GetCampaignPreview(Local:0) />
+			<UIScrollBar name="SB" style="STYLE_SB_THIN"></UIScrollBar>	
+		</UIListBox>
+
+        <!-- Campaign Description Frame and Title Bar-->
+        <UIText name="InfoTitleTX" strref="181231" x="640" y="393" width="340" height="17" align="right" fontfamily="Title_Font" style="4"/>
+        <UIIcon img="title_medium03.tga" x="631" y="388" width="370" height="31" />
+        <UIFrame x="610" y="356" width="414" height="370" topleft="frame_main_TL.tga" topright="frame_main_TR.tga" 
+			 bottomleft="frame_main_BL.tga" bottomright="frame_main_d_BR.tga" top="frame_main_T.tga" bottom="frame_main_b.tga"
+			left="frame_main_l.tga" right="frame_main_r.tga" fillstyle="tile" fill="frame_main_bg.tga"  border="64" />
+
+        <!--Campaign Image and Frame - NOTE:  The campaign image is TEMP right now.  It should update-->	
+		<UIIcon img="main_module_image.tga" x=ALIGN_CENTER y=91 width=974 height=281 />
+
+		<UIFrame x=ALIGN_CENTER y=58 width=1020 height="336" topleft="frame_main_TL.tga" topright="frame_main_TR.tga" 
+			bottomleft="frame_main_BL.tga" bottomright="frame_main_BR.tga" top="frame_main_T.tga" bottom="frame_main_b.tga"
+			left="frame_main_l.tga" right="frame_main_r.tga" fillstyle="tile" fill="frame_main_bg.tga"  border="64" />
+
+		<!-- Cancel Button -->
+		<UIButton name="CANCEL_BUTTON"		strref="67"	x=50 y=723	style="STYLE_MENU_BUTTON_SML"
+			OnLeftClick=UIButton_Input_ScreenOpen("SCREEN_GAMECHOICE","true") ></UIButton>
+
+		<!-- Start Campaign Button -->
+		<UIButton name="START_CAMPAIGN"	strref="181229"	x=810 y=723	style="STYLE_MENU_BUTTON_SML"
+			OnLeftClick=UIButton_Input_StartModule("SCREEN_CHARCHOICE",Local:0) ></UIButton>
+
+
+	</UIPane>
+
+	<UIIcon img="main_sub_bg.tga" x=0 y=0 width=1024 height=768 scalewithscene=true />

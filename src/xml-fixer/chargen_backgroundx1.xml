@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8">
+
+<UIScene name="SCREEN_CHARGEN_BACKGROUND" priority="SCENE_FE_FULLSCREEN" fullscreen=true />
+
+	<!-- Title Pane -->
+    <UIPane name="TitlePane" x=ALIGN_CENTER y=ALIGN_TOP width=984 height="74" capturemouseclicks="false" ignoreevents="true" >
+        <UIText name="TITLE_TEXT" strref="113676" x=ALIGN_CENTER y=12 width=356 height=30 align="center" valign="middle" 
+	        fontfamily="Special_Font" style="4" />
+        <UIIcon img="main_sub_titles.tga" x="0" y="0" width="PARENT_WIDTH" height="PARENT_HEIGHT"/>
+    </UIPane>
+
+	<UIPane name="CONTENTS_PANE" x=ALIGN_RIGHT y=ALIGN_CENTER width=557 height=675 >
+
+	<!-- Info and Stats Container Pane -->
+	<UIPane name="InfoStatsPane" x=260 y=21 width="308" height="654" >
+		<UIButton name="SHOW_INFO" x="24" y="0" strref="181231" style="STYLE_CHARGEN_TAB" groupid="3" groupmemberid="1"
+			OnSelected=UIButton_Input_ShowObject("PANE_INFO") OnUnselected=UIButton_Input_HideObject("PANE_INFO") >
+		</UIButton>
+
+		<UIButton name="SHOW_STATS" x="154" y="0" strref="113779" style="STYLE_CHARGEN_TAB" groupid="3" groupmemberid="2"     
+			OnSelected=UIButton_Input_ShowObject("PANE_STATS") OnUnselected=UIButton_Input_HideObject("PANE_STATS") >
+		</UIButton>
+
+    <!-- Info Pane-->
+    <UIPane name="PANE_INFO" x="6" y="11" width="272" height="610" hidden="false" >
+      <UIListBox name="INFOPANE_LISTBOX" x="24" y="33" width="248" height="570" yPadding="10" xPadding="0" showpartialchild="true"
+        unequalcontrols="true" scrollsegmentsize="30" hidescrollbarwhennotneeded="true" >
+
+		<UIText name="INFOPANE_HELPTEXT" strref="183343" width="PARENT_WIDTH" height="DYNAMIC" align="left" valign="top" fontfamily="NWN1_Dialog" multiline="true" />
+		
+		<UIPane name="INFO_CONTAINER" x=0 y=0 width=PARENT_WIDTH height=40 >
+			<UIIcon name="INFOPANE_IMAGE" img="b_empty.tga" x=5 y=0 width=40 height=40 ignoreevents=true />
+			<UIText name="INFOPANE_TITLE" x=50 y=0 width=150 height=40 align=left valign=middle fontfamily="NWN1_Dialog" style="bold" />			
+		</UIPane>		
+
+        <UIText name="INFOPANE_TEXT" width="PARENT_WIDTH" height="DYNAMIC" align="left" valign="top" fontfamily="NWN1_Dialog" multiline="true" />
+        <UIScrollBar name="SB" style="STYLE_SB_THIN"></UIScrollBar>
+      </UIListBox>
+    </UIPane>
+
+        <!-- Stats Pane -->
+        <UIPane name="PANE_STATS" x=6 y=11 width=272 height=630 hidden="true" >
+            <UIListBox name="PREVIEW_LISTBOX" x=24 y=33 width=248 height=580 yPadding=4 xPadding=0 showpartialchild="true"
+                unequalcontrols="true" scrollsegmentsize=30 hidescrollbarwhennotneeded=false >
+
+				<UIPane name="SUBRACE_CONTAINER" width=230 height=40 >
+					<UIButton name="SUBRACE_ICON" x=0 y=0 width=40 height=40 style="STYLE_EMPTY_BUTTON"
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterIcon("CHARGEN","SUBRACE")/>
+					<UIText name="SUBRACE_TEXT" x=40 y=0 width=190 height=40 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","SUBRACE") />
+					<UIIcon name="SUBRACE_TEXT_BG" x=40 y=0 width=190 height=40 img="b_g_lg01_normal.tga" />
+				</UIPane>
+				<UIPane name="CLASS_1_CONTAINER" width=230 height=40 >
+					<UIButton name="CLASS_1_ICON" x=0 y=0 width=40 height=40 style="STYLE_EMPTY_BUTTON"
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterIcon("CHARGEN","CLASS_1")/>
+					<UIText name="CLASS_1_TEXT" x=40 y=0 width=190 height=40 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","CLASS_1") />
+					<UIIcon name="CLASS_1_TEXT_BG" x=40 y=0 width=190 height=40 img="b_g_lg01_normal.tga" />
+				</UIPane>
+				<UIPane name="PACKAGE_CONTAINER" width=230 height=40 >
+					<UIIcon name="PACKAGE_TEXT_BG" x=0 y=0 width=230 height=40 img="b_g_lg01_normal.tga" />
+				</UIPane>
+				<UIPane name="ALIGNMENT_CONTAINER" width=230 height=40 >
+					<UIButton name="ALIGNMENT_ICON" x=0 y=0 width=40 height=40 style="STYLE_EMPTY_BUTTON"
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterIcon("CHARGEN","ALIGNMENT_ICON")/>
+					<UIText name="ALIGNMENT_TEXT" x=40 y=0 width=190 height=40 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","ALIGNMENT_TITLE") />
+					<UIIcon name="ALIGNMENT_TEXT_BG" x=40 y=0 width=190 height=40 img="b_g_lg01_normal.tga" />
+				</UIPane>
+				<UIPane name="BACKGROUND_CONTAINER" width=230 height=40 >
+					<UIIcon name="BACKGROUND_TEXT_BG" x=40 y=0 width=190 height=40 img="b_g_lg01_normal.tga" />
+				</UIPane>
+				<UIPane name="DEITY_CONTAINER" width=230 height=40 >
+					<UIButton name="DEITY_ICON" x=0 y=0 width=40 height=40 style="STYLE_EMPTY_BUTTON"
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterIcon("CHARGEN","DEITY")/>
+					<UIText name="DEITY_TEXT" x=40 y=0 width=190 height=40 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5
+					update=true OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","DEITY") />
+					<UIIcon name="DEITY_TEXT_BG" x=40 y=0 width=190 height=40 img="b_g_lg01_normal.tga" />
+				</UIPane>
+
+				<UIPane name="ABILITIES_CONTAINER" width=230 height=160 >				
+					<UIText name="STR_TEXT"	x=0 y=10 width=150 height=20 strref=135 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5 />
+					<UIText name="STR_RANK" x=150 y=10 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","BASE_STR") />
+					<UIText name="STR_MOD" x=190 y=10 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","STR_MOD") />
+					<UIIcon name="STR_TEXT_BG" x=0 y=10 width=150 height=20 img="fx_white.tga" color="1e1e1e" />
+					<UIIcon name="STR_RANK_BG" x=150 y=10 width=40 height=20 img="fx_white.tga" color="353535" />
+					<UIIcon name="STR_MOD_BG" x=190 y=10 width=40 height=20 img="fx_white.tga" color="1e1e1e" />
+
+					<UIText name="DEX_TEXT"	x=0 y=30 width=150 height=20 strref=133 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5 />
+					<UIText name="DEX_RANK" x=150 y=30 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","BASE_DEX") />
+					<UIText name="DEX_MOD" x=190 y=30 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","DEX_MOD") />
+					<UIIcon name="DEX_TEXT_BG" x=0 y=30 width=150 height=20 img="fx_white.tga" color="040404" />
+					<UIIcon name="DEX_RANK_BG" x=150 y=30 width=40 height=20 img="fx_white.tga" color="1e1e1e" />
+					<UIIcon name="DEX_MOD_BG" x=190 y=30 width=40 height=20 img="fx_white.tga" color="040404" />
+
+					<UIText name="CON_TEXT"	x=0 y=50 width=150 height=20 strref=132 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5 />
+					<UIText name="CON_RANK" x=150 y=50 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","BASE_CON") />
+					<UIText name="CON_MOD" x=190 y=50 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","CON_MOD") />
+					<UIIcon name="CON_TEXT_BG" x=0 y=50 width=150 height=20 img="fx_white.tga" color="1e1e1e" />
+					<UIIcon name="CON_RANK_BG" x=150 y=50 width=40 height=20 img="fx_white.tga" color="353535" />
+					<UIIcon name="CON_MOD_BG" x=190 y=50 width=40 height=20 img="fx_white.tga" color="1e1e1e" />
+
+					<UIText name="INT_TEXT"	x=0 y=70 width=150 height=20 strref=134 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5 />
+					<UIText name="INT_RANK" x=150 y=70 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","BASE_INT") />
+					<UIText name="INT_MOD" x=190 y=70 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","INT_MOD") />
+					<UIIcon name="INT_TEXT_BG" x=0 y=70 width=150 height=20 img="fx_white.tga" color="040404" />
+					<UIIcon name="INT_RANK_BG" x=150 y=70 width=40 height=20 img="fx_white.tga" color="1e1e1e" />
+					<UIIcon name="INT_MOD_BG" x=190 y=70 width=40 height=20 img="fx_white.tga" color="040404" />
+
+					<UIText name="WIS_TEXT"	x=0 y=90 width=150 height=20 strref=136 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5 />
+					<UIText name="WIS_RANK" x=150 y=90 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","BASE_WIS") />
+					<UIText name="WIS_MOD" x=190 y=90 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","WIS_MOD")/>
+					<UIIcon name="WIS_TEXT_BG" x=0 y=90 width=150 height=20 img="fx_white.tga" color="1e1e1e" />
+					<UIIcon name="WIS_RANK_BG" x=150 y=90 width=40 height=20 img="fx_white.tga" color="353535" />
+					<UIIcon name="WIS_MOD_BG" x=190 y=90 width=40 height=20 img="fx_white.tga" color="1e1e1e" />
+
+					<UIText name="CHA_TEXT"	x=0 y=110 width=150 height=20 strref=131 fontfamily="Title_Font" style=1 align=left valign=middle indent=5 hangingindent=5 />
+					<UIText name="CHA_RANK" x=150 y=110 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","BASE_CHA") />
+					<UIText name="CHA_MOD" x=190 y=110 width=40 height=20 fontfamily="Title_Font" style=1 align=center valign=middle
+					update="true" OnUpdate=UIObject_OnUpdate_GetCharacterData("CHARGEN","CHA_MOD") />
+					<UIIcon name="CHA_TEXT_BG" x=0 y=110 width=150 height=20 img="fx_white.tga" color="040404" />
+					<UIIcon name="CHA_RANK_BG" x=150 y=110 width=40 height=20 img="fx_white.tga" color="1e1e1e" />
+					<UIIcon name="CHA_MOD_BG" x=190 y=110 width=40 height=20 img="fx_white.tga" color="040404" />
+				</UIPane>
+
+                <UIScrollBar name="SB" style="STYLE_SB_THIN"></UIScrollBar>
+            </UIListBox>
+        </UIPane>
+
+		<UIFrame x="0" y="6" width="304" height="647" topleft="frame_main_t_TL.tga" topright="frame_main_t_TR.tga" 
+		bottomleft="frame_main_BL.tga" bottomright="frame_main_d_BR.tga" top="frame_main_T.tga" bottom="frame_main_b.tga"
+		left="frame_main_l.tga" right="frame_main_r.tga" fillstyle="stretch" fill="frame_main_bg.tga"  border="64" />
+	</UIPane>
+
+  <!-- Choices Pane -->
+  <UIPane name="ChoicesPane" x=0 y=18 width="284" height="656" >
+    <UIIcon name="DETAIL_TOP" img="eye_detail.tga" x="0" y="0" width="202" height="68" ignoreevents="true" />
+
+    <UIListbox name="BACKGROUND_LIST" x="30" y="62" width="240" height="570" xPadding="0" yPadding="5"
+      showpartialchild="true" scrollbaronright="true" unequalcontrols="true" scrollsegmentsize="10"
+      hidescrollbarwhennotneeded="true" selectonleftclick="true"
+      update="true" OnUpdate=UIListBox_OnUpdate_CreateBackgroundList("CHARGEN","BACKGROUND_IMAGE","BACKGROUND_TEXT","INFOPANE_TEXT","INFOPANE_IMAGE","INFOPANE_TITLE") >
+
+      <UIPane name="BACKGROUND_PROTO" x="0" y="0" width="210" height="40" tupple="true" prototype="true" >
+        <UIButton name="BACKGROUND_IMAGE" x="0" y="0" width="40" height="40" prototype="true" >
+			<UIFrame state=base		fill="b_empty.tga" />
+			<UIFrame state=up		fill="b_empty.tga" />
+			<UIFrame state=down		fill="b_overlay.tga" />
+			<UIFrame state=focused	fill="b_empty.tga" />
+			<UIFrame state=hilited	fill="b_empty.tga" />
+			<UIFrame state=hifocus	fill="b_overlay.tga" />
+			<UIFrame state=disabled	fill="b_empty.tga" />
+        </UIButton>
+
+        <UIButton name="BACKGROUND_TEXT" x="43" y="0" width="168" height="40" prototype="true" >
+          <UIText name="BACKGROUND_TEXTFIELD" indent=10 hangingindent=10 align="left" valign="middle" fontfamily="Title_Font" style=1 prototype="true" />
+          <UIFrame state="up"		fill="b_g_lg01_normal.tga" />
+          <UIFrame state="down"		fill="b_g_lg01_pressed.tga" />
+          <UIFrame state="focused"	fill="b_g_lg01_pressed.tga" />
+          <UIFrame state="hilited"	fill="b_g_lg01_hover.tga" />
+          <UIFrame state="hifocus"	fill="b_g_lg01_pressed.tga" />
+          <UIFrame state="disabled"	fill="b_g_lg01_normal.tga" />
+        </UIButton>
+
+      </UIPane>
+
+      <UIScrollBar name="SB" style="STYLE_SB_THIN"></UIScrollBar>
+    </UIListbox>
+
+		<UIFrame x="0" y="9" width="PARENT_WIDTH" height="647" topleft="frame_main_TL.tga" topright="frame_main_TR.tga" 
+			bottomleft="frame_main_d_BL.tga" bottomright="frame_main_BR.tga" top="frame_main_T.tga" bottom="frame_main_b.tga"
+			left="frame_main_l.tga" right="frame_main_r.tga" fillstyle="stretch" fill="frame_main_bg.tga"  border="64" />
+	</UIPane>
+
+	</UIPane>
+
+	<UIPane name="CAMERA_CONTAINER" x="22" y="612" width="76" height="70" usescalar=true >
+		<!-- Model Zoom Buttons -->
+		<UIButton name="CAMERA_ZOOM_OUT" x="0" y="0" width="35" height="34" buttontype="radio" groupid="2" groupmemberid="1" DefaultToolTip="181294"
+			OnSelected=UIButton_Input_Move3DCamera("TEMP_CHARACTER_SCENE","PLAYER_CREATURE","SET_POSITION","-1.25","0.0","1.3","-0.90","4.0","1.1","0.5")
+			OnToolTip=UIObject_Tooltip_DisplayObject(OBJECT_X,OBJECT_Y,SCREEN_TOOLTIP_2,ALIGN_NONE,ALIGN_NONE,0,0,ALIGN_LEFT") >
+			<UIFrame state="up"			fill="b_body_normal.tga" />
+			<UIFrame state="down"		fill="b_body_hover_pressed.tga" />
+			<UIFrame state="focused"	fill="b_body_hover.tga" />
+			<UIFrame state="hilited"	fill="b_body_hover.tga" />
+			<UIFrame state="hifocus"	fill="b_body_hover_pressed.tga" />
+			<UIFrame state="disabled"	fill="b_body_normal.tga" />
+		</UIButton>
+		<UIButton name="CAMERA_ZOOM_IN" x="40" y="0" width="35" height="34" buttontype="radio" groupid="2" groupmemberid="2" DefaultToolTip="181295"
+			OnSelected=UIButton_Input_Move3DCamera("TEMP_CHARACTER_SCENE","PLAYER_CREATURE","ZOOM_IN","0.5") 
+			OnToolTip=UIObject_Tooltip_DisplayObject(OBJECT_X,OBJECT_Y,SCREEN_TOOLTIP_2,ALIGN_NONE,ALIGN_NONE,0,0,ALIGN_LEFT") >
+			<UIFrame state="up"			fill="b_face_normal.tga" />
+			<UIFrame state="down"		fill="b_face_hover_pressed.tga" />
+			<UIFrame state="focused"	fill="b_face_hover.tga" />
+			<UIFrame state="hilited"	fill="b_face_hover.tga" />
+			<UIFrame state="hifocus"	fill="b_face_hover_pressed.tga" />
+			<UIFrame state="disabled"	fill="b_face_normal.tga" />
+		</UIButton>
+		<!-- Rotate and Update Buttons -->
+		<UIButton name="ROTATE_LEFT" x="0" y="36" width="35" height="34" repeatcallback="true" update="true" 
+			OnLeftClick=UIButton_Input_Rotate3DCamera("TEMP_CHARACTER_SCENE","PLAYER_CREATURE","LEFT") >
+			<UIFrame state=up		fill="b_rotl_normal.tga" /> 
+			<UIFrame state=down		fill="b_rotl_hover_pressed.tga" />
+			<UIFrame state=focused	fill="b_rotl_hover.tga" />
+			<UIFrame state=hilited	fill="b_rotl_hover.tga" />
+			<UIFrame state=hifocus	fill="b_rotl_hover_pressed.tga" />
+			<UIFrame state=disabled	fill="b_rotl_disabled.tga" />
+		</UIButton>
+		<UIButton name="ROTATE_RIGHT" x="40" y="36" width="35" height="34" repeatcallback="true" update="true" 
+			OnLeftClick=UIButton_Input_Rotate3DCamera("TEMP_CHARACTER_SCENE","PLAYER_CREATURE","RIGHT") >
+			<UIFrame state=up		fill="b_rotr_normal.tga" />
+			<UIFrame state=down		fill="b_rotr_hover_pressed.tga" />
+			<UIFrame state=focused	fill="b_rotr_hover.tga" />
+			<UIFrame state=hilited	fill="b_rotr_hover.tga" />
+			<UIFrame state=hifocus	fill="b_rotr_hover_pressed.tga" />
+			<UIFrame state=disabled	fill="b_rotr_disabled.tga" />
+		</UIButton>
+	</UIPane>
+
+	<UIPane name="CANCEL_CONTAINER" x=0 y=723 width=176 height=45 >
+		<UIButton name="CHOICE_CANCEL" strref="113678" x=ALIGN_RIGHT y=0 style="STYLE_MENU_BUTTON_SML" 
+			OnLeftClick=UIButton_Input_CharGenCancel("CHARGEN") >
+		</UIButton>
+	</UIPane>
+
+	<UIPane name="CHARGEN_BUTTONS" x=ALIGN_RIGHT y=723 width=520 height=45 >
+		<UIButton name="CHOICE_BACK" strref="113675" x=0 y=0 style="STYLE_MENU_BUTTON_SML" 
+			OnLeftClick=UIButton_Input_CharGenUndo("CHARGEN","CHARGEN_BACKGROUND") >
+		</UIButton>
+		<UIButton name="CHOICE_RECOMMEND" strref="113764" x=168 y=0 style="STYLE_MENU_BUTTON_SML" disabled="true"  />
+		<UIButton name="CHOICE_NEXT" strref="113752" x=336 y=0 style="STYLE_MENU_BUTTON_SML" 
+			OnLeftClick=UIButton_Input_CharGenCommit("CHARGEN","CHARGEN_BACKGROUND") 
+			update="true" OnUpdate=UIButton_OnUpdate_CheckCharGenStage("CHARGEN","CHARGEN_BACKGROUND") >
+		</UIButton>
+	</UIPane>
+
+    <!-- Character Model 3D Scene-->
+    <UI3DScene name="TEMP_CHARACTER_SCENE" x="0" y="0" width="1024" height="768" texture="main_sub_bg_nx1.tga" scalewithscene=true
+		cameralook_x="-1.25" cameralook_y="0.0" cameralook_z="1.3" 
+		camerapos_x="-0.90" camerapos_y="4.0" camerapos_z="1.1" 	
+        ambground_intens=".4" ambgroundcolor_r=".7" ambgroundcolor_g=".55" ambgroundcolor_b=".4"           
+        ambsky_intens=".8" ambskycolor_r=".3" ambskycolor_g=".4" ambskycolor_b=".78"         
+        light_intens="0" lightdir_x="1.0" lightdir_y="1.0" lightdir_z="2.15" diffusecolor_r="1.10" diffusecolor_g="1.0" diffusecolor_b="1.0"	
+        update="true" OnUpdate=UI3DScene_OnUpdate_UpdateCamera()
+        OnRender=UI3DScene_OnRender_DisplayTempCreature("PLAYER_CREATURE") >
+
+        <!-- FILL LIGHT -->
+        <UIPointLight active="true" pos_x="0" pos_y="1" pos_z="3" radius="4" intensity=".4" 
+        color_r="1" color_g=".6" color_b="0" 
+        speccolor_r=".5" speccolor_g=".2" speccolor_b="0" />
+
+        <!-- LEFT SIDE -->
+        <UIPointLight active="true" pos_x="1" pos_y="1" pos_z="2.4" radius="3" intensity="2.0" 
+        color_r=".31" color_g=".42" color_b=".58" 
+        speccolor_r=".31" speccolor_g=".42" speccolor_b=".58" />
+
+        <!-- RIGHT SIDE -->
+        <UIPointLight active="true" pos_x="-2" pos_y="1" pos_z="2.5" radius="3" intensity="2.5" 
+        color_r=".6" color_g=".55" color_b=".5" 
+        speccolor_r=".6" speccolor_g=".55" speccolor_b=".5" />
+    </UI3DScene>
