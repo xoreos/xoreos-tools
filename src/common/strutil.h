@@ -26,10 +26,10 @@
 #define COMMON_STRUTIL_H
 
 #include "src/common/types.h"
-#include "src/common/ustring.h"
 
 namespace Common {
 
+class UString;
 class SeekableReadStream;
 class MemoryWriteStreamDynamic;
 
@@ -59,6 +59,12 @@ UString tagToString(uint32 tag, bool trim = false);
  *  "0xXXXX"
  */
 UString debugTag(uint32 tag, bool trim = false);
+
+/** Parse a string into any POD integer, float/double or bool type. */
+template<typename T> void parseString(const UString &str, T &value);
+
+/** Convert any POD integer, float/double or bool type into a string. */
+template<typename T> UString composeString(T value);
 
 } // End of namespace Common
 
