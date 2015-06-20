@@ -3,6 +3,9 @@
 .*.sw[po]
 *~
 
+#Don't want to accidentally add game files.
+*.xml
+
 # Build files
 *.[oa]
 *.l[oa]
