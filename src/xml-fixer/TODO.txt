@@ -2,15 +2,17 @@ handle parameters (h, --help, at leat)
 
 Also test on a bunch of files
 
-Also restyle.
+Also restyle to fit xoreos standard.
 
 Also clean up commented code, etc.
+(working effort, should be mostly better).
 
 Remove unused functions.
+(should be mostly gone?)
 
 See if automate
 
-see if replace countoccurances with std::count
+see if can replace countoccurances with std::count
 
-See if output folder
+See if output folder necessary/desireable.
 
