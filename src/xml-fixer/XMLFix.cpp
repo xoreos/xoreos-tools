@@ -238,6 +238,7 @@ std::string fixOpenQuotes(std::string line){
 
 			line.insert(i,"\"");
 		}
+
 		if(i > 0 && line.at(i) == ',' && line.at(i-1) != '"')
 		{//No quote before , add it in.
 			line.insert(i, "\"");//I swear this is the most frequently typed line of code in this documents.
