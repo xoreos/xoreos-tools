@@ -82,9 +82,11 @@ int main(int argc, char* argv[]){
 //Read and fix any line of XML that is passed in,
 //Returns that fixed line.
 std::string parseLine(std::string line){
-	line = fixCopyright(line); //Does this need to run EVERY line?
-	line = fixOpenQuotes(line);
+	line = fixOpenQuotes(line);//It's imperative that this run before
+	//the copyright line, or not on it at all. Could update to ignore
+	//Comments.
 	line = fixInnerQuotes(line);
+	line = fixCopyright(line); //Does this need to run EVERY line?
 	return line;
 }
 
@@ -144,17 +146,17 @@ std::string fixInnerQuotes(std::string line){
 				line.replace(i,1,"&quot;");
 				lastQuotPos = line.find_last_of("\""); //Update string length
 			}
-//			if(line.at(i) == '(' && line.at(i+1) == '"')
-//			{//Opening paren, encode the quote
-//				line.replace(i+1,1,"&quot;");	
-//				lastQuotPos = line.find_last_of("\""); //Our string changed, last quote should too.
-//			}
-//			//If we have a close paren or a comma [as in foo=("elem1",bar)]
-//			else if((line.at(i) == '"' && line.at(i+1) == ')') || (line.at(i) == '"' && line.at(i+1) == ','))
-//			{//Closed paren, encode the quote
-//				line.replace(i,1,"&quot;");
-//				lastQuotPos = line.find_last_of("\""); //Update string length
-//			}
+			if(line.at(i) == '(' && line.at(i+1) == '"')
+			{//Opening paren, encode the quote
+				line.replace(i+1,1,"&quot;");	
+				lastQuotPos = line.find_last_of("\""); //Our string changed, last quote should too.
+			}
+			//If we have a close paren or a comma [as in foo=("elem1",bar)]
+			else if((line.at(i) == '"' && line.at(i+1) == ')') || (line.at(i) == '"' && line.at(i+1) == ','))
+			{//Closed paren, encode the quote
+				line.replace(i,1,"&quot;");
+				lastQuotPos = line.find_last_of("\""); //Update string length
+			}
 
 		}
 	}	
@@ -205,7 +207,6 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 std::string fixOpenQuotes(std::string line){
 	//We have an equal with no open quote
 	int end = line.length() -1;
-cout<<line<<endl;	
 	for(int i = 0; i < end; i++)
 	{
 		if(line.at(i) == '='&& line.at(i+1) != '"')
@@ -214,20 +215,37 @@ cout<<line<<endl;
 			i++;//Our string got longer.
 			end++;
 		}
+
 		if(line.at(i) == '(' && line.at(i+1) != '"' && line.at(i+1) != ')')
 		{//Open paren should be followed by a &quot; (or an immediate close paren)
 		//But if we replace it directly here, it will be doubly escaped
-		//Because we run fixInnerQuotes() next
+		//Because we run fixInnerQuotes() next. The exception to this is if the
+		//next string is Local, which we can check for with line.find(i+1, "Local", 5),
+		//But let's try surrounding every comma in quotes first.
+		//---------------------------
+		//So advantage to local is that we don't add quotes around places they don't exist. (Local)
+		//Advantage to comma is that we add it every time for consistency.
+
+
 			line.insert(i+1, "\"");
 		}
-		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"' && isalpha(line.at(i-1)))
+
+		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"')// && isalpha(line.at(i-1))) //Only if "Local" method (see above)
 		{//A closed quote should be proceeded by &quot; See above.
 		//There are some exceptions to this, like when we have one quoted element
 		//In a 2 element parenthesis set. This is always a number.
 
 			line.insert(i,"\"");
-
 		}
+		if(i > 0 && line.at(i) == ',' && line.at(i-1) != '"')
+		{//No quote before, add it in.
+			line.insert(i, "\"");//I swear this is the most frequently typed line of code in this documents.
+		}
+		if(line.at(i) == ',' && line.at(i+1) != '"')
+		{
+			line.insert(i+1, "\""); //Followed by this one.
+		}
+
 		if(i < end -1 && line.at(i) == ')'&& line.at(i+2) != '\\')
 		{//A close paren should be followed by a " or a space and a \>
 			line.insert(i+1,"\"");
@@ -240,7 +258,6 @@ cout<<line<<endl;
 	//And find a quote followed by a whitespace character, insert a quote.
 	bool inQuote = false;
 	end = line.length();
-			cout<<endl<<endl<<line<<endl;
 	for(int i = 0; i < end; i++)
 	{
 		if(!inQuote)
@@ -266,7 +283,6 @@ cout<<line<<endl;
 			}	
 		}
 	}
-			cout<<line<<endl;
 	int closeBrace = line.find("/>");
 	//If a close brace exists (not a comment), there isn't a close quote, AND we have an odd number of quotes.
 	if(closeBrace != string::npos && 
