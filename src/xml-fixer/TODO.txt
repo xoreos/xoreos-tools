@@ -16,3 +16,7 @@ see if can replace countoccurances with std::count
 
 See if output folder necessary/desireable.
 
+
+Maybe we can leverage inparen with the comma thing? Are those even in the same method? 
+I think inparen is presently only in the, uh, innerquote file, but let's see if we can't reimplement it
+or if that would even help? I think the DMC issue is also in a paren. Hmmm.
