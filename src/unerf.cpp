@@ -31,7 +31,8 @@
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/readstream.h"
+#include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 #include "src/common/readfile.h"
 #include "src/common/filepath.h"
 #include "src/common/hash.h"
@@ -62,9 +63,11 @@ const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "s" };
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
-                      Aurora::GameID &game);
+                      Aurora::GameID &game, std::vector<byte> &password);
 
 bool findHashedName(uint64 hash, Common::UString &name);
+
+void parsePassword(const char *arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &erf, Aurora::GameID game);
@@ -75,15 +78,18 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 int main(int argc, char **argv) {
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
-	int returnValue;
-	Command command;
-	Common::UString archive;
-	std::set<Common::UString> files;
-	if (!parseCommandLine(argc, argv, returnValue, command, archive, files, game))
-		return returnValue;
-
 	try {
-		Aurora::ERFFile erf(new Common::ReadFile(archive));
+
+		int returnValue;
+		Command command;
+		Common::UString archive;
+		std::set<Common::UString> files;
+		std::vector<byte> password;
+
+		if (!parseCommandLine(argc, argv, returnValue, command, archive, files, game, password))
+			return returnValue;
+
+		Aurora::ERFFile erf(new Common::ReadFile(archive), password);
 
 		if      (command == kCommandInfo)
 			displayInfo(erf);
@@ -106,9 +112,39 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+void parsePassword(const char *arg, std::vector<byte> &password) {
+	const size_t length = strlen(arg);
+
+	password.clear();
+	password.reserve(length / 2);
+
+	byte c = 0x00;
+	for (size_t i = 0; i < length; i++) {
+		byte d = 0;
+
+		if      (arg[i] >= '0' && arg[i] <= '9')
+			d = arg[i] - '0';
+		else if (arg[i] >= 'a' && arg[i] <= 'f')
+			d = arg[i] - 'a' + 10;
+		else if (arg[i] >= 'A' && arg[i] <= 'F')
+			d = arg[i] - 'A' + 10;
+		else
+			throw Common::Exception("%c is not a valid hex digit", arg[i]);
+
+		if ((i % 2) == 1) {
+			c |= d;
+
+			password.push_back(c);
+
+			c = 0x00;
+		} else
+			c |= d << 4;
+	}
+}
+
 bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
-                      Aurora::GameID &game) {
+                      Aurora::GameID &game, std::vector<byte> &password) {
 
 	archive.clear();
 	files.clear();
@@ -149,6 +185,19 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 			} else if (!strcmp(argv[i], "--jade")) {
 				isOption = true;
 			  game     = Aurora::kGameIDJade;
+			} else if (!strcmp(argv[i], "--pass")) {
+				isOption = true;
+
+				// Needs the password as the next parameter
+				if (i++ == (argc - 1)) {
+					printUsage(stdout, argv[0]);
+					returnValue = 0;
+
+					return false;
+				}
+
+				parsePassword(argv[i], password);
+
 			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
 			  // An options, but we already checked for all known ones
 
@@ -202,8 +251,10 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor\n\n");
 	std::fprintf(stream, "Usage: %s [<options>] <command> <archive> [<file> [...]]\n\n", name);
 	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
+	std::fprintf(stream, "  --nwn2             Alias file types according to Neverwinter Nights 2 rules\n");
+	std::fprintf(stream, "  --jade             Alias file types according to Jade Empire rules\n");
+	std::fprintf(stream, "  --pass <password>  Decryption password, if required, in hex notation\n");
+	std::fprintf(stream, "                     (e.g. \"4CF223AB\")\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  i          Display meta-information\n");
 	std::fprintf(stream, "  l          List archive\n");
