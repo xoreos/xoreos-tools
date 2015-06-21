@@ -15,7 +15,7 @@ echo "" > fail.txt
 
 for f in *Fixed.xml ; do 
 	result=$(xmllint $f |& tail -n 1)
-	if [ $result = "</Root>" ] ; then
+	if [ $result = "</Root>" ] ; then #Check the last element to see if it ran correctly.
 		echo "$f Passed" >> pass.txt
 		pass=$(( $pass + 1 ))
 	else
@@ -24,5 +24,6 @@ for f in *Fixed.xml ; do
 	fi
 done
 
+echo "$pass,$fail" >> output.csv
 echo "Pass = $pass"
 echo "Fail = $fail"

@@ -1,4 +1,0 @@
-
-accountwelcomeFixed.xml Passed
-campaignFixed.xml Passed
-chargen_backgroundFixed.xml Passed

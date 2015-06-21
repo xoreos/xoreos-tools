@@ -87,6 +87,8 @@ std::string parseLine(std::string line){
 	//Comments.
 	line = fixInnerQuotes(line);
 	line = fixCopyright(line); //Does this need to run EVERY line?
+	line = doubleDashFix(line);
+	line = tripleQuoteFix(line);
 	return line;
 }
 
@@ -110,8 +112,13 @@ std::string fixXMLTag(std::string line){
 	if(line.find("<?xml") != string::npos)
 	{
 		line = trim(line);
-		if(line.at(line.length()-2) != '?'){
+		if(line.at(line.length()-2) != '?')
+		{
 			line.insert(line.length()-1,"?");
+		}
+		if(line.find("encoding=\"NWN2UI\"") != std::string::npos)
+		{//NWN2UI is not a supported format. Fake it and see what happens.
+			return "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 		}
 	}
 return line;
@@ -228,24 +235,28 @@ std::string fixOpenQuotes(std::string line){
 
 
 			line.insert(i+1, "\"");
+			end++;
 		}
 
 		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"' && line.at(i-1) != '(')// && isalpha(line.at(i-1))) //Only if "Local" method (see above)
 		{//A closed quote should be preceeded by &quot; See above.
 		//There are some exceptions to this, like when we have one quoted element
-		//In a 2 element parenthesis set. This is always a number.
+		//In a 2 element parenthesis set. This is always a number. ("elem="foo",local=5)
 		//Or when we have () empty.
 
 			line.insert(i,"\"");
+			end++;
 		}
 
 		if(i > 0 && line.at(i) == ',' && line.at(i-1) != '"')
 		{//No quote before , add it in.
 			line.insert(i, "\"");//I swear this is the most frequently typed line of code in this documents.
+			end++;
 		}
 		if(line.at(i) == ',' && line.at(i+1) != '"')
 		{//No quote after a comma
 			line.insert(i+1, "\""); //Followed by this one.
+			end++;
 		}
 
 		if(i < end -1 && line.at(i) == ')'&& line.at(i+2) != '\\')
@@ -295,7 +306,33 @@ std::string fixOpenQuotes(std::string line){
 	}
 	return line;
 }
-    
+   
+//If there are any -- inside of a comment,
+//This will remove them and replace it with
+//A single dash.
+std::string doubleDashFix(std::string line)
+{
+	int pos = line.find("--");
+	if(pos < line.length()-1 && line.at(pos + 2) != '>' && (pos > 0 && line.at(pos-1) != '!')){ //It's not a comment
+		line.erase(pos, 1);//Remove one dash.
+	}
+	return line;
+}
+
+
+//If there are three consecutive quotes,
+//Replace with one quote.
+//Let's be honest, this can only happen as a 
+//Result of other methods, and this is a kludgy fix.
+std::string tripleQuoteFix(std::string line)
+{
+	int pos = line.find("\"\"\"");
+	if(pos != std::string::npos){
+		line.erase(pos, 2);//Remove two quotes.
+	}
+	return line;
+}
+
 //Remove leading and trailing whitespace
 std::string trim(std::string line){
 	string whitespace = " \t\n\v\f\r";
