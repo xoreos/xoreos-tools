@@ -13,3 +13,5 @@ std::string fixCopyright(std::string line);
 std::string fixXMLTag(std::string line);
 std::string doubleDashFix(std::string line);
 std::string tripleQuoteFix(std::string line);
+void countComments(std::string line);
+std::string quotedCloseFix(std:: string line);

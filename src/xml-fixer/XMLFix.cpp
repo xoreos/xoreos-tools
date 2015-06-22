@@ -11,6 +11,8 @@ using std::cout;
 using std::string;
 using namespace std; //I'll fix this later
 
+int comCount = 0; //Track number of open/closed comments.
+
 int main(int argc, char* argv[]){
 	if(argc != 2)
 	{
@@ -70,7 +72,7 @@ int main(int argc, char* argv[]){
 	writeFile << "<Root>\n";
 	while(getline (readFile, line))
 	{
-		
+		countComments(line);
 		writeFile << parseLine(line)<<"\n";
 	}
 	writeFile << "</Root>\n";		
@@ -89,6 +91,7 @@ std::string parseLine(std::string line){
 	line = fixCopyright(line); //Does this need to run EVERY line?
 	line = doubleDashFix(line);
 	line = tripleQuoteFix(line);
+	line = quotedCloseFix(line);
 	return line;
 }
 
@@ -101,7 +104,12 @@ std::string fixCopyright(std::string line){
 	//If this is the copyright line, remove the unicode.
 	if(line.find("Copyright") != std::string::npos)
 	{
-		return "<!-- Copyright 2006 Obsidian Entertainment, Inc. -->";
+		if(!comCount){
+			return "<!-- Copyright 2006 Obsidian Entertainment, Inc. -->";
+		}
+		else{//If we're in a comment, don't add a new one.
+			return "Copyright 2006 Obsidian Entertainment, Inc.";
+		}//This may not be a perfect match (in the else case), but it gets the point across.
 	}
 return line;
 }
@@ -164,7 +172,6 @@ std::string fixInnerQuotes(std::string line){
 				line.replace(i,1,"&quot;");
 				lastQuotPos = line.find_last_of("\""); //Update string length
 			}
-
 		}
 	}	
 	return line;
@@ -226,19 +233,12 @@ std::string fixOpenQuotes(std::string line){
 		if(line.at(i) == '(' && line.at(i+1) != '"' && line.at(i+1) != ')')
 		{//Open paren should be followed by a &quot; (or an immediate close paren)
 		//But if we replace it directly here, it will be doubly escaped
-		//Because we run fixInnerQuotes() next. The exception to this is if the
-		//next string is Local, which we can check for with line.find(i+1, "Local", 5),
-		//But let's try surrounding every comma in quotes first.
-		//---------------------------
-		//So advantage to local is that we don't add quotes around places they don't exist. (Local)
-		//Advantage to comma is that we add it every time for consistency.
-
-
+		//Because we run fixInnerQuotes() next.
 			line.insert(i+1, "\"");
 			end++;
 		}
 
-		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"' && line.at(i-1) != '(')// && isalpha(line.at(i-1))) //Only if "Local" method (see above)
+		if(i > 0 && line.at(i) == ')' && line.at(i-1) != '"' && line.at(i-1) != '(')
 		{//A closed quote should be preceeded by &quot; See above.
 		//There are some exceptions to this, like when we have one quoted element
 		//In a 2 element parenthesis set. This is always a number. ("elem="foo",local=5)
@@ -247,7 +247,6 @@ std::string fixOpenQuotes(std::string line){
 			line.insert(i,"\"");
 			end++;
 		}
-
 		if(i > 0 && line.at(i) == ',' && line.at(i-1) != '"')
 		{//No quote before , add it in.
 			line.insert(i, "\"");//I swear this is the most frequently typed line of code in this documents.
@@ -267,9 +266,42 @@ std::string fixOpenQuotes(std::string line){
 		}
 
 	}
+
+	//Another close brace fix. If we're in a quote and we don't
+	//have a close quote and we see a />, we add a close quote.
+	bool inQuote = false;
+	end = line.length();
+	for(int i = 0; i < end; i++)
+	{//This isn't firing. Why? Debug, delete this comment.
+		if(!inQuote)
+		{
+			if(line[i] == '"')
+			{
+				inQuote = true;
+			}
+		}
+		else
+		{
+		int pos = line.find("/>");
+			if(line[i] == '"')
+			{//Inquote is true, we're in a quoted part.
+				inQuote = false;
+			}
+	
+			else if(pos != std::string::npos)
+			{
+				if(line.at(pos-1) != '"');
+				{
+					line.insert(pos, "\"");
+					break;
+				}
+			}
+		}
+	}
+
 	//After all of this, if we can iterate through a string
 	//And find a quote followed by a whitespace character, insert a quote.
-	bool inQuote = false;
+	inQuote = false;
 	end = line.length();
 	for(int i = 0; i < end; i++)
 	{
@@ -284,7 +316,13 @@ std::string fixOpenQuotes(std::string line){
 		{
 			if(line[i] == '"')
 			{//Inquote is true, we're in a quoted part.
-				inQuote = false;
+				inQuote = false; //This is a close quote
+				if(line.at(i+1) != ' ' && line.at(i+1) != '/' && line.at(i+1) != '"')
+				{//A close quote should be followed by a space.
+					line.insert(i+1, " ");
+					i++;
+					end++;
+				}
 			}
 			else if(isspace(line[i])) 
 			{//We can't check for just a space, because someone went and
@@ -296,13 +334,14 @@ std::string fixOpenQuotes(std::string line){
 			}	
 		}
 	}
+
 	int closeBrace = line.find("/>");
 	//If a close brace exists (not a comment), there isn't a close quote, AND we have an odd number of quotes.
 	if(closeBrace != string::npos && 
 					(line.at(closeBrace-1) != '\"' || line.at(closeBrace-2) != '\"') &&
 					countOccurances(line, '"') % 2)//Sometimes there is a space after a quote
 	{//We don't have a close quote before our close brace
-		line.insert(closeBrace-1,"\"");
+		line.insert(closeBrace,"\"");
 	}
 	return line;
 }
@@ -316,7 +355,21 @@ std::string doubleDashFix(std::string line)
 	if(pos < line.length()-1 && line.at(pos + 2) != '>' && (pos > 0 && line.at(pos-1) != '!')){ //It's not a comment
 		line.erase(pos, 1);//Remove one dash.
 	}
+
 	return line;
+}
+
+//Track number of open and closed comments
+void countComments(std::string line)
+{
+	if(line.find("<!--") != std::string::npos)
+	{
+		comCount++;
+	}
+	if(line.find("-->") != std::string::npos)
+	{
+		comCount--;
+	}
 }
 
 
@@ -345,5 +398,27 @@ std::string trim(std::string line){
 	return line.substr(lineBegin, lineRange);
 }
 
-
+//If we have a "/>", replace it with a />
+//If we have a />", raplce it with a />
+//If we have a >", replace it with a ">
+//This function is another instance of 
+//Cleaning up after ourselves
+std::string quotedCloseFix(std:: string line)
+{
+	int pos = line.find("\"/>\"");
+	if(pos != std::string::npos){
+		line.erase(pos, 1);
+		line.erase(pos + 2,1);
+	}
+	pos = line.find("/>\""); 
+	if(pos != std::string::npos){
+		line.erase(pos + 2 , 1);
+	}
+	pos = line.find(">\"");
+	if(pos != std::string::npos){
+		line.erase(pos + 1 , 1);
+		line.insert(pos, "\"");
+	}
+	return line;
+}
 
