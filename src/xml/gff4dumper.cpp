@@ -99,7 +99,7 @@ void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &i
 	clear();
 }
 
-bool GFF4Dumper::insertID(uint32 id) {
+bool GFF4Dumper::insertID(uint64 id) {
 	std::pair<IDSet::iterator, bool> result = _structIDs.insert(id);
 
 	return result.second;
@@ -127,14 +127,14 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 	if (strct) {
 		if (insertID(strct->getID())) {
 			if (strct->getRefCount() > 1)
-				_xml->addProperty("id", Common::UString::format("%u", strct->getID()));
+				_xml->addProperty("id", Common::composeString(strct->getID()));
 
 			_xml->breakLine();
 
 			for (Aurora::GFF4Struct::iterator f = strct->begin(); f != strct->end(); ++f)
 				dumpField(*strct, *f, false);
 		} else
-			_xml->addProperty("ref_id", Common::UString::format("%u", strct->getID()));
+			_xml->addProperty("ref_id", Common::composeString(strct->getID()));
 	}
 
 	_xml->closeTag();

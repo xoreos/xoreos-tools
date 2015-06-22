@@ -61,7 +61,7 @@ private:
 		GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g);
 	};
 
-	typedef std::set<uint32> IDSet;
+	typedef std::set<uint64> IDSet;
 	typedef std::map<uint32, Common::UString> FieldNames;
 
 
@@ -75,7 +75,7 @@ private:
 	IDSet _structIDs;
 
 
-	bool insertID(uint32 id);
+	bool insertID(uint64 id);
 
 	Common::UString getIFieldTypeName(uint32 type, bool isList) const;
 
