@@ -324,12 +324,15 @@ void GFF4Dumper::dumpFieldList(const GFF4Field &field) {
 
 void GFF4Dumper::dumpFieldGeneric(const GFF4Field &field) {
 	const Aurora::GFF4Struct *generic = field.strct->getGeneric(field.field);
-	if (!generic || !generic->getFieldCount())
+	if (!generic)
 		return;
 
-	_xml->breakLine();
-	for (Aurora::GFF4Struct::iterator f = generic->begin(); f != generic->end(); ++f)
+	for (Aurora::GFF4Struct::iterator f = generic->begin(); f != generic->end(); ++f) {
+		if (f == generic->begin())
+			_xml->breakLine();
+
 		dumpField(*generic, *f, true);
+	}
 }
 
 void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool isGeneric) {
