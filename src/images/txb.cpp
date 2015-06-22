@@ -110,38 +110,25 @@ void TXB::readHeader(Common::SeekableReadStream &txb, byte &encoding) {
 	txb.skip(4); // Some float
 	txb.skip(108); // Reserved
 
-	uint32 minDataSize, mipMapSize;
 	if        (encoding == kEncodingBGRA) {
 		// Raw BGRA, swizzled
 
 		_format = kPixelFormatB8G8R8A8;
-
-		minDataSize = 4;
-		mipMapSize  = width * height * 4;
 
 	} else if (encoding == kEncodingGray) {
 		// Raw Grayscale, swizzled. We map it to BGR
 
 		_format = kPixelFormatB8G8R8;
 
-		minDataSize = 1;
-		mipMapSize  = width * height;
-
 	} else if (encoding == kEncodingDXT1) {
 		// S3TC DXT1
 
 		_format = kPixelFormatDXT1;
 
-		minDataSize = 8;
-		mipMapSize  = width * height / 2;
-
 	} else if (encoding == kEncodingDXT5) {
 		// S3TC DXT5
 
 		_format = kPixelFormatDXT5;
-
-		minDataSize = 16;
-		mipMapSize  = width * height;
 
 	} else
 		throw Common::Exception("Unknown TXB encoding 0x%02X (%dx%d, %d, %d)",
@@ -158,31 +145,14 @@ void TXB::readHeader(Common::SeekableReadStream &txb, byte &encoding) {
 	for (uint32 i = 0; i < mipMapCount; i++) {
 		Common::ScopedPtr<MipMap> mipMap(new MipMap);
 
-		mipMap->width  = MAX<uint32>(width,  1);
-		mipMap->height = MAX<uint32>(height, 1);
-
-		// Invalid mipmap dimensions
-		if (((mipMap->width < 4) || (mipMap->height < 4)) && (mipMap->width != mipMap->height))
-			break;
-
-		mipMap->size = MAX<uint32>(mipMapSize, minDataSize);
-
-		const size_t mipMapDataSize = getTXBDataSize(encoding, _format, mipMap->width, mipMap->height);
-
-		// Wouldn't fit
-		if ((dataSize < mipMap->size) || (mipMap->size < mipMapDataSize))
-			break;
-
-		dataSize -= mipMap->size;
+		mipMap->width  = width;
+		mipMap->height = height;
+		mipMap->size   = getTXBDataSize(encoding, _format, width, height);
 
 		_mipMaps.push_back(mipMap.release());
 
-		width      >>= 1;
-		height     >>= 1;
-		mipMapSize >>= 2;
-
-		if ((width < 1) && (height < 1))
-			break;
+		if (width  > 1) width  >>= 1;
+		if (height > 1) height >>= 1;
 	}
 
 	if ((mipMapCount != 0) && (_mipMaps.empty()))
