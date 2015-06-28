@@ -84,14 +84,16 @@ int main(int argc, char* argv[]){
 //Read and fix any line of XML that is passed in,
 //Returns that fixed line.
 std::string parseLine(std::string line){
+	line = escapeSpacedStrings(line, false);	
 	line = fixOpenQuotes(line);//It's imperative that this run before
 	//the copyright line, or not on it at all. Could update to ignore
 	//Comments.
 	line = fixInnerQuotes(line);
 	line = fixCopyright(line); //Does this need to run EVERY line?
 	line = doubleDashFix(line);
-	line = tripleQuoteFix(line);
 	line = quotedCloseFix(line);
+	line = tripleQuoteFix(line);
+	line = escapeSpacedStrings(line, true);
 	return line;
 }
 
@@ -377,14 +379,54 @@ void countComments(std::string line)
 //Replace with one quote.
 //Let's be honest, this can only happen as a 
 //Result of other methods, and this is a kludgy fix.
+//Note that this will only find one per line.
 std::string tripleQuoteFix(std::string line)
 {
 	int pos = line.find("\"\"\"");
 	if(pos != std::string::npos){
 		line.erase(pos, 2);//Remove two quotes.
 	}
+	//Might as well escape "" as well, while we're at it.
+	pos = line.find("\"\"");
+	if(pos != std::string::npos){
+		line.erase(pos, 2);//Remove one quote.
+	}
 	return line;
 }
+
+//Some values are correct, but need to be
+//Flagged so other algorithms don't pick
+//Up on them.
+//Replaces these values with "escaped" safe strings, 
+//Then undoes it the second time it's called.
+std::string escapeSpacedStrings(std::string line, bool undo)
+{
+	//Just used as containers
+	string switchWordsFrom[] = {"portrait frame" , "0 / 0 MB"};
+	string switchWordsTo[] = {"portrait_frame" , "0_/_0_MB"};
+	
+	//The ones we actually references
+	string * fromTemp = switchWordsFrom;
+	string * toTemp = switchWordsTo;	
+	if(undo)//Swap
+	{//The second time we call this, we want to switch it back.
+		//only c++ 2011 has support for native array swap
+		//So we do this with pointers.	
+		string * swapTemp = fromTemp;		
+		fromTemp = toTemp;
+		toTemp = swapTemp;
+	}
+
+int length = sizeof(switchWordsFrom)/sizeof(switchWordsFrom[0]);
+for(int i=0; i < length; i++){
+		int pos = line.find(*(fromTemp+i));
+		if(pos != std::string::npos){
+			line.replace(pos, (fromTemp + i)->length(), *(toTemp + i));
+		}
+	}
+	return line;
+}
+
 
 //Remove leading and trailing whitespace
 std::string trim(std::string line){

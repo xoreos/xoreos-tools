@@ -11,9 +11,6 @@ Remove unused functions.
 
 see if can replace countoccurances with std::count
 
-The issue with the download is that we have centerText="0 / 0 MB", and we are falsely adding a " after the first 0.
-	How can we move this to be after MB instead? hmmmm
-
 Maybe we can leverage inparen with the comma thing? Are those even in the same method? 
 I think inparen is presently only in the, uh, innerquote file, but let's see if we can't reimplement it
 or if that would even help? I think the DMC issue is also in a paren. Hmmm.
