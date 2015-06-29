@@ -60,14 +60,14 @@ void NBFS::load(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nb
 			height = guessDimension(nbfs.size(), width);
 
 			if (height == 0xFFFFFFFF)
-				throw Common::Exception("Width %u did not fit into the NBFS size %d", width, nbfs.size());
+				throw Common::Exception("Width %u did not fit into the NBFS size %u", width, (uint)nbfs.size());
 		}
 
 		if ((width == 0xFFFFFFFF) && (height != 0xFFFFFFFF)) {
 			width = guessDimension(nbfs.size(), height);
 
 			if (width == 0xFFFFFFFF)
-				throw Common::Exception("Height %u did not fit into the NBFS size %d", height, nbfs.size());
+				throw Common::Exception("Height %u did not fit into the NBFS size %u", height, (uint)nbfs.size());
 		}
 
 		if ((width == 0xFFFFFFFF) && (height == 0xFFFFFFFF)) {
@@ -76,7 +76,7 @@ void NBFS::load(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nb
 					if ((height = guessDimension(nbfs.size(), width = 193)) == 0xFFFFFFFF)
 						if ((height = guessDimension(nbfs.size(), width = 192)) == 0xFFFFFFFF)
 							if ((height = guessDimension(nbfs.size(), width = 128)) == 0xFFFFFFFF)
-								throw Common::Exception("Couldn't detect NBFS dimensions (%d)", nbfs.size());
+								throw Common::Exception("Couldn't detect NBFS dimensions (%u)", (uint)nbfs.size());
 		}
 
 		if (nbfs.size() != (width * height))
