@@ -16,3 +16,4 @@ std::string tripleQuoteFix(std::string line);
 void countComments(std::string line);
 std::string quotedCloseFix(std:: string line);
 std::string escapeSpacedStrings(std::string line, bool undo);
+std::string fixMismatchedParen(std::string line);

@@ -80,11 +80,13 @@ int main(int argc, char* argv[]){
 	writeFile.close();
 	return 0;
 }
+int countDebug = 1;
 
 //Read and fix any line of XML that is passed in,
 //Returns that fixed line.
 std::string parseLine(std::string line){
-	line = escapeSpacedStrings(line, false);	
+	line = escapeSpacedStrings(line, false);
+	line = fixMismatchedParen(line);	
 	line = fixOpenQuotes(line);//It's imperative that this run before
 	//the copyright line, or not on it at all. Could update to ignore
 	//Comments.
@@ -94,6 +96,7 @@ std::string parseLine(std::string line){
 	line = quotedCloseFix(line);
 	line = tripleQuoteFix(line);
 	line = escapeSpacedStrings(line, true);
+countDebug++;
 	return line;
 }
 
@@ -119,8 +122,7 @@ return line;
 //Corrects improper opening XML tags
 std::string fixXMLTag(std::string line){
 	//Let's ensure we close this properly.
-	if(line.find("<?xml") != string::npos)
-	{
+	if(line.find("<?xml") != string::npos){
 		line = trim(line);
 		if(line.at(line.length()-2) != '?')
 		{
@@ -217,11 +219,43 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
     }
 }
 
+//Adds a closing paren if a line is missing such a thing.
+std::string fixMismatchedParen(std::string line){
+	bool inParen = false;
+	int end = line.length();
+	for(int i = 0; i < end; i++)
+	{
+		if(!inParen)
+		{
+			if(line[i] == '(')
+			{
+				inParen = true;
+			}
+		}
+		else
+		{
+		int pos = line.find("/>");
+			if(line[i] == ')')
+			{
+				inParen = false;
+			}
+			else if(i == pos -1){//We're at the end of the string and haven't closed a paren.
+				if(line.at(pos-1) != ')');
+				{
+					line.insert(pos, ")");
+					break;
+				}
+			}
+		}
+	}
+return line;
+}
+
 //Find any element that has an equal sign not followed
 //By a quotation mark. Insert that quotation mark,
 //and return the fixed line.
 std::string fixOpenQuotes(std::string line){
-	//We have an equal with no open quote
+//We have an equal with no open quote
 	int end = line.length() -1;
 	for(int i = 0; i < end; i++)
 	{
@@ -268,13 +302,12 @@ std::string fixOpenQuotes(std::string line){
 		}
 
 	}
-
 	//Another close brace fix. If we're in a quote and we don't
 	//have a close quote and we see a />, we add a close quote.
 	bool inQuote = false;
 	end = line.length();
 	for(int i = 0; i < end; i++)
-	{//This isn't firing. Why? Debug, delete this comment.
+	{
 		if(!inQuote)
 		{
 			if(line[i] == '"')
@@ -300,6 +333,7 @@ std::string fixOpenQuotes(std::string line){
 			}
 		}
 	}
+
 
 	//After all of this, if we can iterate through a string
 	//And find a quote followed by a whitespace character, insert a quote.
@@ -336,10 +370,10 @@ std::string fixOpenQuotes(std::string line){
 			}	
 		}
 	}
-
 	int closeBrace = line.find("/>");
 	//If a close brace exists (not a comment), there isn't a close quote, AND we have an odd number of quotes.
-	if(closeBrace != string::npos && 
+		bool temp = closeBrace != string::npos;
+	if(closeBrace != string::npos && closeBrace > 0 &&
 					(line.at(closeBrace-1) != '\"' || line.at(closeBrace-2) != '\"') &&
 					countOccurances(line, '"') % 2)//Sometimes there is a space after a quote
 	{//We don't have a close quote before our close brace
@@ -387,9 +421,11 @@ std::string tripleQuoteFix(std::string line)
 		line.erase(pos, 2);//Remove two quotes.
 	}
 	//Might as well escape "" as well, while we're at it.
-	pos = line.find("\"\"");
-	if(pos != std::string::npos){
-		line.erase(pos, 2);//Remove one quote.
+	if(line.find("name=\"\"") == std::string::npos){//If the line doesn't contain name=""	
+		pos = line.find("\"\"");
+		if(pos != std::string::npos){
+			line.erase(pos, 2);//Remove one quote.
+		}
 	}
 	return line;
 }
@@ -399,11 +435,14 @@ std::string tripleQuoteFix(std::string line)
 //Up on them.
 //Replaces these values with "escaped" safe strings, 
 //Then undoes it the second time it's called.
+//The issue here is primarily when strings with spaces are assigned as values.
 std::string escapeSpacedStrings(std::string line, bool undo)
 {
-	//Just used as containers
-	string switchWordsFrom[] = {"portrait frame" , "0 / 0 MB"};
-	string switchWordsTo[] = {"portrait_frame" , "0_/_0_MB"};
+	//Just used as containers. There's no other way around the > character breaking this thing.
+	string switchWordsFrom[] = {"portrait frame" , "0 / 0 MB", "->", ">>", 
+				"capturemouseevents=false", "Speaker Name", " = ", "Player Chat"};
+	string switchWordsTo[] = {"portrait_frame" , "0_/_0_MB", "ReplaceMe1", 
+				"ReplaceMe2","capturemouseevents=false ", "Speaker_Name", "=", "Player_Chat"};
 	
 	//The ones we actually references
 	string * fromTemp = switchWordsFrom;
