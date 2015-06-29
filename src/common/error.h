@@ -48,6 +48,8 @@ public:
 
 	const char *what() const throw();
 
+	bool empty() const;
+
 	Stack &getStack();
 
 private:
