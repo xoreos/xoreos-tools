@@ -33,7 +33,7 @@ void warning(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 #ifndef DISABLE_TEXT_CONSOLE
@@ -48,7 +48,7 @@ void status(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 #ifndef DISABLE_TEXT_CONSOLE
@@ -62,7 +62,7 @@ void NORETURN_PRE error(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 #ifndef DISABLE_TEXT_CONSOLE
