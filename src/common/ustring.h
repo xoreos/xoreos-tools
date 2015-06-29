@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "src/common/types.h"
+#include "src/common/system.h"
 
 #include "utf8cpp/utf8.h"
 
@@ -172,7 +173,7 @@ public:
 	UString substr(iterator from, iterator to) const;
 
 	/** Print formatted data into an UString object, similar to sprintf(). */
-	static UString format(const char *s, ...);
+	static UString format(const char *s, ...) GCC_PRINTF(1, 2);
 
 	static size_t split(const UString &text, uint32 delim, std::vector<UString> &texts);
 
