@@ -45,8 +45,11 @@ StackException::StackException(const char *s, ...) {
 	_stack.push(buf);
 }
 
-StackException::StackException(const StackException &e) {
-	_stack = e._stack;
+StackException::StackException(const StackException &e) : _stack(e._stack) {
+}
+
+StackException::StackException(const std::exception &e) {
+	add(e);
 }
 
 StackException::~StackException() throw() {
@@ -61,6 +64,10 @@ void StackException::add(const char *s, ...) {
 	va_end(va);
 
 	_stack.push(buf);
+}
+
+void StackException::add(const std::exception &e) {
+	add("%s", e.what());
 }
 
 const char *StackException::what() const throw() {
