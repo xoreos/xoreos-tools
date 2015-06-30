@@ -26,6 +26,8 @@
  * (<https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware>)
  */
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/memreadstream.h"
@@ -41,16 +43,19 @@ static const uint32 kVersion4 = MKTAG('V', '4', '.', '0');
 
 namespace Aurora {
 
-TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream &tlk, Common::Encoding encoding) :
-	TalkTable(encoding), _tlk(&tlk) {
+TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
+	TalkTable(encoding), _tlk(tlk) {
 
 	load();
 }
 
 TalkTable_TLK::~TalkTable_TLK() {
+	delete _tlk;
 }
 
 void TalkTable_TLK::load() {
+	assert(_tlk);
+
 	try {
 		readHeader(*_tlk);
 
@@ -82,6 +87,8 @@ void TalkTable_TLK::load() {
 			readEntryTableV4();
 
 	} catch (Common::Exception &e) {
+		delete _tlk;
+
 		e.add("Failed reading TLK file");
 		throw;
 	}

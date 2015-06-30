@@ -69,7 +69,7 @@ Common::UString GFF4Dumper::findFieldName(uint32 label) const {
 	return n->second;
 }
 
-void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                       Common::Encoding encoding) {
 
 	_encoding = encoding;

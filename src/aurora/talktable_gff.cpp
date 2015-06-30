@@ -26,6 +26,8 @@
  * (<http://social.bioware.com/wiki/datoolset/index.php/TLK>).
  */
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -39,7 +41,7 @@ static const uint32 kVersion05 = MKTAG('V', '0', '.', '5');
 
 namespace Aurora {
 
-TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream &tlk, Common::Encoding encoding) :
+TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
 	TalkTable(encoding), _gff(0) {
 
 	load(tlk);
@@ -64,7 +66,9 @@ bool TalkTable_GFF::getString(uint32 strRef, Common::UString &string, Common::US
 	return true;
 }
 
-void TalkTable_GFF::load(Common::SeekableReadStream &tlk) {
+void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
+	assert(tlk);
+
 	try {
 		_gff = new GFF4File(tlk, kTLKID);
 

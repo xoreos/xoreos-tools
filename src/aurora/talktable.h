@@ -47,7 +47,7 @@ public:
 	virtual const std::list<uint32> &getStrRefs() const = 0;
 	virtual bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
 
-	static TalkTable *load(Common::SeekableReadStream &tlk, Common::Encoding encoding);
+	static TalkTable *load(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 
 
 protected:

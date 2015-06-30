@@ -45,6 +45,7 @@ enum Format {
 void printUsage(FILE *stream, const char *name);
 bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file, Format &format);
 
+Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream);
 void convert2DA(const Common::UString &file, Format format);
 
 int main(int argc, char **argv) {
@@ -152,25 +153,38 @@ static const uint32 k2DAID     = MKTAG('2', 'D', 'A', ' ');
 static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
-void convert2DA(const Common::UString &file, Format format) {
-	Common::ReadFile fileStream(file);
+Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
+	uint32 id = 0;
 
-	uint32 id = Aurora::AuroraBase::readHeaderID(fileStream);
-	fileStream.seek(0);
-
-	Aurora::TwoDAFile *twoDA = 0;
 	try {
+		id = Aurora::AuroraBase::readHeaderID(*stream);
+		stream->seek(0);
+	} catch (...) {
+		delete stream;
+		throw;
+	}
 
-		if       ((id == k2DAID) || (id == k2DAIDTab)) {
-			twoDA = new Aurora::TwoDAFile(fileStream);
+	if ((id == k2DAID) || (id == k2DAIDTab)) {
+		Aurora::TwoDAFile *twoDA = new Aurora::TwoDAFile(*stream);
 
-		} else if (id == kGFFID) {
-			Aurora::GDAFile gda(fileStream);
-			twoDA = new Aurora::TwoDAFile(gda);
+		delete stream;
+		return twoDA;
+	}
 
-		} else
-			throw Common::Exception("Not a 2DA or GDA file");
+	if (id == kGFFID) {
+		Aurora::GDAFile gda(stream);
 
+		return new Aurora::TwoDAFile(gda);
+	}
+
+	delete stream;
+	throw Common::Exception("Not a 2DA or GDA file");
+}
+
+void convert2DA(const Common::UString &file, Format format) {
+	Aurora::TwoDAFile *twoDA = get2DAGDA(new Common::ReadFile(file));
+
+	try {
 		Common::StdOutStream stdOut;
 
 		if (format == kFormat2DA)

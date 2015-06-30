@@ -38,7 +38,7 @@ namespace Aurora {
 /** Loading BioWare's GFF'd talk tables. */
 class TalkTable_GFF : public TalkTable {
 public:
-	TalkTable_GFF(Common::SeekableReadStream &tlk, Common::Encoding encoding);
+	TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_GFF();
 
 	const std::list<uint32> &getStrRefs() const;
@@ -63,7 +63,7 @@ private:
 
 	Entries _entries;
 
-	void load(Common::SeekableReadStream &tlk);
+	void load(Common::SeekableReadStream *tlk);
 	void load02(const GFF4Struct &top);
 	void load05(const GFF4Struct &top);
 

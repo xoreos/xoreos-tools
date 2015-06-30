@@ -51,7 +51,7 @@ void GFF3Dumper::clear() {
 	_xml  = 0;
 }
 
-void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                       Common::Encoding UNUSED(encoding)) {
 
 	try {

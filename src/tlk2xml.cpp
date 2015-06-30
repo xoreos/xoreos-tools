@@ -173,7 +173,7 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 void dumpTLK(const Common::UString &file, Common::Encoding encoding) {
-	Common::ReadFile tlk(file);
+	Common::SeekableReadStream *tlk = new Common::ReadFile(file);
 
 	XML::TLKDumper dumper;
 	Common::StdOutStream xml;

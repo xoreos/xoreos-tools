@@ -65,7 +65,7 @@ public:
 	typedef std::vector<Header> Headers;
 
 
-	GDAFile(Common::SeekableReadStream &gda);
+	GDAFile(Common::SeekableReadStream *gda);
 	~GDAFile();
 
 	/** Return the number of columns in the array. */
@@ -117,7 +117,7 @@ private:
 	mutable ColumnNameMap _columnNameMap;
 
 
-	void load(Common::SeekableReadStream &gda);
+	void load(Common::SeekableReadStream *gda);
 	void clear();
 
 	const GFF4Struct *getRowColumn(size_t row, uint32 hash, size_t &column) const;

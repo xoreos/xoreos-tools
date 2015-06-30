@@ -59,11 +59,12 @@ void GFF4File::Header::read(Common::SeekableReadStream &gff4, uint32 version) {
 	hasSharedStrings = (stringCount > 0) || (stringOffset != 0xFFFFFFFF);
 
 	dataOffset = gff4.readUint32LE();
-
 }
 
 
-GFF4File::GFF4File(Common::SeekableReadStream &gff4, uint32 type) : _stream(&gff4), _topLevelStruct(0) {
+GFF4File::GFF4File(Common::SeekableReadStream *gff4, uint32 type) :
+	_stream(gff4), _topLevelStruct(0) {
+
 	load(type);
 }
 
@@ -72,6 +73,7 @@ GFF4File::~GFF4File() {
 }
 
 void GFF4File::clear() {
+	delete _stream;
 	_stream = 0;
 
 	for (StructMap::iterator s = _structs.begin(); s != _structs.end(); ++s)

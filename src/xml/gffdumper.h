@@ -43,7 +43,7 @@ public:
 	static GFFDumper *identify(Common::SeekableReadStream &input);
 
 	/** Dump the GFF into XML. */
-	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
 	                  Common::Encoding encoding) = 0;
 };
 

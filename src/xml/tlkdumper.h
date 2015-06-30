@@ -40,7 +40,7 @@ public:
 	~TLKDumper();
 
 	/** Dump the TLK into XML. */
-	void dump(Common::WriteStream &output, Common::SeekableReadStream &input, Common::Encoding encoding);
+	void dump(Common::WriteStream &output, Common::SeekableReadStream *input, Common::Encoding encoding);
 };
 
 } // End of namespace XML

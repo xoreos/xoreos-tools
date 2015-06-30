@@ -144,9 +144,15 @@ void printUsage(FILE *stream, const char *name) {
 }
 
 void dumpGFF(const Common::UString &file, Common::Encoding encoding) {
-	Common::ReadFile gff(file);
+	Common::SeekableReadStream *gff = new Common::ReadFile(file);
 
-	XML::GFFDumper *dumper = XML::GFFDumper::identify(gff);
+	XML::GFFDumper *dumper = 0;
+	try {
+		dumper = XML::GFFDumper::identify(*gff);
+	} catch (...) {
+		delete gff;
+		throw;
+	}
 
 	Common::StdOutStream xml;
 	dumper->dump(xml, gff, encoding);

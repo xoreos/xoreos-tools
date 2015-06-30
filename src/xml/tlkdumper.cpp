@@ -39,7 +39,7 @@ TLKDumper::TLKDumper() {
 TLKDumper::~TLKDumper() {
 }
 
-void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input,
+void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                      Common::Encoding encoding) {
 
 	Aurora::TalkTable *tlk = Aurora::TalkTable::load(input, encoding);

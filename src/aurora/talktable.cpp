@@ -46,30 +46,41 @@ uint32 TalkTable::getLanguageID() const {
 	return kLanguageInvalid;
 }
 
-TalkTable *TalkTable::load(Common::SeekableReadStream &tlk, Common::Encoding encoding) {
-	size_t pos = tlk.pos();
+TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding encoding) {
+	if (!tlk)
+		return 0;
 
-	uint32 id, version;
-	bool utf16le;
+	try {
 
-	AuroraBase::readHeader(tlk, id, version, utf16le);
+		size_t pos = tlk->pos();
 
-	tlk.seek(pos);
+		uint32 id, version;
+		bool utf16le;
 
-	if (id == kTLKID) {
-		if (encoding == Common::kEncodingInvalid)
-			encoding = Common::kEncodingCP1252;
+		AuroraBase::readHeader(*tlk, id, version, utf16le);
 
-		return new TalkTable_TLK(tlk, encoding);
+		tlk->seek(pos);
+
+		if (id == kTLKID) {
+			if (encoding == Common::kEncodingInvalid)
+				encoding = Common::kEncodingCP1252;
+
+			return new TalkTable_TLK(tlk, encoding);
+		}
+
+		if (id == kGFFID) {
+			if (encoding == Common::kEncodingInvalid)
+				encoding = Common::kEncodingUTF16LE;
+
+			return new TalkTable_GFF(tlk, encoding);
+		}
+
+	} catch (...) {
+		delete tlk;
+		throw;
 	}
 
-	if (id == kGFFID) {
-		if (encoding == Common::kEncodingInvalid)
-			encoding = Common::kEncodingUTF16LE;
-
-		return new TalkTable_GFF(tlk, encoding);
-	}
-
+	delete tlk;
 	return 0;
 }
 

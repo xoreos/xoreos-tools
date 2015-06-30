@@ -37,7 +37,7 @@ static const uint32 kG2DAID = MKTAG('G', '2', 'D', 'A');
 
 namespace Aurora {
 
-GDAFile::GDAFile(Common::SeekableReadStream &gda) : _gff4(0), _columns(0), _rows(0) {
+GDAFile::GDAFile(Common::SeekableReadStream *gda) : _gff4(0), _columns(0), _rows(0) {
 	load(gda);
 }
 
@@ -182,7 +182,7 @@ float GDAFile::getFloat(size_t row, const Common::UString &columnName, float def
 	return gdaRow->getDouble(gdaColumn, def);
 }
 
-void GDAFile::load(Common::SeekableReadStream &gda) {
+void GDAFile::load(Common::SeekableReadStream *gda) {
 	try {
 		_gff4 = new GFF4File(gda, kG2DAID);
 

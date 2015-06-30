@@ -62,7 +62,7 @@ void GFF3File::Header::read(Common::SeekableReadStream &gff3) {
 }
 
 
-GFF3File::GFF3File(Common::SeekableReadStream &gff3, uint32 id) : _stream(&gff3) {
+GFF3File::GFF3File(Common::SeekableReadStream *gff3, uint32 id) : _stream(gff3) {
 	load(id);
 }
 
@@ -71,6 +71,7 @@ GFF3File::~GFF3File() {
 }
 
 void GFF3File::clear() {
+	delete _stream;
 	_stream = 0;
 
 	for (StructArray::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
