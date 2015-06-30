@@ -43,6 +43,7 @@ namespace Aurora {
 class GDAFile {
 public:
 	static const size_t kInvalidColumn = SIZE_MAX;
+	static const size_t kInvalidRow    = SIZE_MAX;
 
 	enum Type {
 		kTypeEmpty    = -1,
@@ -80,6 +81,9 @@ public:
 
 	/** Get a row as a GFF4 struct. */
 	const GFF4Struct *getRow(size_t row) const;
+
+	/** Find a row by its ID value. */
+	size_t findRow(uint32 id) const;
 
 	/** Find a column by its name. */
 	size_t findColumn(const Common::UString &name) const;

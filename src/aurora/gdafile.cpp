@@ -68,6 +68,18 @@ const GFF4Struct *GDAFile::getRow(size_t row) const {
 	return (*_rows)[row];
 }
 
+size_t GDAFile::findRow(uint32 id) const {
+	size_t idColumn = findColumn("ID");
+	if (idColumn == kInvalidColumn)
+		return kInvalidRow;
+
+	for (size_t i = 0; i < _rows->size(); i++)
+		if ((*_rows)[i] && ((*_rows)[i]->getUint(idColumn) == id))
+			return i;
+
+	return kInvalidRow;
+}
+
 size_t GDAFile::findColumn(const Common::UString &name) const {
 	ColumnNameMap::const_iterator c = _columnNameMap.find(name);
 	if (c != _columnNameMap.end())
