@@ -43,21 +43,25 @@ enum Format {
 };
 
 void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file, Format &format);
+bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Common::UString> &files,
+                      Format &format);
+
+void dump2DA(Aurora::TwoDAFile &twoDA, Format format);
 
 Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream);
 void convert2DA(const Common::UString &file, Format format);
+void convert2DA(const std::vector<Common::UString> &files, Format format);
 
 int main(int argc, char **argv) {
 	Format format = kFormat2DA;
 
 	int returnValue;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file, format))
+	std::vector<Common::UString> files;
+	if (!parseCommandLine(argc, argv, returnValue, files, format))
 		return returnValue;
 
 	try {
-		convert2DA(file, format);
+		convert2DA(files, format);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return -1;
@@ -68,8 +72,9 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file, Format &format) {
-	file.clear();
+bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Common::UString> &files,
+                      Format &format) {
+	files.clear();
 
 	if (argc < 2) {
 		printUsage(stderr, argv[0]);
@@ -118,20 +123,12 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 		if (isOption)
 			continue;
 
-		// We already have a file => error
-		if (!file.empty()) {
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
-		}
-
 		// This is a file to use
-		file = argv[i];
+		files.push_back(argv[i]);
 	}
 
-	// No file? Error.
-	if (file.empty()) {
+	// No files? Error.
+	if (files.empty()) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
@@ -143,15 +140,26 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare 2DA/GDA to 2DA/CSV converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
+	std::fprintf(stream, "Usage: %s [options] <file> [<file> [...]]\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "  -2      --2da               Convert to ASCII 2DA\n");
-	std::fprintf(stream, "  -c      --csv               Convert to CSV\n");
+	std::fprintf(stream, "  -c      --csv               Convert to CSV\n\n");
+	std::fprintf(stream, "If several files are given, they must all be GDA and use the same\n");
+	std::fprintf(stream, "column layout. They will be pasted together and printed as one GDA.\n");
 }
 
 static const uint32 k2DAID     = MKTAG('2', 'D', 'A', ' ');
 static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
+
+void dump2DA(Aurora::TwoDAFile &twoDA, Format format) {
+	Common::StdOutStream stdOut;
+
+	if (format == kFormat2DA)
+		twoDA.dumpASCII(stdOut);
+	else
+		twoDA.dumpCSV(stdOut);
+}
 
 Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
 	uint32 id = 0;
@@ -185,17 +193,27 @@ void convert2DA(const Common::UString &file, Format format) {
 	Aurora::TwoDAFile *twoDA = get2DAGDA(new Common::ReadFile(file));
 
 	try {
-		Common::StdOutStream stdOut;
-
-		if (format == kFormat2DA)
-			twoDA->dumpASCII(stdOut);
-		else
-			twoDA->dumpCSV(stdOut);
-
+		dump2DA(*twoDA, format);
 	} catch (...) {
 		delete twoDA;
 		throw;
 	}
 
 	delete twoDA;
+}
+
+void convert2DA(const std::vector<Common::UString> &files, Format format) {
+	if (files.size() == 1) {
+		convert2DA(files[0], format);
+		return;
+	}
+
+	Aurora::GDAFile gda(new Common::ReadFile(files[0]));
+
+	for (size_t i = 1; i < files.size(); i++)
+		gda.add(new Common::ReadFile(files[i]));
+
+	Aurora::TwoDAFile twoDA(gda);
+
+	dump2DA(twoDA, format);
 }
