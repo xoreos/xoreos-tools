@@ -87,10 +87,12 @@ std::string parseLine(std::string line){
 }
 
 
-//Removes copyright sign, as it is invalid
-//Unicode that xmllint doesn't like.
-//This probably doesn't need to run on every
-//Line.
+/**
+ * Removes copyright sign, as it is invalid
+ * Unicode that xmllint doesn't like.
+ * This probably doesn't need to run on every
+ * Line.
+ */
 std::string fixCopyright(std::string line){
 	//If this is the copyright line, remove the unicode.
 	if (line.find("Copyright") != std::string::npos){
@@ -145,7 +147,8 @@ std::string fixUnclosedNodes(std::string line){
 }
 
 
-/**Finds and escapes quotes in an element,
+/**
+ * Finds and escapes quotes in an element,
  * Returns a fixed line.
  * The only time we're seeing "false" quotes is
  * In the context open("FooBar"), so that's the only
@@ -221,9 +224,11 @@ std::string fixMismatchedParen(std::string line){
 return line;
 }
 
-//Find any element that has an equal sign not followed
-//By a quotation mark. Insert that quotation mark,
-//and return the fixed line.
+/*
+ * Find any element that has an equal sign not followed
+ * By a quotation mark. Insert that quotation mark,
+ * and return the fixed line.
+ */
 std::string fixOpenQuotes(std::string line){
 //We have an equal with no open quote
 	int end = line.length() -1;
@@ -279,7 +284,11 @@ std::string fixOpenQuotes(std::string line){
 	return line;
 }
 
-//If a close brace exists (not a comment), there isn't a close quote, AND we have an odd number of quotes.
+/**
+ * If a close brace exists (not a comment),
+ * there isn't a close quote, AND we have an
+ * odd number of quotes.
+ */
 std::string fixUnevenQuotes(std::string line){
 	int closeBrace = line.find("/>");
 	bool temp = closeBrace != string::npos;
@@ -292,8 +301,10 @@ std::string fixUnevenQuotes(std::string line){
 return line;
 }
 
-//After all of this, if we can iterate through a string
-//And find a quote followed by a whitespace character, insert a quote.
+/**
+ * After all of this, if we can iterate through a string
+ * And find a quote followed by a whitespace character, insert a quote.
+ */
 std::string fixUnclosedQuote(std::string line){
 	bool inQuote = false;
 	int end = line.length();
@@ -349,10 +360,12 @@ std::string fixCloseBraceQuote(std::string line){
 	}
 return line;
 }
-   
-//If there are any -- inside of a comment,
-//This will remove them and replace it with
-//A single dash.
+ 
+/** 
+ * If there are any -- inside of a comment,
+ * This will remove them and replace it with
+ * A single dash.
+ */
 std::string doubleDashFix(std::string line){
 	int pos = line.find("--");
 	if (pos < line.length()-1 && line.at(pos + 2) != '>' && (pos > 0 && line.at(pos-1) != '!')){ //It's not a comment
