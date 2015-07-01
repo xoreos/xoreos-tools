@@ -74,6 +74,7 @@ private:
 	Common::UString readString05(Common::SeekableReadStream *huffTree,
 	                             Common::SeekableReadStream *bitStream,
 	                             const Entry &entry) const;
+	void clean();
 };
 
 } // End of namespace Aurora

@@ -48,6 +48,13 @@ TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding e
 }
 
 TalkTable_GFF::~TalkTable_GFF() {
+	clean();
+}
+
+void TalkTable_GFF::clean() {
+	for (Entries::iterator e = _entries.begin(); e != _entries.end(); ++e)
+		delete e->second;
+
 	delete _gff;
 }
 
@@ -84,7 +91,7 @@ void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
 		_strRefs.sort();
 
 	} catch (Common::Exception &e) {
-		delete _gff;
+		clean();
 
 		e.add("Unable to load GFF TLK");
 		throw;
