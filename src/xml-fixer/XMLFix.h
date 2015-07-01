@@ -19,4 +19,5 @@ std::string escapeSpacedStrings(std::string line, bool undo);
 std::string fixMismatchedParen(std::string line);
 std::string fixCloseBraceQuote(std::string line);
 std::string fixUnclosedQuote(std::string line);
-std::string fixUnevenQuotes(std::string ZZline);
+std::string fixUnevenQuotes(std::string line);
+std::string fixUnclosedNodes(std::string line);

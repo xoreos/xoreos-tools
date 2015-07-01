@@ -12,6 +12,7 @@ using std::string;
 using namespace std; //I'll fix this later
 
 int comCount = 0; //Track number of open/closed comments.
+bool inUIButton = false;
 
 int main(int argc, char* argv[]){
 	if (argc != 2){
@@ -70,6 +71,7 @@ int main(int argc, char* argv[]){
 //Read and fix any line of XML that is passed in,
 //Returns that fixed line.
 std::string parseLine(std::string line){
+	line = fixUnclosedNodes(line);
 	line = escapeSpacedStrings(line, false);
 	line = fixMismatchedParen(line);	
 	line = fixOpenQuotes(line);//It's imperative that this run before
@@ -113,15 +115,42 @@ std::string fixXMLTag(std::string line){
 			return "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 		}
 	}
-return line;
+	return line;
 }
 
+/**
+ * If there is a close node without an open node
+ * This will delete it. Right now it only works 
+ * If there is a closed UIButton without an open
+ * UIButton
+ */
+std::string fixUnclosedNodes(std::string line){
+	int pos = line.find("<UIButton");
+	//Open node	
+	if (pos != string::npos){
+		inUIButton = true;
+	}
+	pos = line.find("</UIButton>");
+	//Close node	
+	if (pos != string::npos){
+		//If we aren't in a node, delete the close node.
+		if(!inUIButton){
+			line.replace(pos, 11, "");
+		}
+		inUIButton = false;
+	}
+
+
+	return line;
+}
+
+
 /**Finds and escapes quotes in an element,
-*Returns a fixed line.
-*The only time we're seeing "false" quotes is
-*In the context open("FooBar"), so that's the only
-*Case we look for right now.
-*/
+ * Returns a fixed line.
+ * The only time we're seeing "false" quotes is
+ * In the context open("FooBar"), so that's the only
+ * Case we look for right now.
+ */
 std::string escapeInnerQuotes(std::string line){
 	if (countOccurances(line, '"') > 2){//We have more than 2 quotes in one line
 		int firstQuotPos =line.find("\""); //The first quotation mark
@@ -153,9 +182,11 @@ std::string escapeInnerQuotes(std::string line){
 	return line;
 }
 
-//counts the number of times a character, find,
-//Appears in a string, line, and returns that 
-//Number.
+/**
+ * counts the number of times a character, find,
+ * Appears in a string, line, and returns that 
+ * Number.
+ */
 int countOccurances(string line, char find){
 	int count = 0;
 	for (int i = 0; i < line.length(); i++){	
@@ -387,6 +418,8 @@ std::string escapeSpacedStrings(std::string line, bool undo){
 	}
 	return line;
 }
+
+
 
 /**
  * Track number of open and closed comments
