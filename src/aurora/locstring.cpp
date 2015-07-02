@@ -148,7 +148,7 @@ void LocString::readString(uint32 languageID, Common::SeekableReadStream &stream
 	Common::MemoryReadStream *data   = stream.readStream(length);
 	Common::MemoryReadStream *parsed = LangMan.preParseColorCodes(*data);
 
-	Common::Encoding encoding = LangMan.getEncoding(LangMan.getLanguageGendered(languageID));
+	Common::Encoding encoding = LangMan.getEncodingLocString(LangMan.getLanguageGendered(languageID));
 	if (encoding == Common::kEncodingInvalid)
 		encoding = Common::kEncodingUTF8;
 
