@@ -86,7 +86,7 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 
 	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
 		_xml->openTag("string");
-		_xml->addProperty("language", Common::UString::format("%u", s->language));
+		_xml->addProperty("language", Common::composeString(s->language));
 
 		_xml->setContents(s->str);
 		_xml->closeTag();
@@ -123,7 +123,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 	if (((size_t) type) < ARRAYSIZE(kGFF3FieldTypeNames))
 		typeName = kGFF3FieldTypeNames[(int)type];
 	else
-		typeName = Common::UString::format("fieldtype%d", (int)type);
+		typeName = "filetype" + Common::composeString((uint64) type);
 
 	Common::UString label = field;
 
@@ -142,13 +142,13 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 		case Aurora::GFF3Struct::kFieldTypeUint16:
 		case Aurora::GFF3Struct::kFieldTypeUint32:
 		case Aurora::GFF3Struct::kFieldTypeUint64:
-			_xml->setContents(Common::UString::format("%"PRIu64, Cu64(strct.getUint(field))));
+			_xml->setContents(Common::composeString(strct.getUint(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeSint16:
 		case Aurora::GFF3Struct::kFieldTypeSint32:
 		case Aurora::GFF3Struct::kFieldTypeSint64:
-			_xml->setContents(Common::UString::format("%"PRId64, Cd64(strct.getSint(field))));
+			_xml->setContents(Common::composeString(strct.getSint(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeFloat:
@@ -167,7 +167,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				Aurora::LocString locString;
 
 				strct.getLocString(field, locString);
-				_xml->addProperty("strref", Common::UString::format("%u", locString.getID()));
+				_xml->addProperty("strref", Common::composeString(locString.getID()));
 
 				dumpLocString(locString);
 			}
@@ -255,7 +255,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label) {
 	_xml->openTag("struct");
 	_xml->addProperty("label", label);
-	_xml->addProperty("id", Common::UString::format("%u", strct.getID()));
+	_xml->addProperty("id", Common::composeString(strct.getID()));
 	_xml->breakLine();
 
 	for (Aurora::GFF3Struct::iterator f = strct.begin(); f != strct.end(); ++f)
