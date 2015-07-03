@@ -255,7 +255,9 @@ void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UStri
 	_xml->openTag("struct");
 	_xml->addProperty("label", label);
 	_xml->addProperty("id", Common::composeString(strct.getID()));
-	_xml->breakLine();
+
+	if (strct.getFieldCount() > 0)
+		_xml->breakLine();
 
 	for (Aurora::GFF3Struct::iterator f = strct.begin(); f != strct.end(); ++f)
 		dumpField(strct, *f);
