@@ -182,7 +182,6 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeList:
-			_xml->breakLine();
 			dumpList(strct.getList(field));
 			break;
 
@@ -266,6 +265,9 @@ void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UStri
 }
 
 void GFF3Dumper::dumpList(const Aurora::GFF3List &list) {
+	if (!list.empty())
+		_xml->breakLine();
+
 	for (Aurora::GFF3List::const_iterator e = list.begin(); e != list.end(); ++e)
 		dumpStruct(**e);
 }
