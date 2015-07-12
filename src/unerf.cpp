@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 	try {
 
 		int returnValue;
-		Command command;
+		Command command = kCommandNone;
 		Common::UString archive;
 		std::set<Common::UString> files;
 		std::vector<byte> password;
