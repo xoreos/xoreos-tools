@@ -187,7 +187,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 		case Aurora::GFF3Struct::kFieldTypeOrientation:
 			{
-				double a, b, c, d;
+				double a = 0.0, b = 0.0, c = 0.0, d = 0.0;
 
 				strct.getOrientation(field, a, b, c, d);
 
@@ -217,7 +217,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 		case Aurora::GFF3Struct::kFieldTypeVector:
 			{
-				double x, y, z;
+				double x = 0.0, y = 0.0, z = 0.0;
 
 				strct.getVector(field, x, y, z);
 
