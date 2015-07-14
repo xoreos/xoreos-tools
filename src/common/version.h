@@ -43,4 +43,7 @@ extern const char *XOREOS_URL;
 // Very shortened authors/copyright message
 extern const char *XOREOS_AUTHORS;
 
+/** Print the full version information to stdout. */
+void printVersion();
+
 #endif // COMMON_VERSION_H

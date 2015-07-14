@@ -22,6 +22,8 @@
  *  Basic xoreos-tools version information
  */
 
+#include <cstdio>
+
 #include "src/common/version.h"
 
 #if defined(HAVE_CONFIG_H)
@@ -77,3 +79,11 @@ const char *XOREOS_AUTHORS =
 	"\n"
 	"This is free software; see the source for copying conditions.  There is NO\n"
 	"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.";
+
+void printVersion() {
+	std::printf("%s\n", XOREOS_NAMEVERSIONFULL);
+	std::printf("%s\n", XOREOS_URL);
+	std::printf("\n");
+	std::printf("%s\n", XOREOS_AUTHORS);
+	std::printf("\n");
+}
