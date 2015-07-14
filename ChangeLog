@@ -1,3 +1,22 @@
+Tuesday, 2015-07-14 (Version 0.0.1)
+	- Tools added:
+		- gff2xml
+		- tlk2xml
+		- convert2da
+		- unerf
+		- unherf
+		- unrim
+		- unnds
+		- unnsbtx
+		- unkeybif
+		- desmall
+		- texture2tga
+		- nbfs2tga
+		- ncgr2tga
+		- cbgt2tga
+		- cdpth2tga
+	- Bump version number to be in sync with xoreos
+
 Monday, 2014-10-20 (Version 0.0.0)
 	- Created a dedicated repository for the tools
 

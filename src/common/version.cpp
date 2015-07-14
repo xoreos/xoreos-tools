@@ -35,7 +35,7 @@
 #endif
 
 #ifndef PACKAGE_VERSION
-	#define PACKAGE_VERSION "0.0.0"
+	#define PACKAGE_VERSION "0.0.1"
 #endif
 
 #ifndef XOREOS_REVDESC
