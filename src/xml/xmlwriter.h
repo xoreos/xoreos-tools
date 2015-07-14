@@ -32,7 +32,7 @@
 namespace Common {
 	class SeekableReadStream;
 	class WriteStream;
-};
+}
 
 namespace XML {
 
