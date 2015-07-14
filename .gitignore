@@ -36,6 +36,9 @@ Makefile.in
 /m4/pkg.m4
 /stamp-h1
 
+# git versioning stamp
+/gitstamp/gitstamp
+
 # Unix binaries
 /src/gff2xml
 /src/tlk2xml

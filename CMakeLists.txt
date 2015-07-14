@@ -122,3 +122,38 @@ target_link_libraries(nbfs2tga ${XOREOSTOOLS_LIBRARIES})
 target_link_libraries(ncgr2tga ${XOREOSTOOLS_LIBRARIES})
 target_link_libraries(cbgt2tga ${XOREOSTOOLS_LIBRARIES})
 target_link_libraries(cdpth2tga ${XOREOSTOOLS_LIBRARIES})
+
+
+# -------------------------------------------------------------------------
+# try to add version information from git to src/common/version.cpp
+# this is not 100% clean, and doesn't reconfigure when there's only a local change since last
+#  build (so it does not always add the .dirty suffix)
+string(TIMESTAMP XOREOS_BUILDDATE)
+set_property(SOURCE src/common/version.cpp APPEND PROPERTY COMPILE_DEFINITIONS XOREOS_BUILDDATE="${XOREOS_BUILDDATE}")
+
+find_package(Git)
+if(GIT_FOUND)
+  execute_process(COMMAND ${GIT_EXECUTABLE} describe --long --match desc/* OUTPUT_VARIABLE XOREOS_REVDESC OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(REGEX REPLACE "desc/(.*)-([^-]*)-([^-]*)" "\\1+\\2.\\3" XOREOS_REVDESC "${XOREOS_REVDESC}")
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} update-index --refresh --unmerged
+    COMMAND ${GIT_EXECUTABLE} diff-index --quiet HEAD || echo ".dirty"
+    OUTPUT_QUIET ERROR_QUIET
+    RESULT_VARIABLE XOREOS_REVDIRT
+  )
+  if(NOT XOREOS_REVDIRT EQUAL 0)
+    set(XOREOS_REVDESC "${XOREOS_REVDESC}.dirty")
+  endif()
+
+  string(REGEX REPLACE "^[^+]*\\+" "" XOREOS_REV "${XOREOS_REVDESC}")
+  message(STATUS "Building version: ${XOREOS_REVDESC}")
+
+  set_property(SOURCE src/common/version.cpp APPEND PROPERTY COMPILE_DEFINITIONS XOREOS_REVDESC="${XOREOS_REVDESC}")
+  set_property(SOURCE src/common/version.cpp APPEND PROPERTY COMPILE_DEFINITIONS XOREOS_REV="${XOREOS_REV}")
+
+  # use .git/logs/HEAD to track if git state has changed and if we need to reconfigure
+  if(EXISTS ${CMAKE_SOURCE_DIR}/.git/logs/HEAD)
+    configure_file(${CMAKE_SOURCE_DIR}/.git/logs/HEAD .dirstamp)
+  endif()
+endif()

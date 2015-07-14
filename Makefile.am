@@ -25,5 +25,6 @@ dist_doc_DATA = \
 
 SUBDIRS = \
           utf8cpp \
+          gitstamp \
           src \
           $(EMPTY)
