@@ -28,6 +28,7 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
@@ -149,14 +150,6 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 	archive.clear();
 	files.clear();
 
-	// No command, just display the help
-	if (argc == 1) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
 	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
@@ -174,6 +167,13 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 			// Help text
 			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
 				returnValue = 0;
 
 				return false;
@@ -251,10 +251,12 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor\n\n");
 	std::fprintf(stream, "Usage: %s [<options>] <command> <archive> [<file> [...]]\n\n", name);
 	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  --nwn2             Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "  --jade             Alias file types according to Jade Empire rules\n");
-	std::fprintf(stream, "  --pass <password>  Decryption password, if required, in hex notation\n");
-	std::fprintf(stream, "                     (e.g. \"4CF223AB\")\n\n");
+	std::fprintf(stream, "  -h    --help        This help text\n");
+	std::fprintf(stream, "        --version     Display version information\n");
+	std::fprintf(stream, "        --nwn2        Alias file types according to Neverwinter Nights 2 rules\n");
+	std::fprintf(stream, "        --jade        Alias file types according to Jade Empire rules\n");
+	std::fprintf(stream, "        --pass <hex>  Decryption password, if required, in hex notation\n");
+	std::fprintf(stream, "                      (e.g. \"4CF223AB\")\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  i          Display meta-information\n");
 	std::fprintf(stream, "  l          List archive\n");

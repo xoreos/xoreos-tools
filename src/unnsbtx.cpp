@@ -25,6 +25,7 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -79,17 +80,47 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file) {
 	file.clear();
+	std::vector<Common::UString> args;
 
-	// No command, just display the help
-	if (argc == 1) {
-		printUsage(stdout, argv[0]);
-		returnValue = 0;
+	bool optionsEnd = false;
+	for (int i = 1; i < argc; i++) {
+		// A "--" marks an end to all options
+		if (!strcmp(argv[i], "--")) {
+			optionsEnd = true;
+			continue;
+		}
 
-		return false;
+		// We're still handling options
+		if (!optionsEnd) {
+			// Help text
+			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			  // An options, but we already checked for all known ones
+
+				printUsage(stderr, argv[0]);
+				returnValue = -1;
+
+				return false;
+			}
+		}
+
+		args.push_back(argv[i]);
 	}
 
-	// Wrong number of arguments, display the help
-	if (argc != 3) {
+	if (args.size() != 2) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
@@ -99,7 +130,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 	// Find out what we should do
 	command = kCommandNone;
 	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(argv[1], kCommandChar[i]))
+		if (!strcmp(args[0].c_str(), kCommandChar[i]))
 			command = (Command) i;
 
 	// Unknown command
@@ -110,15 +141,17 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 		return false;
 	}
 
-	// This is the file to use
-	file = argv[2];
+	file = args[1];
 
 	return true;
 }
 
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "Nintendo NSBTX texture extractor\n\n");
-	std::fprintf(stream, "Usage: %s <command> <file>\n\n", name);
+	std::fprintf(stream, "Usage: %s [<options>] <command> <file>\n\n", name);
+	std::fprintf(stream, "Options:\n");
+	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "          --version           Display version information\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  l          List texture\n");
 	std::fprintf(stream, "  e          Extract images to current directory\n");

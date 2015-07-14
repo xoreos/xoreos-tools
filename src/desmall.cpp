@@ -25,6 +25,7 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -61,13 +62,6 @@ int main(int argc, char **argv) {
 bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
                       Common::UString &outFile) {
 
-	if (argc < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
 	std::vector<Common::UString> files;
 
 	bool optionsEnd = false;
@@ -83,6 +77,13 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 			// Help text
 			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
 				returnValue = 0;
 
 				return false;
@@ -118,6 +119,7 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "Nintendo DS LZSS (types 0x00 and 0x10) decompressor\n");
 	std::fprintf(stream, "Usage: %s <input file> <output file>\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "          --version           Display version information\n");
 }
 
 void desmall(const Common::UString &inFile, const Common::UString &outFile) {

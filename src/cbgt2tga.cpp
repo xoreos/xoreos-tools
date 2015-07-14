@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -65,12 +66,6 @@ int main(int argc, char **argv) {
 bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Common::UString &cbgtFile , Common::UString &palFile,
                       Common::UString &twoDAFile, Common::UString &outFile) {
-	if (argc < 5) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
 
 	std::vector<Common::UString> args;
 
@@ -87,6 +82,13 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 			// Help text
 			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
 				returnValue = 0;
 
 				return false;
@@ -122,8 +124,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "CBGT image to TGA converter\n");
-	std::fprintf(stream, "       %s <cbgt file> <pal file> <2da file> <out file>\n", name);
+	std::fprintf(stream, "Usage: %s <cbgt file> <pal file> <2da file> <out file>\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "          --version           Display version information\n");
 }
 
 void convert(const Common::UString &cbgtFile , const Common::UString &palFile,

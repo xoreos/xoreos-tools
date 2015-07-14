@@ -27,6 +27,7 @@
 #include <list>
 #include <vector>
 
+#include "src/common/version.h"
 #include "src/common/util.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
@@ -124,43 +125,71 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
                       Command &command, std::list<Common::UString> &files, Aurora::GameID &game) {
 
 	files.clear();
+	std::vector<Common::UString> args;
 
-	// No command, just display the help
-	if (argc == 1) {
-		printUsage(stdout, argv[0]);
-		returnValue = 0;
+	bool optionsEnd = false;
+	for (int i = 1; i < argc; i++) {
+		bool isOption = false;
 
-		return false;
-	}
-
-	// Parse options
-	int n;
-	for (n = 1; (n < argc) && (argv[n][0] == '-'); n++) {
-		if        (!strcmp(argv[n], "--nwn2")) {
-			game = Aurora::kGameIDNWN2;
-		} else if (!strcmp(argv[n], "--jade")) {
-			game = Aurora::kGameIDJade;
-		} else {
-			// Unknown option
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
+		// A "--" marks an end to all options
+		if (!strcmp(argv[i], "--")) {
+			optionsEnd = true;
+			continue;
 		}
+
+		// We're still handling options
+		if (!optionsEnd) {
+			// Help text
+			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
+				returnValue = 0;
+
+				return false;
+			}
+
+			if        (!strcmp(argv[i], "--nwn2")) {
+				isOption = true;
+				game     = Aurora::kGameIDNWN2;
+			} else if (!strcmp(argv[i], "--jade")) {
+				isOption = true;
+			  game     = Aurora::kGameIDJade;
+			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			  // An options, but we already checked for all known ones
+
+				printUsage(stderr, argv[0]);
+				returnValue = -1;
+
+				return false;
+			}
+		}
+
+		// Was this a valid option? If so, don't try to use it as a file
+		if (isOption)
+			continue;
+
+		args.push_back(argv[i]);
 	}
 
-	// Wrong number of arguments, display the help
-	if ((n + 2) > argc) {
+	if (args.size() < 2) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
 		return false;
 	}
 
+	std::vector<Common::UString>::iterator arg = args.begin();
+
 	// Find out what we should do
 	command = kCommandNone;
 	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(argv[n], kCommandChar[i]))
+		if (!strcmp(arg->c_str(), kCommandChar[i]))
 			command = (Command) i;
 
 	// Unknown command
@@ -171,9 +200,8 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 		return false;
 	}
 
-// This is a file to use
-	for (int i = n + 1; i < argc; i++)
-		files.push_back(argv[i]);
+	++arg;
+	files.insert(files.end(), arg, args.end());
 
 	return true;
 }
@@ -182,8 +210,10 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare KEY/BIF archive extractor\n\n");
 	std::fprintf(stream, "Usage: %s [<options>] <command> <file> [...]\n\n", name);
 	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
+	std::fprintf(stream, "  -h      --help     This help text\n");
+	std::fprintf(stream, "          --version  Display version information\n");
+	std::fprintf(stream, "          --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
+	std::fprintf(stream, "          --jade     Alias file types according to Jade Empire rules\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  l          List files indexed in KEY archive(s)\n");
 	std::fprintf(stream, "  e          Extract BIF archive(s). Needs KEY file(s) indexing these BIF.\n\n");

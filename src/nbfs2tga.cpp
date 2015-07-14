@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -67,13 +68,6 @@ int main(int argc, char **argv) {
 bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &nbfsFile,
                       Common::UString &nbfpFile, Common::UString &outFile,
                       uint32 &width, uint32 &height) {
-	if (argc < 4) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
 	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
@@ -89,6 +83,13 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 			// Help text
 			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
 				returnValue = 0;
 
 				return false;
@@ -133,6 +134,7 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "Nintendo raw NBFS image to TGA converter\n");
 	std::fprintf(stream, "Usage: %s <nbfs file> <nbfp file> <out file> [<width>] [<height>]\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "          --version           Display version information\n");
 }
 
 void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,

@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -70,13 +71,6 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, uint32 &width, ui
                       std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
                       Common::UString &outFile) {
 
-	if (argc < 4) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
 	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
@@ -92,6 +86,13 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, uint32 &width, ui
 			// Help text
 			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				printUsage(stdout, argv[0]);
+				returnValue = 0;
+
+				return false;
+			}
+
+			if (!strcmp(argv[i], "--version")) {
+				printVersion();
 				returnValue = 0;
 
 				return false;
@@ -141,6 +142,7 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "Nintendo NCGR image to TGA converter\n");
 	std::fprintf(stream, "Usage: %s <width> <height> <ncgr> [<ngr> [...]] <nclr> <out file>\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
+	std::fprintf(stream, "          --version           Display version information\n");
 }
 
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
