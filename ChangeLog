@@ -1,3 +1,6 @@
+Someday, ????-??-?? (Version 0.0.2)
+	- Make all tools display version information with --version
+
 Tuesday, 2015-07-14 (Version 0.0.1)
 	- Tools added:
 		- gff2xml
