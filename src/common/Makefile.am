@@ -35,6 +35,7 @@ noinst_HEADERS = \
                  util.h \
                  strutil.h \
                  encoding.h \
+                 cline.h \
                  readstream.h \
                  memreadstream.h \
                  writestream.h \
@@ -57,6 +58,7 @@ libcommon_la_SOURCES = \
                        util.cpp \
                        strutil.cpp \
                        encoding.cpp \
+                       cline.cpp \
                        readstream.cpp \
                        memreadstream.cpp \
                        writestream.cpp \
