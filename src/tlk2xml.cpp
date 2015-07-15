@@ -31,27 +31,28 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/readfile.h"
+#include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 
 #include "src/xml/tlkdumper.h"
 
 void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding);
+bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
+                      Common::UString &outFile, Common::Encoding &encoding);
 
-void dumpTLK(const Common::UString &file, Common::Encoding encoding);
+void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding);
 
 int main(int argc, char **argv) {
 	Common::Encoding encoding = Common::kEncodingInvalid;
 
 	int returnValue;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file, encoding))
+	Common::UString inFile, outFile;
+	if (!parseCommandLine(argc, argv, returnValue, inFile, outFile, encoding))
 		return returnValue;
 
 	try {
-		dumpTLK(file, encoding);
+		dumpTLK(inFile, outFile, encoding);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return -1;
@@ -62,10 +63,12 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding) {
+bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
+                      Common::UString &outFile, Common::Encoding &encoding) {
 
-	file.clear();
+	inFile.clear();
+	outFile.clear();
+	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
 	for (int i = 1; i < argc; i++) {
@@ -135,32 +138,28 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 		if (isOption)
 			continue;
 
-		// We already have a file => error
-		if (!file.empty()) {
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
-		}
-
 		// This is a file to use
-		file = argv[i];
+		args.push_back(argv[i]);
 	}
 
-	// No file? Error.
-	if (file.empty()) {
+	if (args.size() < 1) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
 		return false;
 	}
 
+	inFile = args[0];
+
+	if (args.size() > 1)
+		outFile = args[1];
+
 	return true;
 }
 
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare TLK to XML converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
+	std::fprintf(stream, "Usage: %s [options] <input file> [<output file>]\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
 	std::fprintf(stream, "          --cp1250            Read TLK strings as Windows CP-1250\n");
@@ -171,14 +170,35 @@ void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "          --cp950             Read TLK strings as Windows CP-950\n");
 	std::fprintf(stream, "          --utf8              Read TLK strings as UTF-8\n");
 	std::fprintf(stream, "          --utf16le           Read TLK strings as little-endian UTF-16\n");
-	std::fprintf(stream, "          --utf16be           Read TLK strings as big-endian UTF-16\n");
+	std::fprintf(stream, "          --utf16be           Read TLK strings as big-endian UTF-16\n\n");
+	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-void dumpTLK(const Common::UString &file, Common::Encoding encoding) {
-	Common::SeekableReadStream *tlk = new Common::ReadFile(file);
+void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {
+	Common::SeekableReadStream *tlk = new Common::ReadFile(inFile);
 
-	XML::TLKDumper dumper;
-	Common::StdOutStream xml;
+	Common::WriteStream *out = 0;
+	try {
+		if (!outFile.empty())
+			out = new Common::WriteFile(outFile);
+		else
+			out = new Common::StdOutStream;
 
-	dumper.dump(xml, tlk, encoding);
+	} catch (...) {
+		delete tlk;
+		throw;
+	}
+
+	try {
+		XML::TLKDumper dumper;
+		dumper.dump(*out, tlk, encoding);
+
+	} catch (...) {
+		delete out;
+		throw;
+	}
+
+	out->flush();
+
+	delete out;
 }
