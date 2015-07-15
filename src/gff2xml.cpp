@@ -31,27 +31,28 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/readfile.h"
+#include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 
 #include "src/xml/gffdumper.h"
 
 void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding);
+bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
+                      Common::UString &outFile, Common::Encoding &encoding);
 
-void dumpGFF(const Common::UString &file, Common::Encoding encoding);
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding);
 
 int main(int argc, char **argv) {
 	Common::Encoding encoding = Common::kEncodingUTF16LE;
 
 	int returnValue;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file, encoding))
+	Common::UString inFile, outFile;
+	if (!parseCommandLine(argc, argv, returnValue, inFile, outFile, encoding))
 		return returnValue;
 
 	try {
-		dumpGFF(file, encoding);
+		dumpGFF(inFile, outFile, encoding);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return -1;
@@ -62,10 +63,12 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding) {
+bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
+                      Common::UString &outFile, Common::Encoding &encoding) {
 
-	file.clear();
+	inFile.clear();
+	outFile.clear();
+	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
 	for (int i = 1; i < argc; i++) {
@@ -114,39 +117,36 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 		if (isOption)
 			continue;
 
-		// We already have a file => error
-		if (!file.empty()) {
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
-		}
-
 		// This is a file to use
-		file = argv[i];
+		args.push_back(argv[i]);
 	}
 
-	// No file? Error.
-	if (file.empty()) {
+	if (args.size() < 1) {
 		printUsage(stderr, argv[0]);
 		returnValue = -1;
 
 		return false;
 	}
 
+	inFile = args[0];
+
+	if (args.size() > 1)
+		outFile = args[1];
+
 	return true;
 }
 
 void printUsage(FILE *stream, const char *name) {
 	std::fprintf(stream, "BioWare GFF to XML converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
+	std::fprintf(stream, "Usage: %s [options] <input file> [<output file>]\n", name);
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
-	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n");
+	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n\n");
+	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-void dumpGFF(const Common::UString &file, Common::Encoding encoding) {
-	Common::SeekableReadStream *gff = new Common::ReadFile(file);
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {
+	Common::SeekableReadStream *gff = new Common::ReadFile(inFile);
 
 	XML::GFFDumper *dumper = 0;
 	try {
@@ -156,8 +156,24 @@ void dumpGFF(const Common::UString &file, Common::Encoding encoding) {
 		throw;
 	}
 
-	Common::StdOutStream xml;
-	dumper->dump(xml, gff, encoding);
+	Common::WriteStream *out = 0;
+	try {
+
+		if (!outFile.empty())
+			out = new Common::WriteFile(outFile);
+		else
+			out = new Common::StdOutStream;
+
+		dumper->dump(*out, gff, encoding);
+
+	} catch (...) {
+		delete dumper;
+		delete out;
+		throw;
+	}
+
+	out->flush();
 
 	delete dumper;
+	delete out;
 }
