@@ -28,6 +28,7 @@
 #include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
+#include "src/common/cline.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
 
@@ -47,17 +48,21 @@ enum Command {
 
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file);
+void printUsage(FILE *stream, const Common::UString &name);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &file);
 
 void listFiles(Aurora::NSBTXFile &nsbtx);
 void extractFiles(Aurora::NSBTXFile &nsbtx);
 
 int main(int argc, char **argv) {
+	std::vector<Common::UString> args;
+	Common::getParameters(argc, argv, args);
+
 	int returnValue;
 	Command command;
 	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, command, file))
+	if (!parseCommandLine(args, returnValue, command, file))
 		return returnValue;
 
 	try {
@@ -78,14 +83,16 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file) {
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &file) {
+
 	file.clear();
 	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
+	for (size_t i = 1; i < argv.size(); i++) {
 		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
+		if (argv[i] == "--") {
 			optionsEnd = true;
 			continue;
 		}
@@ -93,21 +100,21 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 		// We're still handling options
 		if (!optionsEnd) {
 			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			if ((argv[i] == "-h") || (argv[i] == "--help")) {
 				printUsage(stdout, argv[0]);
 				returnValue = 0;
 
 				return false;
 			}
 
-			if (!strcmp(argv[i], "--version")) {
+			if (argv[i] == "--version") {
 				printVersion();
 				returnValue = 0;
 
 				return false;
 			}
 
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
 				printUsage(stderr, argv[0]);
@@ -146,9 +153,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command,
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
+void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Nintendo NSBTX texture extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <file>\n\n", name);
+	std::fprintf(stream, "Usage: %s [<options>] <command> <file>\n\n", name.c_str());
 	std::fprintf(stream, "Options:\n");
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n\n");

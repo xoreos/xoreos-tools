@@ -31,6 +31,7 @@
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/cline.h"
 #include "src/common/readfile.h"
 
 #include "src/aurora/types.h"
@@ -38,19 +39,22 @@
 
 #include "src/images/nbfs.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &nbfsFile,
-                      Common::UString &nbfpFile, Common::UString &outFile,
-                      uint32 &width, uint32 &height);
+void printUsage(FILE *stream, const Common::UString &name);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &nbfsFile, Common::UString &nbfpFile,
+                      Common::UString &outFile, uint32 &width, uint32 &height);
 
 void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,
              const Common::UString &outFile, uint32 width, uint32 height);
 
 int main(int argc, char **argv) {
+	std::vector<Common::UString> args;
+	Common::getParameters(argc, argv, args);
+
 	int returnValue;
 	Common::UString nbfsFile, nbfpFile, outFile;
 	uint32 width, height;
-	if (!parseCommandLine(argc, argv, returnValue, nbfsFile, nbfpFile, outFile, width, height))
+	if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))
 		return returnValue;
 
 	try {
@@ -65,15 +69,16 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &nbfsFile,
-                      Common::UString &nbfpFile, Common::UString &outFile,
-                      uint32 &width, uint32 &height) {
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &nbfsFile, Common::UString &nbfpFile,
+                      Common::UString &outFile, uint32 &width, uint32 &height) {
+
 	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
+	for (size_t i = 1; i < argv.size(); i++) {
 		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
+		if (argv[i] == "--") {
 			optionsEnd = true;
 			continue;
 		}
@@ -81,21 +86,21 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 		// We're still handling options
 		if (!optionsEnd) {
 			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			if ((argv[i] == "-h") || (argv[i] == "--help")) {
 				printUsage(stdout, argv[0]);
 				returnValue = 0;
 
 				return false;
 			}
 
-			if (!strcmp(argv[i], "--version")) {
+			if (argv[i] == "--version") {
 				printVersion();
 				returnValue = 0;
 
 				return false;
 			}
 
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
 				printUsage(stderr, argv[0]);
@@ -130,9 +135,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
+void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Nintendo raw NBFS image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s <nbfs file> <nbfp file> <out file> [<width>] [<height>]\n", name);
+	std::fprintf(stream, "Usage: %s <nbfs file> <nbfp file> <out file> [<width>] [<height>]\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
 }

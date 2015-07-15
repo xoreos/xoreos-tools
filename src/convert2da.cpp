@@ -34,6 +34,7 @@
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
+#include "src/common/cline.h"
 
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/2dafile.h"
@@ -44,9 +45,9 @@ enum Format {
 	kFormatCSV
 };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Common::UString> &files,
-                      Common::UString &outFile, Format &format);
+void printUsage(FILE *stream, const Common::UString &name);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      std::vector<Common::UString> &files, Common::UString &outFile, Format &format);
 
 void dump2DA(Aurora::TwoDAFile &twoDA, Format format);
 
@@ -55,12 +56,15 @@ void convert2DA(const Common::UString &file, const Common::UString &outFile, For
 void convert2DA(const std::vector<Common::UString> &files, const Common::UString &outFile, Format format);
 
 int main(int argc, char **argv) {
+	std::vector<Common::UString> args;
+	Common::getParameters(argc, argv, args);
+
 	Format format = kFormat2DA;
 
 	int returnValue;
 	std::vector<Common::UString> files;
 	Common::UString outFile;
-	if (!parseCommandLine(argc, argv, returnValue, files, outFile, format))
+	if (!parseCommandLine(args, returnValue, files, outFile, format))
 		return returnValue;
 
 	try {
@@ -75,17 +79,17 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Common::UString> &files,
-                      Common::UString &outFile, Format &format) {
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      std::vector<Common::UString> &files, Common::UString &outFile, Format &format) {
 	files.clear();
 	outFile.clear();
 
 	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
+	for (size_t i = 1; i < argv.size(); i++) {
 		bool isOption = false;
 
 		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
+		if (argv[i] == "--") {
 			optionsEnd = true;
 			continue;
 		}
@@ -93,31 +97,31 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Commo
 		// We're still handling options
 		if (!optionsEnd) {
 			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			if ((argv[i] == "-h") || (argv[i] == "--help")) {
 				printUsage(stdout, argv[0]);
 				returnValue = 0;
 
 				return false;
 			}
 
-			if (!strcmp(argv[i], "--version")) {
+			if (argv[i] == "--version") {
 				printVersion();
 				returnValue = 0;
 
 				return false;
 			}
 
-			if        (!strcmp(argv[i], "--2da") || !strcmp(argv[i], "-2")) {
+			if        ((argv[i] == "--2da") || (argv[i] == "-2")) {
 				isOption = true;
 				format   = kFormat2DA;
-			} else if (!strcmp(argv[i], "--csv") || !strcmp(argv[i], "-c")) {
+			} else if ((argv[i] == "--csv") || (argv[i] == "-c")) {
 				isOption = true;
 				format   = kFormatCSV;
-			} else if (!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output")) {
+			} else if ((argv[i] == "-o") || (argv[i] == "--output")) {
 				isOption = true;
 
 				// Needs a file name as the next parameter
-				if (i++ == (argc - 1)) {
+				if (i++ == (argv.size() - 1)) {
 					printUsage(stdout, argv[0]);
 					returnValue = 0;
 
@@ -126,7 +130,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Commo
 
 				outFile = argv[i];
 
-			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
 				printUsage(stderr, argv[0]);
@@ -155,9 +159,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, std::vector<Commo
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
+void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "BioWare 2DA/GDA to 2DA/CSV converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file> [<file> [...]]\n", name);
+	std::fprintf(stream, "Usage: %s [options] <file> [<file> [...]]\n", name.c_str());
 	std::fprintf(stream, "  -h        --help              This help text\n");
 	std::fprintf(stream, "            --version           Display version information\n");
 	std::fprintf(stream, "  -o <file> --output <file>     Write the output to this file\n");

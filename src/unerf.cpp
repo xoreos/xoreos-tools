@@ -32,6 +32,7 @@
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/cline.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
 #include "src/common/readfile.h"
@@ -61,14 +62,14 @@ enum ExtractMode {
 
 const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "s" };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue,
+void printUsage(FILE *stream, const Common::UString &name);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password);
 
 bool findHashedName(uint64 hash, Common::UString &name);
 
-void parsePassword(const char *arg, std::vector<byte> &password);
+void parsePassword(const Common::UString &arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &erf, Aurora::GameID game);
@@ -77,6 +78,9 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
                   std::set<Common::UString> &files, ExtractMode mode);
 
 int main(int argc, char **argv) {
+	std::vector<Common::UString> args;
+	Common::getParameters(argc, argv, args);
+
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
 	try {
@@ -87,7 +91,7 @@ int main(int argc, char **argv) {
 		std::set<Common::UString> files;
 		std::vector<byte> password;
 
-		if (!parseCommandLine(argc, argv, returnValue, command, archive, files, game, password))
+		if (!parseCommandLine(args, returnValue, command, archive, files, game, password))
 			return returnValue;
 
 		Aurora::ERFFile erf(new Common::ReadFile(archive), password);
@@ -113,24 +117,25 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void parsePassword(const char *arg, std::vector<byte> &password) {
-	const size_t length = strlen(arg);
+void parsePassword(const Common::UString &arg, std::vector<byte> &password) {
+	const size_t length = arg.size();
 
 	password.clear();
 	password.reserve(length / 2);
 
+	size_t i = 0;
 	byte c = 0x00;
-	for (size_t i = 0; i < length; i++) {
+	for (Common::UString::iterator s = arg.begin(); s != arg.end(); ++s, i++) {
 		byte d = 0;
 
-		if      (arg[i] >= '0' && arg[i] <= '9')
-			d = arg[i] - '0';
-		else if (arg[i] >= 'a' && arg[i] <= 'f')
-			d = arg[i] - 'a' + 10;
-		else if (arg[i] >= 'A' && arg[i] <= 'F')
-			d = arg[i] - 'A' + 10;
+		if      (*s >= '0' && *s <= '9')
+			d = *s - '0';
+		else if (*s >= 'a' && *s <= 'f')
+			d = *s - 'a' + 10;
+		else if (*s >= 'A' && *s <= 'F')
+			d = *s - 'A' + 10;
 		else
-			throw Common::Exception("%c is not a valid hex digit", arg[i]);
+			throw Common::Exception("0x%08X is not a valid hex digit", (uint) *s);
 
 		if ((i % 2) == 1) {
 			c |= d;
@@ -143,7 +148,7 @@ void parsePassword(const char *arg, std::vector<byte> &password) {
 	}
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue,
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password) {
 
@@ -153,11 +158,11 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 	std::vector<Common::UString> args;
 
 	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
+	for (size_t i = 1; i < argv.size(); i++) {
 		bool isOption = false;
 
 		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
+		if (argv[i] == "--") {
 			optionsEnd = true;
 			continue;
 		}
@@ -165,31 +170,31 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 		// We're still handling options
 		if (!optionsEnd) {
 			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			if ((argv[i] == "-h") || (argv[i] == "--help")) {
 				printUsage(stdout, argv[0]);
 				returnValue = 0;
 
 				return false;
 			}
 
-			if (!strcmp(argv[i], "--version")) {
+			if (argv[i] == "--version") {
 				printVersion();
 				returnValue = 0;
 
 				return false;
 			}
 
-			if        (!strcmp(argv[i], "--nwn2")) {
+			if        (argv[i] == "--nwn2") {
 				isOption = true;
 				game     = Aurora::kGameIDNWN2;
-			} else if (!strcmp(argv[i], "--jade")) {
+			} else if (argv[i] == "--jade") {
 				isOption = true;
 			  game     = Aurora::kGameIDJade;
-			} else if (!strcmp(argv[i], "--pass")) {
+			} else if (argv[i] == "--pass") {
 				isOption = true;
 
 				// Needs the password as the next parameter
-				if (i++ == (argc - 1)) {
+				if (i++ == (argv.size() - 1)) {
 					printUsage(stdout, argv[0]);
 					returnValue = 0;
 
@@ -198,7 +203,7 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 
 				parsePassword(argv[i], password);
 
-			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
+			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
 				printUsage(stderr, argv[0]);
@@ -247,9 +252,9 @@ bool parseCommandLine(int argc, char **argv, int &returnValue,
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
+void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <archive> [<file> [...]]\n\n", name);
+	std::fprintf(stream, "Usage: %s [<options>] <command> <archive> [<file> [...]]\n\n", name.c_str());
 	std::fprintf(stream, "Options:\n");
 	std::fprintf(stream, "  -h    --help        This help text\n");
 	std::fprintf(stream, "        --version     Display version information\n");
