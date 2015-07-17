@@ -19,11 +19,13 @@
  */
 
 /** @file
- *  Utility functions for reading command line parameters.
+ *  Platform-dependant functions, mostly for internal use in the Common namespace.
  */
 
-#ifndef COMMON_CLINE_H
-#define COMMON_CLINE_H
+#ifndef COMMON_PLATFORM_H
+#define COMMON_PLATFORM_H
+
+#include <cstdio>
 
 #include <vector>
 
@@ -31,9 +33,22 @@
 
 namespace Common {
 
-/** Read the command line parameters into UTF-8 strings. */
-void getParameters(int argc, char **argv, std::vector<UString> &args);
+class Platform {
+public:
+	enum FileMode {
+		kFileModeRead = 0,
+		kFileModeWrite   ,
+
+		kFileModeMAX
+	};
+
+	/** Read the command line parameters into UTF-8 strings. */
+	static void getParameters(int argc, char **argv, std::vector<UString> &args);
+
+	/** Open a file with an UTF-8 encoded name. */
+	static std::FILE *openFile(const UString &fileName, FileMode mode);
+};
 
 } // End of namespace Common
 
-#endif // COMMON_CLINE_H
+#endif // COMMON_PLATFORM_H

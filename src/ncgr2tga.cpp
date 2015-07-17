@@ -31,7 +31,7 @@
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/cline.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
 
@@ -50,7 +50,7 @@ void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
-	Common::getParameters(argc, argv, args);
+	Common::Platform::getParameters(argc, argv, args);
 
 	int returnValue;
 	uint32 width, height;

@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Utility functions for reading command line parameters.
+ *  Platform-dependant functions, mostly for internal use in the Common namespace.
  */
 
 #include "src/common/system.h"
@@ -31,17 +31,21 @@
 	#include <wchar.h>
 #endif
 
-#include "src/common/cline.h"
+#include <cassert>
+
+#include "src/common/platform.h"
 #include "src/common/encoding.h"
+#include "src/common/memreadstream.h"
 
 namespace Common {
 
+// .--- getParameters() ---.
 #if defined(WIN32)
 
 /* On Windows, we're not going to use the passed-in argc and argv, since those are
  * usually in a local 8-bit encoding. Instead, we're calling Windows functions to
  * get the parameters in UTF-16, and convert them. */
-void getParameters(int UNUSED(argc), char **UNUSED(argv), std::vector<UString> &args) {
+void Platform::getParameters(int UNUSED(argc), char **UNUSED(argv), std::vector<UString> &args) {
 	int argc;
 	wchar_t **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
@@ -55,7 +59,7 @@ void getParameters(int UNUSED(argc), char **UNUSED(argv), std::vector<UString> &
 #else
 
 /* On non-Windows system, we assume the parameters are already in UTF-8. */
-void getParameters(int argc, char **argv, std::vector<UString> &args) {
+void Platform::getParameters(int argc, char **argv, std::vector<UString> &args) {
 	args.clear();
 	args.reserve(argc);
 
@@ -64,5 +68,30 @@ void getParameters(int argc, char **argv, std::vector<UString> &args) {
 }
 
 #endif
+// '--- getParameters() ---'
+
+// .--- openFile() ---.
+std::FILE *Platform::openFile(const UString &fileName, FileMode mode) {
+	assert(((uint) mode) < kFileModeMAX);
+
+	std::FILE *file = 0;
+
+#if defined(WIN32)
+	static const wchar_t *modeStrings[kFileModeMAX] = { L"rb", L"wb" };
+
+	MemoryReadStream *utf16Name = convertString(fileName, kEncodingUTF16LE);
+
+	file = _wfopen((const wchar_t *) utf16Name->getData(), modeStrings[(uint) mode]);
+
+	delete utf16Name;
+#else
+	static const char *modeStrings[kFileModeMAX] = { "rb", "wb" };
+
+	file = std::fopen(fileName.c_str(), modeStrings[(uint) mode]);
+#endif
+
+	return file;
+}
+// '--- openFile() ---'
 
 } // End of namespace Common

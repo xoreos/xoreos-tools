@@ -32,7 +32,7 @@
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/cline.h"
+#include "src/common/platform.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
 #include "src/common/readfile.h"
@@ -79,7 +79,7 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
-	Common::getParameters(argc, argv, args);
+	Common::Platform::getParameters(argc, argv, args);
 
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 

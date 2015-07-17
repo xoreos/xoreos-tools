@@ -30,7 +30,7 @@
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/cline.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
 
@@ -54,7 +54,7 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
-	Common::getParameters(argc, argv, args);
+	Common::Platform::getParameters(argc, argv, args);
 
 	int returnValue;
 	Common::UString inFile, outFile;

@@ -30,7 +30,7 @@
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/cline.h"
+#include "src/common/platform.h"
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
@@ -46,7 +46,7 @@ void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Comm
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
-	Common::getParameters(argc, argv, args);
+	Common::Platform::getParameters(argc, argv, args);
 
 	Common::Encoding encoding = Common::kEncodingInvalid;
 

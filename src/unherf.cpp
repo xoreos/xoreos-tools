@@ -30,7 +30,7 @@
 #include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
-#include "src/common/cline.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
 #include "src/common/filepath.h"
@@ -62,7 +62,7 @@ void extractFiles(Aurora::HERFFile &rim);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
-	Common::getParameters(argc, argv, args);
+	Common::Platform::getParameters(argc, argv, args);
 
 	int returnValue;
 	Command command;

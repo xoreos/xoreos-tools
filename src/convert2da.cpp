@@ -34,7 +34,7 @@
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
-#include "src/common/cline.h"
+#include "src/common/platform.h"
 
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/2dafile.h"
@@ -57,7 +57,7 @@ void convert2DA(const std::vector<Common::UString> &files, const Common::UString
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
-	Common::getParameters(argc, argv, args);
+	Common::Platform::getParameters(argc, argv, args);
 
 	Format format = kFormat2DA;
 
