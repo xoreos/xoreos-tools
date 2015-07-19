@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
 	Common::Platform::getParameters(argc, argv, args);
 
-	int returnValue;
+	int returnValue = 1;
 	Common::UString cbgtFile, palFile, twoDAFile, outFile;
 	if (!parseCommandLine(args, returnValue, cbgtFile, palFile, twoDAFile, outFile))
 		return returnValue;

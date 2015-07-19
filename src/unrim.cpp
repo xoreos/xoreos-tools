@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
-	int returnValue;
+	int returnValue = 1;
 	Command command;
 	Common::UString file;
 	if (!parseCommandLine(args, returnValue, command, file, game))

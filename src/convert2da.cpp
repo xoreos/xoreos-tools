@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 
 	Format format = kFormat2DA;
 
-	int returnValue;
+	int returnValue = 1;
 	std::vector<Common::UString> files;
 	Common::UString outFile;
 	if (!parseCommandLine(args, returnValue, files, outFile, format))

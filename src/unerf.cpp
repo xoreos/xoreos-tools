@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 
 	try {
 
-		int returnValue;
+		int returnValue = 1;
 		Command command = kCommandNone;
 		Common::UString archive;
 		std::set<Common::UString> files;

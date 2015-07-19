@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
 	Common::Platform::getParameters(argc, argv, args);
 
-	int returnValue;
+	int returnValue = 1;
 	Common::UString nbfsFile, nbfpFile, outFile;
 	uint32 width, height;
 	if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))

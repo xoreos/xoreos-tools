@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
-	int returnValue;
+	int returnValue = 1;
 	Command command;
 	std::list<Common::UString> files;
 	if (!parseCommandLine(args, returnValue, command, files, game))

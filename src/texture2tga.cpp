@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
 	Common::Platform::getParameters(argc, argv, args);
 
-	int returnValue;
+	int returnValue = 1;
 	Common::UString inFile, outFile;
 	Aurora::FileType type = Aurora::kFileTypeNone;
 	bool flip = false;

@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 
 	Common::Encoding encoding = Common::kEncodingUTF16LE;
 
-	int returnValue;
+	int returnValue = 1;
 	Common::UString inFile, outFile;
 	if (!parseCommandLine(args, returnValue, inFile, outFile, encoding))
 		return returnValue;
