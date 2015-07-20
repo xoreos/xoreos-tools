@@ -64,10 +64,11 @@ int main(int argc, char **argv) {
 	int returnValue = 1;
 	std::vector<Common::UString> files;
 	Common::UString outFile;
-	if (!parseCommandLine(args, returnValue, files, outFile, format))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, files, outFile, format))
+			return returnValue;
+
 		convert2DA(files, outFile, format);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

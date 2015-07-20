@@ -54,10 +54,11 @@ int main(int argc, char **argv) {
 	int returnValue = 1;
 	Common::UString nbfsFile, nbfpFile, outFile;
 	uint32 width, height;
-	if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))
+			return returnValue;
+
 		convert(nbfsFile, nbfpFile, outFile, width, height);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

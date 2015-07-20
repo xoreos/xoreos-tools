@@ -60,10 +60,11 @@ int main(int argc, char **argv) {
 	Common::UString inFile, outFile;
 	Aurora::FileType type = Aurora::kFileTypeNone;
 	bool flip = false;
-	if (!parseCommandLine(args, returnValue, inFile, outFile, type, flip))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, inFile, outFile, type, flip))
+			return returnValue;
+
 		convert(inFile, outFile, type, flip);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

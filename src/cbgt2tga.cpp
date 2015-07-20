@@ -52,10 +52,11 @@ int main(int argc, char **argv) {
 
 	int returnValue = 1;
 	Common::UString cbgtFile, palFile, twoDAFile, outFile;
-	if (!parseCommandLine(args, returnValue, cbgtFile, palFile, twoDAFile, outFile))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, cbgtFile, palFile, twoDAFile, outFile))
+			return returnValue;
+
 		convert(cbgtFile, palFile, twoDAFile, outFile);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

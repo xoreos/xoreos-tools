@@ -48,10 +48,11 @@ int main(int argc, char **argv) {
 
 	int returnValue = 1;
 	Common::UString inFile, outFile;
-	if (!parseCommandLine(args, returnValue, inFile, outFile))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, inFile, outFile))
+			return returnValue;
+
 		desmall(inFile, outFile);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

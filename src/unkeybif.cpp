@@ -79,13 +79,14 @@ int main(int argc, char **argv) {
 	int returnValue = 1;
 	Command command;
 	std::list<Common::UString> files;
-	if (!parseCommandLine(args, returnValue, command, files, game))
-		return returnValue;
 
 	std::vector<Aurora::KEYFile *> keys;
 	std::vector<Aurora::BIFFile *> bifs;
 
 	try {
+		if (!parseCommandLine(args, returnValue, command, files, game))
+			return returnValue;
+
 		std::vector<Common::UString> keyFiles, bifFiles;
 		identifyFiles(files, keyFiles, bifFiles);
 

@@ -52,10 +52,11 @@ int main(int argc, char **argv) {
 
 	int returnValue = 1;
 	Common::UString inFile, outFile;
-	if (!parseCommandLine(args, returnValue, inFile, outFile, encoding))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding))
+			return returnValue;
+
 		dumpGFF(inFile, outFile, encoding);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

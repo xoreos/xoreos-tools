@@ -56,10 +56,11 @@ int main(int argc, char **argv) {
 	uint32 width, height;
 	std::vector<Common::UString> ncgrFiles;
 	Common::UString nclrFile, outFile;
-	if (!parseCommandLine(args, returnValue, width, height, ncgrFiles, nclrFile, outFile))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, width, height, ncgrFiles, nclrFile, outFile))
+			return returnValue;
+
 		convert(ncgrFiles, nclrFile, outFile, width, height);
 	} catch (Common::Exception &e) {
 		Common::printException(e);

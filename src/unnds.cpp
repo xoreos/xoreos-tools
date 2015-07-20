@@ -62,10 +62,11 @@ int main(int argc, char **argv) {
 	int returnValue = 1;
 	Command command;
 	Common::UString file;
-	if (!parseCommandLine(args, returnValue, command, file))
-		return returnValue;
 
 	try {
+		if (!parseCommandLine(args, returnValue, command, file))
+			return returnValue;
+
 		Aurora::NDSFile nds(new Common::ReadFile(file));
 
 		if      (command == kCommandInfo)
