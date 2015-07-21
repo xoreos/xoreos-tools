@@ -162,7 +162,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "BioWare 2DA/GDA to 2DA/CSV converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file> [<file> [...]]\n", name.c_str());
+	std::fprintf(stream, "Usage: %s [<options>] <file> [<file> [...]]\n", name.c_str());
 	std::fprintf(stream, "  -h        --help              This help text\n");
 	std::fprintf(stream, "            --version           Display version information\n");
 	std::fprintf(stream, "  -o <file> --output <file>     Write the output to this file\n");

@@ -138,7 +138,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Nintendo raw NBFS image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s <nbfs file> <nbfp file> <out file> [<width>] [<height>]\n", name.c_str());
+	std::fprintf(stream, "Usage: %s [<options>] <nbfs file> <nbfp file> <out file> [<width>] [<height>]\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
 }

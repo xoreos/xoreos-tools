@@ -129,7 +129,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "CBGT image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s <cbgt file> <pal file> <2da file> <out file>\n", name.c_str());
+	std::fprintf(stream, "Usage: %s [<options>] <cbgt file> <pal file> <2da file> <out file>\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
 }

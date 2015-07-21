@@ -145,7 +145,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Nintendo NCGR image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s <width> <height> <ncgr> [<ngr> [...]] <nclr> <out file>\n", name.c_str());
+	std::fprintf(stream, "Usage: %s [<options>] <width> <height> <ncgr> [<ngr> [...]] <nclr> <out file>\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
 }
