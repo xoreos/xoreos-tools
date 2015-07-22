@@ -24,7 +24,7 @@ bin_PROGRAMS = \
                unnds \
                unnsbtx \
                desmall \
-               texture2tga \
+               xoreostex2tga \
                nbfs2tga \
                ncgr2tga \
                cbgt2tga \
@@ -132,15 +132,15 @@ desmall_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
-texture2tga_SOURCES = \
-                      texture2tga.cpp \
-                      $(EMPTY)
-texture2tga_LDADD   = \
-                      images/libimages.la \
-                      aurora/libaurora.la \
-                      common/libcommon.la \
-                      $(LDADD) \
-                      $(EMPTY)
+xoreostex2tga_SOURCES = \
+                        xoreostex2tga.cpp \
+                        $(EMPTY)
+xoreostex2tga_LDADD   = \
+                        images/libimages.la \
+                        aurora/libaurora.la \
+                        common/libcommon.la \
+                        $(LDADD) \
+                        $(EMPTY)
 
 nbfs2tga_SOURCES = \
                    nbfs2tga.cpp \
