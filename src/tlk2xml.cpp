@@ -105,6 +105,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			if        (argv[i] == "--cp1250") {
 				isOption = true;
 				encoding = Common::kEncodingCP1250;
+			} else if (argv[i] == "--cp1251") {
+				isOption = true;
+				encoding = Common::kEncodingCP1251;
 			} else if (argv[i] == "--cp1252") {
 				isOption = true;
 				encoding = Common::kEncodingCP1252;
@@ -168,6 +171,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
 	std::fprintf(stream, "          --cp1250            Read TLK strings as Windows CP-1250\n");
+	std::fprintf(stream, "          --cp1251            Read TLK strings as Windows CP-1251\n");
 	std::fprintf(stream, "          --cp1252            Read TLK strings as Windows CP-1252\n");
 	std::fprintf(stream, "          --cp932             Read TLK strings as Windows CP-932\n");
 	std::fprintf(stream, "          --cp936             Read TLK strings as Windows CP-936\n");
