@@ -50,7 +50,7 @@ Makefile.in
 /src/unnds
 /src/unnsbtx
 /src/desmall
-/src/texture2tga
+/src/xoreostex2tga
 /src/nbfs2tga
 /src/ncgr2tga
 /src/cbgt2tga
@@ -67,7 +67,7 @@ Makefile.in
 /src/unnds.exe
 /src/unnsbtx.exe
 /src/desmall.exe
-/src/texture2tga.exe
+/src/xoreostex2tga.exe
 /src/nbfs2tga.exe
 /src/ncgr2tga.exe
 /src/cbgt2tga.exe
