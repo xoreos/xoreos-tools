@@ -1204,7 +1204,7 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{   9006, "AcNodeImage"                                     },
 	{   9007, "AcEdgeList"                                      },
 	{   9008, "AcNodeList"                                      },
-	{   9009, "AcNodeColour"                                    },
+	{   9009, "AcNodeColor"                                     },
 	{   9010, "AcNodeAnimation"                                 },
 	{   9011, "AcCurveControlPointList"                         },
 	{   9012, "AcCurveControlPointTime"                         },
