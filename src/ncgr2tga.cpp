@@ -160,7 +160,7 @@ void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
 
 	try {
 		for (size_t i = 0; i < ncgrFiles.size(); i++)
-			if (!ncgrFiles[i].empty())
+			if (!ncgrFiles[i].empty() && (ncgrFiles[i] != "\"\"") && (ncgrFiles[i] != "\'\'"))
 				ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
 
 		Images::NCGR image(ncgrs, width, height, nclr);
