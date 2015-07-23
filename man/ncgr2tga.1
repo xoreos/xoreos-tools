@@ -1,0 +1,94 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH ncgr2tga 1 2015-07-23 "xoreos-tools"
+.SH NAME
+ncgr2tga - Nintendo NCGR image to TGA converter
+.SH SYNOPSIS
+ncgr2tga [<options>] <width> <height> <ncgr> [<ngr> [...]] <nclr> <tga>
+.SH DESCRIPTION
+.PP
+.B ncgr2tga
+converts Nintendo's tile-based NCGR images into common TGA images.
+.PP
+2D graphics on the Nintendo DS is fundamentally tile-based.
+Specifically, the graphics data in NCGR is ordered in tiles of 8x8
+pixels. Moreover, an NCGR file can itself be a tile of a larger
+image. This tool can automatically combine and unwrap these tiles,
+and, together with an NCLR file for the palette, converts a grid
+of NCGR into a plain old linear TGA image.
+.PP
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+<width>
+The width of the NCGR grid, in NCGR files.
+.TP 4
+<height>
+The height of the NCGR grid, in NCGR files.
+.TP 4
+<ncgr>
+The name of an NCGR file to use. The NCGR contains the pixel
+graphics part of the image.
+.IP "" 4
+width x height NCGR files have to be given; they are drawn into the
+final TGA in row-major order. An empty filename, commonly specified
+with "", means that this grid cell will be empty, filled with
+palette entry 0.
+.TP 4
+<nclr>
+The name of the NCLR file to use. The NCLR file contains the palette
+part of the image.
+.TP 4
+<tga>
+The resulting TGA file will be written there.
+.SH LIMITATIONS
+.PD 0
+.IP - 2
+Only NCGR files with version 1.1 are supported
+.IP - 2
+Only NCLR files with version 1.0 are supported
+.IP - 2
+Only palettes with bit-depths of 4 or 8 are supported
+.IP - 2
+Non-tiled or partitioned NCGR files are not supported
+.IP - 2
+Some NCGR files don't contain valid width/height values, and seem to
+need an NCER file for this information. These files are currently
+not supported
+.PD
+.SH EXAMPLES
+.ad l
+.B Convert a 2x3 grid of NCGR files:
+.nf
+.ad l
+ncgr2tga 2 3 a0.ncgr a1.ncgr a2.ncgr a3.ncgr a4.ncgr a5.ncgr a.nclr a.tga
+.PP
+.fi
+.ad l
+.B Convert a 2x2 grid of NCGR files, leaving the lower left quadrant blank:
+.nf
+.ad l
+ncgr2tga 2 2 b0.ncgr, b1.ncgr "" b2.ncgr b.nclr b.tga
+.fi
+.ad b
+.SH "SEE ALSO"
+.BR cbgt2tga (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

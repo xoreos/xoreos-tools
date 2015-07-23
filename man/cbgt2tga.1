@@ -1,0 +1,68 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH cbgt2tga 1 2015-07-23 "xoreos-tools"
+.SH NAME
+cbgt2tga - CBGT image to TGA converter
+.SH SYNOPSIS
+cbgt2tga [<options>] <cbgt> <pal> <2da> <tga>
+.SH DESCRIPTION
+.PP
+.B cbgt2tga
+converts CBGT image files into common TGA images. CBGT, Compressed
+BackGround Tiles, are used as area background images in BioWare's
+Nintendo DS game
+.IR "Sonic Chronicles: The Dark Brotherhood" .
+.PP
+Internally, a CBGT consists of a collection of 64x64 pixel cells,
+divided into tiles of 8x8 pixels. Each cell is compressed using
+Nintendo's 0x10 LZSS algorithm. Moreover, PAL files with the same
+name as the CBGT file contain the palette data, and 2DA files with
+the same name yet again contain the mapping of palette indices onto
+cells.
+.PP
+The width and height of the final image is not stored within the
+CBGT file, but the palette mapping 2DA does contain the number
+cells in X and Y direction, since it stores the palette indices
+in a two-dimensional array of those dimensions. Therefore, multi-
+plying the number of columns and rows in said 2DA by 64 yields
+the width and height, respectively, of the final image.
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+<cbgt>
+The name of the CBGT file to read. The CBGT contains the pixel
+graphics part of the image.
+.TP 4
+<pal>
+The name of the PAL file to use. The PAL file contains the palette
+part of the image.
+.TP 4
+<2da>
+The name of the 2DA file to use. The 2DA file contains information
+on which palette to use for each part of the CBGT, and on how many
+parts are in the CBGT in the first place.
+.TP 4
+<tga>
+The resulting TGA file will be written there.
+.SH "SEE ALSO"
+.BR cdpth2tga (1),
+.BR ncgr2tga (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

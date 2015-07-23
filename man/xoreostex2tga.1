@@ -1,0 +1,91 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH xoreostex2tga 1 2015-07-23 "xoreos-tools"
+.SH NAME
+xoreostex2tga - BioWare textures to TGA converter
+.SH SYNOPSIS
+xoreostex2tga [<options>] <input file> <output file>
+.SH DESCRIPTION
+.PP
+.B xoreostex2tga
+converts textures of various formats found in BioWare games into
+plain TGA images.
+.PP
+.B Supported formats:
+.PD 0
+.IP "- DDS" 7
+Both the common DirectDraw Surface format and BioWare's own,
+completely different DDS format are supported, each with a variety
+of pixel formats
+.IP "- SBM" 7
+Found in
+.IR "Jade Empire" ,
+holding font glyphs
+.IP "- TXB" 7
+Textures in
+.IR "Jade Empire"
+and the Xbox version of
+.IR "Knights of the Old Republic"
+.IP "- TPC" 7
+Textures in other versions of
+.IR "Knights of the Old Republic" .
+.IP "- TGA" 7
+Textures in various games, in many different pixels formats
+.PD
+.PP
+The output format is always either 24-bit or 32-bit BGR(A) TGA,
+depending on whether the input file has an alpha channel or not.
+Only the highest resolution mip map will be used.
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+.B -f
+.PD 0
+.TP 4
+.B --flip
+.PD
+Flip the image vertically while converting.
+.TP 4
+.B --auto
+Try to autodetect the format of the input file. This is the default
+mode of operation.
+.TP 4
+.B --dds
+Explicitly mark the input file as DDS.
+.TP 4
+.B --sbm
+Explicitly mark the input file as SBM.
+.TP 4
+.B --tpc
+Explicitly mark the input file as TPC.
+.TP 4
+.B --txb
+Explicitly mark the input file as TXB.
+.TP 4
+.B --tga
+Explicitly mark the input file as TGA.
+.TP 4
+<input file>
+The name of the texture file to read.
+.TP 4
+<output file>
+The resulting TGA file will be written there.
+.SH "SEE ALSO"
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

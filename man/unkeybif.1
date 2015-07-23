@@ -1,0 +1,88 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH unkeybif 1 2015-07-23 "xoreos-tools"
+.SH NAME
+unkeybif - BioWare KEY/BIF archive extractor
+.SH SYNOPSIS
+unkeybif [<options>] <command> <file> [...]
+.SH DESCRIPTION
+.PP
+.B unkeybif
+extract BioWare KEY/BIF archives, found in many BioWare games.
+.PP
+KEY and BIF files are fundamentally linked: a KEY file contains file
+names and types, while the BIF file contains the file data itself.
+At the same time, a KEY file can control several BIF files.
+.PP
+.B For example:
+.PP
+"foo.key" controls:
+.PD 0
+.IP - 2
+"foo1.bif"
+.IP - 2
+"foo2.bif"
+.IP - 2
+"foo3.bif"
+.PD
+.PP
+"foo.key" indexes:
+.PD 0
+.IP - 2
+"bar.are" and "bar.git" from "foo1.bif"
+.IP - 2
+"qux.utc" from "foo2.bif"
+.IP - 2
+"baz.txt" from "foo3.bif"
+.PD
+.PP
+If you want to extract all files indexed by "foo.key", you need to
+also specify "foo1.bif", "foo2.bif" and "foo3.bif" on the command.
+If "foo3.bif" is missing, "baz.txt" will not be extracted. However,
+listing file only requires the KEY.
+.PP
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+.B --nwn2
+Alias file types according to
+.IR "Neverwinter Nights 2" " rules."
+.br
+.IR "Neverwinter Nights 2"
+reuses a few file extension IDs differently than other BioWare games.
+.TP 4
+.B --jade
+Alias file types according to
+.IR "Jade Empire" " rules."
+.br
+.IR "Jade Empire"
+reuses a few file extension IDs differently than other BioWare games.
+.TP 4
+<command>
+l  List archive contents
+.br
+e  Extract files to current directory
+.br
+.TP 4
+<file>
+A KEY or a BIF file to read. Multiple KEY and BIF files can be
+specified; they'll be considered a unit.
+.SH "SEE ALSO"
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

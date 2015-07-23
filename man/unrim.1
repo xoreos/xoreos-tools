@@ -1,0 +1,59 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH unrim 1 2015-07-23 "xoreos-tools"
+.SH NAME
+unrim - BioWare RIM archive extractor
+.SH SYNOPSIS
+unrim [<options>] <command> <file>
+.SH DESCRIPTION
+.PP
+.B unrim
+extract BioWare RIM archives, found in many BioWare games.
+.PP
+RIM archives are simplified ERF archives, stripped of everything
+not related to holding files (like the description string).
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+.B --nwn2
+Alias file types according to
+.IR "Neverwinter Nights 2" " rules."
+.br
+.IR "Neverwinter Nights 2"
+reuses a few file extension IDs differently than other BioWare games.
+.TP 4
+.B --jade
+Alias file types according to
+.IR "Jade Empire" " rules."
+.br
+.IR "Jade Empire"
+reuses a few file extension IDs differently than other BioWare games.
+.TP 4
+<command>
+l  List archive contents
+.br
+e  Extract files to current directory
+.TP 4
+<file>
+The RIM archive to read.
+.SH "SEE ALSO"
+.BR unerf (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

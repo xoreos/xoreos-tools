@@ -1,0 +1,50 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH unherf 1 2015-07-23 "xoreos-tools"
+.SH NAME
+unherf - BioWare HERF archive extractor
+.SH SYNOPSIS
+unherf [<options>] <command> <file>
+.SH DESCRIPTION
+.PP
+.B unherf
+extract BioWare HERF archives, found in the Nintendo DS games
+.IR "Sonic Chronicles: The Dark Brotherhood" .
+.PP
+A HERF, Hashed ERF, is a very simple archive, similar to BioWare's
+ERF and RIM files. Unlike those, HERF usually only store djb2 hashes
+of the contained filenames. This tool has a lookup table to convert
+the hashes back into readable filenames. Not all names are known yet.
+.PD
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+<command>
+l  List archive contents
+.br
+e  Extract files to current directory
+.TP 4
+<file>
+The HERF archive to read.
+.SH "SEE ALSO"
+.BR unerf (1),
+.BR unrim (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

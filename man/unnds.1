@@ -1,0 +1,44 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH unnds 1 2015-07-23 "xoreos-tools"
+.SH NAME
+unnds - Nintendo DS archive extractor
+.SH SYNOPSIS
+unnds [<options>] <command> <file>
+.SH DESCRIPTION
+.PP
+.B unnds
+extract Nintendo DS ROMs. Only the resource files are extracted, not
+the executable binaries.
+.PD
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+<command>
+i  Display meta-information about the archive
+.br
+l  List archive contents
+.br
+e  Extract files to current directory
+.TP 4
+<file>
+The NDS archive to read.
+.SH "SEE ALSO"
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

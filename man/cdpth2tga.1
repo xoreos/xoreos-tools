@@ -1,0 +1,66 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH cdpth2tga 1 2015-07-23 "xoreos-tools"
+.SH NAME
+cdpth2tga - CDPTH depth image to TGA converter
+.SH SYNOPSIS
+cdpth2tga [<options>] <cdpth> <2da> <tga>
+.SH DESCRIPTION
+.PP
+.B cdpth2tga
+converts CDPTH depth information files into common TGA images.
+CDPTH, Compressed DePTH, are used as depth information for area
+background images in BioWare's Nintendo DS game
+.IR "Sonic Chronicles: The Dark Brotherhood" .
+.PP
+Layout-wise, a CDPTH is stored similar to CBGT: cells of 64x64
+pixels, compressed using Nintendo's 0x10 LZSS algorithm. Unlike
+CBGT, though, the cells themselves are
+.I not
+swizzled into 8x8
+tiles, and the pixel value in CDPTH is a 16bit integer specifying
+a depth.
+.PP
+The width and height of the final image is not stored within the
+CDPTH file, and has to be provided from the outside, like from
+the dimensions of the CBGT image, the dimensions of the 2DA file
+for the CBGT image.
+.PP
+The depth information is stored as 16-bit values, but only the
+lower 15 bits are used. For conversion into a grayscale image,
+those 15 bits of grayscale information are further compressed to
+8-bit.
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+<cdpth>
+The name of the CDPTH file to read. The CDPTH contains the depth
+information part of the image.
+.TP 4
+<2da>
+The name of the 2DA file to use. The 2DA is necessary to know how
+many cells are in the CDPTH file.
+.TP 4
+<tga>
+The resulting TGA file will be written there.
+.SH "SEE ALSO"
+.BR cbgt2tga (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

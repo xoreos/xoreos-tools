@@ -24,6 +24,24 @@ dist_doc_DATA = \
                 CODE_OF_CONDUCT.md \
                 $(EMPTY)
 
+dist_man1_MANS = \
+                 man/cbgt2tga.1 \
+                 man/cdpth2tga.1 \
+                 man/convert2da.1 \
+                 man/desmall.1 \
+                 man/gff2xml.1 \
+                 man/nbfs2tga.1 \
+                 man/ncgr2tga.1 \
+                 man/tlk2xml.1 \
+                 man/unerf.1 \
+                 man/unherf.1 \
+                 man/unkeybif.1 \
+                 man/unnds.1 \
+                 man/unnsbtx.1 \
+                 man/unrim.1 \
+                 man/xoreostex2tga.1 \
+                 $(EMPTY)
+
 SUBDIRS = \
           utf8cpp \
           gitstamp \

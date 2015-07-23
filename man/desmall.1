@@ -1,0 +1,41 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH desmall 1 2015-07-23 "xoreos-tools"
+.SH NAME
+desmall - Nintendo DS LZSS (types 0x00 and 0x10) decompressor
+.SH SYNOPSIS
+desmall [<options>] <input file> <output file>
+.SH DESCRIPTION
+.PP
+.B desmall
+decompresses the SMALL files found in BioWare's Nintendo DS game
+.IR "Sonic Chronicles: The Dark Brotherhood" .
+Only the types 0x00 (uncompressed) and 0x10 (Nintendo DS LZSS
+0x10) are supported.
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+<input file>
+The SMALL file to decompress.
+.TP 4
+<output file>
+The decompressed data is written to this file.
+.SH "SEE ALSO"
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.

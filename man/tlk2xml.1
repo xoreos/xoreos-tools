@@ -1,0 +1,113 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH tlk2xml 1 2015-07-23 "xoreos-tools"
+.SH NAME
+tlk2xml - BioWare TLK to XML converter
+.SH SYNOPSIS
+tlk2xml [<options>] <input file> [<output file>]
+.SH DESCRIPTION
+.PP
+.B tlk2xml
+converts BioWare's TLK files into human-readable XML. TLK are
+"talk tables", a list of strings indexed by an ID, used for all
+user-visible text in a BioWare game. All strings for a campaign
+or module are usually collected in one file for each supported
+language, and languages with sentences that vary wildly depending
+on whether the player character is male or female use a second
+TLK with strings for the female version.
+.PP
+There's two distinct TLK formats. One is a whole separate file
+format (which uses version IDs V3.0 and V4.0), the other is a
+GFF (and uses version IDs V0.2 and V0.5). Within those two major
+versions, the differences are smaller: V4.0 removed fields for
+each string not needed anymore, and V0.5 compresses strings
+using a Huffman tree. This tool can read all of these variants
+and produces a human-read XML file.
+.PP
+Because these files contain localized string data, it is important
+to know the encoding of those strings. Unfortunately, the TLK
+files do not contain information about the encoding. Version 3.0
+and 4.0 contain a language identifier, but the meaning of that
+varies between games. V0.2 and V0.5 even lack those completely.
+However, due to the Huffman-nature of V0.5 strings, the encoding
+there is fixed to little-endian UTF-16, and strings in V0.2 files
+are also usually in little-endian UTF-16 (with the exceptions of
+files found in the Nintendo DS game
+.IR "Sonic Chronicles: The Dark Brotherhood" ")."
+To manually select the encoding, this tool provides a wide range
+command line options for various encodings.
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+.B --cp1250
+Read strings as Windows CP-1250.
+.br
+Eastern European, Latin alphabet.
+.TP 4
+.B --cp1251
+Read strings as Windows CP-1251.
+.br
+Eastern European, Cyrillic alphabet.
+.TP 4
+.B --cp1252
+Read strings as Windows CP-1252.
+.br
+Western European, Latin alphabet.
+.TP 4
+.B --cp932
+Read strings as Windows CP-932.
+.br
+Japanese, extended Shift-JIS.
+.TP 4
+.B --cp936
+Read strings as Windows CP-936.
+.br
+Simplified Chinese, extended GB2312 with GBK codepoints.
+.TP 4
+.B --cp949
+Read strings as Windows CP-949.
+.br
+Korean, similar to EUC-KR.
+.TP 4
+.B --cp950
+Read strings as Windows CP-950.
+.br
+Traditional Chinese, similar to Big5.
+.TP 4
+.B --utf8
+Read strings as UTF-8.
+.TP 4
+.B --utf16le
+Read strings as little-endian UTF-16.
+.TP 4
+.B --utf16be
+Read strings as big-endian UTF-16.
+.TP 4
+<input file>
+The TLK file to convert.
+.TP 4
+[<output file>]
+The XML file will be written there. If no output file is specified,
+the XML data is written to stdout. The encoding of the XML stream
+is always UTF-8.
+.SH "SEE ALSO"
+.BR gff2xml (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.
