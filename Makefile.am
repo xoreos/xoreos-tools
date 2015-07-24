@@ -24,7 +24,7 @@ dist_doc_DATA = \
                 COPYING \
                 AUTHORS \
                 ChangeLog \
-                NEWS \
+                NEWS.md \
                 TODO \
                 README.md \
                 CONTRIBUTING.md \
