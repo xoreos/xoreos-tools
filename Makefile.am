@@ -9,6 +9,13 @@ EXTRA_DIST = \
              CONTRIBUTING.md \
              CODE_OF_CONDUCT.md \
              dists/arch/PKGBUILD \
+             dists/debian/changelog \
+             dists/debian/compat \
+             dists/debian/control \
+             dists/debian/copyright \
+             dists/debian/rules \
+             dists/debian/xoreos-tools.lintian-overrides \
+             dists/debian/source/format \
              .uncrustifyrc \
              CMakeLists.txt \
              cmake/CMakeAM.cmake \

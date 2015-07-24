@@ -1,0 +1,16 @@
+Source: xoreos-tools
+Section: misc
+Priority: optional
+Maintainer: Sven Hesse <drmccoy@drmccoy.de>
+Build-Depends: debhelper (>= 9), dh-autoreconf, autotools-dev, autoconf (>= 2.65), gettext, zlib1g-dev (>= 1:1.2.3.4)
+Standards-Version: 3.9.6
+Homepage: https://xoreos.org/
+
+Package: xoreos-tools
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tools to help with xoreos development
+ A collection of tools to help with the reverse-engineering of BioWare's
+ Aurora engine games.
+ .
+ xoreos-tools is part of the xoreos project.
