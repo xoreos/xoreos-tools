@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS = -I m4 --install
 
 EXTRA_DIST = \
              autogen.sh \
-             BUILDDEP \
+             BUILDDEP.md \
              dists/arch/PKGBUILD \
              dists/debian/changelog \
              dists/debian/compat \
