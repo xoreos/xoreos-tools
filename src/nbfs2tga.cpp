@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
 	int returnValue = 1;
 	Common::UString nbfsFile, nbfpFile, outFile;
-	uint32 width, height;
+	uint32 width = 0xFFFFFFFF, height = 0xFFFFFFFF;
 
 	try {
 		if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))

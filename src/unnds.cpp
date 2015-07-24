@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 	Common::Platform::getParameters(argc, argv, args);
 
 	int returnValue = 1;
-	Command command;
+	Command command = kCommandNone;
 	Common::UString file;
 
 	try {

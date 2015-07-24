@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
 	int returnValue = 1;
-	Command command;
+	Command command = kCommandNone;
 	std::list<Common::UString> files;
 
 	std::vector<Aurora::KEYFile *> keys;

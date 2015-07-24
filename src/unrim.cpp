@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
 	int returnValue = 1;
-	Command command;
+	Command command = kCommandNone;
 	Common::UString file;
 
 	try {
