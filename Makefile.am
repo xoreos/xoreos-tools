@@ -8,6 +8,7 @@ EXTRA_DIST = \
              README.md \
              CONTRIBUTING.md \
              CODE_OF_CONDUCT.md \
+             dists/arch/PKGBUILD \
              .uncrustifyrc \
              CMakeLists.txt \
              cmake/CMakeAM.cmake \
