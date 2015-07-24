@@ -1,6 +1,9 @@
 Someday, ????-??-?? (Version 0.0.2)
 	- Made all tools display version information with --version
+	- Fixed Windows UTF-8 compatibility
 	- Renamed texture2tga to xoreostex2tga, for disambiguation
+	- Added a man page for each tool
+	- Added build files for Arch and Debian packages
 
 Tuesday, 2015-07-14 (Version 0.0.1)
 	- Tools added:
