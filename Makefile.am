@@ -27,6 +27,7 @@ dist_doc_DATA = \
                 COPYING \
                 AUTHORS \
                 ChangeLog \
+                NEWS \
                 README.md \
                 CONTRIBUTING.md \
                 CODE_OF_CONDUCT.md \
