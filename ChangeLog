@@ -1,6 +1,6 @@
 Someday, ????-??-?? (Version 0.0.2)
-	- Make all tools display version information with --version
-	- Rename texture2tga to xoreostex2tga, for disambiguation
+	- Made all tools display version information with --version
+	- Renamed texture2tga to xoreostex2tga, for disambiguation
 
 Tuesday, 2015-07-14 (Version 0.0.1)
 	- Tools added:
