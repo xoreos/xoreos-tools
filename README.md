@@ -30,7 +30,7 @@ Currently, the following tools are included:
 * cdpth2tga: Convert CDPTH depth images into TGA
 
 Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
-
+------
 
 Contact
 -------
