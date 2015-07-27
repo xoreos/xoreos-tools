@@ -1,4 +1,4 @@
-Someday, ????-??-?? (Version 0.0.2)
+Monday, 2015-07-27 (Version 0.0.2)
 	- Made all tools display version information with --version
 	- Fixed Windows UTF-8 compatibility
 	- Renamed texture2tga to xoreostex2tga, for disambiguation
