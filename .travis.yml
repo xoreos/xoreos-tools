@@ -1,3 +1,4 @@
+sudo: false
 language: cpp
 compiler:
   - gcc
@@ -11,17 +12,15 @@ env:
    - coverity_scan_run_condition='"$CC" = gcc'
    - coverity_scan_script_test_mode=false
 
-before_script:
-  - echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty main universe restricted multiverse"
-  - sudo apt-get update -qq
-  - sudo apt-get -qq install zlib1g-dev
-
 script:
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then ./autogen.sh; fi
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then ./configure; fi
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then make -j4; fi
 
 addons:
+  apt:
+    packages:
+      - zlib1g-dev
   coverity_scan:
     build_script_url: https://raw.githubusercontent.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.travis_coverity.sh
     project:
