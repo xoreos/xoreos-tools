@@ -12,6 +12,9 @@ env:
    - coverity_scan_run_condition='"$CC" = gcc'
    - coverity_scan_script_test_mode=false
 
+before_script:
+  - apt-cache policy zlib1g zlib1g-dev
+
 script:
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then ./autogen.sh; fi
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then ./configure; fi
