@@ -3,6 +3,14 @@
 .*.sw[po]
 *~
 
+# MSVC files
+Debug/
+Release/
+ipch/
+*.suo
+*.sdf
+*.opensdf
+
 # Build files
 *.[oa]
 *.l[oa]
