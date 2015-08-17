@@ -135,7 +135,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 	switch (type) {
 		case Aurora::GFF3Struct::kFieldTypeChar:
-			_xml->setContents(Common::UString::format("%c", strct.getChar(field)));
+			_xml->setContents(Common::composeString(strct.getUint(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeByte:
