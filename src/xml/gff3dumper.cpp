@@ -156,10 +156,21 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			_xml->setContents(Common::UString::format("%.6f", strct.getDouble(field)));
 			break;
 
-		case Aurora::GFF3Struct::kFieldTypeExoString:
-		case Aurora::GFF3Struct::kFieldTypeResRef:
 		case Aurora::GFF3Struct::kFieldTypeStrRef:
 			_xml->setContents(strct.getString(field));
+			break;
+
+		case Aurora::GFF3Struct::kFieldTypeExoString:
+		case Aurora::GFF3Struct::kFieldTypeResRef:
+			try {
+				_xml->setContents(strct.getString(field));
+			} catch (...) {
+				_xml->addProperty("base64", "true");
+
+				Common::SeekableReadStream *data = strct.getData(field);
+				_xml->setContents(*data);
+				delete data;
+			}
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeLocString:
