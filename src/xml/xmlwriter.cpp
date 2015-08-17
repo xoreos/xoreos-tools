@@ -103,13 +103,22 @@ void XMLWriter::writeTag() {
 	if (!tag.empty) {
 		if (!tag.base64.empty()) {
 
-			while (!tag.base64.empty()) {
-				breakLine();
-				indent(_openTags.size());
+			if (tag.base64.size() == 1) {
+
 				_stream->writeString(tag.base64.front());
 				tag.base64.pop_front();
+
+			} else {
+
+				while (!tag.base64.empty()) {
+					breakLine();
+					indent(_openTags.size());
+					_stream->writeString(tag.base64.front());
+					tag.base64.pop_front();
+				}
+				breakLine();
+
 			}
-			breakLine();
 
 		} else
 			_stream->writeString(escape(tag.contents));
