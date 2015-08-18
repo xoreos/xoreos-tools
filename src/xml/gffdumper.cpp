@@ -87,6 +87,7 @@ static const GFFType kGFFTypes[] = {
 	{Aurora::kFileTypeTRG , MKTAG('T', 'R', 'G', ' ')},
 	{Aurora::kFileTypeWMP , MKTAG('W', 'M', 'P', ' ')},
 	{Aurora::kFileTypeMMD , MKTAG('M', 'M', 'D', ' ')},
+	{Aurora::kFileTypeSAV , MKTAG('S', 'A', 'V', ' ')},
 	{Aurora::kFileTypeRES , MKTAG('G', 'V', 'T', ' ')},
 	{Aurora::kFileTypeRES , MKTAG('P', 'T', ' ', ' ')},
 	{Aurora::kFileTypeRES , MKTAG('N', 'F', 'O', ' ')}
