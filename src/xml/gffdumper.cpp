@@ -23,6 +23,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
 
@@ -32,71 +33,71 @@
 #include "src/xml/gff3dumper.h"
 #include "src/xml/gff4dumper.h"
 
-struct GFFType {
-	Aurora::FileType type;
-	uint32 id;
-};
-
-static const GFFType kGFFTypes[] = {
-	{Aurora::kFileTypeRES , MKTAG('R', 'E', 'S', ' ')},
-	{Aurora::kFileTypeARE , MKTAG('A', 'R', 'E', ' ')},
-	{Aurora::kFileTypeIFO , MKTAG('I', 'F', 'O', ' ')},
-	{Aurora::kFileTypeBIC , MKTAG('B', 'I', 'C', ' ')},
-	{Aurora::kFileTypeGIT , MKTAG('G', 'I', 'T', ' ')},
-	{Aurora::kFileTypeBTI , MKTAG('B', 'T', 'I', ' ')},
-	{Aurora::kFileTypeUTI , MKTAG('U', 'T', 'I', ' ')},
-	{Aurora::kFileTypeBTC , MKTAG('B', 'T', 'C', ' ')},
-	{Aurora::kFileTypeUTC , MKTAG('U', 'T', 'C', ' ')},
-	{Aurora::kFileTypeDLG , MKTAG('D', 'L', 'G', ' ')},
-	{Aurora::kFileTypeITP , MKTAG('I', 'T', 'P', ' ')},
-	{Aurora::kFileTypeBTT , MKTAG('B', 'T', 'T', ' ')},
-	{Aurora::kFileTypeUTT , MKTAG('U', 'T', 'T', ' ')},
-	{Aurora::kFileTypeBTS , MKTAG('B', 'T', 'S', ' ')},
-	{Aurora::kFileTypeUTS , MKTAG('U', 'T', 'S', ' ')},
-	{Aurora::kFileTypeGFF , MKTAG('G', 'F', 'F', ' ')},
-	{Aurora::kFileTypeFAC , MKTAG('F', 'A', 'C', ' ')},
-	{Aurora::kFileTypeBTE , MKTAG('B', 'T', 'E', ' ')},
-	{Aurora::kFileTypeUTE , MKTAG('U', 'T', 'E', ' ')},
-	{Aurora::kFileTypeBTD , MKTAG('B', 'T', 'D', ' ')},
-	{Aurora::kFileTypeUTD , MKTAG('U', 'T', 'D', ' ')},
-	{Aurora::kFileTypeBTP , MKTAG('B', 'T', 'P', ' ')},
-	{Aurora::kFileTypeUTP , MKTAG('U', 'T', 'P', ' ')},
-	{Aurora::kFileTypeGIC , MKTAG('G', 'I', 'C', ' ')},
-	{Aurora::kFileTypeGUI , MKTAG('G', 'U', 'I', ' ')},
-	{Aurora::kFileTypeBTM , MKTAG('B', 'T', 'M', ' ')},
-	{Aurora::kFileTypeUTM , MKTAG('U', 'T', 'M', ' ')},
-	{Aurora::kFileTypeBTG , MKTAG('B', 'T', 'G', ' ')},
-	{Aurora::kFileTypeUTG , MKTAG('U', 'T', 'G', ' ')},
-	{Aurora::kFileTypeJRL , MKTAG('J', 'R', 'L', ' ')},
-	{Aurora::kFileTypeUTW , MKTAG('U', 'T', 'W', ' ')},
-	{Aurora::kFileTypePTM , MKTAG('P', 'T', 'M', ' ')},
-	{Aurora::kFileTypePTT , MKTAG('P', 'T', 'T', ' ')},
-	{Aurora::kFileTypeCUT , MKTAG('C', 'U', 'T', ' ')},
-	{Aurora::kFileTypeQDB , MKTAG('Q', 'D', 'B', ' ')},
-	{Aurora::kFileTypeQST , MKTAG('Q', 'S', 'T', ' ')},
-	{Aurora::kFileTypePTH , MKTAG('P', 'T', 'H', ' ')},
-	{Aurora::kFileTypeQST2, MKTAG('Q', 'S', 'T', ' ')},
-	{Aurora::kFileTypeSTO , MKTAG('S', 'T', 'O', ' ')},
-	{Aurora::kFileTypeUTR , MKTAG('U', 'T', 'R', ' ')},
-	{Aurora::kFileTypeULT , MKTAG('U', 'L', 'T', ' ')},
-	{Aurora::kFileTypeGDA , MKTAG('G', 'D', 'A', ' ')},
-	{Aurora::kFileTypeCRE , MKTAG('C', 'R', 'E', ' ')},
-	{Aurora::kFileTypeCAM , MKTAG('C', 'A', 'M', ' ')},
-	{Aurora::kFileTypeFSM , MKTAG('F', 'S', 'M', ' ')},
-	{Aurora::kFileTypePLA , MKTAG('P', 'L', 'A', ' ')},
-	{Aurora::kFileTypeTRG , MKTAG('T', 'R', 'G', ' ')},
-	{Aurora::kFileTypeWMP , MKTAG('W', 'M', 'P', ' ')},
-	{Aurora::kFileTypeMMD , MKTAG('M', 'M', 'D', ' ')},
-	{Aurora::kFileTypeSAV , MKTAG('S', 'A', 'V', ' ')},
-	{Aurora::kFileTypeRES , MKTAG('G', 'V', 'T', ' ')},
-	{Aurora::kFileTypeRES , MKTAG('P', 'T', ' ', ' ')},
-	{Aurora::kFileTypeRES , MKTAG('N', 'F', 'O', ' ')}
+static const uint32 kGFFTypes[] = {
+	MKTAG('A', 'R', 'E', ' '),
+	MKTAG('B', 'I', 'C', ' '),
+	MKTAG('B', 'T', 'C', ' '),
+	MKTAG('B', 'T', 'D', ' '),
+	MKTAG('B', 'T', 'E', ' '),
+	MKTAG('B', 'T', 'G', ' '),
+	MKTAG('B', 'T', 'I', ' '),
+	MKTAG('B', 'T', 'M', ' '),
+	MKTAG('B', 'T', 'P', ' '),
+	MKTAG('B', 'T', 'S', ' '),
+	MKTAG('B', 'T', 'T', ' '),
+	MKTAG('C', 'A', 'M', ' '),
+	MKTAG('C', 'R', 'E', ' '),
+	MKTAG('C', 'U', 'T', ' '),
+	MKTAG('D', 'L', 'G', ' '),
+	MKTAG('F', 'A', 'C', ' '),
+	MKTAG('F', 'S', 'M', ' '),
+	MKTAG('G', 'D', 'A', ' '),
+	MKTAG('G', 'F', 'F', ' '),
+	MKTAG('G', 'I', 'C', ' '),
+	MKTAG('G', 'I', 'T', ' '),
+	MKTAG('G', 'U', 'I', ' '),
+	MKTAG('G', 'V', 'T', ' '),
+	MKTAG('I', 'F', 'O', ' '),
+	MKTAG('I', 'T', 'P', ' '),
+	MKTAG('J', 'R', 'L', ' '),
+	MKTAG('M', 'M', 'D', ' '),
+	MKTAG('N', 'F', 'O', ' '),
+	MKTAG('P', 'L', 'A', ' '),
+	MKTAG('P', 'T', ' ', ' '),
+	MKTAG('P', 'T', 'H', ' '),
+	MKTAG('P', 'T', 'M', ' '),
+	MKTAG('P', 'T', 'T', ' '),
+	MKTAG('Q', 'D', 'B', ' '),
+	MKTAG('Q', 'S', 'T', ' '),
+	MKTAG('R', 'E', 'S', ' '),
+	MKTAG('S', 'A', 'V', ' '),
+	MKTAG('S', 'T', 'O', ' '),
+	MKTAG('T', 'R', 'G', ' '),
+	MKTAG('U', 'L', 'T', ' '),
+	MKTAG('U', 'T', 'C', ' '),
+	MKTAG('U', 'T', 'D', ' '),
+	MKTAG('U', 'T', 'E', ' '),
+	MKTAG('U', 'T', 'G', ' '),
+	MKTAG('U', 'T', 'I', ' '),
+	MKTAG('U', 'T', 'M', ' '),
+	MKTAG('U', 'T', 'P', ' '),
+	MKTAG('U', 'T', 'R', ' '),
+	MKTAG('U', 'T', 'S', ' '),
+	MKTAG('U', 'T', 'T', ' '),
+	MKTAG('U', 'T', 'W', ' '),
+	MKTAG('W', 'M', 'P', ' ')
 };
 
 static const uint32 kVersion32 = MKTAG('V', '3', '.', '2');
 static const uint32 kVersion33 = MKTAG('V', '3', '.', '3');
 static const uint32 kVersion40 = MKTAG('V', '4', '.', '0');
 static const uint32 kVersion41 = MKTAG('V', '4', '.', '1');
+
+enum GFFVersion {
+	kGFFVersionNone,
+	kGFFVersion3,
+	kGFFVersion4
+};
 
 namespace XML {
 
@@ -106,37 +107,57 @@ GFFDumper::GFFDumper() {
 GFFDumper::~GFFDumper() {
 }
 
-static int identifyGFF(Common::SeekableReadStream &input, uint32 &version) {
+static GFFVersion identifyGFF(Common::SeekableReadStream &input) {
+	uint32 id = 0xFFFFFFFF, version = 0xFFFFFFFF;
+
 	try {
 		size_t pos = input.pos();
 
-		uint32 id;
 		id      = input.readUint32BE();
 		version = input.readUint32BE();
 
 		input.seek(pos);
 
-		for (size_t i = 0; i < ARRAYSIZE(kGFFTypes); i++)
-			if (kGFFTypes[i].id == id)
-				return i;
 	} catch (...) {
+		throw;
 	}
 
-	return -1;
+	GFFVersion gffVersion;
+	if      ((version == kVersion32) || (version == kVersion33))
+		gffVersion = kGFFVersion3;
+	else if ((version == kVersion40) || (version == kVersion41))
+		gffVersion = kGFFVersion4;
+	else
+		throw Common::Exception("Invalid GFF %s, %s",
+		                        Common::debugTag(id).c_str(), Common::debugTag(version).c_str());
+
+	size_t foundType = 0xFFFFFFFF;
+	for (size_t i = 0; i < ARRAYSIZE(kGFFTypes); i++) {
+		if (kGFFTypes[i] == id) {
+			foundType = i;
+			break;
+		}
+	}
+
+	if (foundType == 0xFFFFFFFF)
+		warning("Unknown GFF type %s", Common::debugTag(id).c_str());
+
+	return gffVersion;
 }
 
 GFFDumper *GFFDumper::identify(Common::SeekableReadStream &input) {
-	uint32 version;
-	int type = identifyGFF(input, version);
-	if (type < 0)
-		throw Common::Exception("Not a GFF file");
+	const GFFVersion version = identifyGFF(input);
 
-	if      ((version == kVersion32) || (version == kVersion33))
-		return new GFF3Dumper();
-	else if ((version == kVersion40) || (version == kVersion41))
-		return new GFF4Dumper();
-	else
-		throw Common::Exception("Invalid GFF version 0x%08X", version);
+	switch (version) {
+		case kGFFVersion3:
+			return new GFF3Dumper();
+
+		case kGFFVersion4:
+			return new GFF4Dumper();
+
+		default:
+			throw Common::Exception("Invalid GFF version");
+	}
 }
 
 } // End of namespace XML
