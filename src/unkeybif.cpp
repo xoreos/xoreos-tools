@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 			delete *b;
 
 		Common::printException(e);
-		return -1;
+		return 1;
 	} catch (std::exception &e) {
 		for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
 			delete *k;

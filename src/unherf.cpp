@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 
 	} catch (Common::Exception &e) {
 		Common::printException(e);
-		return -1;
+		return 1;
 	} catch (std::exception &e) {
 		error("%s", e.what());
 	}
