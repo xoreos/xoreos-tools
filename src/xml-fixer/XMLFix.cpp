@@ -112,7 +112,7 @@ std::string fixXMLTag(std::string line){
 		line = trim(line);
 		if (line.at(line.length()-2) != '?'){
 			line.insert(line.length()-1,"?");
-		}//NWN2UI is not a supported format. Fake it and see what happens.
+		}//NWN2UI is not a supported format. changing it to xml appears to work.
 		if (line.find("encoding=\"NWN2UI\"") != std::string::npos){
 			return "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 		}
@@ -260,12 +260,12 @@ std::string fixOpenQuotes(std::string line){
 		}
 		if (i > 0 && line.at(i) == ',' && line.at(i-1) != '"')
 		{//No quote before , add it in.
-			line.insert(i, "\"");//I swear this is the most frequently typed line of code in this documents.
+			line.insert(i, "\"");
 			end++;
 		}
 		if (line.at(i) == ',' && line.at(i+1) != '"')
 		{//No quote after a comma
-			line.insert(i+1, "\""); //Followed by this one.
+			line.insert(i+1, "\"");
 			end++;
 		}
 
@@ -323,7 +323,7 @@ std::string fixUnclosedQuote(std::string line){
 					end++;
 				}
 			}else if (isspace(line[i])) {//We can't check for just a space, 
-			 //because someone went and put newlines in these files.
+			 //because files sometimes also contain newlines.
 				line.insert(i,"\"");
 				i++;
 				end++;
