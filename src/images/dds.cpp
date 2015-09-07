@@ -76,7 +76,7 @@ void DDS::load(Common::SeekableReadStream &dds) {
 		throw;
 	}
 
-	// In Phaethon, we always want decompressed images
+	// In xoreos-tools, we always want decompressed images
 	decompress();
 }
 

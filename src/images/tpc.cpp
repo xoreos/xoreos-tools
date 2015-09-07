@@ -61,7 +61,7 @@ void TPC::load(Common::SeekableReadStream &tpc) {
 		throw;
 	}
 
-	// In Phaethon, we always want decompressed images
+	// In xoreos-tools, we always want decompressed images
 	decompress();
 }
 

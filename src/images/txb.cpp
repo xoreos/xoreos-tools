@@ -38,7 +38,7 @@ namespace Images {
 TXB::TXB(Common::SeekableReadStream &txb) : _dataSize(0), _txiData(0), _txiDataSize(0) {
 	load(txb);
 
-	// In Phaethon, we always want decompressed images
+	// In xoreos-tools, we always want decompressed images
 	decompress();
 }
 
