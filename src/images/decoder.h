@@ -41,9 +41,6 @@ namespace Images {
 /** A generic interface for image decoders. */
 class Decoder {
 public:
-	Decoder();
-	virtual ~Decoder();
-
 	/** A mip map. */
 	struct MipMap {
 		int    width;  ///< The mip map's width.
@@ -52,10 +49,19 @@ public:
 		byte  *data;   ///< The mip map's data.
 
 		MipMap();
+		MipMap(const MipMap &mipMap);
 		~MipMap();
+
+		MipMap &operator=(const MipMap &mipMap);
 
 		void swap(MipMap &right);
 	};
+
+	Decoder();
+	Decoder(const Decoder &decoder);
+	virtual ~Decoder();
+
+	Decoder &operator=(const Decoder &decoder);
 
 	/** Return the image's general format. */
 	PixelFormat getFormat() const;

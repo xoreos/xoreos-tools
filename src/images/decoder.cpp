@@ -38,8 +38,28 @@ namespace Images {
 Decoder::MipMap::MipMap() : width(0), height(0), size(0), data(0) {
 }
 
+Decoder::MipMap::MipMap(const MipMap &mipMap) : width(0), height(0), size(0), data(0) {
+	*this = mipMap;
+}
+
 Decoder::MipMap::~MipMap() {
 	delete[] data;
+}
+
+Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
+	if (&mipMap == this)
+		return *this;
+
+	width  = mipMap.width;
+	height = mipMap.height;
+	size   = mipMap.size;
+
+	delete[] data;
+	data = new byte[size];
+
+	memcpy(data, mipMap.data, size);
+
+	return *this;
 }
 
 void Decoder::MipMap::swap(MipMap &right) {
@@ -53,9 +73,28 @@ void Decoder::MipMap::swap(MipMap &right) {
 Decoder::Decoder() : _format(kPixelFormatR8G8B8A8), _layerCount(1), _isCubeMap(false) {
 }
 
+Decoder::Decoder(const Decoder &decoder) {
+	*this = decoder;
+}
+
 Decoder::~Decoder() {
 	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
 		delete *m;
+}
+
+Decoder &Decoder::operator=(const Decoder &decoder) {
+	_format = decoder._format;
+
+	_layerCount = decoder._layerCount;
+	_isCubeMap  = decoder._isCubeMap;
+
+	_mipMaps.clear();
+	_mipMaps.reserve(decoder._mipMaps.size());
+
+	for (std::vector<MipMap *>::const_iterator m = decoder._mipMaps.begin(); m != decoder._mipMaps.end(); ++m)
+		_mipMaps.push_back(new MipMap(**m));
+
+	return *this;
 }
 
 Common::SeekableReadStream *Decoder::getTXI() const {
