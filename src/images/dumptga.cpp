@@ -112,6 +112,9 @@ void dumpTGA(const Common::UString &fileName, const byte *data, int width, int h
 }
 
 void dumpTGA(const Common::UString &fileName, const Decoder &image) {
+	if (image.getLayerCount() != 1)
+		throw Common::Exception("TODO: dumpTGA() with %u layers", (uint) image.getLayerCount());
+
 	if (image.getMipMapCount() < 1)
 		throw Common::Exception("No image");
 

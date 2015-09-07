@@ -62,9 +62,14 @@ public:
 
 	/** Return the number of mip maps contained in the image. */
 	size_t getMipMapCount() const;
+	/** Return the number of layers contained in the image. */
+	size_t getLayerCount() const;
+
+	/** Is this image a cube map? */
+	bool isCubeMap() const;
 
 	/** Return a mip map. */
-	const MipMap &getMipMap(size_t mipMap) const;
+	const MipMap &getMipMap(size_t mipMap, size_t layer = 0) const;
 
 	/** Return TXI data, if embedded in the image. */
 	virtual Common::SeekableReadStream *getTXI() const;
@@ -79,6 +84,11 @@ public:
 
 protected:
 	PixelFormat _format;
+
+	/** Number of layers in this image. For layered 3D images and cubemaps. */
+	size_t _layerCount;
+	/** Is this image a cube map? A cube map always needs to have 6 layers! */
+	bool _isCubeMap;
 
 	std::vector<MipMap *> _mipMaps;
 
