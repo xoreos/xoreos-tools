@@ -52,6 +52,9 @@ private:
 	void readData(Common::SeekableReadStream &tpc, byte encoding);
 	void readTXIData(Common::SeekableReadStream &tpc);
 
+	bool checkCubeMap(uint32 &width, uint32 &height);
+	void fixupCubeMap();
+
 	static void deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height);
 };
 
