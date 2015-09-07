@@ -177,9 +177,6 @@ void Decoder::decompress() {
 }
 
 bool Decoder::dumpTGA(const Common::UString &fileName) const {
-	if (_layerCount != 1)
-		throw Common::Exception("TODO: Decoder::dumpTGA() with %u layers", (uint) _layerCount);
-
 	if (_mipMaps.size() < 1)
 		return false;
 
@@ -188,10 +185,10 @@ bool Decoder::dumpTGA(const Common::UString &fileName) const {
 		return true;
 	}
 
-	MipMap mipMap;
-	decompress(mipMap, *_mipMaps[0], _format);
-	Images::dumpTGA(fileName, mipMap.data, mipMap.width, mipMap.height, kPixelFormatR8G8B8A8);
+	Decoder decoder(*this);
+	decoder.decompress();
 
+	Images::dumpTGA(fileName, decoder);
 	return true;
 }
 
