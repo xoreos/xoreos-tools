@@ -450,6 +450,110 @@ bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
 	return true;
 }
 
+void TwoDAFile::dumpBinary(Common::WriteStream &out) const {
+	const size_t columnCount = _headers.size();
+	const size_t rowCount    = _rows.size();
+	const size_t cellCount   = columnCount * rowCount;
+
+	out.writeString("2DA V2.b\n");
+
+	// Write the column headers
+
+	for (std::vector<Common::UString>::const_iterator h = _headers.begin(); h != _headers.end(); ++h) {
+		out.writeString(*h);
+		out.writeByte('\t');
+	}
+	out.writeByte('\0');
+
+	// Write the row indices
+
+	out.writeUint32LE((uint32) rowCount);
+	for (size_t i = 0; i < rowCount; i++) {
+		out.writeString(Common::composeString(i));
+		out.writeByte('\t');
+	}
+
+	/* Deduplicate cell data strings. Binary 2DA files don't store the
+	 * data for each cell directly: instead, each cell contains an offset
+	 * into a data array. This way, cells with the same data only need to
+	 * to store this data once.
+	 *
+	 * The original binary 2DA files in KotOR/KotOR2 make extensive use
+	 * of that, and we should do this as well.
+	 *
+	 * Basically, this involves going through each cell, and looking up
+	 * if we already saved this particular piece of data. If not, save
+	 * it, otherwise only remember the offset. There's no need to be
+	 * particularily smart about it, so we're just doing it the naive
+	 * O(n^2) way.
+	 */
+
+	std::vector<Common::UString> data;
+	std::vector<size_t> offsets;
+
+	data.reserve(cellCount);
+	offsets.reserve(cellCount);
+
+	size_t dataSize = 0;
+
+	std::vector<size_t> cells;
+	cells.reserve(cellCount);
+
+	for (size_t i = 0; i < rowCount; i++) {
+		assert(_rows[i]);
+
+		for (size_t j = 0; j < columnCount; j++) {
+			const Common::UString cell = _rows[i]->getString(j);
+
+			// Do we already know about this cell data string?
+			size_t foundCell = SIZE_MAX;
+			for (size_t k = 0; k < data.size(); k++) {
+				if (data[k] == cell) {
+					foundCell = k;
+					break;
+				}
+			}
+
+			// If not, add it to the cell data array
+			if (foundCell == SIZE_MAX) {
+				foundCell = data.size();
+
+				data.push_back(cell);
+				offsets.push_back(dataSize);
+
+				dataSize += data.back().size() + 1;
+			}
+
+			// Remember the offset to the cell data array
+			cells.push_back(offsets[foundCell]);
+		}
+	}
+
+	// Write cell data offsets
+	for (std::vector<size_t>::const_iterator c = cells.begin(); c != cells.end(); ++c)
+		out.writeUint16LE((uint16) *c);
+
+	// Size of the all cell data strings
+	out.writeUint16LE((uint16) dataSize);
+
+	// Write cell data strings
+	for (std::vector<Common::UString>::const_iterator d = data.begin(); d != data.end(); ++d) {
+		out.writeString(*d);
+		out.writeByte('\0');
+	}
+}
+
+bool TwoDAFile::dumpBinary(const Common::UString &fileName) const {
+	Common::WriteFile file;
+	if (!file.open(fileName))
+		return false;
+
+	dumpBinary(file);
+	file.close();
+
+	return true;
+}
+
 void TwoDAFile::dumpCSV(Common::WriteStream &out) const {
 	// Write column headers
 

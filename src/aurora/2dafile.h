@@ -96,6 +96,11 @@ public:
 	/** Dump the 2DA data into an V2.0 ASCII 2DA. */
 	bool dumpASCII(const Common::UString &fileName) const;
 
+	/** Dump the 2DA data into an V2.b binary 2DA. */
+	void dumpBinary(Common::WriteStream &out) const;
+	/** Dump the 2DA data into an V2.b binary 2DA. */
+	bool dumpBinary(const Common::UString &fileName) const;
+
 	/** Dump the 2DA data into a CSV stream. */
 	void dumpCSV(Common::WriteStream &out) const;
 	/** Dump the 2DA data into a CSV file. */
