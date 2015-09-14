@@ -47,6 +47,11 @@ public:
 	const std::list<uint32> &getStrRefs() const;
 	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
 
+	/** Return all values associated to a string references in a TLK talk table. */
+	bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+	              uint32 &soundID) const;
+
 	static uint32 getLanguageID(Common::SeekableReadStream &tlk);
 	static uint32 getLanguageID(const Common::UString &file);
 

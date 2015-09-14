@@ -167,6 +167,27 @@ bool TalkTable_TLK::getString(uint32 strRef, Common::UString &string, Common::US
 	return true;
 }
 
+bool TalkTable_TLK::getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+                             uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+                             uint32 &soundID) const {
+
+	if (strRef >= _entries.size())
+		return false;
+
+	const Entry &entry = _entries[strRef];
+
+	string      = readString(entry);
+	soundResRef = entry.soundResRef;
+
+	volumeVariance = entry.volumeVariance;
+	pitchVariance  = entry.pitchVariance;
+	soundLength    = entry.soundLength;
+
+	soundID = entry.soundID;
+
+	return true;
+}
+
 uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
 	uint32 id, version;
 	bool utf16le;
