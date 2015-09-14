@@ -92,6 +92,128 @@ void LanguageManager::addLanguages(const Declaration *languageDeclarations, size
 		addLanguage(*languageDeclarations++);
 }
 
+static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] = {
+	{
+		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageItalian           ,                3, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           ,                4, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingCP1250 , Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,              128, Common::kEncodingCP949  , Common::kEncodingCP949   },
+		{ kLanguageChineseTraditional,              129, Common::kEncodingCP950  , Common::kEncodingCP950   },
+		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
+		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageItalian           ,                3, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           ,                4, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingCP1250 , Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,              128, Common::kEncodingCP949  , Common::kEncodingCP949   },
+		{ kLanguageChineseTraditional,              129, Common::kEncodingCP950  , Common::kEncodingCP950   },
+		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
+		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageItalian           ,                3, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           ,                4, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingCP1250 , Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,              128, Common::kEncodingCP949  , Common::kEncodingCP949   },
+		{ kLanguageChineseTraditional,              129, Common::kEncodingCP950  , Common::kEncodingCP950   },
+		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
+		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageItalian           ,                3, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           ,                4, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingCP1250 , Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,              128, Common::kEncodingCP949  , Common::kEncodingCP949   },
+		{ kLanguageChineseTraditional,              129, Common::kEncodingCP950  , Common::kEncodingCP950   },
+		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
+		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageItalian           ,                3, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           ,                4, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingCP1250 , Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,              128, Common::kEncodingCP949  , Common::kEncodingCP949   },
+		{ kLanguageChineseTraditional,              129, Common::kEncodingCP950  , Common::kEncodingCP950   },
+		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
+		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageDebug             ,                0, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageEnglish           ,                3, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguagePolish            ,                5, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageGerman            ,               10, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageFrench            ,               11, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageSpanish           ,               12, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageItalian           ,               13, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageRussian           ,               14, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageCzech             ,               15, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageHungarian         ,               16, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageKorean            ,               20, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageChineseTraditional,               21, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageChineseSimplified ,               22, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageFrench            , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageGerman            , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageItalian           , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
+		{ kLanguageJapanese          , kLanguageInvalid, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           ,                0, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageRussian           ,                2, Common::kEncodingUTF16LE, Common::kEncodingCP1251  },
+		{ kLanguageItalian           ,                3, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                4, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingUTF16LE, Common::kEncodingCP1250  },
+		{ kLanguageSpanish           ,                6, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageCzech             ,                7, Common::kEncodingUTF16LE, Common::kEncodingCP1250  },
+		{ kLanguageHungarian         ,                8, Common::kEncodingUTF16LE, Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,                9, Common::kEncodingUTF16LE, Common::kEncodingCP949   },
+		{ kLanguageJapanese          ,               10, Common::kEncodingUTF16LE, Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}, {
+		{ kLanguageEnglish           ,                0, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageRussian           ,                2, Common::kEncodingUTF16LE, Common::kEncodingCP1251  },
+		{ kLanguageItalian           ,                3, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                4, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingUTF16LE, Common::kEncodingCP1250  },
+		{ kLanguageSpanish           ,                6, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
+		{ kLanguageCzech             ,                7, Common::kEncodingUTF16LE, Common::kEncodingCP1250  },
+		{ kLanguageHungarian         ,                8, Common::kEncodingUTF16LE, Common::kEncodingCP1250  },
+		{ kLanguageKorean            ,                9, Common::kEncodingUTF16LE, Common::kEncodingCP949   },
+		{ kLanguageJapanese          ,               10, Common::kEncodingUTF16LE, Common::kEncodingCP932   },
+		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
+	}
+};
+
+void LanguageManager::declareLanguages(GameID game) {
+	if ((uint) game >= kGameIDMAX)
+		return;
+
+	const Declaration *langs = kLanguageDeclarations[game];
+	while (langs->language != kLanguageInvalid)
+		addLanguage(*langs++);
+}
+
 const LanguageManager::Declaration *LanguageManager::find(Language language) const {
 	LanguageByLanguage::const_iterator l = _langByLang.find(language);
 	if (l != _langByLang.end())

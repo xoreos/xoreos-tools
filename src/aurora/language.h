@@ -103,6 +103,9 @@ public:
 	 *  together with their internal (ungendered) language ID and usual encoding. */
 	void addLanguages(const Declaration *languageDeclarations, size_t count);
 
+	/** Add all supported languages for a specific game to the LanguageManager. */
+	void declareLanguages(GameID game);
+
 	/** Construct the internal language ID for an ungendered use of a language.
 	 *
 	 *  This is used by Aurora games in contexts where the gender of a player
