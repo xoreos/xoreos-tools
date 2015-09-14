@@ -39,6 +39,13 @@ files found in the Nintendo DS game
 .IR "Sonic Chronicles: The Dark Brotherhood" ")."
 To manually select the encoding, this tool provides a wide range
 command line options for various encodings.
+.PP
+Alternatively, the game this TLK is from can be specified and
+tlk2xml will read the strings in an appropriate encoding for that
+game and the language ID found in the TLK. Please note that this
+does not work for the game
+.IR "Sonic Chronicles: The Dark Brotherhood" ,
+since its TLK files do not provide a language ID.
 .SH OPTIONS
 .TP 4
 .B -h
@@ -94,6 +101,38 @@ Read strings as little-endian UTF-16.
 .TP 4
 .B --utf16be
 Read strings as big-endian UTF-16.
+.TP 4
+.B --nwn
+Read strings in an encoding appriopriate for
+.IR "Neverwinter Nights" .
+.TP 4
+.B --nwn2
+Read strings in an encoding appriopriate for
+.IR "Neverwinter Nights 2" .
+.TP 4
+.B --kotor
+Read strings in an encoding appriopriate for
+.IR "Knights of the Old Republic" .
+.TP 4
+.B --kotor2
+Read strings in an encoding appriopriate for
+.IR "Knights of the Old Republic II" .
+.TP 4
+.B --jade
+Read strings in an encoding appriopriate for
+.IR "Jade Empire" .
+.TP 4
+.B --witcher
+Read strings in an encoding appriopriate for
+.IR "The Witcher" .
+.TP 4
+.B --dragonage
+Read strings in an encoding appriopriate for
+.IR "Dragon Age: Origins" .
+.TP 4
+.B --dragonage2
+Read strings in an encoding appriopriate for
+.IR "Dragon Age II" .
 .TP 4
 <input file>
 The TLK file to convert.
