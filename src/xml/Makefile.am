@@ -4,6 +4,7 @@ noinst_LTLIBRARIES = libxml.la
 
 noinst_HEADERS = \
                  xmlwriter.h \
+                 xmlparser.h \
                  gffdumper.h \
                  gff3dumper.h \
                  gff4dumper.h \
@@ -13,6 +14,7 @@ noinst_HEADERS = \
 
 libxml_la_SOURCES = \
                     xmlwriter.cpp \
+                    xmlparser.cpp \
                     gffdumper.cpp \
                     gff3dumper.cpp \
                     gff4dumper.cpp \
