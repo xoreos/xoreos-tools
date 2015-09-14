@@ -29,6 +29,80 @@ Currently, the following tools are included:
 * cbgt2tga: Convert CBGT images into TGA
 * cdpth2tga: Convert CDPTH depth images into TGA
 
+TLK language IDs and encodings
+------------------------------
+
+Aurora games use numerical language IDs to identify which language a
+TLK file holds. Unfortunately, those language IDs vary between games,
+and so does the encoding used for strings in those TLK files. There
+is no way to autodetect this information, so it has to be provided
+to tools handling those files, in one way or another.
+
+For the tool tlk2xml, you can specify this encoding either directly,
+or by giving the game the TLK is from. Please note that this does
+not work for Sonic Chronicles: The Dark Brotherhood, because its
+TLK files do not provide a language ID.
+
+Neverwinter Nights, Neverwinter Nights 2, Knights of the Old Republic,
+Knights of the Old Republic 2, Jade Empire:
+
+| Language ID | Language              | Encoding |
+|------------:|:----------------------|:---------|
+|           0 | English               | CP-1252  |
+|           1 | French                | CP-1252  |
+|           2 | German                | CP-1252  |
+|           3 | Italian               | CP-1252  |
+|           4 | Spanish               | CP-1252  |
+|           5 | Polish                | CP-1250  |
+|         128 | Korean                | CP-949   |
+|         129 | Chinese (Traditional) | CP-950   |
+|         130 | Chinese (Simplified)  | CP-936   |
+|         131 | Japanese              | CP-932   |
+
+The Witcher:
+
+| Language ID | Language              | Encoding |
+|------------:|:----------------------|:---------|
+|           0 | "Debug"               | UTF-8    |
+|           3 | English               | UTF-8    |
+|           5 | Polish                | UTF-8    |
+|          10 | German                | UTF-8    |
+|          11 | French                | UTF-8    |
+|          12 | Spanish               | UTF-8    |
+|          13 | Italian               | UTF-8    |
+|          14 | Russian               | UTF-8    |
+|          15 | Czech                 | UTF-8    |
+|          16 | Hungarian             | UTF-8    |
+|          20 | Korean                | UTF-8    |
+|          21 | Chinese (Traditional) | UTF-8    |
+|          22 | Chinese (Simplified)  | UTF-8    |
+
+Sonic Chronicles: The Dark Brotherhood:
+
+| Language ID | Language              | Encoding |
+|------------:|:----------------------|:---------|
+|           - | English               | CP-1252  |
+|           - | French                | CP-1252  |
+|           - | German                | CP-1252  |
+|           - | Italian               | CP-1252  |
+|           - | Spanish               | UTF-8    |
+
+Dragon Age: Origins, Dragon Age II:
+
+| Language ID | Language              | Encoding |
+|------------:|:----------------------|:---------|
+|           0 | English               | UTF-16LE |
+|           1 | French                | UTF-16LE |
+|           2 | Russian               | UTF-16LE |
+|           3 | Italian               | UTF-16LE |
+|           4 | German                | UTF-16LE |
+|           5 | Polish                | UTF-16LE |
+|           6 | Spanish               | UTF-16LE |
+|           7 | Czech                 | UTF-16LE |
+|           8 | Hungarian             | UTF-16LE |
+|           9 | Korean                | UTF-16LE |
+|          10 | Japanese              | UTF-16LE |
+
 Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
 ------
 
