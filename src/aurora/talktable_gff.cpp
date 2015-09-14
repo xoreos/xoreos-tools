@@ -44,6 +44,9 @@ namespace Aurora {
 TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
 	TalkTable(encoding), _gff(0) {
 
+	if (_encoding == Common::kEncodingInvalid)
+		_encoding = Common::kEncodingUTF16LE;
+
 	load(tlk);
 }
 

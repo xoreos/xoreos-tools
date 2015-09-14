@@ -36,11 +36,15 @@
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 
+#include "src/aurora/types.h"
+#include "src/aurora/language.h"
+
 #include "src/xml/tlkdumper.h"
 
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &inFile, Common::UString &outFile, Common::Encoding &encoding);
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, Aurora::GameID &game);
 
 void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding);
 
@@ -49,13 +53,16 @@ int main(int argc, char **argv) {
 	Common::Platform::getParameters(argc, argv, args);
 
 	Common::Encoding encoding = Common::kEncodingInvalid;
+	Aurora::GameID   game     = Aurora::kGameIDUnknown;
 
 	int returnValue = 1;
 	Common::UString inFile, outFile;
 
 	try {
-		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game))
 			return returnValue;
+
+		LangMan.declareLanguages(game);
 
 		dumpTLK(inFile, outFile, encoding);
 	} catch (Common::Exception &e) {
@@ -69,7 +76,8 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &inFile, Common::UString &outFile, Common::Encoding &encoding) {
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, Aurora::GameID &game) {
 
 	inFile.clear();
 	outFile.clear();
@@ -105,33 +113,71 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			if        (argv[i] == "--cp1250") {
 				isOption = true;
 				encoding = Common::kEncodingCP1250;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--cp1251") {
 				isOption = true;
 				encoding = Common::kEncodingCP1251;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--cp1252") {
 				isOption = true;
 				encoding = Common::kEncodingCP1252;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--cp932") {
 				isOption = true;
 				encoding = Common::kEncodingCP932;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--cp936") {
 				isOption = true;
 				encoding = Common::kEncodingCP949;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--cp949") {
 				isOption = true;
 				encoding = Common::kEncodingCP949;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--cp950") {
 				isOption = true;
 				encoding = Common::kEncodingCP950;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--utf8") {
 				isOption = true;
 				encoding = Common::kEncodingUTF8;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--utf16le") {
 				isOption = true;
 				encoding = Common::kEncodingUTF16LE;
+				game     = Aurora::kGameIDUnknown;
 			} else if (argv[i] == "--utf16be") {
 				isOption = true;
 				encoding = Common::kEncodingUTF16BE;
+				game     = Aurora::kGameIDUnknown;
+			} else if (argv[i] == "--nwn") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDNWN;
+			} else if (argv[i] == "--nwn2") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDNWN2;
+			} else if (argv[i] == "--kotor") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDKotOR;
+			} else if (argv[i] == "--kotor2") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDKotOR2;
+			} else if (argv[i] == "--witcher") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDWitcher;
+			} else if (argv[i] == "--dragonage") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDDragonAge;
+			} else if (argv[i] == "--dragonage2") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDDragonAge2;
 			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
@@ -169,7 +215,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "BioWare TLK to XML converter\n\n");
 	std::fprintf(stream, "Usage: %s [<options>] <input file> [<output file>]\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n");
+	std::fprintf(stream, "          --version           Display version information\n\n");
 	std::fprintf(stream, "          --cp1250            Read TLK strings as Windows CP-1250\n");
 	std::fprintf(stream, "          --cp1251            Read TLK strings as Windows CP-1251\n");
 	std::fprintf(stream, "          --cp1252            Read TLK strings as Windows CP-1252\n");
@@ -180,7 +226,19 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "          --utf8              Read TLK strings as UTF-8\n");
 	std::fprintf(stream, "          --utf16le           Read TLK strings as little-endian UTF-16\n");
 	std::fprintf(stream, "          --utf16be           Read TLK strings as big-endian UTF-16\n\n");
-	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
+	std::fprintf(stream, "          --nwn               Use Neverwinter Nights encodings\n");
+	std::fprintf(stream, "          --nwn2              Use Neverwinter Nights 2 encodings\n");
+	std::fprintf(stream, "          --kotor             Use Knights of the Old Republic encodings\n");
+	std::fprintf(stream, "          --kotor2            Use Knights of the Old Republic II encodings\n");
+	std::fprintf(stream, "          --jade              Use Jade Empire encodings\n");
+	std::fprintf(stream, "          --witcher           Use The Witcher encodings\n");
+	std::fprintf(stream, "          --dragonage         Use Dragon Age encodings\n");
+	std::fprintf(stream, "          --dragonage2        Use Dragon Age II encodings\n\n");
+	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n\n");
+	std::fprintf(stream, "There is no way to autodected the encoding of strings in TLK files,\n");
+	std::fprintf(stream, "so an encoding must be specified. Alternatively, the game this TLK\n");
+	std::fprintf(stream, "is from can be given, and an appropriate encoding according to that\n");
+	std::fprintf(stream, "game and the language ID found in the TLK is used.\n");
 }
 
 void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {

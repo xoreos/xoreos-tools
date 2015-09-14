@@ -74,6 +74,11 @@ void TalkTable_TLK::load() {
 
 		_languageID = _tlk->readUint32LE();
 
+		if (_encoding == Common::kEncodingInvalid)
+			_encoding = LangMan.getEncoding(LangMan.getLanguage(_languageID));
+		if (_encoding == Common::kEncodingInvalid)
+			_encoding = Common::kEncodingCP1252;
+
 		uint32 stringCount = _tlk->readUint32LE();
 		_entries.resize(stringCount);
 
