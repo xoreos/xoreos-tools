@@ -22,6 +22,7 @@
  *  Dump TLKs into XML files.
  */
 
+#include "src/common/strutil.h"
 #include "src/common/readstream.h"
 #include "src/common/writestream.h"
 
@@ -52,7 +53,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 
 	xml.openTag("tlk");
 	if (languageID != Aurora::kLanguageInvalid)
-		xml.addProperty("language", Common::UString::format("%u", languageID));
+		xml.addProperty("language", Common::composeString(languageID));
 	xml.breakLine();
 
 	const std::list<uint32> &strRefs = tlk->getStrRefs();
@@ -61,16 +62,29 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 		const uint32 strRef = *s;
 
 		Common::UString str, sound;
-		tlk->getString(strRef, str, sound);
+		uint32 volumeVariance, pitchVariance, soundID;
+		float soundLength;
 
-		if (str.empty())
+		tlk->getEntry(strRef, str, sound, volumeVariance, pitchVariance, soundLength, soundID);
+
+		if (str.empty() && sound.empty())
 			continue;
 
 		xml.openTag("string");
-		xml.addProperty("id", Common::UString::format("%u", strRef));
+		xml.addProperty("id", Common::composeString(strRef));
 
 		if (!sound.empty())
 			xml.addProperty("sound", sound);
+
+		if (volumeVariance != 0)
+			xml.addProperty("volumevariance", Common::composeString(volumeVariance));
+		if (pitchVariance != 0)
+			xml.addProperty("pitchvariance", Common::composeString(pitchVariance));
+		if (soundLength > 0.0f)
+			xml.addProperty("soundlength", Common::composeString(soundLength));
+
+		if (soundID != 0xFFFFFFFF)
+			xml.addProperty("soundid", Common::composeString(soundID));
 
 		xml.setContents(str);
 
