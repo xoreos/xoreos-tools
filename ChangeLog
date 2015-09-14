@@ -5,6 +5,8 @@ Someday, ????-??-?? (Version 0.0.3)
 	- GFF2XML:
 		- Fixed various XML formatting issues
 		- Changed GFF detection to accept currently-unknown types
+	- CONVERT2DA:
+		- Added support for writing binary 2DA files
 
 Monday, 2015-07-27 (Version 0.0.2)
 	- Made all tools display version information with --version
