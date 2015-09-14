@@ -5,6 +5,8 @@ Someday, ????-??-?? (Version 0.0.3)
 	- GFF2XML:
 		- Fixed various XML formatting issues
 		- Changed GFF detection to accept currently-unknown types
+	- XOREOSTEX2TGA:
+		- Added support for TPC cube maps
 	- CONVERT2DA:
 		- Added support for writing binary 2DA files
 
