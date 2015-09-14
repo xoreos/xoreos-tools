@@ -50,7 +50,7 @@ void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       std::vector<Common::UString> &files, Common::UString &outFile, Format &format);
 
-void dump2DA(Aurora::TwoDAFile &twoDA, Format format);
+void write2DA(Aurora::TwoDAFile &twoDA, Format format);
 
 Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream);
 void convert2DA(const Common::UString &file, const Common::UString &outFile, Format format);
@@ -182,7 +182,7 @@ static const uint32 k2DAID     = MKTAG('2', 'D', 'A', ' ');
 static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
-void dump2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
+void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
 	Common::WriteStream *out = 0;
 	if (!outFile.empty())
 		out = new Common::WriteFile(outFile);
@@ -191,11 +191,11 @@ void dump2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format fo
 
 	try {
 		if      (format == kFormat2DA)
-			twoDA.dumpASCII(*out);
+			twoDA.writeASCII(*out);
 		else if (format == kFormat2DAb)
-			twoDA.dumpBinary(*out);
+			twoDA.writeBinary(*out);
 		else
-			twoDA.dumpCSV(*out);
+			twoDA.writeCSV(*out);
 
 	} catch (...) {
 		delete out;
@@ -239,7 +239,7 @@ void convert2DA(const Common::UString &file, const Common::UString &outFile, For
 	Aurora::TwoDAFile *twoDA = get2DAGDA(new Common::ReadFile(file));
 
 	try {
-		dump2DA(*twoDA, outFile, format);
+		write2DA(*twoDA, outFile, format);
 	} catch (...) {
 		delete twoDA;
 		throw;
@@ -261,5 +261,5 @@ void convert2DA(const std::vector<Common::UString> &files, const Common::UString
 
 	Aurora::TwoDAFile twoDA(gda);
 
-	dump2DA(twoDA, outFile, format);
+	write2DA(twoDA, outFile, format);
 }

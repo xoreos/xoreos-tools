@@ -378,7 +378,7 @@ const TwoDARow &TwoDAFile::getRow(size_t row) const {
 	return *_rows[row];
 }
 
-void TwoDAFile::dumpASCII(Common::WriteStream &out) const {
+void TwoDAFile::writeASCII(Common::WriteStream &out) const {
 	// Write header
 
 	out.writeString("2DA V2.0\n");
@@ -439,18 +439,18 @@ void TwoDAFile::dumpASCII(Common::WriteStream &out) const {
 	out.flush();
 }
 
-bool TwoDAFile::dumpASCII(const Common::UString &fileName) const {
+bool TwoDAFile::writeASCII(const Common::UString &fileName) const {
 	Common::WriteFile file;
 	if (!file.open(fileName))
 		return false;
 
-	dumpASCII(file);
+	writeASCII(file);
 	file.close();
 
 	return true;
 }
 
-void TwoDAFile::dumpBinary(Common::WriteStream &out) const {
+void TwoDAFile::writeBinary(Common::WriteStream &out) const {
 	const size_t columnCount = _headers.size();
 	const size_t rowCount    = _rows.size();
 	const size_t cellCount   = columnCount * rowCount;
@@ -543,18 +543,18 @@ void TwoDAFile::dumpBinary(Common::WriteStream &out) const {
 	}
 }
 
-bool TwoDAFile::dumpBinary(const Common::UString &fileName) const {
+bool TwoDAFile::writeBinary(const Common::UString &fileName) const {
 	Common::WriteFile file;
 	if (!file.open(fileName))
 		return false;
 
-	dumpBinary(file);
+	writeBinary(file);
 	file.close();
 
 	return true;
 }
 
-void TwoDAFile::dumpCSV(Common::WriteStream &out) const {
+void TwoDAFile::writeCSV(Common::WriteStream &out) const {
 	// Write column headers
 
 	for (size_t i = 0; i < _headers.size(); i++) {
@@ -598,12 +598,12 @@ void TwoDAFile::dumpCSV(Common::WriteStream &out) const {
 	out.flush();
 }
 
-bool TwoDAFile::dumpCSV(const Common::UString &fileName) const {
+bool TwoDAFile::writeCSV(const Common::UString &fileName) const {
 	Common::WriteFile file;
 	if (!file.open(fileName))
 		return false;
 
-	dumpCSV(file);
+	writeCSV(file);
 	file.close();
 
 	return true;
