@@ -44,6 +44,14 @@ public:
 	const std::list<uint32> &getStrRefs() const;
 	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
 
+	bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+	              uint32 &soundID) const;
+
+	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+	              uint32 soundID);
+
 
 private:
 	struct Entry {

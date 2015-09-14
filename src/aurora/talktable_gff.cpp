@@ -73,6 +73,42 @@ bool TalkTable_GFF::getString(uint32 strRef, Common::UString &string, Common::US
 	return true;
 }
 
+bool TalkTable_GFF::getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+                             uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+                             uint32 &soundID) const {
+
+	Entries::const_iterator e = _entries.find(strRef);
+	if (e == _entries.end())
+		return false;
+
+	string      = readString(*e->second);
+	soundResRef = "";
+
+	volumeVariance = 0;
+	pitchVariance  = 0;
+	soundLength    = -1.0f;
+
+	soundID = 0xFFFFFFFF;
+
+	return true;
+}
+
+void TalkTable_GFF::setEntry(uint32 strRef, const Common::UString &string,
+                             const Common::UString &UNUSED(soundResRef),
+                             uint32 UNUSED(volumeVariance), uint32 UNUSED(pitchVariance),
+                             float UNUSED(soundLength), uint32 UNUSED(soundID)) {
+
+	Entries::iterator entry = _entries.find(strRef);
+	if (entry == _entries.end()) {
+		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, new Entry));
+		entry = result.first;
+
+		_strRefs.push_back(strRef);
+	}
+
+	entry->second->text = string;
+}
+
 void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
 	assert(tlk);
 
@@ -149,6 +185,9 @@ void TalkTable_GFF::load05(const GFF4Struct &top) {
 }
 
 Common::UString TalkTable_GFF::readString(const Entry &entry) const {
+	if (!entry.text.empty())
+		return entry.text;
+
 	if (!entry.strct)
 		return "";
 
