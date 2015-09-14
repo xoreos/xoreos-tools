@@ -71,6 +71,38 @@ const Common::UString &TwoDARow::getString(const Common::UString &column) const 
 	return cell;
 }
 
+int32 TwoDARow::getInt(size_t column) const {
+	const Common::UString &cell = getCell(column);
+	if (cell.empty() || (cell == "****"))
+		return _parent->_defaultInt;
+
+	return _parent->parseInt(cell);
+}
+
+int32 TwoDARow::getInt(const Common::UString &column) const {
+	const Common::UString &cell = getCell(_parent->headerToColumn(column));
+	if (cell.empty() || (cell == "****"))
+		return _parent->_defaultInt;
+
+	return _parent->parseInt(cell);
+}
+
+float TwoDARow::getFloat(size_t column) const {
+	const Common::UString &cell = getCell(column);
+	if (cell.empty() || (cell == "****"))
+		return _parent->_defaultFloat;
+
+	return _parent->parseFloat(cell);
+}
+
+float TwoDARow::getFloat(const Common::UString &column) const {
+	const Common::UString &cell = getCell(_parent->headerToColumn(column));
+	if (cell.empty() || (cell == "****"))
+		return _parent->_defaultFloat;
+
+	return _parent->parseFloat(cell);
+}
+
 bool TwoDARow::empty(size_t column) const {
 	const Common::UString &cell = getCell(column);
 	if (cell.empty() || (cell == "****"))
@@ -92,7 +124,9 @@ const Common::UString &TwoDARow::getCell(size_t n) const {
 }
 
 
-TwoDAFile::TwoDAFile(Common::SeekableReadStream &twoda) : _emptyRow(*this) {
+TwoDAFile::TwoDAFile(Common::SeekableReadStream &twoda) :
+	_defaultInt(0), _defaultFloat(0.0f), _emptyRow(*this) {
+
 	load(twoda);
 }
 
@@ -116,6 +150,8 @@ void TwoDAFile::clear() {
 	_headerMap.clear();
 
 	_defaultString.clear();
+	_defaultInt   = 0;
+	_defaultFloat = 0.0f;
 }
 
 void TwoDAFile::load(Common::SeekableReadStream &twoda) {
@@ -176,6 +212,9 @@ void TwoDAFile::readDefault2a(Common::SeekableReadStream &twoda,
 
 	if (defaultRow[0].equalsIgnoreCase("Default:"))
 		_defaultString = defaultRow[1];
+
+	_defaultInt   = parseInt(_defaultString);
+	_defaultFloat = parseFloat(_defaultString);
 
 	tokenize.nextChunk(twoda);
 }
@@ -607,6 +646,34 @@ bool TwoDAFile::writeCSV(const Common::UString &fileName) const {
 	file.close();
 
 	return true;
+}
+
+int32 TwoDAFile::parseInt(const Common::UString &str) {
+	if (str.empty())
+		return 0;
+
+	int32 v = 0;
+
+	try {
+		Common::parseString(str, v);
+	} catch (...) {
+	}
+
+	return v;
+}
+
+float TwoDAFile::parseFloat(const Common::UString &str) {
+	if (str.empty())
+		return 0;
+
+	float v = 0.0f;
+
+	try {
+		Common::parseString(str, v);
+	} catch (...) {
+	}
+
+	return v;
 }
 
 } // End of namespace Aurora
