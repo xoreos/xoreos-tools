@@ -42,6 +42,7 @@
 
 enum Format {
 	kFormat2DA,
+	kFormat2DAb,
 	kFormatCSV
 };
 
@@ -112,9 +113,12 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				return false;
 			}
 
-			if        ((argv[i] == "--2da") || (argv[i] == "-2")) {
+			if        ((argv[i] == "--2da") || (argv[i] == "-a")) {
 				isOption = true;
 				format   = kFormat2DA;
+			} else if ((argv[i] == "--2dab") || (argv[i] == "-b")) {
+				isOption = true;
+				format   = kFormat2DAb;
 			} else if ((argv[i] == "--csv") || (argv[i] == "-c")) {
 				isOption = true;
 				format   = kFormatCSV;
@@ -166,7 +170,8 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "  -h        --help              This help text\n");
 	std::fprintf(stream, "            --version           Display version information\n");
 	std::fprintf(stream, "  -o <file> --output <file>     Write the output to this file\n");
-	std::fprintf(stream, "  -2        --2da               Convert to ASCII 2DA\n");
+	std::fprintf(stream, "  -a        --2da               Convert to ASCII 2DA (default)\n");
+	std::fprintf(stream, "  -b        --2dab              Convert to binary 2DA\n");
 	std::fprintf(stream, "  -c        --csv               Convert to CSV\n\n");
 	std::fprintf(stream, "If several files are given, they must all be GDA and use the same\n");
 	std::fprintf(stream, "column layout. They will be pasted together and printed as one GDA.\n\n");
@@ -185,8 +190,10 @@ void dump2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format fo
 		out = new Common::StdOutStream;
 
 	try {
-		if (format == kFormat2DA)
+		if      (format == kFormat2DA)
 			twoDA.dumpASCII(*out);
+		else if (format == kFormat2DAb)
+			twoDA.dumpBinary(*out);
 		else
 			twoDA.dumpCSV(*out);
 
