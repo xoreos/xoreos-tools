@@ -46,6 +46,9 @@ uint32 TalkTable::getLanguageID() const {
 	return kLanguageInvalid;
 }
 
+void TalkTable::setLanguageID(uint32 UNUSED(id)) {
+}
+
 TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding encoding) {
 	if (!tlk)
 		return 0;

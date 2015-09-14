@@ -43,9 +43,18 @@ public:
 	virtual ~TalkTable();
 
 	virtual uint32 getLanguageID() const;
+	virtual void setLanguageID(uint32 id);
 
 	virtual const std::list<uint32> &getStrRefs() const = 0;
 	virtual bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
+
+	virtual bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+	                      uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+	                      uint32 &soundID) const = 0;
+
+	virtual void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+	                      uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+	                      uint32 soundID) = 0;
 
 	static TalkTable *load(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 
