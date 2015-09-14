@@ -44,6 +44,9 @@ public:
 	/** Return the language ID (ungendered) of the talk table. */
 	uint32 getLanguageID() const;
 
+	/** Set the language ID (ungendered) of the talk table. */
+	void setLanguageID(uint32 id);
+
 	const std::list<uint32> &getStrRefs() const;
 	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
 

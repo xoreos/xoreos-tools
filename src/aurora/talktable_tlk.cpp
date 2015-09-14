@@ -163,6 +163,10 @@ uint32 TalkTable_TLK::getLanguageID() const {
 	return _languageID;
 }
 
+void TalkTable_TLK::setLanguageID(uint32 id) {
+	_languageID = id;
+}
+
 const std::list<uint32> &TalkTable_TLK::getStrRefs() const {
 	return _strRefs;
 }
