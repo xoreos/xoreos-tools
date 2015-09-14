@@ -52,6 +52,11 @@ public:
 	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
 	              uint32 &soundID) const;
 
+	/** Modify or add an entry to the talk table. */
+	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+	              uint32 soundID);
+
 	static uint32 getLanguageID(Common::SeekableReadStream &tlk);
 	static uint32 getLanguageID(const Common::UString &file);
 
@@ -79,6 +84,8 @@ private:
 
 		// V4
 		uint32 soundID;
+
+		Entry();
 	};
 
 	typedef std::vector<Entry> Entries;

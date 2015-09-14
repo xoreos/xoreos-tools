@@ -43,6 +43,13 @@ static const uint32 kVersion4 = MKTAG('V', '4', '.', '0');
 
 namespace Aurora {
 
+TalkTable_TLK::Entry::Entry() : offset(0xFFFFFFFF), length(0xFFFFFFFF),
+	flags(0), volumeVariance(0), pitchVariance(0), soundLength(-1.0f),
+	soundID(0xFFFFFFFF) {
+
+}
+
+
 TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
 	TalkTable(encoding), _tlk(tlk) {
 
@@ -126,6 +133,9 @@ void TalkTable_TLK::readEntryTableV4() {
 }
 
 Common::UString TalkTable_TLK::readString(const Entry &entry) const {
+	if (!entry.text.empty())
+		return entry.text;
+
 	if ((entry.length == 0) || !(entry.flags & kFlagTextPresent))
 		return "";
 
@@ -186,6 +196,43 @@ bool TalkTable_TLK::getEntry(uint32 strRef, Common::UString &string, Common::USt
 	soundID = entry.soundID;
 
 	return true;
+}
+
+void TalkTable_TLK::setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+                             uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+                             uint32 soundID) {
+
+	if (strRef >= _entries.size()) {
+		for (size_t i = _entries.size(); i < strRef; i++)
+			_strRefs.push_back(i);
+
+		_strRefs.sort();
+		_strRefs.unique();
+
+		_entries.resize(strRef + 1);
+	}
+
+	Entry &entry = _entries[strRef];
+
+	entry.text        = string;
+	entry.soundResRef = soundResRef;
+
+	entry.volumeVariance = volumeVariance;
+	entry.pitchVariance  = pitchVariance;
+	entry.soundLength    = soundLength;
+
+	entry.soundID = soundID;
+
+	entry.length = 0;
+	entry.offset = 0xFFFFFFFF;
+
+	entry.flags = 0;
+	if (!entry.text.empty())
+		entry.flags |= kFlagTextPresent;
+	if (!entry.soundResRef.empty())
+		entry.flags |= kFlagSoundPresent;
+	if (entry.soundLength > 0.0f)
+		entry.flags |= kFlagSoundLengthPresent;
 }
 
 uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
