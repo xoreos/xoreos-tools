@@ -80,7 +80,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 			xml.addProperty("volumevariance", Common::composeString(volumeVariance));
 		if (pitchVariance != 0)
 			xml.addProperty("pitchvariance", Common::composeString(pitchVariance));
-		if (soundLength > 0.0f)
+		if (soundLength >= 0.0f)
 			xml.addProperty("soundlength", Common::composeString(soundLength));
 
 		if (soundID != 0xFFFFFFFF)

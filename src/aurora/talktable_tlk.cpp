@@ -118,6 +118,9 @@ void TalkTable_TLK::readEntryTableV3() {
 		entry.length         = _tlk->readUint32LE();
 		entry.soundLength    = _tlk->readIEEEFloatLE();
 
+		if (!(entry.flags & kFlagSoundLengthPresent))
+			entry.soundLength = -1.0f;
+
 		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
 			_strRefs.push_back(i);
 	}
