@@ -166,6 +166,10 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				isOption = true;
 				encoding = Common::kEncodingInvalid;
 				game     = Aurora::kGameIDKotOR2;
+			} else if (argv[i] == "--jade") {
+				isOption = true;
+				encoding = Common::kEncodingInvalid;
+				game     = Aurora::kGameIDJade;
 			} else if (argv[i] == "--witcher") {
 				isOption = true;
 				encoding = Common::kEncodingInvalid;
