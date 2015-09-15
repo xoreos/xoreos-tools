@@ -85,7 +85,8 @@ Sonic Chronicles: The Dark Brotherhood:
 |           - | French                | CP-1252  |
 |           - | German                | CP-1252  |
 |           - | Italian               | CP-1252  |
-|           - | Spanish               | UTF-8    |
+|           - | Spanish               | CP-1252  |
+|           - | Japanese              | UTF-8    |
 
 Dragon Age: Origins, Dragon Age II:
 
