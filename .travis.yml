@@ -18,6 +18,9 @@ script:
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then make -j4; fi
 
 addons:
+  apt:
+    packages:
+      - libxml2-dev
   coverity_scan:
     build_script_url: https://raw.githubusercontent.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.travis_coverity.sh
     project:
