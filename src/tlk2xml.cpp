@@ -261,9 +261,7 @@ void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Comm
 	}
 
 	try {
-		XML::TLKDumper dumper;
-		dumper.dump(*out, tlk, encoding);
-
+		XML::TLKDumper::dump(*out, tlk, encoding);
 	} catch (...) {
 		delete out;
 		throw;

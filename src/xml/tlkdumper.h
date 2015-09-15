@@ -36,11 +36,9 @@ namespace XML {
 
 class TLKDumper {
 public:
-	TLKDumper();
-	~TLKDumper();
-
 	/** Dump the TLK into XML. */
-	void dump(Common::WriteStream &output, Common::SeekableReadStream *input, Common::Encoding encoding);
+	static void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
+	                 Common::Encoding encoding);
 };
 
 } // End of namespace XML

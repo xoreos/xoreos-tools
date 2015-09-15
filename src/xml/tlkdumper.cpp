@@ -34,12 +34,6 @@
 
 namespace XML {
 
-TLKDumper::TLKDumper() {
-}
-
-TLKDumper::~TLKDumper() {
-}
-
 void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                      Common::Encoding encoding) {
 
