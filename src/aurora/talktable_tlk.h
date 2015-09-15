@@ -33,6 +33,10 @@
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/talktable.h"
 
+namespace Common {
+	class WriteStream;
+}
+
 namespace Aurora {
 
 /** Loading BioWare's TLK talk tables. */
@@ -60,6 +64,11 @@ public:
 	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
 	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
 	              uint32 soundID);
+
+	/** Write this TLK as a version V3.0 TLK into that stream. */
+	void write30(Common::WriteStream &out) const;
+	/** Write this TLK as a version V4.0 TLK into that stream. */
+	void write40(Common::WriteStream &out) const;
 
 	static uint32 getLanguageID(Common::SeekableReadStream &tlk);
 	static uint32 getLanguageID(const Common::UString &file);
@@ -110,6 +119,8 @@ private:
 	void readEntryTableV4();
 
 	Common::UString readString(const Entry &entry) const;
+
+	Common::SeekableReadStream *collectEntries(Entries &entries) const;
 };
 
 } // End of namespace Aurora
