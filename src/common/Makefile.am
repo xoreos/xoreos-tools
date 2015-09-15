@@ -40,6 +40,7 @@ noinst_HEADERS = \
                  memreadstream.h \
                  writestream.h \
                  memwritestream.h \
+                 stdinstream.h \
                  stdoutstream.h \
                  streamtokenizer.h \
                  readfile.h \
@@ -63,6 +64,7 @@ libcommon_la_SOURCES = \
                        memreadstream.cpp \
                        writestream.cpp \
                        memwritestream.cpp \
+                       stdinstream.cpp \
                        stdoutstream.cpp \
                        streamtokenizer.cpp \
                        readfile.cpp \
