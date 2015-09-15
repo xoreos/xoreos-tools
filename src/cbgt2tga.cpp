@@ -103,7 +103,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			  // An options, but we already checked for all known ones
 
 				printUsage(stderr, argv[0]);
-				returnValue = -1;
+				returnValue = 1;
 
 				return false;
 			}
@@ -114,7 +114,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 	if (args.size() != 4) {
 		printUsage(stderr, argv[0]);
-		returnValue = -1;
+		returnValue = 1;
 
 		return false;
 	}
