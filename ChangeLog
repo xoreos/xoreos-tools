@@ -1,4 +1,6 @@
 Someday, ????-??-?? (Version 0.0.3)
+	- Tools added:
+		- xml2tlk
 	- BUILD:
 		- Fixed CMake compilation on Windows with MSVC
 		- Fixed configure with zlib 1.2.3.4 - 1.2.3.9

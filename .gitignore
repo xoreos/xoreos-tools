@@ -56,6 +56,7 @@ Makefile.am.cmake
 # Unix binaries
 /src/gff2xml
 /src/tlk2xml
+/src/xml2tlk
 /src/convert2da
 /src/unerf
 /src/unherf
@@ -73,6 +74,7 @@ Makefile.am.cmake
 # Windows binaries
 /src/gff2xml.exe
 /src/tlk2xml.exe
+/src/xml2tlk.exe
 /src/convert2da.exe
 /src/unerf.exe
 /src/unherf.exe

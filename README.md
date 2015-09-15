@@ -15,6 +15,7 @@ Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
 * tlk2xml: Convert BioWare TLK to XML
+* xml2tlk: Convert XML back to BioWare TLK
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
 * unerf: Extract BioWare ERF archives
 * unherf: Extract BioWare HERF archives
@@ -38,10 +39,10 @@ and so does the encoding used for strings in those TLK files. There
 is no way to autodetect this information, so it has to be provided
 to tools handling those files, in one way or another.
 
-For the tool tlk2xml, you can specify this encoding either directly,
-or by giving the game the TLK is from. Please note that this does
-not work for Sonic Chronicles: The Dark Brotherhood, because its
-TLK files do not provide a language ID.
+For the tools tlk2xml and xml2tlk, you can specify this encoding
+either directly, or by giving the game the TLK is from. Please note
+that this does not work for Sonic Chronicles: The Dark Brotherhood,
+because its TLK files do not provide a language ID.
 
 Neverwinter Nights, Neverwinter Nights 2, Knights of the Old Republic,
 Knights of the Old Republic 2, Jade Empire:
