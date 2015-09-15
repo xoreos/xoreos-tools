@@ -50,6 +50,11 @@ TalkTable_TLK::Entry::Entry() : offset(0xFFFFFFFF), length(0xFFFFFFFF),
 }
 
 
+TalkTable_TLK::TalkTable_TLK(Common::Encoding encoding, uint32 languageID) :
+	TalkTable(encoding), _tlk(0), _stringsOffset(0), _languageID(languageID) {
+
+}
+
 TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
 	TalkTable(encoding), _tlk(tlk) {
 
@@ -141,7 +146,7 @@ void TalkTable_TLK::readEntryTableV4() {
 }
 
 Common::UString TalkTable_TLK::readString(const Entry &entry) const {
-	if (!entry.text.empty())
+	if (!_tlk || !entry.text.empty())
 		return entry.text;
 
 	if ((entry.length == 0) || !(entry.flags & kFlagTextPresent))
