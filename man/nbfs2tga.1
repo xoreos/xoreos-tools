@@ -46,6 +46,29 @@ The width of the NBFS image.
 .TP 4
 [<height>]
 The height of the NBFS image.
+.SH EXAMPLES
+.ad l
+.B Convert an NBFS+NBFP into a TGA and specifiy dimensions:
+.nf
+.ad l
+nbfs2tga a.nbfs a.nbfp a.tga 64 64
+.PP
+.fi
+.ad l
+.B Convert an NBFS+NBFP into a TGA and only specify width:
+.nf
+.ad l
+nbfs2tga a.nbfs a.nbfp a.tga 64
+.PP
+.fi
+.ad l
+.B Convert an NBFS+NBFP into a TGA and guess image dimensions:
+.nf
+.ad l
+nbfs2tga a.nbfs a.nbfp a.tga
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 More information about the xoreos project can be found on
 .URL "https://xoreos.org/" "its website" .

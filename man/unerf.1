@@ -96,6 +96,57 @@ The ERF archive to read.
 [<file>]
 One or more files to extract. If none are given, the whole archive is
 extracted.
+.SH EXAMPLES
+.ad l
+.B View meta-information of the archive Shadowlords1.mod:
+.nf
+.ad l
+unerf i Shadowlords1.mod
+.PP
+.fi
+.ad l
+.B List all files contained in the archive Chapter1.nwm:
+.nf
+.ad l
+unerf l Chapter1.nwm
+.PP
+.fi
+.ad l
+.B List all files, with full path, in the archive areas.erf:
+.nf
+.ad l
+unerf v areas.erf
+.PP
+.fi
+.ad l
+.B Extract all files from the archive foo.mod:
+.nf
+.ad l
+unerf e foo.mod
+.PP
+.fi
+.ad l
+.B Extract the file area1.are from the archive foo.mod:
+.nf
+.ad l
+unerf e foo.mod area1.are
+.PP
+.fi
+.ad l
+.B Extract all files, with full path, in the archive areas.erf:
+.nf
+.ad l
+unerf s areas.erf
+.PP
+.fi
+.ad l
+.B Extract the file areas\\\\area1.are from the archive areas.erf:
+.nf
+.ad l
+unerf s areas.erf areas\\\\area1.are
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 .BR unherf (1),
 .BR unrim (1)

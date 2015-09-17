@@ -82,6 +82,29 @@ The name of the texture file to read.
 .TP 4
 <output file>
 The resulting TGA file will be written there.
+.SH EXAMPLES
+.ad l
+.B Convert texture.dds into image.tga:
+.nf
+.ad l
+xoreostex2tga texture.dds image.tga
+.PP
+.fi
+.ad l
+.B Convert texture.dds into image.tga and flip the image:
+.nf
+.ad l
+xoreostex2tga --flip texture.dds image.tga
+.PP
+.fi
+.ad l
+.B Convert the TPC texture.txb into image.tga and flip the image:
+.nf
+.ad l
+xoreostex2tga --flip --tpc texture.txb image.tga
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 More information about the xoreos project can be found on
 .URL "https://xoreos.org/" "its website" .

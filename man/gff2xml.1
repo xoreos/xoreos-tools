@@ -60,6 +60,29 @@ The GFF file to convert.
 The XML file will be written there. If no output file is specified,
 the XML data is written to stdout. The encoding of the XML stream
 is always UTF-8.
+.SH EXAMPLES
+.ad l
+.B Convert the GFF file1.utc into an XML file:
+.nf
+.ad l
+gff2xml file1.utc file2.xml
+.PP
+.fi
+.ad l
+.B Convert the GFF file1.utc into an XML file on stdout:
+.nf
+.ad l
+gff2xml file1.utc
+.PP
+.fi
+.ad l
+.B Convert the GFF file1.utc, which uses Windows CP-1252 strings:
+.nf
+.ad l
+gff2xml --cp1252 file1.utc file2.xml
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 .BR convert2da (1),
 .BR tlk2xml (1)

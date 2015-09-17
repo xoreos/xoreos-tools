@@ -141,6 +141,41 @@ The TLK file to convert.
 The XML file will be written there. If no output file is specified,
 the XML data is written to stdout. The encoding of the XML stream
 is always UTF-8.
+.SH EXAMPLES
+.ad l
+.B Convert the CP-1252 TLK file1.tlk into an XML file:
+.nf
+.ad l
+tlk2xml --cp1252 file1.tlk file2.xml
+.PP
+.fi
+.ad l
+.B Convert the UTF-16LE TLK file1.tlk into an XML file on stdout:
+.nf
+.ad l
+tlk2xml --utf16le file1.tlk
+.PP
+.fi
+.ad l
+.B Convert the TLK file1.tlk from Neverwinter Nights into an XML file:
+.nf
+.ad l
+tlk2xml --nwn file1.tlk file2.xml
+.PP
+.fi
+.ad l
+.B Convert the UTF-8 TLK file1.tlk into an XML file on stdout, modify
+.B it using
+.BR sed (1)
+.B and use
+.BR xml2tlk (1)
+.B to write it back into a TLK:
+.nf
+.ad l
+tlk2xml --utf8 file1.tlk | sed -e 's/gold/candy/g' | xml2tlk --utf8 --version30 file2.tlk
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 .BR xml2tlk (1),
 .BR gff2xml (1)

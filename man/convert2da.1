@@ -76,6 +76,36 @@ and use the same column layout. They will be pasted together and
 converted as one GDA. This mimics how the M2DA (multiple 2DA/GDA)
 work in the
 .IR "Dragon Age" " games."
+.SH EXAMPLES
+.ad l
+.B Convert the 2DA file1.2da into an ASCII 2DA file2.2da:
+.nf
+.ad l
+convert2da -a file1.2da file2.2da
+.PP
+.fi
+.ad l
+.B Convert the 2DA file1.2da into an ASCII 2DA on stdout:
+.nf
+.ad l
+convert2da -a file1.2da
+.PP
+.fi
+.ad l
+.B Convert the 2DA file1.2da into a binary 2DA file2.2da:
+.nf
+.ad l
+convert2da -b file1.2da file2.2da
+.PP
+.fi
+.ad l
+.B Convert the 2DA file1.2da into a CSV file:
+.nf
+.ad l
+convert2da -c file1.2da file2.csv
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 .BR gff2xml (1)
 .PP

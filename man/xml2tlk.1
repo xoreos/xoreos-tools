@@ -187,6 +187,40 @@ must always be UTF-8.
 .TP 4
 <output file>
 The TLK file will be written there.
+.SH EXAMPLES
+.ad l
+.B Convert file1.xml into a V3.0 CP-1252 TLK file:
+.nf
+.ad l
+xml2tlk --version30 --cp1252 file1.xml file2.tlk
+.PP
+.fi
+.ad l
+.B Convert file1.xml into a V4.0 UTF-8 TLK file and override the language ID:
+.nf
+.ad l
+xml2tlk --version40 --utf8 --language 1 file1.xml file2.tlk
+.PP
+.fi
+.ad l
+.B Convert file1.xml into a V3.0 TLK file from Neverwinter Nights:
+.nf
+.ad l
+xml2tlk --version30 --nwn file1.xml file2.tlk
+.PP
+.fi
+.ad l
+.B Convert the UTF-8 TLK file1.tlk into an XML file on stdout with
+.BR tlk2xml (1),
+.B modify it using
+.BR sed (1)
+.B and write the result back into a TLK:
+.nf
+.ad l
+tlk2xml --utf8 file1.tlk | sed -e 's/gold/candy/g' | xml2tlk --utf8 --version30 file2.tlk
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 .BR tlk2xml (1)
 .PP

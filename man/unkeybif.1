@@ -79,6 +79,23 @@ e  Extract files to current directory
 <file>
 A KEY or a BIF file to read. Multiple KEY and BIF files can be
 specified; they'll be considered a unit.
+.SH EXAMPLES
+.ad l
+.B List all files indexed by the KEY file chitin.key:
+.nf
+.ad l
+unkeybif l chitin.key
+.PP
+.fi
+.ad l
+.B Extract all files contained in data1.bif and data2.bif, that are
+.B indexed by chitin.key
+.nf
+.ad l
+unkeybif e chitin.key data1.bif data2.bif
+.PP
+.fi
+.ad b
 .SH "SEE ALSO"
 More information about the xoreos project can be found on
 .URL "https://xoreos.org/" "its website" .
