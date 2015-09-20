@@ -130,7 +130,9 @@ TwoDAFile::TwoDAFile(Common::SeekableReadStream &twoda) :
 	load(twoda);
 }
 
-TwoDAFile::TwoDAFile(const GDAFile &gda) : _emptyRow(*this) {
+TwoDAFile::TwoDAFile(const GDAFile &gda) :
+	_defaultInt(0), _defaultFloat(0.0f), _emptyRow(*this) {
+
 	load(gda);
 }
 
