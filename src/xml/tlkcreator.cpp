@@ -87,8 +87,8 @@ void TLKCreator::create(Common::WriteStream &output, Common::ReadStream &input,
 		if (xmlID.empty())
 			throw Common::Exception("XML property \"id\" expected");
 
-		uint32 strRef;
-		Common::parseString(xmlID, strRef, true);
+		uint32 strRef = 0xFFFFFFFF;
+		Common::parseString(xmlID, strRef, false);
 
 		Common::UString string;
 		const XMLNode *text = (*s)->findChild("text");
