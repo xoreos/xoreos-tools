@@ -1,3 +1,19 @@
+Changes in xoreos-tools version 0.0.3
+=====================================
+
+This release of the xoreos-tools package features a new xml2tlk tool that
+can convert XML files created by the tlk2xml tool back into a talk table
+TLK file. Please note that, at the moment, only non-GFF'd TLK files can be
+written, as used by the two Neverwinter Nights games, the two Knights of
+the Old Republic games, Jade Empire and The Witcher. TLK files as used by
+Sonic Chronicles: The Dark Brotherhood and the two Dragon Age games can not
+be written (they can, however, be read with the tlk2xml tool).
+
+Additionally, the convert2da tool gained the ability to write binary 2DA
+files, as used by the two Knights of the Old Republic games; and
+xoreostex2tga can now correctly read TPC cube maps.
+
+
 Changes in xoreos-tools version 0.0.2
 =====================================
 
