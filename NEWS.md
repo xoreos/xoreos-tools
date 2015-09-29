@@ -14,7 +14,7 @@ Included are:
   - desmall
 - Tools converting basic resource formats into human-readable form
   - gff2xml
-  - tlk2xl
+  - tlk2xml
   - convert2da
 - Tools converting graphics formats into TGA
   - xoreostex2tga
