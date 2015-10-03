@@ -173,10 +173,18 @@ struct Instruction {
 	/** Parameter for kOpcodeCONST + kInstTypeString or kInstTypeResource. */
 	Common::UString constValueString;
 
+	/** The instruction directly, naturally following this instruction.
+	 *
+	 *  The instruction that is taken when the code flows without taking
+	 *  any branches. If the instruction has no natural follower (which
+	 *  is the case for RETN and JMP), this value is 0.
+	 */
+	Instruction *follower;
+
 
 	Instruction(uint32 addr) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
-		constValueInt(0), constValueFloat(0.0f), constValueObject(0) {
+		constValueInt(0), constValueFloat(0.0f), constValueObject(0), follower(0) {
 
 		for (size_t i = 0; i < kOpcodeMaxArgumentCount; i++) {
 			args    [i] = 0;

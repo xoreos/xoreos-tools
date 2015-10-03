@@ -184,6 +184,16 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 void NCSFile::parse(Common::SeekableReadStream &ncs) {
 	while (parseStep(ncs))
 		;
+
+	// Go through all instructions and link them according to the flow graph
+	for (Instructions::iterator i = _instructions.begin(); i != _instructions.end(); ++i) {
+		// If this is an instruction that has a natural follower, link it
+		if ((i->opcode != kOpcodeJMP) && (i->opcode != kOpcodeRETN)) {
+			Instructions::iterator follower = i + 1;
+
+			i->follower = (follower != _instructions.end()) ? &*follower : 0;
+		}
+	}
 }
 
 bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
