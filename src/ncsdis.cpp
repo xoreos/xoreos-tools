@@ -145,15 +145,19 @@ void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out) {
 	                (uint)ncs.size(), (uint)instr.size()));
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		const Common::UString str =
-			Common::UString::format("%08X %-26s %s\n", i->address,
-			                        NWScript::formatBytes(*i).c_str(),
-			                        NWScript::formatInstruction(*i).c_str());
+		// Print subroutine / jump labels
+		if      (i->isSubRoutine)
+			out.writeString(NWScript::formatSubRoutine(i->address) + ":\n");
+		else if (i->isJumpDestination)
+			out.writeString(NWScript::formatJumpDestination(i->address) + ":\n");
 
-		out.writeString(str);
+		// Print the actual disassembly line
+		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
+			              NWScript::formatBytes(*i).c_str(), NWScript::formatInstruction(*i).c_str()));
 
+		// If this instruction has no natural follower, print a separator
 		if (!i->follower)
-			out.writeString("-------- -------------------------- ---\n");
+			out.writeString("  -------- -------------------------- ---\n");
 	}
 }
 
