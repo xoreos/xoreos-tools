@@ -173,6 +173,11 @@ struct Instruction {
 	/** Parameter for kOpcodeCONST + kInstTypeString or kInstTypeResource. */
 	Common::UString constValueString;
 
+	/** Does this instruction start a subroutine that's called with a JSR instruction? */
+	bool isSubRoutine;
+	/** Is this instruction a destination for a jump? */
+	bool isJumpDestination;
+
 	/** The instruction directly, naturally following this instruction.
 	 *
 	 *  The instruction that is taken when the code flows without taking
@@ -195,7 +200,8 @@ struct Instruction {
 
 	Instruction(uint32 addr) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
-		constValueInt(0), constValueFloat(0.0f), constValueObject(0), follower(0) {
+		constValueInt(0), constValueFloat(0.0f), constValueObject(0),
+		isSubRoutine(false), isJumpDestination(false), follower(0) {
 
 		for (size_t i = 0; i < kOpcodeMaxArgumentCount; i++) {
 			args    [i] = 0;

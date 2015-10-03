@@ -85,6 +85,22 @@ Common::UString formatBytes(const Instruction &instr);
  */
 Common::UString formatInstruction(const Instruction &instr);
 
+/** Format this address to be the name of a subroutine.
+ *
+ *  Example: "sub_000023FF".
+ *
+ *  Always exactly 12 characters long.
+ */
+Common::UString formatSubRoutine(uint32 address);
+
+/** Format this address to be the name of a jump destination.
+ *
+ *  Example: "loc_000023FF".
+ *
+ *  Always exactly 12 characters long.
+ */
+Common::UString formatJumpDestination(uint32 address);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H

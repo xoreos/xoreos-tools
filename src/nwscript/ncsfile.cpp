@@ -223,6 +223,13 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 				throw Common::Exception("Can't find destination of unconditional branch");
 
 			i->branches.push_back(&*branch);
+
+			if (i->opcode == kOpcodeJSR)
+				// If this is a JSR opcode, the destination starts a subroutine
+				branch->isSubRoutine = true;
+			else
+				// Otherwise, it's at least a jump destination still
+				branch->isJumpDestination = true;
 		}
 
 		// Link destinations of conditional branches
@@ -235,6 +242,8 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
 			if (branch == _instructions.end())
 				throw Common::Exception("Can't find destination of conditional branch");
+
+			branch->isJumpDestination = true;
 
 			i->branches.push_back(&*branch);    // True branch
 			i->branches.push_back(i->follower); // False branch

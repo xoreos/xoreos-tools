@@ -250,9 +250,13 @@ Common::UString formatInstruction(const Instruction &instr) {
 	     (instr.opcode == kOpcodeJZ ) || (instr.opcode == kOpcodeJNZ)) &&
 	    (!instr.branches.empty() && instr.branches[0])) {
 
-		// For the JSR instruction, create a "sub_" label, otherwise a "loc_" one
-		str += Common::UString::format(" %s_", (instr.opcode == kOpcodeJSR) ? "sub" : "loc");
-		str += Common::UString::format("%08X", instr.branches[0]->address);
+		str += " ";
+
+		// Format the destination address according to whether this is a subroutine or not
+		if (instr.opcode == kOpcodeJSR)
+			str += formatSubRoutine(instr.branches[0]->address);
+		else
+			str += formatJumpDestination(instr.branches[0]->address);
 
 		return str;
 	}
@@ -300,6 +304,14 @@ Common::UString formatInstruction(const Instruction &instr) {
 	}
 
 	return str;
+}
+
+Common::UString formatSubRoutine(uint32 address) {
+	return Common::UString::format("sub_%08X", address);
+}
+
+Common::UString formatJumpDestination(uint32 address) {
+	return Common::UString::format("loc_%08X", address);
 }
 
 } // End of namespace NWScript
