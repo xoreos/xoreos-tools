@@ -155,6 +155,14 @@ const NCSFile::Instructions &NCSFile::getInstructions() const {
 	return _instructions;
 }
 
+const Instruction *NCSFile::findInstruction(uint32 address) const {
+	Instructions::const_iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
+	if ((it == _instructions.end()) || (it->address != address))
+		return 0;
+
+	return &*it;
+}
+
 void NCSFile::load(Common::SeekableReadStream &ncs) {
 	try {
 		readHeader(ncs);

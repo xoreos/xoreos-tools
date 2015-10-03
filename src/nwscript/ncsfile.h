@@ -56,6 +56,9 @@ public:
 	/** Return all the instructions within this NCS file. */
 	const Instructions &getInstructions() const;
 
+	/** Find an instruction by address. */
+	const Instruction *findInstruction(uint32 address) const;
+
 
 private:
 	size_t _size;
