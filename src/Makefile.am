@@ -31,6 +31,7 @@ bin_PROGRAMS = \
                ncgr2tga \
                cbgt2tga \
                cdpth2tga \
+               ncsdis \
                $(EMPTY)
 
 gff2xml_SOURCES = \
@@ -193,3 +194,13 @@ cdpth2tga_LDADD   = \
                     common/libcommon.la \
                     $(LDADD) \
                     $(EMPTY)
+
+ncsdis_SOURCES = \
+                 ncsdis.cpp \
+                 $(EMPTY)
+ncsdis_LDADD   = \
+                 nwscript/libnwscript.la \
+                 aurora/libaurora.la \
+                 common/libcommon.la \
+                 $(LDADD) \
+                 $(EMPTY)

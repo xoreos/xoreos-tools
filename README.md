@@ -29,6 +29,7 @@ Currently, the following tools are included:
 * ncgr2tga: Convert Nintendo's NCGR images into TGA
 * cbgt2tga: Convert CBGT images into TGA
 * cdpth2tga: Convert CDPTH depth images into TGA
+* ncsdis: Disassemble NWScript bytecode
 
 TLK language IDs and encodings
 ------------------------------
