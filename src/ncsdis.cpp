@@ -151,6 +151,9 @@ void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out) {
 			                        NWScript::formatInstruction(*i).c_str());
 
 		out.writeString(str);
+
+		if (!i->follower)
+			out.writeString("-------- -------------------------- ---\n");
 	}
 }
 
