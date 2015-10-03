@@ -22,6 +22,10 @@
  *  Handling BioWare's NCS, compiled NWScript bytecode.
  */
 
+#include <cassert>
+
+#include <algorithm>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
@@ -181,6 +185,14 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 	}
 }
 
+NCSFile::Instructions::iterator NCSFile::findInstruction(uint32 address) {
+	Instructions::iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
+	if ((it == _instructions.end()) || (it->address != address))
+		return _instructions.end();
+
+	return it;
+}
+
 void NCSFile::parse(Common::SeekableReadStream &ncs) {
 	while (parseStep(ncs))
 		;
@@ -192,6 +204,32 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 			Instructions::iterator follower = i + 1;
 
 			i->follower = (follower != _instructions.end()) ? &*follower : 0;
+		}
+
+		// Link destinations of unconditional branches
+		if ((i->opcode == kOpcodeJMP) || (i->opcode == kOpcodeJSR)) {
+			assert(i->argCount == 1);
+
+			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
+			if (branch == _instructions.end())
+				throw Common::Exception("Can't find destination of unconditional branch");
+
+			i->branches.push_back(&*branch);
+		}
+
+		// Link destinations of conditional branches
+		if ((i->opcode == kOpcodeJZ) || (i->opcode == kOpcodeJNZ)) {
+			assert(i->argCount == 1);
+
+			if (!i->follower)
+				throw Common::Exception("Conditional branch has no false destination");
+
+			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
+			if (branch == _instructions.end())
+				throw Common::Exception("Can't find destination of conditional branch");
+
+			i->branches.push_back(&*branch);    // True branch
+			i->branches.push_back(i->follower); // False branch
 		}
 	}
 }

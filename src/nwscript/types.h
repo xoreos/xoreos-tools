@@ -181,6 +181,17 @@ struct Instruction {
 	 */
 	Instruction *follower;
 
+	/** The destinations of the branches this instruction takes.
+	 *
+	 *  If this vector has:
+	 *  - no elements, the instruction doesn't branch
+	 *  - one element, the instruction branches unconditionally
+	 *  - two elements, the first is the true branch, the second the false branch
+	 *  - three or more elements, something went horribly, horribly wrong and the
+	 *    universe might be on fire
+	 */
+	std::vector<Instruction *> branches;
+
 
 	Instruction(uint32 addr) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
@@ -195,6 +206,10 @@ struct Instruction {
 	/** Order Instructions by address. */
 	bool operator<(const Instruction &right) const {
 		return address < right.address;
+	}
+
+	bool operator<(uint32 right) const {
+		return address < right;
 	}
 };
 

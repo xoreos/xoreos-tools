@@ -67,6 +67,8 @@ private:
 	void parse(Common::SeekableReadStream &ncs);
 
 	bool parseStep(Common::SeekableReadStream &ncs);
+
+	Instructions::iterator findInstruction(uint32 address);
 };
 
 } // End of namespace NWScript
