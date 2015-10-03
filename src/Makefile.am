@@ -3,6 +3,7 @@ include $(top_srcdir)/Makefile.common
 SUBDIRS = \
           common \
           aurora \
+          nwscript \
           xml \
           images \
           $(EMPTY)
