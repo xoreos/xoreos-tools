@@ -244,6 +244,19 @@ Common::UString formatInstruction(const Instruction &instr) {
 	Common::UString str = Common::UString::format("%s%s", getOpcodeName(instr.opcode).c_str(),
 	                                                      getInstTypeName(instr.type).c_str());
 
+	/* If this is a jump instruction, print the address of the destination
+	 * instead of the relative offset. */
+	if (((instr.opcode == kOpcodeJMP) || (instr.opcode == kOpcodeJSR) ||
+	     (instr.opcode == kOpcodeJZ ) || (instr.opcode == kOpcodeJNZ)) &&
+	    (!instr.branches.empty() && instr.branches[0])) {
+
+		// For the JSR instruction, create a "sub_" label, otherwise a "loc_" one
+		str += Common::UString::format(" %s_", (instr.opcode == kOpcodeJSR) ? "sub" : "loc");
+		str += Common::UString::format("%08X", instr.branches[0]->address);
+
+		return str;
+	}
+
 	for (size_t i = 0; i < instr.argCount; i++) {
 		switch (instr.argTypes[i]) {
 			case kOpcodeArgUint8:
