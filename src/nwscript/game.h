@@ -38,6 +38,11 @@ struct GameInfo {
 	size_t engineTypeCount;
 	/** The names of each NWScript engine type in this game. */
 	const char * const * const engineTypeNames;
+
+	/** The number of NWScript engine functions in this game. */
+	size_t functionCount;
+	/** The names of each NWScript engine function in this game. */
+	const char * const * const functionNames;
 };
 
 /** Return the game-specific NWScript information for this game. */
@@ -51,6 +56,12 @@ Common::UString getGenericEngineTypeName(size_t n);
 
 /** Return the name of this engine type for this game. */
 Common::UString getEngineTypeName(Aurora::GameID game, size_t n);
+
+/** Return the number of NWScript engine functions in this game. */
+size_t getFunctionCount(Aurora::GameID game);
+
+/** Return the name of this NWScript engine function for this game. */
+Common::UString getFunctionName(Aurora::GameID game, size_t n);
 
 } // End of namespace NWScript
 

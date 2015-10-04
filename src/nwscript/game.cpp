@@ -40,38 +40,56 @@ static const GameInfo kGameInfo[Aurora::kGameIDMAX] = {
 	{
 		ARRAYSIZE(NWN::kEngineTypeNames),
 		NWN::kEngineTypeNames,
+		ARRAYSIZE(NWN::kFunctionNames),
+		NWN::kFunctionNames
 	},
 	{
 		ARRAYSIZE(NWN2::kEngineTypeNames),
 		NWN2::kEngineTypeNames,
+		ARRAYSIZE(NWN2::kFunctionNames),
+		NWN2::kFunctionNames
 	},
 	{
 		ARRAYSIZE(KotOR::kEngineTypeNames),
 		KotOR::kEngineTypeNames,
+		ARRAYSIZE(KotOR::kFunctionNames),
+		KotOR::kFunctionNames
 	},
 	{
 		ARRAYSIZE(KotOR2::kEngineTypeNames),
 		KotOR2::kEngineTypeNames,
+		ARRAYSIZE(KotOR2::kFunctionNames),
+		KotOR2::kFunctionNames
 	},
 	{
 		ARRAYSIZE(Jade::kEngineTypeNames),
 		Jade::kEngineTypeNames,
+		ARRAYSIZE(Jade::kFunctionNames),
+		Jade::kFunctionNames
 	},
 	{
 		ARRAYSIZE(Witcher::kEngineTypeNames),
 		Witcher::kEngineTypeNames,
+		ARRAYSIZE(Witcher::kFunctionNames),
+		Witcher::kFunctionNames
 	},
 	{
+		0,
+		0,
 		0,
 		0
 	},
 	{
 		ARRAYSIZE(DragonAge::kEngineTypeNames),
 		DragonAge::kEngineTypeNames,
+		ARRAYSIZE(DragonAge::kFunctionNames),
+		DragonAge::kFunctionNames
 	},
 	{
 		ARRAYSIZE(DragonAge2::kEngineTypeNames),
 		DragonAge2::kEngineTypeNames,
+		ARRAYSIZE(DragonAge2::kFunctionNames),
+		DragonAge2::kFunctionNames
 	}
 };
 
@@ -100,6 +118,22 @@ Common::UString getEngineTypeName(Aurora::GameID game, size_t n) {
 		return "";
 
 	return info->engineTypeNames[n];
+}
+
+size_t getFunctionCount(Aurora::GameID game) {
+	const GameInfo *info = getGameInfo(game);
+	if (!info)
+		return 0;
+
+	return info->functionCount;
+}
+
+Common::UString getFunctionName(Aurora::GameID game, size_t n) {
+	const GameInfo *info = getGameInfo(game);
+	if (!info || (n >= info->functionCount))
+		return "";
+
+	return info->functionNames[n];
 }
 
 } // End of namespace NWScript
