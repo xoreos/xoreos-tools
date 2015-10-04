@@ -269,5 +269,8 @@ void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Comm
 
 	out->flush();
 
+	if (!outFile.empty())
+		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
+
 	delete out;
 }
