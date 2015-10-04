@@ -26,6 +26,7 @@
 #include "src/common/error.h"
 
 #include "src/nwscript/util.h"
+#include "src/nwscript/game.h"
 
 namespace NWScript {
 
@@ -241,7 +242,7 @@ Common::UString formatBytes(const Instruction &instr) {
 	return str;
 }
 
-Common::UString formatInstruction(const Instruction &instr) {
+Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game) {
 	Common::UString str = Common::UString::format("%s%s", getOpcodeName(instr.opcode).c_str(),
 	                                                      getInstTypeName(instr.type).c_str());
 
@@ -256,6 +257,14 @@ Common::UString formatInstruction(const Instruction &instr) {
 			throw Common::Exception("Branch destination is not a jump destination?!?");
 
 		return str + " " + jumpLabel;
+	}
+
+	if ((instr.opcode == kOpcodeACTION) && (instr.argCount == 2)) {
+		Common::UString functionName = getFunctionName(game, instr.args[0]);
+		if (functionName.empty())
+			functionName == Common::UString::format("%d", instr.args[0]);
+
+		return str + " " + functionName + Common::UString::format(" %d", instr.args[1]);
 	}
 
 	for (size_t i = 0; i < instr.argCount; i++) {

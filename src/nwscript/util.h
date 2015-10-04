@@ -27,6 +27,8 @@
 
 #include "src/common/ustring.h"
 
+#include "src/aurora/types.h"
+
 #include "src/nwscript/types.h"
 
 namespace NWScript {
@@ -83,7 +85,7 @@ Common::UString formatBytes(const Instruction &instr);
  *  CPDOWNSP -4 4
  *  CONSTS "Foobar"
  */
-Common::UString formatInstruction(const Instruction &instr);
+Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game = Aurora::kGameIDUnknown);
 
 /** Format this address to be the name of a subroutine.
  *
