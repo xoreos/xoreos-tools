@@ -31,9 +31,7 @@ namespace NWScript {
 
 namespace DragonAge2 {
 
-static const size_t kEngineTypeCount = 6;
-
-static const char * const kEngineTypeNames[kEngineTypeCount] = {
+static const char * const kEngineTypeNames[] = {
 	"Event", "Location", "Command", "Effect", "ItemProperty", "Player"
 };
 

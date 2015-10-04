@@ -38,27 +38,27 @@ namespace NWScript {
 
 static const GameInfo kGameInfo[Aurora::kGameIDMAX] = {
 	{
-		NWN::kEngineTypeCount,
+		ARRAYSIZE(NWN::kEngineTypeNames),
 		NWN::kEngineTypeNames,
 	},
 	{
-		NWN2::kEngineTypeCount,
+		ARRAYSIZE(NWN2::kEngineTypeNames),
 		NWN2::kEngineTypeNames,
 	},
 	{
-		KotOR::kEngineTypeCount,
+		ARRAYSIZE(KotOR::kEngineTypeNames),
 		KotOR::kEngineTypeNames,
 	},
 	{
-		KotOR2::kEngineTypeCount,
+		ARRAYSIZE(KotOR2::kEngineTypeNames),
 		KotOR2::kEngineTypeNames,
 	},
 	{
-		Jade::kEngineTypeCount,
+		ARRAYSIZE(Jade::kEngineTypeNames),
 		Jade::kEngineTypeNames,
 	},
 	{
-		Witcher::kEngineTypeCount,
+		ARRAYSIZE(Witcher::kEngineTypeNames),
 		Witcher::kEngineTypeNames,
 	},
 	{
@@ -66,11 +66,11 @@ static const GameInfo kGameInfo[Aurora::kGameIDMAX] = {
 		0
 	},
 	{
-		DragonAge::kEngineTypeCount,
+		ARRAYSIZE(DragonAge::kEngineTypeNames),
 		DragonAge::kEngineTypeNames,
 	},
 	{
-		DragonAge2::kEngineTypeCount,
+		ARRAYSIZE(DragonAge2::kEngineTypeNames),
 		DragonAge2::kEngineTypeNames,
 	}
 };

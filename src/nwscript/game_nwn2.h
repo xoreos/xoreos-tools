@@ -31,9 +31,7 @@ namespace NWScript {
 
 namespace NWN2 {
 
-static const size_t kEngineTypeCount = 5;
-
-static const char * const kEngineTypeNames[kEngineTypeCount] = {
+static const char * const kEngineTypeNames[] = {
 	"Effect", "Event", "Location", "Talent", "ItemProperty"
 };
 
