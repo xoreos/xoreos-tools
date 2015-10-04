@@ -224,12 +224,10 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 
 			i->branches.push_back(&*branch);
 
-			if (i->opcode == kOpcodeJSR)
-				// If this is a JSR opcode, the destination starts a subroutine
-				branch->isSubRoutine = true;
-			else
-				// Otherwise, it's at least a jump destination still
-				branch->isJumpDestination = true;
+			branch->addressType = (i->opcode == kOpcodeJSR) ? kAddressTypeSubRoutine : kAddressTypeJumpLabel;
+
+			if (branch->follower)
+				branch->follower->addressType = kAddressTypeTail;
 		}
 
 		// Link destinations of conditional branches
@@ -243,7 +241,8 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 			if (branch == _instructions.end())
 				throw Common::Exception("Can't find destination of conditional branch");
 
-			branch->isJumpDestination = true;
+			branch->addressType      = kAddressTypeJumpLabel;
+			i->follower->addressType = kAddressTypeTail;
 
 			i->branches.push_back(&*branch);    // True branch
 			i->branches.push_back(i->follower); // False branch

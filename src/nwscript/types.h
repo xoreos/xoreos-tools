@@ -148,6 +148,14 @@ enum OpcodeArgument {
 	kOpcodeArgVariable
 };
 
+/** The type of an instruction address. */
+enum AddressType {
+	kAddressTypeNone,       ///< No special address type.
+	kAddressTypeSubRoutine, ///< Address that starts a subroutine.
+	kAddressTypeJumpLabel,  ///< Address that's the destination of a jump label.
+	kAddressTypeTail        ///< The tail (or false branch) of a jump instruction.
+};
+
 static const size_t kOpcodeMaxArgumentCount = 3;
 
 /** An NWScript bytecode instruction. */
@@ -173,10 +181,8 @@ struct Instruction {
 	/** Parameter for kOpcodeCONST + kInstTypeString or kInstTypeResource. */
 	Common::UString constValueString;
 
-	/** Does this instruction start a subroutine that's called with a JSR instruction? */
-	bool isSubRoutine;
-	/** Is this instruction a destination for a jump? */
-	bool isJumpDestination;
+	/** The type of this instruction address. */
+	AddressType addressType;
 
 	/** The instruction directly, naturally following this instruction.
 	 *
@@ -201,7 +207,7 @@ struct Instruction {
 	Instruction(uint32 addr) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
 		constValueInt(0), constValueFloat(0.0f), constValueObject(0),
-		isSubRoutine(false), isJumpDestination(false), follower(0) {
+		addressType(kAddressTypeNone), follower(0) {
 
 		for (size_t i = 0; i < kOpcodeMaxArgumentCount; i++) {
 			args    [i] = 0;

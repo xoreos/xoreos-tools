@@ -321,9 +321,9 @@ Common::UString formatJumpDestination(uint32 address) {
 }
 
 Common::UString formatJumpLabel(const Instruction &instr) {
-	if (instr.isSubRoutine)
+	if (instr.addressType == kAddressTypeSubRoutine)
 		return formatSubRoutine(instr.address);
-	if (instr.isJumpDestination)
+	if (instr.addressType == kAddressTypeJumpLabel)
 		return formatJumpDestination(instr.address);
 
 	return "";
