@@ -181,6 +181,9 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile) {
 
 	out->flush();
 
+	if (!outFile.empty())
+		status("Disassembled \"%s\" into \"%s\"", inFile.c_str(), outFile.c_str());
+
 	delete ncsFile;
 	delete out;
 }
