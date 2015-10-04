@@ -22,6 +22,7 @@
  *  Tool to disassemble NWScript bytecode.
  */
 
+#include <cassert>
 #include <cstring>
 #include <cstdio>
 
@@ -41,13 +42,22 @@
 #include "src/nwscript/util.h"
 #include "src/nwscript/game.h"
 
+enum Command {
+	kCommandNone     = -1,
+	kCommandListing  =  0,
+	kCommandAssembly =  1,
+	kCommandMAX
+};
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game);
+                      Aurora::GameID &game, Command &command);
 
-void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out, Aurora::GameID &game);
-void disNCS(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID &game);
+void disNCS(const Common::UString &inFile, const Common::UString &outFile,
+            Aurora::GameID &game, Command &command);
+void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game);
+void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
@@ -56,13 +66,14 @@ int main(int argc, char **argv) {
 	Aurora::GameID game = Aurora::kGameIDUnknown;
 
 	int returnValue = 1;
+	Command command = kCommandNone;
 	Common::UString inFile, outFile;
 
 	try {
-		if (!parseCommandLine(args, returnValue, inFile, outFile, game))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, game, command))
 			return returnValue;
 
-		disNCS(inFile, outFile, game);
+		disNCS(inFile, outFile, game, command);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return 1;
@@ -75,11 +86,13 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game) {
+                      Aurora::GameID &game, Command &command) {
 
 	inFile.clear();
 	outFile.clear();
 	std::vector<Common::UString> args;
+
+	command = kCommandListing;
 
 	bool optionsEnd = false;
 	for (size_t i = 1; i < argv.size(); i++) {
@@ -108,7 +121,13 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				return false;
 			}
 
-			if        (argv[i] == "--nwn") {
+			if        (argv[i] == "--list") {
+				isOption = true;
+				command  = kCommandListing;
+			} else if (argv[i] == "--assembly") {
+				isOption = true;
+				command  = kCommandAssembly;
+			} else if (argv[i] == "--nwn") {
 				isOption = true;
 				game     = Aurora::kGameIDNWN;
 			} else if (argv[i] == "--nwn2") {
@@ -150,6 +169,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 		args.push_back(argv[i]);
 	}
 
+	assert(command != kCommandNone);
+
 	if ((args.size() < 1) || (args.size() > 2)) {
 		printUsage(stderr, argv[0]);
 		returnValue = 1;
@@ -170,6 +191,8 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Usage: %s [<options>] <input file> [<output file>]\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n\n");
+	std::fprintf(stream, "          --list              Create full disassembly listing (default)\n");
+	std::fprintf(stream, "          --assembly          Only create disassembly mnemonics\n\n");
 	std::fprintf(stream, "          --nwn               This is a Neverwinter Nights script\n");
 	std::fprintf(stream, "          --nwn2              This is a Neverwinter Nights 2 script\n");
 	std::fprintf(stream, "          --kotor             This is a Knights of the Old Republic script\n");
@@ -181,9 +204,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out, Aurora::GameID &game) {
-	NWScript::NCSFile ncs(ncsFile);
-
+void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
 	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
 
 	out.writeString(Common::UString::format("%u bytes, %u instructions\n\n",
@@ -222,7 +243,27 @@ void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out, Auror
 	}
 }
 
-void disNCS(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID &game) {
+void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
+	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
+
+	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
+		// Print jump label
+		const Common::UString jumpLabel = NWScript::formatJumpLabel(*i);
+		if (!jumpLabel.empty())
+			out.writeString(jumpLabel + ":\n");
+
+		// Print the actual disassembly line
+		out.writeString(Common::UString::format("  %s\n", NWScript::formatInstruction(*i, game).c_str()));
+
+		// If this instruction has no natural follower, print an empty line as separator
+		if (!i->follower)
+			out.writeString("\n");
+	}
+}
+
+void disNCS(const Common::UString &inFile, const Common::UString &outFile,
+            Aurora::GameID &game, Command &command) {
+
 	Common::SeekableReadStream *ncsFile = new Common::ReadFile(inFile);
 
 	Common::WriteStream *out = 0;
@@ -232,7 +273,20 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile, Auror
 		else
 			out = new Common::StdOutStream;
 
-		disNCS(*ncsFile, *out, game);
+		NWScript::NCSFile ncs(*ncsFile);
+
+		switch (command) {
+			case kCommandListing:
+				createList(ncs, *out, game);
+				break;
+
+			case kCommandAssembly:
+				createAssembly(ncs, *out, game);
+				break;
+
+			default:
+				throw Common::Exception("Invalid command %u", (uint)command);
+		}
 
 	} catch (...) {
 		delete ncsFile;
