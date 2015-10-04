@@ -200,7 +200,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 		args.push_back(argv[i]);
 	}
 
-	if (args.size() < 1) {
+	if ((args.size() < 1) || (args.size() > 2)) {
 		printUsage(stderr, argv[0]);
 		returnValue = 1;
 
