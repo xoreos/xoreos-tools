@@ -101,6 +101,18 @@ Common::UString formatSubRoutine(uint32 address);
  */
 Common::UString formatJumpDestination(uint32 address);
 
+/** Format a jump label for the address of this instruction.
+ *
+ *  - If the instruction starts a subroutine, format its address
+ *    as a subroutine (see formatSubRoutine())
+ *  - If the instruction is a jump destination, format its address
+ *    as a jump destination (see formatJumpDestination())
+ *  - If the instruction is neither, return an empty string
+ *
+ *  Always either empty or exactly 12 characters long.
+ */
+Common::UString formatJumpLabel(const Instruction &instr);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H

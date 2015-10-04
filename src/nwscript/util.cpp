@@ -23,6 +23,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/error.h"
 
 #include "src/nwscript/util.h"
 
@@ -250,15 +251,11 @@ Common::UString formatInstruction(const Instruction &instr) {
 	     (instr.opcode == kOpcodeJZ ) || (instr.opcode == kOpcodeJNZ)) &&
 	    (!instr.branches.empty() && instr.branches[0])) {
 
-		str += " ";
+		const Common::UString jumpLabel = formatJumpLabel(*instr.branches[0]);
+		if (jumpLabel.empty())
+			throw Common::Exception("Branch destination is not a jump destination?!?");
 
-		// Format the destination address according to whether this is a subroutine or not
-		if (instr.opcode == kOpcodeJSR)
-			str += formatSubRoutine(instr.branches[0]->address);
-		else
-			str += formatJumpDestination(instr.branches[0]->address);
-
-		return str;
+		return str + " " + jumpLabel;
 	}
 
 	for (size_t i = 0; i < instr.argCount; i++) {
@@ -312,6 +309,15 @@ Common::UString formatSubRoutine(uint32 address) {
 
 Common::UString formatJumpDestination(uint32 address) {
 	return Common::UString::format("loc_%08X", address);
+}
+
+Common::UString formatJumpLabel(const Instruction &instr) {
+	if (instr.isSubRoutine)
+		return formatSubRoutine(instr.address);
+	if (instr.isJumpDestination)
+		return formatJumpDestination(instr.address);
+
+	return "";
 }
 
 } // End of namespace NWScript
