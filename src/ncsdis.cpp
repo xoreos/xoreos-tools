@@ -214,7 +214,7 @@ void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out, Auror
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
-			              NWScript::formatBytes(*i).c_str(), NWScript::formatInstruction(*i).c_str()));
+			              NWScript::formatBytes(*i).c_str(), NWScript::formatInstruction(*i, game).c_str()));
 
 		// If this instruction has no natural follower, print a separator
 		if (!i->follower)
