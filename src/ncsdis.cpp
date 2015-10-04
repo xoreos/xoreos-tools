@@ -145,11 +145,10 @@ void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out) {
 	                (uint)ncs.size(), (uint)instr.size()));
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		// Print subroutine / jump labels
-		if      (i->isSubRoutine)
-			out.writeString(NWScript::formatSubRoutine(i->address) + ":\n");
-		else if (i->isJumpDestination)
-			out.writeString(NWScript::formatJumpDestination(i->address) + ":\n");
+		// Print jump label
+		const Common::UString jumpLabel = NWScript::formatJumpLabel(*i);
+		if (!jumpLabel.empty())
+			out.writeString(jumpLabel + ":\n");
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
