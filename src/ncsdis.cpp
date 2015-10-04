@@ -35,28 +35,34 @@
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 
+#include "src/aurora/types.h"
+
 #include "src/nwscript/ncsfile.h"
 #include "src/nwscript/util.h"
+#include "src/nwscript/game.h"
 
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &inFile, Common::UString &outFile);
+                      Common::UString &inFile, Common::UString &outFile,
+                      Aurora::GameID &game);
 
-void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out);
-void disNCS(const Common::UString &inFile, const Common::UString &outFile);
+void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out, Aurora::GameID &game);
+void disNCS(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
 	Common::Platform::getParameters(argc, argv, args);
 
+	Aurora::GameID game = Aurora::kGameIDUnknown;
+
 	int returnValue = 1;
 	Common::UString inFile, outFile;
 
 	try {
-		if (!parseCommandLine(args, returnValue, inFile, outFile))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, game))
 			return returnValue;
 
-		disNCS(inFile, outFile);
+		disNCS(inFile, outFile, game);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return 1;
@@ -68,7 +74,8 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &inFile, Common::UString &outFile) {
+                      Common::UString &inFile, Common::UString &outFile,
+                      Aurora::GameID &game) {
 
 	inFile.clear();
 	outFile.clear();
@@ -76,6 +83,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 	bool optionsEnd = false;
 	for (size_t i = 1; i < argv.size(); i++) {
+		bool isOption = false;
+
 		// A "--" marks an end to all options
 		if (argv[i] == "--") {
 			optionsEnd = true;
@@ -99,7 +108,31 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				return false;
 			}
 
-			if        (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
+			if        (argv[i] == "--nwn") {
+				isOption = true;
+				game     = Aurora::kGameIDNWN;
+			} else if (argv[i] == "--nwn2") {
+				isOption = true;
+				game     = Aurora::kGameIDNWN2;
+			} else if (argv[i] == "--kotor") {
+				isOption = true;
+				game     = Aurora::kGameIDKotOR;
+			} else if (argv[i] == "--kotor2") {
+				isOption = true;
+				game     = Aurora::kGameIDKotOR2;
+			} else if (argv[i] == "--jade") {
+				isOption = true;
+				game     = Aurora::kGameIDJade;
+			} else if (argv[i] == "--witcher") {
+				isOption = true;
+				game     = Aurora::kGameIDWitcher;
+			} else if (argv[i] == "--dragonage") {
+				isOption = true;
+				game     = Aurora::kGameIDDragonAge;
+			} else if (argv[i] == "--dragonage2") {
+				isOption = true;
+				game     = Aurora::kGameIDDragonAge2;
+			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
 				printUsage(stderr, argv[0]);
@@ -108,6 +141,10 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				return false;
 			}
 		}
+
+		// Was this a valid option? If so, don't try to use it as a file
+		if (isOption)
+			continue;
 
 		// This is a file to use
 		args.push_back(argv[i]);
@@ -133,16 +170,41 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Usage: %s [<options>] <input file> [<output file>]\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n\n");
+	std::fprintf(stream, "          --nwn               This is a Neverwinter Nights script\n");
+	std::fprintf(stream, "          --nwn2              This is a Neverwinter Nights 2 script\n");
+	std::fprintf(stream, "          --kotor             This is a Knights of the Old Republic script\n");
+	std::fprintf(stream, "          --kotor2            This is a Knights of the Old Republic II script\n");
+	std::fprintf(stream, "          --jade              This is a Jade Empire script\n");
+	std::fprintf(stream, "          --witcher           This is a The Witcher script\n");
+	std::fprintf(stream, "          --dragonage         This is a Dragon Age script\n");
+	std::fprintf(stream, "          --dragonage2        This is a Dragon Age II script\n\n");
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out) {
+void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out, Aurora::GameID &game) {
 	NWScript::NCSFile ncs(ncsFile);
 
 	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
 
 	out.writeString(Common::UString::format("%u bytes, %u instructions\n\n",
 	                (uint)ncs.size(), (uint)instr.size()));
+
+	size_t engineTypeCount = NWScript::getEngineTypeCount(game);
+	if (engineTypeCount > 0) {
+		out.writeString("Engine types:\n");
+
+		for (size_t i = 0; i < engineTypeCount; i++) {
+			const Common::UString name = NWScript::getEngineTypeName(game, i);
+			if (name.empty())
+				continue;
+
+			const Common::UString gName = NWScript::getGenericEngineTypeName(i);
+
+			out.writeString(Common::UString::format("%s: %s\n", gName.c_str(), name.c_str()));
+		}
+
+		out.writeString("\n");
+	}
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
 		// Print jump label
@@ -160,7 +222,7 @@ void disNCS(Common::SeekableReadStream &ncsFile, Common::WriteStream &out) {
 	}
 }
 
-void disNCS(const Common::UString &inFile, const Common::UString &outFile) {
+void disNCS(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID &game) {
 	Common::SeekableReadStream *ncsFile = new Common::ReadFile(inFile);
 
 	Common::WriteStream *out = 0;
@@ -170,7 +232,7 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile) {
 		else
 			out = new Common::StdOutStream;
 
-		disNCS(*ncsFile, *out);
+		disNCS(*ncsFile, *out, game);
 
 	} catch (...) {
 		delete ncsFile;
