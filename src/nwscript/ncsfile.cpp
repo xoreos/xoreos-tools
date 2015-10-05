@@ -227,7 +227,7 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 			branch->addressType = (i->opcode == kOpcodeJSR) ? kAddressTypeSubRoutine : kAddressTypeJumpLabel;
 
 			if (branch->follower)
-				branch->follower->addressType = kAddressTypeTail;
+				const_cast<Instruction *>(branch->follower)->addressType = kAddressTypeTail;
 		}
 
 		// Link destinations of conditional branches
@@ -241,8 +241,9 @@ void NCSFile::parse(Common::SeekableReadStream &ncs) {
 			if (branch == _instructions.end())
 				throw Common::Exception("Can't find destination of conditional branch");
 
-			branch->addressType      = kAddressTypeJumpLabel;
-			i->follower->addressType = kAddressTypeTail;
+			branch->addressType = kAddressTypeJumpLabel;
+
+			const_cast<Instruction *>(i->follower)->addressType = kAddressTypeTail;
 
 			i->branches.push_back(&*branch);    // True branch
 			i->branches.push_back(i->follower); // False branch

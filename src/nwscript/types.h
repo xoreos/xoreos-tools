@@ -192,7 +192,7 @@ struct Instruction {
 	 *  any branches. If the instruction has no natural follower (which
 	 *  is the case for RETN and JMP), this value is 0.
 	 */
-	Instruction *follower;
+	const Instruction *follower;
 
 	/** The destinations of the branches this instruction takes.
 	 *
@@ -203,7 +203,7 @@ struct Instruction {
 	 *  - three or more elements, something went horribly, horribly wrong and the
 	 *    universe might be on fire
 	 */
-	std::vector<Instruction *> branches;
+	std::vector<const Instruction *> branches;
 
 
 	Instruction(uint32 addr) : address(addr),
