@@ -274,6 +274,36 @@ bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
 	return true;
 }
 
+Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length) {
+	Common::UString str;
+
+	while (length-- > 0) {
+		byte c = ncs.readByte();
+		if (!c)
+			break;
+
+		if      (c == '\n')
+			str += "\\n";
+		else if (c == '\r')
+			str += "\\r";
+		else if (c == '\t')
+			str += "\\t";
+		else if (c == '\"')
+			str += "\\\"";
+		else if (c == '\\')
+			str += "\\\\";
+		else if (c < 32 || c > 126)
+			str += Common::UString::format("\\x%02X", c);
+		else
+			str += (uint32) c;
+	}
+
+	if (length != SIZE_MAX)
+		ncs.skip(length);
+
+	return str;
+}
+
 void parseOpcodeConst(Instruction &instr, Common::SeekableReadStream &ncs) {
 	switch (instr.type) {
 		case kInstTypeInt:
@@ -286,11 +316,7 @@ void parseOpcodeConst(Instruction &instr, Common::SeekableReadStream &ncs) {
 
 		case kInstTypeString:
 		case kInstTypeResource:
-			try {
-				instr.constValueString = Common::readStringFixed(ncs, Common::kEncodingASCII, ncs.readUint16BE());
-			} catch (...) {
-				instr.constValueString = "[INVALID STRING]";
-			}
+			instr.constValueString = readStringQuoting(ncs, ncs.readUint16BE());
 			break;
 
 		case kInstTypeObject:

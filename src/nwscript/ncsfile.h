@@ -71,6 +71,8 @@ private:
 
 	bool parseStep(Common::SeekableReadStream &ncs);
 
+	static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length);
+
 	Instructions::iterator findInstruction(uint32 address);
 };
 
