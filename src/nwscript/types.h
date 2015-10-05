@@ -154,6 +154,7 @@ enum OpcodeArgument {
 enum AddressType {
 	kAddressTypeNone,       ///< No special address type.
 	kAddressTypeSubRoutine, ///< Address that starts a subroutine.
+	kAddressTypeStateStore, ///< Address that starts a subroutine with STATESTORE.
 	kAddressTypeJumpLabel,  ///< Address that's the destination of a jump label.
 	kAddressTypeTail        ///< The tail (or false branch) of a jump instruction.
 };

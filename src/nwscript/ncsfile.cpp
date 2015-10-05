@@ -386,9 +386,12 @@ void NCSFile::linkBranches() {
 
 			i->branches.push_back(&*branch);
 
-			// JSR and STORESTATE create subroutines. JMP doesn't.
-			branch->addressType = ((i->opcode == kOpcodeJSR) || (i->opcode == kOpcodeSTORESTATE)) ?
-				kAddressTypeSubRoutine : kAddressTypeJumpLabel;
+			if      (i->opcode == kOpcodeJSR)
+				branch->addressType = kAddressTypeSubRoutine;
+			else if (i->opcode == kOpcodeSTORESTATE)
+				branch->addressType = kAddressTypeStateStore;
+			else
+				branch->addressType = kAddressTypeJumpLabel;
 
 			if (branch->follower)
 				const_cast<Instruction *>(branch->follower)->addressType = kAddressTypeTail;
