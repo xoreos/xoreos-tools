@@ -166,6 +166,10 @@ const Block &NCSFile::getRootBlock() const {
 	return _blocks.front();
 }
 
+const NCSFile::SubRoutines &NCSFile::getSubRoutines() const {
+	return _subRoutines;
+}
+
 const Instruction *NCSFile::findInstruction(uint32 address) const {
 	Instructions::const_iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
 	if ((it == _instructions.end()) || (it->address != address))
@@ -432,18 +436,28 @@ void NCSFile::linkBranches() {
 }
 
 void NCSFile::findBlocks() {
-	_blocks.push_back(Block(_instructions.front().address));
+	_subRoutines.push_back(SubRoutine(_instructions.front().address));
+	_blocks.push_back(Block(_instructions.front().address, _subRoutines.back()));
 
-	addBlock(_blocks.back(), &_instructions.front());
+	_subRoutines.back().blocks.push_back(&_blocks.back());
+
+	addBlock(&_subRoutines.back(), _blocks.back(), &_instructions.front());
 }
 
-bool NCSFile::addBranchBlock(Block &block, const Instruction *branchDestination,
+bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *branchDestination,
                              Block *&branchBlock, BlockEdgeType type) {
 	bool needAdd = false;
 
 	branchBlock = const_cast<Block *>(branchDestination->block);
 	if (!branchBlock) {
-		_blocks.push_back(Block(branchDestination->address));
+		if (!sub) {
+			_subRoutines.push_back(SubRoutine(branchDestination->address));
+			sub = &_subRoutines.back();
+		}
+
+		_blocks.push_back(Block(branchDestination->address, *sub));
+
+		sub->blocks.push_back(&_blocks.back());
 
 		branchBlock = &_blocks.back();
 		needAdd     = true;
@@ -457,7 +471,7 @@ bool NCSFile::addBranchBlock(Block &block, const Instruction *branchDestination,
 	return needAdd;
 }
 
-void NCSFile::addBlock(Block &block, const Instruction *instr) {
+void NCSFile::addBlock(SubRoutine *sub, Block &block, const Instruction *instr) {
 	while (instr) {
 		if (instr->block) {
 			const_cast<Block *>(instr->block)->parents.push_back(&block);
@@ -484,13 +498,14 @@ void NCSFile::addBlock(Block &block, const Instruction *instr) {
 		return;
 
 	Block *branchBlock = 0;
+	SubRoutine *newSub = 0;
 
 	switch (instr->opcode) {
 		case kOpcodeJMP:
 			assert(instr->branches.size() == 1);
 
-			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeUnconditional))
-				addBlock(*branchBlock, instr->branches[0]);
+			if (addBranchBlock(sub, block, instr->branches[0], branchBlock, kBlockEdgeTypeUnconditional))
+				addBlock(sub, *branchBlock, instr->branches[0]);
 
 			break;
 
@@ -498,10 +513,10 @@ void NCSFile::addBlock(Block &block, const Instruction *instr) {
 		case kOpcodeJNZ:
 			assert(instr->branches.size() == 2);
 
-			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
-				addBlock(*branchBlock, instr->branches[0]);
-			if (addBranchBlock(block, instr->branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
-				addBlock(*branchBlock, instr->branches[1]);
+			if (addBranchBlock(sub, block, instr->branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
+				addBlock(sub, *branchBlock, instr->branches[0]);
+			if (addBranchBlock(sub, block, instr->branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
+				addBlock(sub, *branchBlock, instr->branches[1]);
 
 			break;
 
@@ -509,11 +524,11 @@ void NCSFile::addBlock(Block &block, const Instruction *instr) {
 			assert(instr->branches.size() == 1);
 			assert(instr->follower);
 
-			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
-				addBlock(*branchBlock, instr->branches[0]);
+			if (addBranchBlock(newSub, block, instr->branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
+				addBlock(newSub, *branchBlock, instr->branches[0]);
 
-			if (addBranchBlock(block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
-				addBlock(*branchBlock, instr->follower);
+			if (addBranchBlock(sub, block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
+				addBlock(sub, *branchBlock, instr->follower);
 
 			break;
 
@@ -521,11 +536,11 @@ void NCSFile::addBlock(Block &block, const Instruction *instr) {
 			assert(instr->branches.size() == 1);
 			assert(instr->follower);
 
-			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeStoreState))
-				addBlock(*branchBlock, instr->branches[0]);
+			if (addBranchBlock(newSub, block, instr->branches[0], branchBlock, kBlockEdgeTypeStoreState))
+				addBlock(newSub, *branchBlock, instr->branches[0]);
 
-			if (addBranchBlock(block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
-				addBlock(*branchBlock, instr->follower);
+			if (addBranchBlock(sub, block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
+				addBlock(sub, *branchBlock, instr->follower);
 
 			break;
 

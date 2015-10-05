@@ -45,6 +45,7 @@ class NCSFile : public Aurora::AuroraBase {
 public:
 	typedef std::deque<Instruction> Instructions;
 	typedef std::deque<Block>       Blocks;
+	typedef std::deque<SubRoutine>  SubRoutines;
 
 
 	NCSFile(Common::SeekableReadStream &ncs);
@@ -63,6 +64,9 @@ public:
 	/** Return the root block of this NCS file. */
 	const Block &getRootBlock() const;
 
+	/** Return all subroutines in this NCS file. */
+	const SubRoutines &getSubRoutines() const;
+
 	/** Find an instruction by address. */
 	const Instruction *findInstruction(uint32 address) const;
 
@@ -72,6 +76,7 @@ private:
 
 	Instructions _instructions;
 	Blocks       _blocks;
+	SubRoutines  _subRoutines;
 
 
 	void load(Common::SeekableReadStream &ncs);
@@ -82,8 +87,8 @@ private:
 	void linkBranches();
 	void findBlocks();
 
-	void addBlock(Block &block, const Instruction *instr);
-	bool addBranchBlock(Block &block, const Instruction *branchDestination,
+	void addBlock(SubRoutine *sub, Block &block, const Instruction *instr);
+	bool addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *branchDestination,
 	                    Block *&branchBlock, BlockEdgeType type);
 
 	static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length);

@@ -162,6 +162,7 @@ enum AddressType {
 static const size_t kOpcodeMaxArgumentCount = 3;
 
 struct Block;
+struct SubRoutine;
 
 /** An NWScript bytecode instruction. */
 struct Instruction {
@@ -257,8 +258,24 @@ struct Block {
 	/** How this block leads into its children. */
 	std::vector<BlockEdgeType> childrenTypes;
 
+	/** The subroutine this block belongs to. */
+	const SubRoutine *subRoutine;
 
-	Block(uint32 addr) : address(addr) {
+
+	Block(uint32 addr, const SubRoutine &sub) : address(addr), subRoutine(&sub) {
+	}
+};
+
+/** A subroutine of NWScript blocks. */
+struct SubRoutine {
+	/** The address that starts this subroutine. */
+	uint32 address;
+
+	/** The blocks that are inside this subroutine. */
+	std::vector<const Block *> blocks;
+
+
+	SubRoutine(uint32 addr) : address(addr) {
 	}
 };
 
