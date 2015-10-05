@@ -44,6 +44,7 @@ namespace NWScript {
 class NCSFile : public Aurora::AuroraBase {
 public:
 	typedef std::deque<Instruction> Instructions;
+	typedef std::deque<Block>       Blocks;
 
 
 	NCSFile(Common::SeekableReadStream &ncs);
@@ -56,6 +57,12 @@ public:
 	/** Return all the instructions within this NCS file. */
 	const Instructions &getInstructions() const;
 
+	/** Return all blocks in this NCS file. */
+	const Blocks &getBlocks() const;
+
+	/** Return the root block of this NCS file. */
+	const Block &getRootBlock() const;
+
 	/** Find an instruction by address. */
 	const Instruction *findInstruction(uint32 address) const;
 
@@ -64,13 +71,20 @@ private:
 	size_t _size;
 
 	Instructions _instructions;
+	Blocks       _blocks;
 
 
 	void load(Common::SeekableReadStream &ncs);
 	void parse(Common::SeekableReadStream &ncs);
 
 	bool parseStep(Common::SeekableReadStream &ncs);
+
 	void linkBranches();
+	void findBlocks();
+
+	void addBlock(Block &block, const Instruction *instr);
+	bool addBranchBlock(Block &block, const Instruction *branchDestination,
+	                    Block *&branchBlock, BlockEdgeType type);
 
 	static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length);
 

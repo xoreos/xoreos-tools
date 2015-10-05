@@ -161,6 +161,8 @@ enum AddressType {
 
 static const size_t kOpcodeMaxArgumentCount = 3;
 
+struct Block;
+
 /** An NWScript bytecode instruction. */
 struct Instruction {
 	uint32 address; ///< The address of this intruction with the NCS file
@@ -206,11 +208,14 @@ struct Instruction {
 	 */
 	std::vector<const Instruction *> branches;
 
+	/** The block this instruction belongs to. */
+	const Block *block;
+
 
 	Instruction(uint32 addr) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
 		constValueInt(0), constValueFloat(0.0f), constValueObject(0),
-		addressType(kAddressTypeNone), follower(0) {
+		addressType(kAddressTypeNone), follower(0), block(0) {
 
 		for (size_t i = 0; i < kOpcodeMaxArgumentCount; i++) {
 			args    [i] = 0;
@@ -225,6 +230,35 @@ struct Instruction {
 
 	bool operator<(uint32 right) const {
 		return address < right;
+	}
+};
+
+/** The types of an edge between blocks. */
+enum BlockEdgeType {
+	kBlockEdgeTypeUnconditional,    ///< This block follows unconditionally.
+	kBlockEdgeTypeConditionalTrue,  ///< This block is a true branch of a conditional.
+	kBlockEdgeTypeConditionalFalse, ///< This block is a false branch of a conditional.
+	kBlockEdgeTypeFunctionCall,     ///< This block is a function call.
+	kBlockEdgeTypeFunctionReturn,   ///< This block is a function return.
+	kBlockEdgeTypeStoreState        ///< This block is a subroutine create by STORESTATE.
+};
+
+/** A block of NWScript instructions. */
+struct Block {
+	/** The address that starts this block. */
+	uint32 address;
+
+	/** The instructions making up this block. */
+	std::vector<const Instruction *> instructions;
+
+	std::vector<const Block *> parents;  ///< The blocks leading into this block.
+	std::vector<const Block *> children; ///< The blocks following this block.
+
+	/** How this block leads into its children. */
+	std::vector<BlockEdgeType> childrenTypes;
+
+
+	Block(uint32 addr) : address(addr) {
 	}
 };
 

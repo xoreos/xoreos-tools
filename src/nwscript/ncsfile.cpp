@@ -155,6 +155,17 @@ const NCSFile::Instructions &NCSFile::getInstructions() const {
 	return _instructions;
 }
 
+const NCSFile::Blocks &NCSFile::getBlocks() const {
+	return _blocks;
+}
+
+const Block &NCSFile::getRootBlock() const {
+	if (_blocks.empty())
+		throw Common::Exception("This NCS file is empty!");
+
+	return _blocks.front();
+}
+
 const Instruction *NCSFile::findInstruction(uint32 address) const {
 	Instructions::const_iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
 	if ((it == _instructions.end()) || (it->address != address))
@@ -185,7 +196,9 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 			warning("Script size %u < stream size %u", (uint)_size, (uint)ncs.size());
 
 		parse(ncs);
+
 		linkBranches();
+		findBlocks();
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to load NCS file");
@@ -415,6 +428,109 @@ void NCSFile::linkBranches() {
 			i->branches.push_back(&*branch);    // True branch
 			i->branches.push_back(i->follower); // False branch
 		}
+	}
+}
+
+void NCSFile::findBlocks() {
+	_blocks.push_back(Block(_instructions.front().address));
+
+	addBlock(_blocks.back(), &_instructions.front());
+}
+
+bool NCSFile::addBranchBlock(Block &block, const Instruction *branchDestination,
+                             Block *&branchBlock, BlockEdgeType type) {
+	bool needAdd = false;
+
+	branchBlock = const_cast<Block *>(branchDestination->block);
+	if (!branchBlock) {
+		_blocks.push_back(Block(branchDestination->address));
+
+		branchBlock = &_blocks.back();
+		needAdd     = true;
+	}
+
+	branchBlock->parents.push_back(&block);
+	block.children.push_back(branchBlock);
+
+	block.childrenTypes.push_back(type);
+
+	return needAdd;
+}
+
+void NCSFile::addBlock(Block &block, const Instruction *instr) {
+	while (instr) {
+		if (instr->block) {
+			const_cast<Block *>(instr->block)->parents.push_back(&block);
+			block.children.push_back(instr->block);
+
+			block.childrenTypes.push_back(kBlockEdgeTypeUnconditional);
+
+			instr = 0;
+			break;
+		}
+
+		block.instructions.push_back(instr);
+		const_cast<Instruction *>(instr)->block = &block;
+
+		if ((instr->opcode == kOpcodeJMP) || (instr->opcode == kOpcodeJSR) ||
+		    (instr->opcode == kOpcodeJZ ) || (instr->opcode == kOpcodeJNZ) ||
+		    (instr->opcode == kOpcodeRETN) || (instr->opcode == kOpcodeSTORESTATE))
+			break;
+
+		instr = instr->follower;
+	}
+
+	if (!instr)
+		return;
+
+	Block *branchBlock = 0;
+
+	switch (instr->opcode) {
+		case kOpcodeJMP:
+			assert(instr->branches.size() == 1);
+
+			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeUnconditional))
+				addBlock(*branchBlock, instr->branches[0]);
+
+			break;
+
+		case kOpcodeJZ:
+		case kOpcodeJNZ:
+			assert(instr->branches.size() == 2);
+
+			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
+				addBlock(*branchBlock, instr->branches[0]);
+			if (addBranchBlock(block, instr->branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
+				addBlock(*branchBlock, instr->branches[1]);
+
+			break;
+
+		case kOpcodeJSR:
+			assert(instr->branches.size() == 1);
+			assert(instr->follower);
+
+			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
+				addBlock(*branchBlock, instr->branches[0]);
+
+			if (addBranchBlock(block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
+				addBlock(*branchBlock, instr->follower);
+
+			break;
+
+		case kOpcodeSTORESTATE:
+			assert(instr->branches.size() == 1);
+			assert(instr->follower);
+
+			if (addBranchBlock(block, instr->branches[0], branchBlock, kBlockEdgeTypeStoreState))
+				addBlock(*branchBlock, instr->branches[0]);
+
+			if (addBranchBlock(block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
+				addBlock(*branchBlock, instr->follower);
+
+			break;
+
+		default:
+			break;
 	}
 }
 
