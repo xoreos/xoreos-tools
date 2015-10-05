@@ -185,6 +185,7 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 			warning("Script size %u < stream size %u", (uint)_size, (uint)ncs.size());
 
 		parse(ncs);
+		linkBranches();
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to load NCS file");
@@ -204,51 +205,6 @@ NCSFile::Instructions::iterator NCSFile::findInstruction(uint32 address) {
 void NCSFile::parse(Common::SeekableReadStream &ncs) {
 	while (parseStep(ncs))
 		;
-
-	// Go through all instructions and link them according to the flow graph
-	for (Instructions::iterator i = _instructions.begin(); i != _instructions.end(); ++i) {
-		// If this is an instruction that has a natural follower, link it
-		if ((i->opcode != kOpcodeJMP) && (i->opcode != kOpcodeRETN)) {
-			Instructions::iterator follower = i + 1;
-
-			i->follower = (follower != _instructions.end()) ? &*follower : 0;
-		}
-
-		// Link destinations of unconditional branches
-		if ((i->opcode == kOpcodeJMP) || (i->opcode == kOpcodeJSR)) {
-			assert(i->argCount == 1);
-
-			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
-			if (branch == _instructions.end())
-				throw Common::Exception("Can't find destination of unconditional branch");
-
-			i->branches.push_back(&*branch);
-
-			branch->addressType = (i->opcode == kOpcodeJSR) ? kAddressTypeSubRoutine : kAddressTypeJumpLabel;
-
-			if (branch->follower)
-				const_cast<Instruction *>(branch->follower)->addressType = kAddressTypeTail;
-		}
-
-		// Link destinations of conditional branches
-		if ((i->opcode == kOpcodeJZ) || (i->opcode == kOpcodeJNZ)) {
-			assert(i->argCount == 1);
-
-			if (!i->follower)
-				throw Common::Exception("Conditional branch has no false destination");
-
-			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
-			if (branch == _instructions.end())
-				throw Common::Exception("Can't find destination of conditional branch");
-
-			branch->addressType = kAddressTypeJumpLabel;
-
-			const_cast<Instruction *>(i->follower)->addressType = kAddressTypeTail;
-
-			i->branches.push_back(&*branch);    // True branch
-			i->branches.push_back(i->follower); // False branch
-		}
-	}
 }
 
 bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
@@ -397,6 +353,62 @@ void parseOpcodeDefault(Instruction &instr, Common::SeekableReadStream &ncs) {
 
 			default:
 				break;
+		}
+	}
+}
+
+void NCSFile::linkBranches() {
+	/* Go through all instructions and link them according to the flow graph.
+	 *
+	 * In specifics, link each instruction's follower, the instruction that
+	 * naturally follows if no branches are taken. Also fill in the branches
+	 * array, which contains all branches an instruction can take. This
+	 * directly creates an address type for each instruction: does it start
+	 * a subroutine, is it a jump destination, is it a tail of a jump or none
+	 * of these?
+	 */
+
+	for (Instructions::iterator i = _instructions.begin(); i != _instructions.end(); ++i) {
+		// If this is an instruction that has a natural follower, link it
+		if ((i->opcode != kOpcodeJMP) && (i->opcode != kOpcodeRETN)) {
+			Instructions::iterator follower = i + 1;
+
+			i->follower = (follower != _instructions.end()) ? &*follower : 0;
+		}
+
+		// Link destinations of unconditional branches
+		if ((i->opcode == kOpcodeJMP) || (i->opcode == kOpcodeJSR)) {
+			assert(i->argCount == 1);
+
+			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
+			if (branch == _instructions.end())
+				throw Common::Exception("Can't find destination of unconditional branch");
+
+			i->branches.push_back(&*branch);
+
+			branch->addressType = (i->opcode == kOpcodeJSR) ? kAddressTypeSubRoutine : kAddressTypeJumpLabel;
+
+			if (branch->follower)
+				const_cast<Instruction *>(branch->follower)->addressType = kAddressTypeTail;
+		}
+
+		// Link destinations of conditional branches
+		if ((i->opcode == kOpcodeJZ) || (i->opcode == kOpcodeJNZ)) {
+			assert(i->argCount == 1);
+
+			if (!i->follower)
+				throw Common::Exception("Conditional branch has no false destination");
+
+			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
+			if (branch == _instructions.end())
+				throw Common::Exception("Can't find destination of conditional branch");
+
+			branch->addressType = kAddressTypeJumpLabel;
+
+			const_cast<Instruction *>(i->follower)->addressType = kAddressTypeTail;
+
+			i->branches.push_back(&*branch);    // True branch
+			i->branches.push_back(i->follower); // False branch
 		}
 	}
 }

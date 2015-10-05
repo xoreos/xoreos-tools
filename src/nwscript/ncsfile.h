@@ -70,6 +70,7 @@ private:
 	void parse(Common::SeekableReadStream &ncs);
 
 	bool parseStep(Common::SeekableReadStream &ncs);
+	void linkBranches();
 
 	static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length);
 
