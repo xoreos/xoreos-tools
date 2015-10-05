@@ -377,8 +377,8 @@ void NCSFile::linkBranches() {
 		}
 
 		// Link destinations of unconditional branches
-		if ((i->opcode == kOpcodeJMP) || (i->opcode == kOpcodeJSR)) {
-			assert(i->argCount == 1);
+		if ((i->opcode == kOpcodeJMP) || (i->opcode == kOpcodeJSR) || (i->opcode == kOpcodeSTORESTATE)) {
+			assert(((i->opcode == kOpcodeSTORESTATE) && (i->argCount == 3)) || (i->argCount == 1));
 
 			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
 			if (branch == _instructions.end())
@@ -386,7 +386,9 @@ void NCSFile::linkBranches() {
 
 			i->branches.push_back(&*branch);
 
-			branch->addressType = (i->opcode == kOpcodeJSR) ? kAddressTypeSubRoutine : kAddressTypeJumpLabel;
+			// JSR and STORESTATE create subroutines. JMP doesn't.
+			branch->addressType = ((i->opcode == kOpcodeJSR) || (i->opcode == kOpcodeSTORESTATE)) ?
+				kAddressTypeSubRoutine : kAddressTypeJumpLabel;
 
 			if (branch->follower)
 				const_cast<Instruction *>(branch->follower)->addressType = kAddressTypeTail;

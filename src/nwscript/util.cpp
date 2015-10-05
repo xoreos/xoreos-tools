@@ -249,14 +249,19 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 	/* If this is a jump instruction, print the address of the destination
 	 * instead of the relative offset. */
 	if (((instr.opcode == kOpcodeJMP) || (instr.opcode == kOpcodeJSR) ||
-	     (instr.opcode == kOpcodeJZ ) || (instr.opcode == kOpcodeJNZ)) &&
+	     (instr.opcode == kOpcodeJZ ) || (instr.opcode == kOpcodeJNZ) ||
+	     (instr.opcode == kOpcodeSTORESTATE)) &&
 	    (!instr.branches.empty() && instr.branches[0])) {
 
 		const Common::UString jumpLabel = formatJumpLabel(*instr.branches[0]);
 		if (jumpLabel.empty())
 			throw Common::Exception("Branch destination is not a jump destination?!?");
 
-		return str + " " + jumpLabel;
+		Common::UString parameters;
+		if ((instr.opcode == kOpcodeSTORESTATE) && (instr.argCount == 3))
+			parameters = Common::UString::format(" %d %d", instr.args[1], instr.args[2]);
+
+		return str + " " + jumpLabel + parameters;
 	}
 
 	if ((instr.opcode == kOpcodeACTION) && (instr.argCount == 2)) {
