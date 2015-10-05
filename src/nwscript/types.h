@@ -25,6 +25,8 @@
 #ifndef NWSCRIPT_TYPES_H
 #define NWSCRIPT_TYPES_H
 
+#include <vector>
+
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
