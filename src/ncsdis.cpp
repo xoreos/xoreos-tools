@@ -26,11 +26,15 @@
 #include <cstring>
 #include <cstdio>
 
+#include <vector>
+#include <map>
+
 #include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/maths.h"
 #include "src/common/platform.h"
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
@@ -46,6 +50,7 @@ enum Command {
 	kCommandNone     = -1,
 	kCommandListing  =  0,
 	kCommandAssembly =  1,
+	kCommandDot      =  2,
 	kCommandMAX
 };
 
@@ -127,6 +132,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			} else if (argv[i] == "--assembly") {
 				isOption = true;
 				command  = kCommandAssembly;
+			} else if (argv[i] == "--dot") {
+				isOption = true;
+				command  = kCommandDot;
 			} else if (argv[i] == "--nwn") {
 				isOption = true;
 				game     = Aurora::kGameIDNWN;
@@ -193,6 +201,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "          --version           Display version information\n\n");
 	std::fprintf(stream, "          --list              Create full disassembly listing (default)\n");
 	std::fprintf(stream, "          --assembly          Only create disassembly mnemonics\n\n");
+	std::fprintf(stream, "          --dot               Create a graphviz dot file\n\n");
 	std::fprintf(stream, "          --nwn               This is a Neverwinter Nights script\n");
 	std::fprintf(stream, "          --nwn2              This is a Neverwinter Nights 2 script\n");
 	std::fprintf(stream, "          --kotor             This is a Knights of the Old Republic script\n");
@@ -261,6 +270,166 @@ void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::Ga
 	}
 }
 
+static Common::UString quoteString(const Common::UString &str) {
+	Common::UString out;
+
+	for (Common::UString::iterator c = str.begin(); c != str.end(); ++c) {
+		if      (*c == '\\')
+			out += "\\\\";
+		else if (*c == '"')
+			out += "\\\"";
+		else
+			out += *c;
+	}
+
+	return out;
+}
+
+void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
+	/* This creates a GraphViz dot file, which can be drawn into a graph image
+	 * with graphviz's dot tool.
+	 *
+	 * Each block of NWScript instructions is drawn into one (or several, for large blocks)
+	 * node, clustered by subroutine. Edges are drawn between the nodes to show the control
+	 * flow.
+	 */
+
+	// Max number of instructions per node
+	static const size_t kMaxNodeSize = 10;
+
+	const NWScript::NCSFile::SubRoutines &subs   = ncs.getSubRoutines();
+	const NWScript::NCSFile::Blocks      &blocks = ncs.getBlocks();
+
+	out.writeString("digraph {\n");
+	out.writeString("  overlap=false\n");
+	out.writeString("  concentrate=true\n");
+	out.writeString("  splines=ortho\n\n");
+
+	std::map<uint32, size_t> blockNodeCount;
+
+	// Block nodes grouped into subroutines clusters
+	for (NWScript::NCSFile::SubRoutines::const_iterator s = subs.begin(); s != subs.end(); ++s) {
+		if (s->blocks.empty() || s->blocks.front()->instructions.empty())
+			continue;
+
+		out.writeString(Common::UString::format(
+		                "  subgraph cluster_s%08X {\n"
+		                "    style=filled\n"
+		                "    color=lightgrey\n", s->address));
+
+		if (s->blocks.front()->instructions.front()->addressType == NWScript::kAddressTypeStateStore)
+			out.writeString(Common::UString::format("label=\"%s\"\n",
+			                NWScript::formatStateStore(s->address).c_str()));
+		else
+			out.writeString(Common::UString::format("label=\"%s\"\n",
+			                NWScript::formatSubRoutine(s->address).c_str()));
+
+		// Blocks
+		for (std::vector<const NWScript::Block *>::const_iterator b = s->blocks.begin();
+		     b != s->blocks.end(); ++b) {
+
+			/* To keep large nodes from messing up the layout, we divide blocks with
+			 * a huge amount of instructions into several, equal-sized nodes. */
+
+			const size_t nodeCount = ceil((*b)->instructions.size() / (double)kMaxNodeSize);
+
+			std::vector<Common::UString> labels;
+			labels.resize(nodeCount);
+
+			blockNodeCount[(*b)->address] = nodeCount;
+
+			const size_t linesPerNode = ceil((*b)->instructions.size() / (double)labels.size());
+
+			labels[0] = NWScript::formatJumpLabel(*(*b)->instructions.front());
+			if (labels[0].empty())
+				labels[0] = NWScript::formatJumpDestination((*b)->instructions.front()->address);
+
+			labels[0] += ":\\l";
+
+			// Instructions
+			for (size_t i = 0; i < (*b)->instructions.size(); i++) {
+				const NWScript::Instruction &instr = *(*b)->instructions[i];
+
+				labels[i / linesPerNode] += "  " + quoteString(NWScript::formatInstruction(instr, game)) + "\\l";
+			}
+
+			// Nodes
+			for (size_t i = 0; i < labels.size(); i++) {
+				const Common::UString name = Common::UString::format("b%08X_%u", (*b)->address, (uint)i);
+
+				out.writeString(Common::UString::format("    \"%s\" ", name.c_str()));
+				out.writeString("[ shape=\"box\" label=\"" + labels[i] + "\" ]\n");
+			}
+
+			// Edges between the divided block nodes
+			for (size_t i = 1; i < labels.size(); i++) {
+				size_t l = i - 1;
+
+				const Common::UString nameFrom = Common::UString::format("b%08X_%u", (*b)->address, (uint)l);
+				const Common::UString nameTo   = Common::UString::format("b%08X_%u", (*b)->address, (uint)i);
+
+				out.writeString(Common::UString::format("    %s -> %s [ style=dotted ]\n",
+				                nameFrom.c_str(), nameTo.c_str()));
+			}
+		}
+
+		out.writeString("  }\n\n");
+	}
+
+	// Edges
+	for (NWScript::NCSFile::Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
+		assert(b->children.size() == b->childrenTypes.size());
+
+		for (size_t i = 0; i < b->children.size(); i++) {
+
+			out.writeString(Common::UString::format("  b%08X_%u -> b%08X_0", b->address,
+			                (uint)(blockNodeCount[b->address] - 1), b->children[i]->address));
+
+			Common::UString attr;
+
+			// Color the edge specific to the flow type
+			switch (b->childrenTypes[i]) {
+				default:
+				case NWScript::kBlockEdgeTypeUnconditional:
+					attr = "color=blue";
+					break;
+
+				case NWScript::kBlockEdgeTypeConditionalTrue:
+					attr = "color=green";
+					break;
+
+				case NWScript::kBlockEdgeTypeConditionalFalse:
+					attr = "color=red";
+					break;
+
+				case NWScript::kBlockEdgeTypeFunctionCall:
+					attr = "color=cyan";
+					break;
+
+				case NWScript::kBlockEdgeTypeFunctionReturn:
+					attr = "color=orange";
+					break;
+
+				case NWScript::kBlockEdgeTypeStoreState:
+					attr = "color=purple";
+					break;
+			}
+
+			// If this is a jump back, make the edge bold
+			if (b->children[i]->address < b->address)
+				attr += " style=bold";
+
+			// If this edge goes between subroutines, don't let the edge influence the node rank
+			if (b->subRoutine != b->children[i]->subRoutine)
+				attr += " constraint=false";
+
+			out.writeString(" [ " + attr + " ]\n");
+		}
+	}
+
+	out.writeString("}\n");
+}
+
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command) {
 
@@ -282,6 +451,10 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 
 			case kCommandAssembly:
 				createAssembly(ncs, *out, game);
+				break;
+
+			case kCommandDot:
+				createDot(ncs, *out, game);
 				break;
 
 			default:
