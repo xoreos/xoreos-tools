@@ -153,10 +153,10 @@ enum OpcodeArgument {
 /** The type of an instruction address. */
 enum AddressType {
 	kAddressTypeNone,       ///< No special address type.
-	kAddressTypeSubRoutine, ///< Address that starts a subroutine.
-	kAddressTypeStateStore, ///< Address that starts a subroutine with STATESTORE.
+	kAddressTypeTail,       ///< The tail (or false branch) of a jump instruction.
 	kAddressTypeJumpLabel,  ///< Address that's the destination of a jump label.
-	kAddressTypeTail        ///< The tail (or false branch) of a jump instruction.
+	kAddressTypeStateStore, ///< Address that starts a subroutine with STATESTORE.
+	kAddressTypeSubRoutine  ///< Address that starts a subroutine.
 };
 
 static const size_t kOpcodeMaxArgumentCount = 3;
