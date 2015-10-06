@@ -374,6 +374,15 @@ void parseOpcodeDefault(Instruction &instr, Common::SeekableReadStream &ncs) {
 	}
 }
 
+void NCSFile::setAddressType(Instruction *instr, AddressType type) {
+	/* Only update the address type of an instruction with a higher-priority one. */
+
+	if (!instr || ((uint)instr->addressType >= (uint)type))
+		return;
+
+	instr->addressType = type;
+}
+
 void NCSFile::linkBranches() {
 	/* Go through all instructions and link them according to the flow graph.
 	 *
@@ -404,14 +413,13 @@ void NCSFile::linkBranches() {
 			i->branches.push_back(&*branch);
 
 			if      (i->opcode == kOpcodeJSR)
-				branch->addressType = kAddressTypeSubRoutine;
+				setAddressType(&*branch, kAddressTypeSubRoutine);
 			else if (i->opcode == kOpcodeSTORESTATE)
-				branch->addressType = kAddressTypeStateStore;
+				setAddressType(&*branch, kAddressTypeStateStore);
 			else
-				branch->addressType = kAddressTypeJumpLabel;
+				setAddressType(&*branch, kAddressTypeJumpLabel);
 
-			if (branch->follower)
-				const_cast<Instruction *>(branch->follower)->addressType = kAddressTypeTail;
+			setAddressType(const_cast<Instruction *>(branch->follower), kAddressTypeTail);
 		}
 
 		// Link destinations of conditional branches
@@ -425,9 +433,9 @@ void NCSFile::linkBranches() {
 			if (branch == _instructions.end())
 				throw Common::Exception("Can't find destination of conditional branch");
 
-			branch->addressType = kAddressTypeJumpLabel;
+			setAddressType(&*branch, kAddressTypeJumpLabel);
 
-			const_cast<Instruction *>(i->follower)->addressType = kAddressTypeTail;
+			setAddressType(const_cast<Instruction *>(i->follower), kAddressTypeTail);
 
 			i->branches.push_back(&*branch);    // True branch
 			i->branches.push_back(i->follower); // False branch

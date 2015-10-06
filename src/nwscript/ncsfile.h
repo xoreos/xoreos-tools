@@ -87,10 +87,12 @@ private:
 	void linkBranches();
 	void findBlocks();
 
+
 	void addBlock(SubRoutine *sub, Block &block, const Instruction *instr);
 	bool addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *branchDestination,
 	                    Block *&branchBlock, BlockEdgeType type);
 
+	static void setAddressType(Instruction *instr, AddressType type);
 	static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length);
 
 	Instructions::iterator findInstruction(uint32 address);
