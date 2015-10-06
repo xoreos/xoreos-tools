@@ -419,7 +419,7 @@ void NCSFile::linkBranches() {
 			else
 				setAddressType(&*branch, kAddressTypeJumpLabel);
 
-			setAddressType(const_cast<Instruction *>(branch->follower), kAddressTypeTail);
+			setAddressType(const_cast<Instruction *>(i->follower), kAddressTypeTail);
 		}
 
 		// Link destinations of conditional branches
