@@ -318,10 +318,10 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 		                "    color=lightgrey\n", s->address));
 
 		if (s->blocks.front()->instructions.front()->addressType == NWScript::kAddressTypeStateStore)
-			out.writeString(Common::UString::format("label=\"%s\"\n",
+			out.writeString(Common::UString::format("    label=\"%s\"\n\n",
 			                NWScript::formatStateStore(s->address).c_str()));
 		else
-			out.writeString(Common::UString::format("label=\"%s\"\n",
+			out.writeString(Common::UString::format("    label=\"%s\"\n\n",
 			                NWScript::formatSubRoutine(s->address).c_str()));
 
 		// Blocks
@@ -371,6 +371,9 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 				out.writeString(Common::UString::format("    %s -> %s [ style=dotted ]\n",
 				                nameFrom.c_str(), nameTo.c_str()));
 			}
+
+			if (b != --s->blocks.end())
+				out.writeString("\n");
 		}
 
 		out.writeString("  }\n\n");
