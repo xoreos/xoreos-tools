@@ -362,14 +362,12 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 			}
 
 			// Edges between the divided block nodes
-			for (size_t i = 1; i < labels.size(); i++) {
-				size_t l = i - 1;
-
-				const Common::UString nameFrom = Common::UString::format("b%08X_%u", (*b)->address, (uint)l);
-				const Common::UString nameTo   = Common::UString::format("b%08X_%u", (*b)->address, (uint)i);
-
-				out.writeString(Common::UString::format("    %s -> %s [ style=dotted ]\n",
-				                nameFrom.c_str(), nameTo.c_str()));
+			if (labels.size() > 1) {
+				for (size_t i = 0; i < labels.size(); i++) {
+					out.writeString((i == 0) ? "    " : " -> ");
+					out.writeString(Common::UString::format("b%08X_%u", (*b)->address, (uint)i));
+				}
+				out.writeString(" [ style=dotted ]\n");
 			}
 
 			if (b != --s->blocks.end())
