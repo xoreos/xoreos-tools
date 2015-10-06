@@ -480,12 +480,22 @@ bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *
 }
 
 void NCSFile::addBlock(SubRoutine *sub, Block &block, const Instruction *instr) {
+	Block *branchBlock = 0;
+
 	while (instr) {
 		if (instr->block) {
 			const_cast<Block *>(instr->block)->parents.push_back(&block);
 			block.children.push_back(instr->block);
 
 			block.childrenTypes.push_back(kBlockEdgeTypeUnconditional);
+
+			instr = 0;
+			break;
+		}
+
+		if ((instr->addressType != kAddressTypeNone) && !block.instructions.empty()) {
+			if (addBranchBlock(sub, block, instr, branchBlock, kBlockEdgeTypeUnconditional))
+				addBlock(sub, *branchBlock, instr);
 
 			instr = 0;
 			break;
@@ -505,7 +515,6 @@ void NCSFile::addBlock(SubRoutine *sub, Block &block, const Instruction *instr) 
 	if (!instr)
 		return;
 
-	Block *branchBlock = 0;
 	SubRoutine *newSub = 0;
 
 	switch (instr->opcode) {
