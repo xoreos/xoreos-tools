@@ -48,6 +48,7 @@ dist_man1_MANS = \
                  man/unnsbtx.1 \
                  man/unrim.1 \
                  man/xoreostex2tga.1 \
+                 man/ncsdis.1 \
                  $(EMPTY)
 
 SUBDIRS = \
