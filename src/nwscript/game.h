@@ -30,10 +30,14 @@
 
 #include "src/aurora/types.h"
 
+#include "src/nwscript/types.h"
+
 namespace NWScript {
 
 /** Game-specific NWScript information. */
 struct GameInfo {
+	static const size_t kMaxSignatureSize = 16;
+
 	/** The number of NWScript engine types in this game. */
 	size_t engineTypeCount;
 	/** The names of each NWScript engine type in this game. */
@@ -43,6 +47,8 @@ struct GameInfo {
 	size_t functionCount;
 	/** The names of each NWScript engine function in this game. */
 	const char * const * const functionNames;
+	/** The signature of each NWScript engine function in this game. */
+	const VariableType (*functionSignatures)[kMaxSignatureSize];
 };
 
 /** Return the game-specific NWScript information for this game. */
@@ -62,6 +68,15 @@ size_t getFunctionCount(Aurora::GameID game);
 
 /** Return the name of this NWScript engine function for this game. */
 Common::UString getFunctionName(Aurora::GameID game, size_t n);
+
+/** Return the type of variable this NWScript engine function for this game returns. */
+VariableType getFunctionReturnType(Aurora::GameID game, size_t n);
+
+/** Return the number of parameters this NWScript engine function for this game takes at most. */
+size_t getFunctionParameterCount(Aurora::GameID game, size_t n);
+
+/** Return the types of variable this NWScript engine function for this game takes as parameters */
+const VariableType *getFunctionParameters(Aurora::GameID game, size_t n);
 
 } // End of namespace NWScript
 

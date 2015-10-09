@@ -41,39 +41,46 @@ static const GameInfo kGameInfo[Aurora::kGameIDMAX] = {
 		ARRAYSIZE(NWN::kEngineTypeNames),
 		NWN::kEngineTypeNames,
 		ARRAYSIZE(NWN::kFunctionNames),
-		NWN::kFunctionNames
+		NWN::kFunctionNames,
+		NWN::kFunctionSignatures
 	},
 	{
 		ARRAYSIZE(NWN2::kEngineTypeNames),
 		NWN2::kEngineTypeNames,
 		ARRAYSIZE(NWN2::kFunctionNames),
-		NWN2::kFunctionNames
+		NWN2::kFunctionNames,
+		NWN2::kFunctionSignatures
 	},
 	{
 		ARRAYSIZE(KotOR::kEngineTypeNames),
 		KotOR::kEngineTypeNames,
 		ARRAYSIZE(KotOR::kFunctionNames),
-		KotOR::kFunctionNames
+		KotOR::kFunctionNames,
+		KotOR::kFunctionSignatures
 	},
 	{
 		ARRAYSIZE(KotOR2::kEngineTypeNames),
 		KotOR2::kEngineTypeNames,
 		ARRAYSIZE(KotOR2::kFunctionNames),
-		KotOR2::kFunctionNames
+		KotOR2::kFunctionNames,
+		KotOR2::kFunctionSignatures
 	},
 	{
 		ARRAYSIZE(Jade::kEngineTypeNames),
 		Jade::kEngineTypeNames,
 		ARRAYSIZE(Jade::kFunctionNames),
-		Jade::kFunctionNames
+		Jade::kFunctionNames,
+		Jade::kFunctionSignatures
 	},
 	{
 		ARRAYSIZE(Witcher::kEngineTypeNames),
 		Witcher::kEngineTypeNames,
 		ARRAYSIZE(Witcher::kFunctionNames),
-		Witcher::kFunctionNames
+		Witcher::kFunctionNames,
+		Witcher::kFunctionSignatures
 	},
 	{
+		0,
 		0,
 		0,
 		0,
@@ -83,13 +90,15 @@ static const GameInfo kGameInfo[Aurora::kGameIDMAX] = {
 		ARRAYSIZE(DragonAge::kEngineTypeNames),
 		DragonAge::kEngineTypeNames,
 		ARRAYSIZE(DragonAge::kFunctionNames),
-		DragonAge::kFunctionNames
+		DragonAge::kFunctionNames,
+		DragonAge::kFunctionSignatures
 	},
 	{
 		ARRAYSIZE(DragonAge2::kEngineTypeNames),
 		DragonAge2::kEngineTypeNames,
 		ARRAYSIZE(DragonAge2::kFunctionNames),
-		DragonAge2::kFunctionNames
+		DragonAge2::kFunctionNames,
+		DragonAge2::kFunctionSignatures
 	}
 };
 
@@ -134,6 +143,34 @@ Common::UString getFunctionName(Aurora::GameID game, size_t n) {
 		return "";
 
 	return info->functionNames[n];
+}
+
+VariableType getFunctionReturnType(Aurora::GameID game, size_t n) {
+	const GameInfo *info = getGameInfo(game);
+	if (!info || (n >= info->functionCount))
+		return kTypeVoid;
+
+	return info->functionSignatures[n][0];
+}
+
+size_t getFunctionParameterCount(Aurora::GameID game, size_t n) {
+	const GameInfo *info = getGameInfo(game);
+	if (!info || (n >= info->functionCount))
+		return 0;
+
+	size_t count = 0;
+	for (size_t i = 1; (i < GameInfo::kMaxSignatureSize) && (info->functionSignatures[n][i] != kTypeVoid); i++)
+		count++;
+
+	return count;
+}
+
+const VariableType *getFunctionParameters(Aurora::GameID game, size_t n) {
+	const GameInfo *info = getGameInfo(game);
+	if (!info || (n >= info->functionCount))
+		return 0;
+
+	return &info->functionSignatures[n][1];
 }
 
 } // End of namespace NWScript

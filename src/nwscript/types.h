@@ -32,6 +32,28 @@
 
 namespace NWScript {
 
+/** The type of an NWScript variable. */
+enum VariableType {
+	kTypeVoid            = 0,
+	kTypeInt                ,
+	kTypeFloat              ,
+	kTypeString             ,
+	kTypeResource           ,
+	kTypeObject             ,
+	kTypeVector             ,
+	kTypeStruct             ,
+	kTypeEngineType         , ///< "effect", "event", "location", "talent"...
+	kTypeScriptState        , ///< "action".
+	kTypeIntArray           ,
+	kTypeFloatArray         ,
+	kTypeStringArray        ,
+	kTypeResourcegArray     ,
+	kTypeObjectArray        ,
+	kTypeEngineTypeArray    ,
+	kTypeReference          , ///< A reference/pointer to another variable.
+	kTypeAny                  ///< Any other type.
+};
+
 /** An instruction opcode, defining what it does. */
 enum Opcode {
 	kOpcodeCPDOWNSP      = 0x01,
