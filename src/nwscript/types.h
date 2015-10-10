@@ -34,24 +34,36 @@ namespace NWScript {
 
 /** The type of an NWScript variable. */
 enum VariableType {
-	kTypeVoid            = 0,
-	kTypeInt                ,
-	kTypeFloat              ,
-	kTypeString             ,
-	kTypeResource           ,
-	kTypeObject             ,
-	kTypeVector             ,
-	kTypeStruct             ,
-	kTypeEngineType         , ///< "effect", "event", "location", "talent"...
-	kTypeScriptState        , ///< "action".
-	kTypeIntArray           ,
-	kTypeFloatArray         ,
-	kTypeStringArray        ,
-	kTypeResourceArray      ,
-	kTypeObjectArray        ,
-	kTypeEngineTypeArray    ,
-	kTypeReference          , ///< A reference/pointer to another variable.
-	kTypeAny                  ///< Any other type.
+	kTypeVoid             = 0,
+	kTypeInt                 ,
+	kTypeFloat               ,
+	kTypeString              ,
+	kTypeResource            ,
+	kTypeObject              ,
+	kTypeVector              ,
+	kTypeStruct              ,
+	kTypeEngineType          , ///< "effect", "event", "location", "talent"...
+	kTypeEngineType0         ,
+	kTypeEngineType1         ,
+	kTypeEngineType2         ,
+	kTypeEngineType3         ,
+	kTypeEngineType4         ,
+	kTypeEngineType5         ,
+	kTypeScriptState         , ///< "action".
+	kTypeIntArray            ,
+	kTypeFloatArray          ,
+	kTypeStringArray         ,
+	kTypeResourceArray       ,
+	kTypeObjectArray         ,
+	kTypeEngineTypeArray     ,
+	kTypeEngineType0Array    ,
+	kTypeEngineType1Array    ,
+	kTypeEngineType2Array    ,
+	kTypeEngineType3Array    ,
+	kTypeEngineType4Array    ,
+	kTypeEngineType5Array    ,
+	kTypeReference           , ///< A reference/pointer to another variable.
+	kTypeAny                   ///< Any other type.
 };
 
 /** An instruction opcode, defining what it does. */
