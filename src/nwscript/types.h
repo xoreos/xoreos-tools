@@ -42,7 +42,6 @@ enum VariableType {
 	kTypeObject              ,
 	kTypeVector              ,
 	kTypeStruct              ,
-	kTypeEngineType          , ///< "effect", "event", "location", "talent"...
 	kTypeEngineType0         ,
 	kTypeEngineType1         ,
 	kTypeEngineType2         ,
@@ -55,7 +54,6 @@ enum VariableType {
 	kTypeStringArray         ,
 	kTypeResourceArray       ,
 	kTypeObjectArray         ,
-	kTypeEngineTypeArray     ,
 	kTypeEngineType0Array    ,
 	kTypeEngineType1Array    ,
 	kTypeEngineType2Array    ,
