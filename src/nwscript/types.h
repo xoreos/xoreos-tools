@@ -47,7 +47,7 @@ enum VariableType {
 	kTypeIntArray           ,
 	kTypeFloatArray         ,
 	kTypeStringArray        ,
-	kTypeResourcegArray     ,
+	kTypeResourceArray      ,
 	kTypeObjectArray        ,
 	kTypeEngineTypeArray    ,
 	kTypeReference          , ///< A reference/pointer to another variable.
