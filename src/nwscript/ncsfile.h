@@ -93,7 +93,6 @@ private:
 	                    Block *&branchBlock, BlockEdgeType type);
 
 	static void setAddressType(Instruction *instr, AddressType type);
-	static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t length);
 
 	Instructions::iterator findInstruction(uint32 address);
 };

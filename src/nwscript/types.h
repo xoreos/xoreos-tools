@@ -245,7 +245,7 @@ struct Instruction {
 	const Block *block;
 
 
-	Instruction(uint32 addr) : address(addr),
+	Instruction(uint32 addr = 0) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
 		constValueInt(0), constValueFloat(0.0f), constValueObject(0),
 		addressType(kAddressTypeNone), follower(0), block(0) {
