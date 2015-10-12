@@ -92,8 +92,6 @@ private:
 	bool addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *branchDestination,
 	                    Block *&branchBlock, BlockEdgeType type);
 
-	static void setAddressType(Instruction *instr, AddressType type);
-
 	Instructions::iterator findInstruction(uint32 address);
 };
 

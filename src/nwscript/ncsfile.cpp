@@ -136,7 +136,7 @@ bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
 	return true;
 }
 
-void NCSFile::setAddressType(Instruction *instr, AddressType type) {
+static void setAddressType(Instruction *instr, AddressType type) {
 	/* Only update the address type of an instruction with a higher-priority one. */
 
 	if (!instr || ((uint)instr->addressType >= (uint)type))
