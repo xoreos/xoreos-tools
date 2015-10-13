@@ -345,7 +345,7 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 	     (instr.opcode == kOpcodeSTORESTATE)) &&
 	    (!instr.branches.empty() && instr.branches[0])) {
 
-		const Common::UString jumpLabel = formatJumpLabel(*instr.branches[0]);
+		const Common::UString jumpLabel = formatJumpLabelName(*instr.branches[0]);
 		if (jumpLabel.empty())
 			throw Common::Exception("Branch destination is not a jump destination?!?");
 
