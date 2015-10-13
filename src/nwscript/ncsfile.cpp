@@ -420,6 +420,13 @@ void NCSFile::identifySubRoutineTypes() {
 	_startSubRoutine->type = kSubRoutineTypeStart;
 	_startSubRoutine->name = "_start";
 
+	if (!_startSubRoutine->blocks.front()->instructions.empty()) {
+		Instruction *instr = const_cast<Instruction *>(_startSubRoutine->blocks.front()->instructions.front());
+		assert(instr);
+
+		instr->addressType = kAddressTypeSubRoutine;
+	}
+
 	// If we have a _global() subroutine, mark it
 	if (_globalSubRoutine) {
 		_globalSubRoutine->type = kSubRoutineTypeGlobal;
