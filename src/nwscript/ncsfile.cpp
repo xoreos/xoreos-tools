@@ -41,7 +41,7 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 
 namespace NWScript {
 
-NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0) {
+NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0), _globalSubRoutine(0) {
 	load(ncs);
 }
 
@@ -69,6 +69,10 @@ const Block &NCSFile::getRootBlock() const {
 
 const NCSFile::SubRoutines &NCSFile::getSubRoutines() const {
 	return _subRoutines;
+}
+
+const SubRoutine *NCSFile::getGlobalSubRoutine() const {
+	return _globalSubRoutine;
 }
 
 const Instruction *NCSFile::findInstruction(uint32 address) const {
@@ -300,6 +304,18 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 
 			branchBlock(sub, block, *blockInstr);
 			break;
+		}
+
+		if (blockInstr->opcode == kOpcodeSAVEBP) {
+			/* The SAVEBP instruction is used to set a reference point for global variables.
+			 * When we encounter it, we remember this current subroutine as the one that
+			 * initialize this global variable frame. */
+
+			if (!_globalSubRoutine || (_globalSubRoutine == &sub))
+				_globalSubRoutine = &sub;
+			else
+				warning("Found multiple subroutines that call SAVEBP: %08X, %08X",
+				        _globalSubRoutine->address, sub.address);
 		}
 
 		// Else, continue with the next instruction

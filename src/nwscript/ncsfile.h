@@ -67,6 +67,10 @@ public:
 	/** Return all subroutines in this NCS file. */
 	const SubRoutines &getSubRoutines() const;
 
+	/** Return the subroutine that sets up global variables.
+	 *  If there is no such subroutine in this script, return 0. */
+	const SubRoutine *getGlobalSubRoutine() const;
+
 	/** Find an instruction by address. */
 	const Instruction *findInstruction(uint32 address) const;
 
