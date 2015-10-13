@@ -238,7 +238,7 @@ void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
 		// Print jump label
-		const Common::UString jumpLabel = NWScript::formatJumpLabel(*i);
+		const Common::UString jumpLabel = NWScript::formatJumpLabelName(*i);
 		if (!jumpLabel.empty())
 			out.writeString(jumpLabel + ":\n");
 
@@ -257,7 +257,7 @@ void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::Ga
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
 		// Print jump label
-		const Common::UString jumpLabel = NWScript::formatJumpLabel(*i);
+		const Common::UString jumpLabel = NWScript::formatJumpLabelName(*i);
 		if (!jumpLabel.empty())
 			out.writeString(jumpLabel + ":\n");
 
@@ -317,12 +317,11 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 		                "    style=filled\n"
 		                "    color=lightgrey\n", s->address));
 
-		if (s->blocks.front()->instructions.front()->addressType == NWScript::kAddressTypeStateStore)
-			out.writeString(Common::UString::format("    label=\"%s\"\n\n",
-			                NWScript::formatStateStore(s->address).c_str()));
-		else
-			out.writeString(Common::UString::format("    label=\"%s\"\n\n",
-			                NWScript::formatSubRoutine(s->address).c_str()));
+		Common::UString clusterLabel = NWScript::formatJumpLabelName(*s->blocks.front()->instructions.front());
+		if (clusterLabel.empty())
+			clusterLabel = NWScript::formatJumpDestination(s->address);
+
+		out.writeString(Common::UString::format("    label=\"%s\"\n\n", clusterLabel.c_str()));
 
 		// Blocks
 		for (std::vector<const NWScript::Block *>::const_iterator b = s->blocks.begin();
