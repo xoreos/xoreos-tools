@@ -206,32 +206,47 @@ void NCSFile::linkBranches() {
 }
 
 void NCSFile::findBlocks() {
+	/* Create the first subroutine and first block containing the very first
+	 * instruction in this script. Then follow the complete codeflow from this
+	 * instruction onwards. */
+
 	_subRoutines.push_back(SubRoutine(_instructions.front().address));
 	_blocks.push_back(Block(_instructions.front().address, _subRoutines.back()));
 
 	_subRoutines.back().blocks.push_back(&_blocks.back());
 
-	addBlock(&_subRoutines.back(), _blocks.back(), &_instructions.front());
+	constructBlocks(_subRoutines.back(), _blocks.back(), _instructions.front());
 }
 
-bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *branchDestination,
+bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction &branchDestination,
                              Block *&branchBlock, BlockEdgeType type) {
+
+	/* Prepare to follow one branch of the path.
+	   Returns true if this is a completely new path we haven't handled yet. */
+
 	bool needAdd = false;
 
-	branchBlock = const_cast<Block *>(branchDestination->block);
+	// See if we have already handled this branch. If not, create a new block for it.
+	branchBlock = const_cast<Block *>(branchDestination.block);
 	if (!branchBlock) {
 		if (!sub) {
-			_subRoutines.push_back(SubRoutine(branchDestination->address));
+			// We weren't given a subroutine this block belongs to. Create a new one.
+
+			_subRoutines.push_back(SubRoutine(branchDestination.address));
 			sub = &_subRoutines.back();
 		}
 
-		_blocks.push_back(Block(branchDestination->address, *sub));
+		// Create a new block and link it with its subroutine
+
+		_blocks.push_back(Block(branchDestination.address, *sub));
 
 		sub->blocks.push_back(&_blocks.back());
 
 		branchBlock = &_blocks.back();
 		needAdd     = true;
 	}
+
+	// Link the branch with its parent
 
 	branchBlock->parents.push_back(&block);
 	block.children.push_back(branchBlock);
@@ -241,85 +256,116 @@ bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *
 	return needAdd;
 }
 
-void NCSFile::addBlock(SubRoutine *sub, Block &block, const Instruction *instr) {
-	Block *branchBlock = 0;
+void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &instr) {
+	/* Recursively follow the path of instructions and construct individual but linked
+	 * blocks containing the path with all its branches. */
 
-	while (instr) {
-		if (instr->block) {
-			const_cast<Block *>(instr->block)->parents.push_back(&block);
-			block.children.push_back(instr->block);
+	const Instruction *blockInstr = &instr;
+	while (blockInstr) {
+		if (blockInstr->block) {
+			/* If this instruction already has a block it belongs to, we
+			 * link them together. We can then stop following this path. */
+
+			const_cast<Block *>(blockInstr->block)->parents.push_back(&block);
+			block.children.push_back(blockInstr->block);
 
 			block.childrenTypes.push_back(kBlockEdgeTypeUnconditional);
 
-			instr = 0;
 			break;
 		}
 
-		if ((instr->addressType != kAddressTypeNone) && !block.instructions.empty()) {
-			if (addBranchBlock(sub, block, instr, branchBlock, kBlockEdgeTypeUnconditional))
-				addBlock(sub, *branchBlock, instr);
+		if ((blockInstr->addressType != kAddressTypeNone) && !block.instructions.empty()) {
+			/* If this instruction is a jump destination or starts a subroutine,
+			 * we create a new block and link them together. Since we're handing
+			 * off this path, we don't need to follow it ourselves anymore. */
 
-			instr = 0;
+			Block      *branchBlock = 0;
+			SubRoutine *branchSub   = &sub;
+
+			if (addBranchBlock(branchSub, block, *blockInstr, branchBlock, kBlockEdgeTypeUnconditional))
+				constructBlocks(*branchSub, *branchBlock, *blockInstr);
+
 			break;
 		}
 
-		block.instructions.push_back(instr);
-		const_cast<Instruction *>(instr)->block = &block;
+		// Put the instruction into the block and vice versa
+		block.instructions.push_back(blockInstr);
+		const_cast<Instruction *>(blockInstr)->block = &block;
 
-		if ((instr->opcode == kOpcodeJMP) || (instr->opcode == kOpcodeJSR) ||
-		    (instr->opcode == kOpcodeJZ ) || (instr->opcode == kOpcodeJNZ) ||
-		    (instr->opcode == kOpcodeRETN) || (instr->opcode == kOpcodeSTORESTATE))
+		if ((blockInstr->opcode == kOpcodeJMP ) || (blockInstr->opcode == kOpcodeJSR) ||
+		    (blockInstr->opcode == kOpcodeJZ  ) || (blockInstr->opcode == kOpcodeJNZ) ||
+		    (blockInstr->opcode == kOpcodeRETN) || (blockInstr->opcode == kOpcodeSTORESTATE)) {
+
+			/* If this is an instruction that influences control flow, break to evaluate the branches. */
+
+			branchBlock(sub, block, *blockInstr);
 			break;
+		}
 
-		instr = instr->follower;
+		// Else, continue with the next instruction
+		blockInstr = blockInstr->follower;
 	}
+}
 
-	if (!instr)
-		return;
+void NCSFile::branchBlock(SubRoutine &sub, Block &block, const Instruction &instr) {
+	/* Evaluate the branching paths of a block and follow them all. */
 
-	SubRoutine *newSub = 0;
+	Block      *branchBlock = 0;
+	SubRoutine *branchSub   = &sub;
 
-	switch (instr->opcode) {
+	switch (instr.opcode) {
 		case kOpcodeJMP:
-			assert(instr->branches.size() == 1);
+			// Unconditional jump: follow the one destination
 
-			if (addBranchBlock(sub, block, instr->branches[0], branchBlock, kBlockEdgeTypeUnconditional))
-				addBlock(sub, *branchBlock, instr->branches[0]);
+			assert(instr.branches.size() == 1);
+
+			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeUnconditional))
+				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
 
 			break;
 
 		case kOpcodeJZ:
 		case kOpcodeJNZ:
-			assert(instr->branches.size() == 2);
+			// Conditional jump: follow path destinations
 
-			if (addBranchBlock(sub, block, instr->branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
-				addBlock(sub, *branchBlock, instr->branches[0]);
-			if (addBranchBlock(sub, block, instr->branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
-				addBlock(sub, *branchBlock, instr->branches[1]);
+			assert(instr.branches.size() == 2);
+
+			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
+				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
+			if (addBranchBlock(branchSub, block, *instr.branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
+				constructBlocks(*branchSub, *branchBlock, *instr.branches[1]);
 
 			break;
 
 		case kOpcodeJSR:
-			assert(instr->branches.size() == 1);
-			assert(instr->follower);
+			// Subroutine call: follow the subroutine and the tail (the code after the call)
 
-			if (addBranchBlock(newSub, block, instr->branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
-				addBlock(newSub, *branchBlock, instr->branches[0]);
+			assert(instr.branches.size() == 1);
+			assert(instr.follower);
 
-			if (addBranchBlock(sub, block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
-				addBlock(sub, *branchBlock, instr->follower);
+			branchSub = 0;
+			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
+				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
+
+			branchSub = &sub;
+			if (addBranchBlock(branchSub, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
+				constructBlocks(*branchSub, *branchBlock, *instr.follower);
 
 			break;
 
 		case kOpcodeSTORESTATE:
-			assert(instr->branches.size() == 1);
-			assert(instr->follower);
+			// STORESTATE: follow the stored subroutine and the tail (the code after the call)
 
-			if (addBranchBlock(newSub, block, instr->branches[0], branchBlock, kBlockEdgeTypeStoreState))
-				addBlock(newSub, *branchBlock, instr->branches[0]);
+			assert(instr.branches.size() == 1);
+			assert(instr.follower);
 
-			if (addBranchBlock(sub, block, instr->follower, branchBlock, kBlockEdgeTypeFunctionReturn))
-				addBlock(sub, *branchBlock, instr->follower);
+			branchSub = 0;
+			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeStoreState))
+				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
+
+			branchSub = &sub;
+			if (addBranchBlock(branchSub, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
+				constructBlocks(*branchSub, *branchBlock, *instr.follower);
 
 			break;
 

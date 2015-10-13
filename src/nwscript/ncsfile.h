@@ -87,10 +87,11 @@ private:
 	void linkBranches();
 	void findBlocks();
 
+	void constructBlocks(SubRoutine &sub, Block &block, const Instruction &instr);
+	void branchBlock    (SubRoutine &sub, Block &block, const Instruction &instr);
+	bool addBranchBlock (SubRoutine *&sub, Block &block, const Instruction &branchDestination,
+	                     Block *&branchBlock, BlockEdgeType type);
 
-	void addBlock(SubRoutine *sub, Block &block, const Instruction *instr);
-	bool addBranchBlock(SubRoutine *&sub, Block &block, const Instruction *branchDestination,
-	                    Block *&branchBlock, BlockEdgeType type);
 
 	Instructions::iterator findInstruction(uint32 address);
 };
