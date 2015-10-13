@@ -339,7 +339,7 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 
 			const size_t linesPerNode = ceil((*b)->instructions.size() / (double)labels.size());
 
-			labels[0] = NWScript::formatJumpLabel(*(*b)->instructions.front());
+			labels[0] = NWScript::formatJumpLabelName(*(*b)->instructions.front());
 			if (labels[0].empty())
 				labels[0] = NWScript::formatJumpDestination((*b)->instructions.front()->address);
 
