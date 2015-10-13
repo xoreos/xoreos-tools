@@ -39,6 +39,9 @@ Common::UString getOpcodeName(Opcode op);
 /** Return the textual suffix of the opcode's type. */
 Common::UString getInstTypeName(InstructionType type);
 
+/** Return a stack variable type that results when this instruction type is applied. */
+VariableType instructionTypeToVariableType(InstructionType type);
+
 /** Return the direct arguments this opcode takes.
  *
  *  Please note that there are 3 exceptions that require special handling:

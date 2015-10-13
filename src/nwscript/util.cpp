@@ -167,6 +167,98 @@ Common::UString getInstTypeName(InstructionType type) {
 	return kInstTypeName[(size_t)type];
 }
 
+VariableType instructionTypeToVariableType(InstructionType type) {
+	switch (type) {
+		case kInstTypeInt:
+		case kInstTypeIntInt:
+			return kTypeInt;
+
+		case kInstTypeFloat:
+		case kInstTypeFloatFloat:
+		case kInstTypeIntFloat:
+		case kInstTypeFloatInt:
+			return kTypeFloat;
+
+		case kInstTypeString:
+		case kInstTypeStringString:
+			return kTypeString;
+
+		case kInstTypeObject:
+		case kInstTypeObjectObject:
+			return kTypeObject;
+
+		case kInstTypeResource:
+			return kTypeResource;
+
+		case kInstTypeVectorVector:
+		case kInstTypeVectorFloat:
+		case kInstTypeFloatVector:
+			return kTypeVector;
+
+		case kInstTypeEngineType0:
+		case kInstTypeEngineType0EngineType0:
+			return kTypeEngineType0;
+
+		case kInstTypeEngineType1:
+		case kInstTypeEngineType1EngineType1:
+			return kTypeEngineType0;
+
+		case kInstTypeEngineType2:
+		case kInstTypeEngineType2EngineType2:
+			return kTypeEngineType2;
+
+		case kInstTypeEngineType3:
+		case kInstTypeEngineType3EngineType3:
+			return kTypeEngineType3;
+
+		case kInstTypeEngineType4:
+		case kInstTypeEngineType4EngineType4:
+			return kTypeEngineType4;
+
+		case kInstTypeEngineType5:
+		case kInstTypeEngineType5EngineType5:
+			return kTypeEngineType5;
+
+		case kInstTypeIntArray:
+			return kTypeIntArray;
+
+		case kInstTypeFloatArray:
+			return kTypeFloatArray;
+
+		case kInstTypeStringArray:
+			return kTypeStringArray;
+
+		case kInstTypeObjectArray:
+			return kTypeObjectArray;
+
+		case kInstTypeResourceArray:
+			return kTypeResourceArray;
+
+		case kInstTypeEngineType0Array:
+			return kTypeEngineType0Array;
+
+		case kInstTypeEngineType1Array:
+			return kTypeEngineType1Array;
+
+		case kInstTypeEngineType2Array:
+			return kTypeEngineType2Array;
+
+		case kInstTypeEngineType3Array:
+			return kTypeEngineType3Array;
+
+		case kInstTypeEngineType4Array:
+			return kTypeEngineType4Array;
+
+		case kInstTypeEngineType5Array:
+			return kTypeEngineType5Array;
+
+		default:
+			break;
+	}
+
+	return kTypeVoid;
+}
+
 const OpcodeArgument *getDirectArguments(Opcode op) {
 	if ((size_t)op >= ARRAYSIZE(kOpcodeArguments))
 		return kOpcodeArguments[0];
