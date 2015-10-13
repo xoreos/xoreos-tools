@@ -363,6 +363,13 @@ void NCSFile::branchBlock(SubRoutine &sub, Block &block, const Instruction &inst
 			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
 				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
 
+			if (branchBlock && branchBlock->subRoutine) {
+				// Link the caller and the callee
+
+				sub.callees.insert(branchBlock->subRoutine);
+				const_cast<SubRoutine *>(branchBlock->subRoutine)->callers.insert(&sub);
+			}
+
 			branchSub = &sub;
 			if (addBranchBlock(branchSub, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
 				constructBlocks(*branchSub, *branchBlock, *instr.follower);

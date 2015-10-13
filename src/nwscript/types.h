@@ -26,6 +26,7 @@
 #define NWSCRIPT_TYPES_H
 
 #include <vector>
+#include <set>
 
 #include "src/common/types.h"
 #include "src/common/ustring.h"
@@ -305,6 +306,9 @@ struct SubRoutine {
 
 	/** The blocks that are inside this subroutine. */
 	std::vector<const Block *> blocks;
+
+	std::set<const SubRoutine *> callers; ///< The subroutines calling this subroutine.
+	std::set<const SubRoutine *> callees; ///< The subroutines this subroutine calls.
 
 
 	SubRoutine(uint32 addr) : address(addr) {
