@@ -192,6 +192,14 @@ enum AddressType {
 	kAddressTypeSubRoutine  ///< Address that starts a subroutine.
 };
 
+/** The type of a subroutine. */
+enum SubRoutineType {
+	kSubRoutineTypeNone,   ///< A normal subroutine.
+	kSubRoutineTypeStart,  ///< The _start() subroutine, where execution starts.
+	kSubRoutineTypeGlobal, ///< The _global() subroutine that sets up global variables.
+	kSubRoutineTypeMain    ///< The main() subroutine.
+};
+
 static const size_t kOpcodeMaxArgumentCount = 3;
 
 struct Block;
@@ -310,8 +318,11 @@ struct SubRoutine {
 	std::set<const SubRoutine *> callers; ///< The subroutines calling this subroutine.
 	std::set<const SubRoutine *> callees; ///< The subroutines this subroutine calls.
 
+	/** The type of this subroutine. */
+	SubRoutineType type;
 
-	SubRoutine(uint32 addr) : address(addr) {
+
+	SubRoutine(uint32 addr) : address(addr), type(kSubRoutineTypeNone) {
 	}
 };
 

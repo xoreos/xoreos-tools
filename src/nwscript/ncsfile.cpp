@@ -41,7 +41,9 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 
 namespace NWScript {
 
-NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0), _globalSubRoutine(0) {
+NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0),
+	_startSubRoutine(0), _globalSubRoutine(0), _mainSubRoutine(0) {
+
 	load(ncs);
 }
 
@@ -71,8 +73,16 @@ const NCSFile::SubRoutines &NCSFile::getSubRoutines() const {
 	return _subRoutines;
 }
 
+const SubRoutine *NCSFile::getStartSubRoutine() const {
+	return _startSubRoutine;
+}
+
 const SubRoutine *NCSFile::getGlobalSubRoutine() const {
 	return _globalSubRoutine;
+}
+
+const SubRoutine *NCSFile::getMainSubRoutine() const {
+	return _mainSubRoutine;
 }
 
 const Instruction *NCSFile::findInstruction(uint32 address) const {
@@ -108,6 +118,8 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 
 		linkBranches();
 		findBlocks();
+
+		identifySubRoutineTypes();
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to load NCS file");
@@ -394,6 +406,30 @@ void NCSFile::branchBlock(SubRoutine &sub, Block &block, const Instruction &inst
 
 		default:
 			break;
+	}
+}
+
+void NCSFile::identifySubRoutineTypes() {
+	/* Identify special subroutine types, like _start(), _global() and main(). */
+
+	if (_subRoutines.empty())
+		return;
+
+	// The very first subroutine is the _start() one
+	_startSubRoutine = &_subRoutines.front();
+	_startSubRoutine->type = kSubRoutineTypeStart;
+
+	// If we have a _global() subroutine, mark it
+	if (_globalSubRoutine)
+		_globalSubRoutine->type = kSubRoutineTypeGlobal;
+
+	// If we have a global subroutine, it calls main(). Otherwise, _start() calls main()
+	SubRoutine *mainCaller = _globalSubRoutine ? _globalSubRoutine : _startSubRoutine;
+
+	// If the caller that calls main() only calls one subroutine, we have found main()
+	if (mainCaller->callees.size() == 1) {
+		_mainSubRoutine = const_cast<SubRoutine *>(*mainCaller->callees.begin());
+		_mainSubRoutine->type = kSubRoutineTypeMain;
 	}
 }
 

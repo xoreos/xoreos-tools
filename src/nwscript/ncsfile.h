@@ -67,9 +67,17 @@ public:
 	/** Return all subroutines in this NCS file. */
 	const SubRoutines &getSubRoutines() const;
 
-	/** Return the subroutine that sets up global variables.
+	/** Return the _start() subroutine where execution starts.
+	 *  If there are no subroutines in this script at all, return 0. */
+	const SubRoutine *getStartSubRoutine() const;
+
+	/** Return the _global() subroutine that sets up global variables.
 	 *  If there is no such subroutine in this script, return 0. */
 	const SubRoutine *getGlobalSubRoutine() const;
+
+	/** Return the main() subroutine.
+	 *  If we failed to identify the main subroutine, return 0. */
+	const SubRoutine *getMainSubRoutine() const;
 
 	/** Find an instruction by address. */
 	const Instruction *findInstruction(uint32 address) const;
@@ -82,6 +90,10 @@ private:
 	Blocks       _blocks;
 	SubRoutines  _subRoutines;
 
+	SubRoutine *_startSubRoutine;
+	SubRoutine *_globalSubRoutine;
+	SubRoutine *_mainSubRoutine;
+
 
 	void load(Common::SeekableReadStream &ncs);
 	void parse(Common::SeekableReadStream &ncs);
@@ -90,6 +102,8 @@ private:
 
 	void linkBranches();
 	void findBlocks();
+
+	void identifySubRoutineTypes();
 
 	void constructBlocks(SubRoutine &sub, Block &block, const Instruction &instr);
 	void branchBlock    (SubRoutine &sub, Block &block, const Instruction &instr);
