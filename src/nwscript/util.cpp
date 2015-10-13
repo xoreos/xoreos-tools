@@ -432,4 +432,12 @@ Common::UString formatJumpLabel(const Instruction &instr) {
 	return "";
 }
 
+Common::UString formatJumpLabelName(const Instruction &instr) {
+	if ((instr.addressType == kAddressTypeSubRoutine) &&
+	    instr.block && instr.block->subRoutine && !instr.block->subRoutine->name.empty())
+		return instr.block->subRoutine->name;
+
+	return formatJumpLabel(instr);
+}
+
 } // End of namespace NWScript

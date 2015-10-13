@@ -128,6 +128,15 @@ Common::UString formatJumpDestination(uint32 address);
  */
 Common::UString formatJumpLabel(const Instruction &instr);
 
+/** Format a jump label for this instruction and substitute a name if we can.
+ *
+ *  Functions very similar to formatJumpLabel(), with one exception:
+ *  If we have a human-readable name for this address, use the name instead.
+ *
+ *  This means the resulting string can be of any length.
+ */
+Common::UString formatJumpLabelName(const Instruction &instr);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H

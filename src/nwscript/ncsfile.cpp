@@ -418,10 +418,13 @@ void NCSFile::identifySubRoutineTypes() {
 	// The very first subroutine is the _start() one
 	_startSubRoutine = &_subRoutines.front();
 	_startSubRoutine->type = kSubRoutineTypeStart;
+	_startSubRoutine->name = "_start";
 
 	// If we have a _global() subroutine, mark it
-	if (_globalSubRoutine)
+	if (_globalSubRoutine) {
 		_globalSubRoutine->type = kSubRoutineTypeGlobal;
+		_globalSubRoutine->name = "_global";
+	}
 
 	// If we have a global subroutine, it calls main(). Otherwise, _start() calls main()
 	SubRoutine *mainCaller = _globalSubRoutine ? _globalSubRoutine : _startSubRoutine;
@@ -430,6 +433,7 @@ void NCSFile::identifySubRoutineTypes() {
 	if (mainCaller->callees.size() == 1) {
 		_mainSubRoutine = const_cast<SubRoutine *>(*mainCaller->callees.begin());
 		_mainSubRoutine->type = kSubRoutineTypeMain;
+		_mainSubRoutine->name = "main";
 	}
 }
 

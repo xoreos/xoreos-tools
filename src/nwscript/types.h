@@ -321,6 +321,9 @@ struct SubRoutine {
 	/** The type of this subroutine. */
 	SubRoutineType type;
 
+	/** The name of this subroutine, if we have identified or assigned one. */
+	Common::UString name;
+
 
 	SubRoutine(uint32 addr) : address(addr), type(kSubRoutineTypeNone) {
 	}
