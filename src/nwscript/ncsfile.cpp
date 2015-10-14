@@ -445,8 +445,48 @@ void NCSFile::identifySubRoutineTypes() {
 	// If the caller that calls main() only calls one subroutine, we have found main()
 	if (mainCaller->callees.size() == 1) {
 		_mainSubRoutine = const_cast<SubRoutine *>(*mainCaller->callees.begin());
-		_mainSubRoutine->type = kSubRoutineTypeMain;
-		_mainSubRoutine->name = "main";
+		assert(_mainSubRoutine);
+
+		if (!_startSubRoutine->blocks.empty()) {
+			/* Try to find out whether this script is an event script or a dialogue
+			 * conditional script.
+			 *
+			 * Event scripts are called by events happening on objects. They don't
+			 * return a value and their main function is called "main".
+			 *
+			 * Dialogue conditional scripts are called to evaluate whether a branch
+			 * in dialogue tree is visible to the user (on a user line), or whether
+			 * it should be taken (on an NPC line). They return an int that will be
+			 * interpreted as a boolean value. Their main function is called
+			 * "StartingConditional".
+			 *
+			 * Therefore, we can differentiate them by the very first instructions
+			 * in the _start() subroutine. If the _start() subroutine directly jumps
+			 * into the main (or the _global()) subroutine, this is an event script.
+			 * If _start() adds an integer to the stack as a placeholder for the
+			 * return value and then jumps, this is a dialogue conditional script.
+			 * If neither is true, something we don't know about happens there. */
+
+			const std::vector<const Instruction *> &instr = _startSubRoutine->blocks[0]->instructions;
+
+			if        ((instr.size() >= 1) &&
+			           (instr[0]->opcode == kOpcodeJSR)) {
+
+				_mainSubRoutine->type = kSubRoutineTypeMain;
+				_mainSubRoutine->name = "main";
+
+			} else if ((instr.size() >= 2) &&
+			           (instr[0]->opcode == kOpcodeRSADD) &&
+			           (instr[0]->type   == kInstTypeInt) &&
+			           (instr[1]->opcode == kOpcodeJSR)) {
+
+				_mainSubRoutine->type = kSubRoutineTypeStartCond;
+				_mainSubRoutine->name = "StartingConditional";
+			}
+		}
+
+		if (_mainSubRoutine->type == kSubRoutineTypeNone)
+			_mainSubRoutine = 0;
 	}
 }
 

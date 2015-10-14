@@ -194,10 +194,11 @@ enum AddressType {
 
 /** The type of a subroutine. */
 enum SubRoutineType {
-	kSubRoutineTypeNone,   ///< A normal subroutine.
-	kSubRoutineTypeStart,  ///< The _start() subroutine, where execution starts.
-	kSubRoutineTypeGlobal, ///< The _global() subroutine that sets up global variables.
-	kSubRoutineTypeMain    ///< The main() subroutine.
+	kSubRoutineTypeNone,     ///< A normal subroutine.
+	kSubRoutineTypeStart,    ///< The _start() subroutine, where execution starts.
+	kSubRoutineTypeGlobal,   ///< The _global() subroutine that sets up global variables.
+	kSubRoutineTypeMain,     ///< The main() subroutine.
+	kSubRoutineTypeStartCond ///< The StartingConditional() subroutine.
 };
 
 static const size_t kOpcodeMaxArgumentCount = 3;
