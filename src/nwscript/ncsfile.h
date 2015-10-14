@@ -90,6 +90,8 @@ private:
 	Blocks       _blocks;
 	SubRoutines  _subRoutines;
 
+	bool _multipleGlobal;
+
 	SubRoutine *_startSubRoutine;
 	SubRoutine *_globalSubRoutine;
 	SubRoutine *_mainSubRoutine;

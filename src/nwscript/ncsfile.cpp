@@ -41,7 +41,7 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 
 namespace NWScript {
 
-NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0),
+NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0), _multipleGlobal(false),
 	_startSubRoutine(0), _globalSubRoutine(0), _mainSubRoutine(0) {
 
 	load(ncs);
@@ -323,11 +323,13 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 			 * When we encounter it, we remember this current subroutine as the one that
 			 * initialize this global variable frame. */
 
-			if (!_globalSubRoutine || (_globalSubRoutine == &sub))
-				_globalSubRoutine = &sub;
-			else
+			if (_globalSubRoutine && (_globalSubRoutine != &sub)) {
 				warning("Found multiple subroutines that call SAVEBP: %08X, %08X",
 				        _globalSubRoutine->address, sub.address);
+
+				_multipleGlobal = true;
+			} else
+				_globalSubRoutine = &sub;
 		}
 
 		// Else, continue with the next instruction
@@ -426,6 +428,10 @@ void NCSFile::identifySubRoutineTypes() {
 
 		instr->addressType = kAddressTypeSubRoutine;
 	}
+
+	// If we found multiple global subroutines, there's something fishy going on. Let's ignore them
+	if (_multipleGlobal)
+		_globalSubRoutine = 0;
 
 	// If we have a _global() subroutine, mark it
 	if (_globalSubRoutine) {
