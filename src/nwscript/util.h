@@ -149,6 +149,18 @@ Common::UString formatJumpLabel(const SubRoutine &sub);
  */
 Common::UString formatJumpLabelName(const Instruction &instr);
 
+/** Format a jump label for this block.
+ *
+ *  See formatJumpLabelName(const Instruction &instr).
+ */
+Common::UString formatJumpLabelName(const Block &block);
+
+/** Format a jump label for this subroutine.
+ *
+ *  See formatJumpLabelName(const Instruction &instr).
+ */
+Common::UString formatJumpLabelName(const SubRoutine &sub);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H

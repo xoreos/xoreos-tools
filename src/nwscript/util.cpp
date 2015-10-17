@@ -454,4 +454,18 @@ Common::UString formatJumpLabelName(const Instruction &instr) {
 	return formatJumpLabel(instr);
 }
 
+Common::UString formatJumpLabelName(const Block &block) {
+	if (block.instructions.empty() || !block.instructions.front())
+		return "";
+
+	return formatJumpLabelName(*block.instructions.front());
+}
+
+Common::UString formatJumpLabelName(const SubRoutine &sub) {
+	if (sub.blocks.empty() || !sub.blocks.front())
+		return "";
+
+	return formatJumpLabelName(*sub.blocks.front());
+}
+
 } // End of namespace NWScript
