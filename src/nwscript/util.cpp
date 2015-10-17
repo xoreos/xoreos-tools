@@ -512,4 +512,14 @@ Common::UString formatParameters(const std::vector<const Variable *> &params, Au
 	return paramTypes;
 }
 
+Common::UString formatReturn(const std::vector<const Variable *> &returns, Aurora::GameID game) {
+	if (returns.size() > 1)
+		return "struct";
+
+	if (returns.empty())
+		return "void";
+
+	return getVariableTypeName(returns[0] ? returns[0]->type : kTypeAny, game);
+}
+
 } // End of namespace NWScript
