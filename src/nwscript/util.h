@@ -164,6 +164,16 @@ Common::UString formatJumpLabelName(const Block &block);
  */
 Common::UString formatJumpLabelName(const SubRoutine &sub);
 
+/** Format a list of subroutine parameter types.
+ *
+ *  The resulting string will contain the textual name of each parameter type,
+ *  separated by a comma.
+ *
+ *  Example: "int, float, string, string"
+ */
+Common::UString formatParameters(const std::vector<const Variable *> &params,
+                                 Aurora::GameID game = Aurora::kGameIDUnknown);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H

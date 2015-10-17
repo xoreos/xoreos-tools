@@ -500,4 +500,16 @@ Common::UString formatJumpLabelName(const SubRoutine &sub) {
 	return formatJumpLabelName(*sub.blocks.front());
 }
 
+Common::UString formatParameters(const std::vector<const Variable *> &params, Aurora::GameID game) {
+	Common::UString paramTypes;
+	for (std::vector<const Variable *>::const_iterator p = params.begin(); p != params.end(); ++p) {
+		if (p != params.begin())
+			paramTypes += ", ";
+
+		paramTypes += getVariableTypeName(*p ? (*p)->type : kTypeAny, game);
+	}
+
+	return paramTypes;
+}
+
 } // End of namespace NWScript
