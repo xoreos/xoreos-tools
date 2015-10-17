@@ -42,6 +42,9 @@ Common::UString getInstTypeName(InstructionType type);
 /** Return a stack variable type that results when this instruction type is applied. */
 VariableType instructionTypeToVariableType(InstructionType type);
 
+/** Return the textual name of the variable type. */
+Common::UString getVariableTypeName(VariableType type, Aurora::GameID game = Aurora::kGameIDUnknown);
+
 /** Return the direct arguments this opcode takes.
  *
  *  Please note that there are 3 exceptions that require special handling:

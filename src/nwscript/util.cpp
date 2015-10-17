@@ -66,6 +66,15 @@ static const char * const kInstTypeName[kInstTypeInstTypeMAX] = {
 	/* 96 */ "R"
 };
 
+static const char * const kVarTypeName[] = {
+	"void"  , "int"   , "float"  , "string"  , "resource"  , "object"  ,
+	"vector", "struct",
+	"E0"    , "E1"    , "E2"     , "E3"      , "E4"        , "E5"      ,
+	"action", "int[]" , "float[]", "string[]", "resource[]", "object[]",
+	"E0[]"  , "E1[]"  , "E2[]"   , "E3[]"    , "E4[]"      , "E5[]"    ,
+	"ref"   , "any"
+};
+
 static const OpcodeArgument kOpcodeArguments[kOpcodeMAX][kOpcodeMaxArgumentCount] = {
 	// 0x00
 	/*               */ { },
@@ -257,6 +266,29 @@ VariableType instructionTypeToVariableType(InstructionType type) {
 	}
 
 	return kTypeVoid;
+}
+
+Common::UString getVariableTypeName(VariableType type, Aurora::GameID game) {
+	if ((size_t)type >= ARRAYSIZE(kVarTypeName))
+		return "";
+
+	if (((type >= kTypeEngineType0     ) && (type <= kTypeEngineType5     )) ||
+	    ((type >= kTypeEngineType0Array) && (type <= kTypeEngineType5Array))) {
+
+		const size_t n = (type >= kTypeEngineType0Array) ? (((size_t)type) - (size_t)kTypeEngineType0Array) :
+		                                                   (((size_t)type) - (size_t)kTypeEngineType0);
+
+		Common::UString engineTypeName = getEngineTypeName(game, n);
+		if (engineTypeName.empty())
+			engineTypeName = getGenericEngineTypeName(n);
+
+		if (type >= kTypeEngineType0Array)
+			engineTypeName += "[]";
+
+		return engineTypeName;
+	}
+
+	return kVarTypeName[(size_t)type];
 }
 
 const OpcodeArgument *getDirectArguments(Opcode op) {
