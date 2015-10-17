@@ -128,6 +128,18 @@ Common::UString formatJumpDestination(uint32 address);
  */
 Common::UString formatJumpLabel(const Instruction &instr);
 
+/** Format a jump label for the address of this block.
+ *
+ *  See formatJumpLabel(const Instruction &instr).
+ */
+Common::UString formatJumpLabel(const Block &block);
+
+/** Format a jump label for the address of this subroutine.
+ *
+ *  See formatJumpLabel(const Instruction &instr).
+ */
+Common::UString formatJumpLabel(const SubRoutine &sub);
+
 /** Format a jump label for this instruction and substitute a name if we can.
  *
  *  Functions very similar to formatJumpLabel(), with one exception:

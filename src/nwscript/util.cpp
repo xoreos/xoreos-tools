@@ -432,6 +432,20 @@ Common::UString formatJumpLabel(const Instruction &instr) {
 	return "";
 }
 
+Common::UString formatJumpLabel(const Block &block) {
+	if (block.instructions.empty() || !block.instructions.front())
+		return "";
+
+	return formatJumpLabel(*block.instructions.front());
+}
+
+Common::UString formatJumpLabel(const SubRoutine &sub) {
+	if (sub.blocks.empty() || !sub.blocks.front())
+		return "";
+
+	return formatJumpLabel(*sub.blocks.front());
+}
+
 Common::UString formatJumpLabelName(const Instruction &instr) {
 	if ((instr.addressType == kAddressTypeSubRoutine) &&
 	    instr.block && instr.block->subRoutine && !instr.block->subRoutine->name.empty())
