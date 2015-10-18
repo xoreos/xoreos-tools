@@ -7,6 +7,7 @@ noinst_HEADERS = \
                  util.h \
                  ncsfile.h \
                  parse.h \
+                 analyze.h \
                  game.h \
                  game_nwn.h \
                  game_nwn2.h \
@@ -22,5 +23,6 @@ libnwscript_la_SOURCES = \
                          util.cpp \
                          ncsfile.cpp \
                          parse.cpp \
+                         analyze.cpp \
                          game.cpp \
                          $(EMPTY)

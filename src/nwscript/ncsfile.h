@@ -30,6 +30,7 @@
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
+#include "src/aurora/types.h"
 #include "src/aurora/aurorafile.h"
 
 #include "src/nwscript/types.h"
@@ -51,9 +52,15 @@ public:
 	NCSFile(Common::SeekableReadStream &ncs);
 	~NCSFile();
 
+	/** Perform a deep analysis of the script stack. */
+	void analyzeStack(Aurora::GameID game);
+
 	/** Return the size of the script bytecode in bytes.
 	 *  Should be equal to the size of the containing stream. */
 	size_t size() const;
+
+	/** Did we successfully analyze the script stack? */
+	bool hasStackAnalysis() const;
 
 	/** Return all the instructions within this NCS file. */
 	const Instructions &getInstructions() const;
@@ -95,6 +102,11 @@ private:
 	SubRoutine *_startSubRoutine;
 	SubRoutine *_globalSubRoutine;
 	SubRoutine *_mainSubRoutine;
+
+	bool _hasStackAnalysis;
+
+	VariableSpace _variables;
+	Stack _globals;
 
 
 	void load(Common::SeekableReadStream &ncs);

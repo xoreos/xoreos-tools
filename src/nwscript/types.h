@@ -26,6 +26,7 @@
 #define NWSCRIPT_TYPES_H
 
 #include <vector>
+#include <deque>
 #include <set>
 
 #include "src/common/types.h"
@@ -201,6 +202,56 @@ enum SubRoutineType {
 	kSubRoutineTypeStartCond ///< The StartingConditional() subroutine.
 };
 
+/** The current state of analyzing the stack of a script. */
+enum StackAnalyzeState {
+	kStackAnalyzeStateNone,    ///< No stack analysis was performed.
+	kStackAnalyzeStateStart,   ///< Stack analysis started.
+	kStackAnalyzeStateFinished ///< Stack analysis completed.
+};
+
+/** What a variable is used for. */
+enum VariableUse {
+	kVariableUseUnknown,   ///< We don't know anything about this variable.
+	kVariableUseGlobal,    ///< This is a global variable.
+	kVariableUseLocal,     ///< This is a subroutine-local variable.
+	kVariableUseParameter, ///< This is a subroutine parameter.
+	kVariableUseReturn     ///< This is a subroutine return value.
+};
+
+struct Instruction;
+
+/** A unique variable defined and used by a script. */
+struct Variable {
+	uint32 id;         ///< The unique ID of this variable.
+	VariableType type; ///< The type of this variable.
+	VariableUse  use;  ///< What this variable is used for.
+
+	const Instruction *creator; ///< The instruction that created this variable.
+
+	/** Instructions that read this variable. */
+	std::vector<const Instruction *> readers;
+	/** Instructions that write this variable. */
+	std::vector<const Instruction *> writers;
+
+	/** Variables that were created by duplicating this variable. */
+	std::vector<const Variable *> duplicates;
+
+
+	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) : id(i), type(t), use(u) {
+	}
+};
+typedef std::deque<Variable> VariableSpace;
+
+/** A variable on the NWScript stack. */
+struct StackVariable {
+	Variable *variable; ///< The actual variable this stack elements refers to.
+
+
+	StackVariable(Variable &var) : variable(&var) {
+	}
+};
+typedef std::deque<StackVariable> Stack;
+
 static const size_t kOpcodeMaxArgumentCount = 3;
 
 struct Block;
@@ -254,6 +305,9 @@ struct Instruction {
 	/** The block this instruction belongs to. */
 	const Block *block;
 
+	/** The NWScript stack before this instruction is executed. */
+	Stack stack;
+
 
 	Instruction(uint32 addr = 0) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
@@ -303,8 +357,13 @@ struct Block {
 	/** The subroutine this block belongs to. */
 	const SubRoutine *subRoutine;
 
+	/** The current state of analyzing the stack of this block. */
+	StackAnalyzeState stackAnalyzeState;
 
-	Block(uint32 addr, const SubRoutine &sub) : address(addr), subRoutine(&sub) {
+
+	Block(uint32 addr, const SubRoutine &sub) : address(addr), subRoutine(&sub),
+		stackAnalyzeState(kStackAnalyzeStateNone) {
+
 	}
 };
 
@@ -325,8 +384,19 @@ struct SubRoutine {
 	/** The name of this subroutine, if we have identified or assigned one. */
 	Common::UString name;
 
+	/** The current state of analyzing the stack of this while subroutine. */
+	StackAnalyzeState stackAnalyzeState;
 
-	SubRoutine(uint32 addr) : address(addr), type(kSubRoutineTypeNone) {
+	/** The types of the parameters this subroutine takes. */
+	std::vector<const Variable *> params;
+
+	/** The types of the variables this subroutine returns. */
+	std::vector<const Variable *> returns;
+
+
+	SubRoutine(uint32 addr) : address(addr), type(kSubRoutineTypeNone),
+		stackAnalyzeState(kStackAnalyzeStateNone) {
+
 	}
 };
 
