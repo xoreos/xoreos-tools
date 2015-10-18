@@ -185,6 +185,12 @@ Common::UString formatParameters(const std::vector<const Variable *> &params,
 Common::UString formatReturn(const std::vector<const Variable *> &returns,
                              Aurora::GameID game = Aurora::kGameIDUnknown);
 
+/** Format the signature of a function.
+ *
+ *  Example: "void main(int, string, object)"
+ */
+Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game = Aurora::kGameIDUnknown);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H

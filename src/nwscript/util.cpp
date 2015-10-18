@@ -522,4 +522,9 @@ Common::UString formatReturn(const std::vector<const Variable *> &returns, Auror
 	return getVariableTypeName(returns[0] ? returns[0]->type : kTypeAny, game);
 }
 
+Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game) {
+	return formatReturn(sub.returns, game) + " " + formatJumpLabelName(sub) +
+	       "(" + formatParameters(sub.params, game) + ")";
+}
+
 } // End of namespace NWScript
