@@ -57,12 +57,16 @@ enum Command {
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game, Command &command);
+                      Aurora::GameID &game, Command &command, bool &printStack);
 
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
-            Aurora::GameID &game, Command &command);
-void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game);
-void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game);
+            Aurora::GameID &game, Command &command, bool printStack);
+
+void createList    (NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
+                    bool printStack);
+void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
+                    bool printStack);
+void createDot     (NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
@@ -72,13 +76,14 @@ int main(int argc, char **argv) {
 
 	int returnValue = 1;
 	Command command = kCommandNone;
+	bool printStack = false;
 	Common::UString inFile, outFile;
 
 	try {
-		if (!parseCommandLine(args, returnValue, inFile, outFile, game, command))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, game, command, printStack))
 			return returnValue;
 
-		disNCS(inFile, outFile, game, command);
+		disNCS(inFile, outFile, game, command, printStack);
 	} catch (Common::Exception &e) {
 		Common::printException(e);
 		return 1;
@@ -91,7 +96,7 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game, Command &command) {
+                      Aurora::GameID &game, Command &command, bool &printStack) {
 
 	inFile.clear();
 	outFile.clear();
@@ -135,6 +140,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			} else if (argv[i] == "--dot") {
 				isOption = true;
 				command  = kCommandDot;
+			} else if (argv[i] == "--stack") {
+				isOption   = true;
+				printStack = true;
 			} else if (argv[i] == "--nwn") {
 				isOption = true;
 				game     = Aurora::kGameIDNWN;
@@ -200,8 +208,9 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n\n");
 	std::fprintf(stream, "          --list              Create full disassembly listing (default)\n");
-	std::fprintf(stream, "          --assembly          Only create disassembly mnemonics\n\n");
+	std::fprintf(stream, "          --assembly          Only create disassembly mnemonics\n");
 	std::fprintf(stream, "          --dot               Create a graphviz dot file\n\n");
+	std::fprintf(stream, "          --stack             Print the stack frame for each instruction \n\n");
 	std::fprintf(stream, "          --nwn               This is a Neverwinter Nights script\n");
 	std::fprintf(stream, "          --nwn2              This is a Neverwinter Nights 2 script\n");
 	std::fprintf(stream, "          --kotor             This is a Knights of the Old Republic script\n");
@@ -237,7 +246,27 @@ static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID &game) {
 	}
 }
 
-void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
+static void writeStack(Common::WriteStream &out, size_t indent,
+                       const NWScript::Instruction &instr, Aurora::GameID &game) {
+
+	out.writeString(Common::UString(' ', indent));
+	out.writeString(Common::UString::format("; .--- Stack: %3u ---.\n", (uint)instr.stack.size()));
+
+	for (size_t s = 0; s < instr.stack.size(); s++) {
+		out.writeString(Common::UString(' ', indent));
+		out.writeString(Common::UString::format("; | %04u - %04u: %s (%08X)\n",
+		    (uint)s, (uint)instr.stack[s].variable->id,
+		    NWScript::getVariableTypeName(instr.stack[s].variable->type, game).c_str(),
+		    instr.stack[s].variable->creator ? instr.stack[s].variable->creator->address : 0));
+	}
+
+	out.writeString(Common::UString(' ', indent));
+	out.writeString("; '--- ---------- ---'\n");
+}
+
+void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
+                bool printStack) {
+
 	writeInfo(out, ncs);
 	writeEngineTypes(out, game);
 
@@ -248,6 +277,10 @@ void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID
 		const Common::UString jumpLabel = NWScript::formatJumpLabelName(*i);
 		if (!jumpLabel.empty())
 			out.writeString(jumpLabel + ":\n");
+
+		// Print the strack frame
+		if (printStack)
+			writeStack(out, 36, *i, game);
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
@@ -259,7 +292,9 @@ void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID
 	}
 }
 
-void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
+void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
+                    bool printStack) {
+
 	writeInfo(out, ncs);
 	writeEngineTypes(out, game);
 
@@ -270,6 +305,10 @@ void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::Ga
 		const Common::UString jumpLabel = NWScript::formatJumpLabelName(*i);
 		if (!jumpLabel.empty())
 			out.writeString(jumpLabel + ":\n");
+
+		// Print the strack frame
+		if (printStack)
+			writeStack(out, 0, *i, game);
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %s\n", NWScript::formatInstruction(*i, game).c_str()));
@@ -441,7 +480,7 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 }
 
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
-            Aurora::GameID &game, Command &command) {
+            Aurora::GameID &game, Command &command, bool printStack) {
 
 	Common::SeekableReadStream *ncsFile = new Common::ReadFile(inFile);
 
@@ -460,6 +499,8 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 				status("Analyzing script stack...");
 				ncs.analyzeStack(game);
 			} catch (Common::Exception &e) {
+				printStack = false;
+
 				e.add("Script analysis failed");
 				Common::printException(e, "WARNING: ");
 			}
@@ -467,11 +508,11 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 
 		switch (command) {
 			case kCommandListing:
-				createList(ncs, *out, game);
+				createList(ncs, *out, game, printStack);
 				break;
 
 			case kCommandAssembly:
-				createAssembly(ncs, *out, game);
+				createAssembly(ncs, *out, game, printStack);
 				break;
 
 			case kCommandDot:
