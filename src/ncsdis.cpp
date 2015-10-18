@@ -213,15 +213,15 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
-	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
+static void writeInfo(Common::WriteStream &out, NWScript::NCSFile &ncs) {
+	out.writeString(Common::UString::format("; %u bytes, %u instructions\n\n",
+	                (uint)ncs.size(), (uint)ncs.getInstructions().size()));
+}
 
-	out.writeString(Common::UString::format("%u bytes, %u instructions\n\n",
-	                (uint)ncs.size(), (uint)instr.size()));
-
+static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID &game) {
 	size_t engineTypeCount = NWScript::getEngineTypeCount(game);
 	if (engineTypeCount > 0) {
-		out.writeString("Engine types:\n");
+		out.writeString("; Engine types:\n");
 
 		for (size_t i = 0; i < engineTypeCount; i++) {
 			const Common::UString name = NWScript::getEngineTypeName(game, i);
@@ -230,11 +230,18 @@ void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID
 
 			const Common::UString gName = NWScript::getGenericEngineTypeName(i);
 
-			out.writeString(Common::UString::format("%s: %s\n", gName.c_str(), name.c_str()));
+			out.writeString(Common::UString::format("; %s: %s\n", gName.c_str(), name.c_str()));
 		}
 
 		out.writeString("\n");
 	}
+}
+
+void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
+	writeInfo(out, ncs);
+	writeEngineTypes(out, game);
+
+	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
 		// Print jump label
@@ -253,6 +260,9 @@ void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID
 }
 
 void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
+	writeInfo(out, ncs);
+	writeEngineTypes(out, game);
+
 	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
