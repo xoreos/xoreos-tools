@@ -442,7 +442,18 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 		else
 			out = new Common::StdOutStream;
 
+		status("Disassembling script...");
 		NWScript::NCSFile ncs(*ncsFile);
+
+		if (game != Aurora::kGameIDUnknown) {
+			try {
+				status("Analyzing script stack...");
+				ncs.analyzeStack(game);
+			} catch (Common::Exception &e) {
+				e.add("Script analysis failed");
+				Common::printException(e, "WARNING: ");
+			}
+		}
 
 		switch (command) {
 			case kCommandListing:

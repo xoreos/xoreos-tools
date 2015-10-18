@@ -590,13 +590,13 @@ static void analyzeStackCPTOPBP(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackCPTOPBP(): @%08X: Invalid arguments %d, %d",
 		                        ctx.instruction->address, offset, size);
 
-	offset = (offset / -4);
+	offset = (offset / -4) - 1;
 	size  /= 4;
 
 	if (!ctx.globals)
 		throw Common::Exception("analyzeStackCPTOPBP(): @%08X: No context globals", ctx.instruction->address);
 
-	if (((size_t)offset >= ctx.globals->size()) || (size > offset))
+	if (((size_t)offset >= ctx.globals->size()) || (size > (offset + 1)))
 		throw Common::Exception("analyzeStackCPTOPBP(): @%08X: Globals underrun", ctx.instruction->address);
 
 	while (size-- > 0) {
@@ -618,13 +618,13 @@ static void analyzeStackCPDOWNBP(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackCPDOWNBP(): @%08X: Invalid arguments %d, %d",
 		                        ctx.instruction->address, offset, size);
 
-	offset = (offset / -4);
+	offset = (offset / -4) - 1;
 	size  /= 4;
 
 	if (!ctx.globals)
 		throw Common::Exception("analyzeStackCPDOWNBP(): @%08X: No context globals", ctx.instruction->address);
 
-	if (((size_t)offset >= ctx.globals->size()) || (size > offset))
+	if (((size_t)offset >= ctx.globals->size()) || (size > (offset + 1)))
 		throw Common::Exception("analyzeStackCPDOWNBP(): @%08X: Globals underrun", ctx.instruction->address);
 
 	while (size > 0) {
