@@ -264,6 +264,47 @@ static void writeStack(Common::WriteStream &out, size_t indent,
 	out.writeString("; '--- ---------- ---'\n");
 }
 
+static Common::UString getSignature(NWScript::NCSFile &ncs, const NWScript::SubRoutine &sub,
+                                    Aurora::GameID &game) {
+	if (!ncs.hasStackAnalysis())
+		return "";
+
+	if ((sub.type == NWScript::kSubRoutineTypeStart) || (sub.type == NWScript::kSubRoutineTypeGlobal))
+		return "";
+
+	if (sub.stackAnalyzeState != NWScript::kStackAnalyzeStateFinished)
+		return "";
+
+	return NWScript::formatSignature(sub, game);
+}
+
+static Common::UString getSignature(NWScript::NCSFile &ncs, const NWScript::Instruction &instr,
+                                    Aurora::GameID &game) {
+	if (!ncs.hasStackAnalysis())
+		return "";
+
+	if ((instr.addressType != NWScript::kAddressTypeSubRoutine) || !instr.block || !instr.block->subRoutine)
+		return "";
+
+	return getSignature(ncs, *instr.block->subRoutine, game);
+}
+
+static void writeJumpLabel(Common::WriteStream &out, NWScript::NCSFile &ncs,
+                           const NWScript::Instruction &instr, Aurora::GameID &game) {
+
+	Common::UString jumpLabel = NWScript::formatJumpLabelName(instr);
+	if (!jumpLabel.empty()) {
+		jumpLabel += ":";
+
+		const Common::UString signature = getSignature(ncs, instr, game);
+		if (!signature.empty())
+			jumpLabel += " ; " + signature;
+	}
+
+	if (!jumpLabel.empty())
+		out.writeString(jumpLabel + "\n");
+}
+
 void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
                 bool printStack) {
 
@@ -273,12 +314,8 @@ void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID
 	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		// Print jump label
-		const Common::UString jumpLabel = NWScript::formatJumpLabelName(*i);
-		if (!jumpLabel.empty())
-			out.writeString(jumpLabel + ":\n");
+		writeJumpLabel(out, ncs, *i, game);
 
-		// Print the strack frame
 		if (printStack)
 			writeStack(out, 36, *i, game);
 
@@ -301,12 +338,8 @@ void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::Ga
 	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
 
 	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		// Print jump label
-		const Common::UString jumpLabel = NWScript::formatJumpLabelName(*i);
-		if (!jumpLabel.empty())
-			out.writeString(jumpLabel + ":\n");
+		writeJumpLabel(out, ncs, *i, game);
 
-		// Print the strack frame
 		if (printStack)
 			writeStack(out, 0, *i, game);
 
@@ -366,7 +399,9 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 		                "    style=filled\n"
 		                "    color=lightgrey\n", s->address));
 
-		Common::UString clusterLabel = NWScript::formatJumpLabelName(*s);
+		Common::UString clusterLabel = getSignature(ncs, *s, game);
+		if (clusterLabel.empty())
+			clusterLabel = NWScript::formatJumpLabelName(*s);
 		if (clusterLabel.empty())
 			clusterLabel = NWScript::formatJumpDestination(s->address);
 
