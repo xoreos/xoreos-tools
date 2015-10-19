@@ -978,10 +978,10 @@ static void analyzeStackModifySP(AnalyzeStackContext &ctx) {
 	if ((size_t)offset > ctx.stack->size())
 		throw Common::Exception("analyzeStackModifySP(): @%08X: Stack underrun", ctx.instruction->address);
 
-	if (!ctx.checkVariableType(0, kTypeInt))
+	if (!ctx.checkVariableType(offset, kTypeInt))
 		throw Common::Exception("analyzeStackModifySP(): @%08X: Invalid types", ctx.instruction->address);
 
-	ctx.setVariableType(0, kTypeInt);
+	ctx.setVariableType(offset, kTypeInt);
 
 	ctx.readVariable(offset);
 	ctx.writeVariable(offset);
