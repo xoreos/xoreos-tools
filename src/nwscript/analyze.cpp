@@ -465,18 +465,19 @@ static void analyzeStackJSR(AnalyzeStackContext &ctx) {
 	/* A JSR instruction, calling into a subroutine, or a STORESTATE instruction, which
 	   creates a functor of a subroutine. */
 
-	// If we're analyzing the globals, ignore the subroutine
-	if (ctx.mode == kAnalyzeStackGlobal)
-		return;
-
-	// If we're analyzing normal subroutine flow, recurse into the subroutine
-
 	assert(!ctx.instruction->branches.empty() && ctx.instruction->branches[0]);
 	assert(ctx.instruction->branches[0]->block && ctx.instruction->branches[0]->block->subRoutine);
 
-	AnalyzeStackContext oldCtx(ctx);
+	/* Treat the main subroutine as a barrier between analyzing the globals and the
+	 * analysis of the normal control flow. We'll completely ignore calls into it,
+	 * but we'll recurse into normal subroutines. */
 
 	SubRoutine *sub = const_cast<SubRoutine *>(ctx.instruction->branches[0]->block->subRoutine);
+	if ((sub->type == kSubRoutineTypeMain) || (sub->type == kSubRoutineTypeStartCond))
+		return;
+
+	AnalyzeStackContext oldCtx(ctx);
+
 	ctx.sub = sub;
 
 	analyzeSubRoutineStack(ctx);

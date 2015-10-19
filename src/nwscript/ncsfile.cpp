@@ -456,9 +456,12 @@ void NCSFile::identifySubRoutineTypes() {
 	// If we have a global subroutine, it calls main(). Otherwise, _start() calls main()
 	SubRoutine *mainCaller = _globalSubRoutine ? _globalSubRoutine : _startSubRoutine;
 
-	// If the caller that calls main() only calls one subroutine, we have found main()
-	if (mainCaller->callees.size() == 1) {
-		_mainSubRoutine = const_cast<SubRoutine *>(*mainCaller->callees.begin());
+	if (mainCaller->callees.size() > 1)
+		warning("More than one potential main subroutine found");
+
+	// Assume that the last subroutine the main caller calls is the main()
+	if (mainCaller->callees.size() >= 1) {
+		_mainSubRoutine = const_cast<SubRoutine *>(*--mainCaller->callees.end());
 		assert(_mainSubRoutine);
 
 		if (!_startSubRoutine->blocks.empty()) {
