@@ -256,7 +256,7 @@ static void writeStack(Common::WriteStream &out, size_t indent,
 		out.writeString(Common::UString(' ', indent));
 		out.writeString(Common::UString::format("; | %04u - %04u: %s (%08X)\n",
 		    (uint)s, (uint)instr.stack[s].variable->id,
-		    NWScript::getVariableTypeName(instr.stack[s].variable->type, game).c_str(),
+		    NWScript::getVariableTypeName(instr.stack[s].variable->type, game).toLower().c_str(),
 		    instr.stack[s].variable->creator ? instr.stack[s].variable->creator->address : 0));
 	}
 
