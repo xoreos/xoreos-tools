@@ -763,18 +763,23 @@ static void analyzeStackShift(AnalyzeStackContext &ctx) {
 }
 
 static void analyzeStackUnArithm(AnalyzeStackContext &ctx) {
-	/* A simple unary arithmetic instruction, like NOT and COMP. */
+	/* A simple unary arithmetic instruction. NEG, NOT and COMP. */
 
 	if (ctx.stack->size() < 1)
 		throw Common::Exception("analyzeStackUnArithm(): @%08X: Stack underrun", ctx.instruction->address);
 
-	if (!ctx.checkVariableType(0, kTypeInt))
+	const VariableType type = instructionTypeToVariableType(ctx.instruction->type);
+	if (type == kTypeVoid)
+		throw Common::Exception("analyzeStackUnArithm(): @%08X: Invalid instruction type %u",
+		                        ctx.instruction->address, (uint)ctx.instruction->type);
+
+	if (!ctx.checkVariableType(0, type))
 		throw Common::Exception("analyzeStackUnArithm(): @%08X: Invalid types", ctx.instruction->address);
 
-	ctx.setVariableType(0, kTypeInt);
+	ctx.setVariableType(0, type);
 
 	ctx.popVariable();
-	ctx.pushVariable(kTypeInt, kVariableUseLocal);
+	ctx.pushVariable(type, kVariableUseLocal);
 }
 
 static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
