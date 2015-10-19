@@ -237,7 +237,9 @@ struct Variable {
 	std::vector<const Variable *> duplicates;
 
 
-	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) : id(i), type(t), use(u) {
+	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) :
+		id(i), type(t), use(u), creator(0) {
+
 	}
 };
 typedef std::deque<Variable> VariableSpace;
