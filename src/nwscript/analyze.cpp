@@ -311,7 +311,7 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx) {
 
 		for (size_t i = 0; i < ctx.sub->returns.size(); i++) {
 			Variable *var1 = const_cast<Variable *>(ctx.sub->returns[i]);
-			Variable *var2 = const_cast<Variable *>((*ctx.stack)[ctx.sub->returns.size() - 1 - i].variable);
+			Variable *var2 = const_cast<Variable *>((*ctx.stack)[i].variable);
 
 			ctx.sameVariableType(var1, var2);
 		}
