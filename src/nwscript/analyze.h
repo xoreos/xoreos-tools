@@ -40,7 +40,7 @@ namespace NWScript {
  *  At the end, the parameter globals will be updated with information on all
  *  the global variables this "_global" subroutine defines.
  */
-void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Stack &globals);
+void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals);
 
 /** Analyze the stack throughout this subroutine.
  *

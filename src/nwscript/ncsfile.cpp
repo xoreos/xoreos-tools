@@ -503,7 +503,7 @@ void NCSFile::analyzeStack(Aurora::GameID game) {
 	_globals.clear();
 
 	if (_globalSubRoutine)
-		analyzeGlobals(*_globalSubRoutine, _variables, _globals);
+		analyzeGlobals(*_globalSubRoutine, _variables, game, _globals);
 
 	analyzeSubRoutineStack(*_mainSubRoutine, _variables, game, &_globals);
 

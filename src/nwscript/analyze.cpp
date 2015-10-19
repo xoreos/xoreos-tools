@@ -999,8 +999,8 @@ static void analyzeStackModifyBP(AnalyzeStackContext &ctx) {
 	(*ctx.globals)[offset].variable->writers.push_back(ctx.instruction);
 }
 
-void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Stack &globals) {
-	AnalyzeStackContext ctx(kAnalyzeStackGlobal, sub, variables);
+void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals) {
+	AnalyzeStackContext ctx(kAnalyzeStackGlobal, sub, variables, game);
 
 	ctx.globals = &globals;
 
