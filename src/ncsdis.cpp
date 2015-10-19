@@ -250,18 +250,18 @@ static void writeStack(Common::WriteStream &out, size_t indent,
                        const NWScript::Instruction &instr, Aurora::GameID &game) {
 
 	out.writeString(Common::UString(' ', indent));
-	out.writeString(Common::UString::format("; .--- Stack: %3u ---.\n", (uint)instr.stack.size()));
+	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
 
 	for (size_t s = 0; s < instr.stack.size(); s++) {
 		out.writeString(Common::UString(' ', indent));
-		out.writeString(Common::UString::format("; | %04u - %04u: %s (%08X)\n",
+		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)\n",
 		    (uint)s, (uint)instr.stack[s].variable->id,
 		    NWScript::getVariableTypeName(instr.stack[s].variable->type, game).toLower().c_str(),
 		    instr.stack[s].variable->creator ? instr.stack[s].variable->creator->address : 0));
 	}
 
 	out.writeString(Common::UString(' ', indent));
-	out.writeString("; '--- ---------- ---'\n");
+	out.writeString("; '--- ---------- ---\n");
 }
 
 static Common::UString getSignature(NWScript::NCSFile &ncs, const NWScript::SubRoutine &sub,
