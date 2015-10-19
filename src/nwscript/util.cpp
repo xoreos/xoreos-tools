@@ -506,7 +506,7 @@ Common::UString formatParameters(const std::vector<const Variable *> &params, Au
 		if (p != params.begin())
 			paramTypes += ", ";
 
-		paramTypes += getVariableTypeName(*p ? (*p)->type : kTypeAny, game);
+		paramTypes += getVariableTypeName(*p ? (*p)->type : kTypeAny, game).toLower();
 	}
 
 	return paramTypes;
@@ -519,7 +519,7 @@ Common::UString formatReturn(const std::vector<const Variable *> &returns, Auror
 	if (returns.empty())
 		return "void";
 
-	return getVariableTypeName(returns[0] ? returns[0]->type : kTypeAny, game);
+	return getVariableTypeName(returns[0] ? returns[0]->type : kTypeAny, game).toLower();
 }
 
 Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game) {
