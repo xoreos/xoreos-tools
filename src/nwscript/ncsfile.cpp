@@ -422,6 +422,15 @@ void NCSFile::identifySubRoutineTypes() {
 	if (_subRoutines.empty())
 		return;
 
+	// Mark all STORESTATE subroutines as such
+	for (SubRoutines::iterator s = _subRoutines.begin(); s != _subRoutines.end(); ++s) {
+		if (s->blocks.empty() || s->blocks.front()->instructions.empty())
+			continue;
+
+		if (s->blocks.front()->instructions.front()->addressType == kAddressTypeStoreState)
+			s->type = kSubRoutineTypeStoreState;
+	}
+
 	// The very first subroutine is the _start() one
 	_startSubRoutine = &_subRoutines.front();
 	_startSubRoutine->type = kSubRoutineTypeStart;

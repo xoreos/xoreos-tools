@@ -195,11 +195,12 @@ enum AddressType {
 
 /** The type of a subroutine. */
 enum SubRoutineType {
-	kSubRoutineTypeNone,     ///< A normal subroutine.
-	kSubRoutineTypeStart,    ///< The _start() subroutine, where execution starts.
-	kSubRoutineTypeGlobal,   ///< The _global() subroutine that sets up global variables.
-	kSubRoutineTypeMain,     ///< The main() subroutine.
-	kSubRoutineTypeStartCond ///< The StartingConditional() subroutine.
+	kSubRoutineTypeNone,       ///< A normal subroutine.
+	kSubRoutineTypeStateStore, ///< A subroutine created by a STORESTATE.
+	kSubRoutineTypeStart,      ///< The _start() subroutine, where execution starts.
+	kSubRoutineTypeGlobal,     ///< The _global() subroutine that sets up global variables.
+	kSubRoutineTypeMain,       ///< The main() subroutine.
+	kSubRoutineTypeStartCond   ///< The StartingConditional() subroutine.
 };
 
 /** The current state of analyzing the stack of a script. */
