@@ -663,6 +663,10 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 		const VariableType type = (types[i] == kTypeVector) ? kTypeFloat : types[i];
 		size_t n = (types[i] == kTypeVector) ? 3 : 1;
 
+		// Script State ("action") parameters are not kept on the stack
+		if (type == kTypeScriptState)
+			continue;
+
 		while (n-- > 0) {
 			if (ctx.stack->empty())
 				throw Common::Exception("analyzeStackACTION(): @%08X: Stack underrun", ctx.instruction->address);
