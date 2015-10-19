@@ -269,7 +269,8 @@ static Common::UString getSignature(NWScript::NCSFile &ncs, const NWScript::SubR
 	if (!ncs.hasStackAnalysis())
 		return "";
 
-	if ((sub.type == NWScript::kSubRoutineTypeStart) || (sub.type == NWScript::kSubRoutineTypeGlobal))
+	if ((sub.type == NWScript::kSubRoutineTypeStart) || (sub.type == NWScript::kSubRoutineTypeGlobal) ||
+	    (sub.type == NWScript::kSubRoutineTypeStoreState))
 		return "";
 
 	if (sub.stackAnalyzeState != NWScript::kStackAnalyzeStateFinished)
