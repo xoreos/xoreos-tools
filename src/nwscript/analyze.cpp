@@ -241,7 +241,7 @@ static const AnalyzeStackFunc kAnalyzeStackFunc[kOpcodeMAX] = {
 	/* SAVEBP        */ analyzeStackSAVEBP,
 	/* RESTOREBP     */ analyzeStackRESTOREBP,
 	// 0x2C
-	/* STORESTATE    */ 0,
+	/* STORESTATE    */ analyzeStackJSR,
 	/* NOP           */ 0,
 	/*               */ 0,
 	/*               */ 0,
@@ -462,9 +462,10 @@ static void analyzeStackPop(AnalyzeStackContext &ctx) {
 }
 
 static void analyzeStackJSR(AnalyzeStackContext &ctx) {
-	/* A JSR instruction, calling into a subroutine. */
+	/* A JSR instruction, calling into a subroutine, or a STORESTATE instruction, which
+	   creates a functor of a subroutine. */
 
-	// If we're analyzing the globals, ignore the JSR instruction
+	// If we're analyzing the globals, ignore the subroutine
 	if (ctx.mode == kAnalyzeStackGlobal)
 		return;
 
@@ -493,16 +494,30 @@ static void analyzeStackRETN(AnalyzeStackContext &ctx) {
 	if (ctx.subRETN)
 		return;
 
-	/* If the subroutine accessed return values, these are in the same stack space
-	 * as the parameters, and are therefore offset by the number of parameters.
-	 * To correct that, we're now removing the parameters from the return list.
-	 * We save the stack frame as the canonical return stack for this subroutine. */
+	if (ctx.sub->type == kSubRoutineTypeStoreState) {
+		/* A STORESTATE subroutine doesn't really take parameters per se, nor does
+		 * it return any values. So we clear those, and then restore the stack back
+		 * to its original state. */
 
-	const size_t subParams = MIN<size_t>(ctx.sub->params.size(), ctx.sub->returns.size());
+		ctx.sub->params.clear();
+		ctx.sub->returns.clear();
 
-	ctx.sub->returns.erase(ctx.sub->returns.begin(), ctx.sub->returns.begin() + subParams);
+		ctx.returnStack = *ctx.stack;
+		ctx.returnStack.erase(ctx.returnStack.begin(), ctx.returnStack.begin() + ctx.subStack);
 
-	ctx.returnStack = *ctx.stack;
+	} else {
+		/* If the subroutine accessed return values, these are in the same stack space
+		 * as the parameters, and are therefore offset by the number of parameters.
+		 * To correct that, we're now removing the parameters from the return list.
+		 * We save the stack frame as the canonical return stack for this subroutine. */
+
+		const size_t subParams = MIN<size_t>(ctx.sub->params.size(), ctx.sub->returns.size());
+
+		ctx.sub->returns.erase(ctx.sub->returns.begin(), ctx.sub->returns.begin() + subParams);
+
+		ctx.returnStack = *ctx.stack;
+	}
+
 	ctx.subRETN = true;
 }
 
