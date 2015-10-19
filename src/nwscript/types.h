@@ -234,7 +234,7 @@ struct Variable {
 	std::vector<const Instruction *> writers;
 
 	/** Variables that were created by duplicating this variable. */
-	std::vector<const Variable *> duplicates;
+	std::set<const Variable *> duplicates;
 
 
 	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) :

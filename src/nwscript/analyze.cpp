@@ -126,14 +126,14 @@ struct AnalyzeStackContext {
 
 		Variable *var2 = stack->front().variable;
 
-		std::vector<const Variable *> d1 = var1->duplicates;
-		std::vector<const Variable *> d2 = var2->duplicates;
+		std::set<const Variable *> d1 = var1->duplicates;
+		std::set<const Variable *> d2 = var2->duplicates;
 
-		var1->duplicates.push_back(var2);
-		var2->duplicates.push_back(var1);
+		var1->duplicates.insert(var2);
+		var2->duplicates.insert(var1);
 
-		var1->duplicates.insert(var1->duplicates.end(), d2.begin(), d2.end());
-		var2->duplicates.insert(var2->duplicates.end(), d1.begin(), d1.end());
+		var1->duplicates.insert(d2.begin(), d2.end());
+		var2->duplicates.insert(d1.begin(), d1.end());
 	}
 
 	bool checkVariableType(size_t offset, VariableType type) {
@@ -276,15 +276,13 @@ static void fixupDuplicateTypes(VariableSpace &variables) {
 	for (VariableSpace::iterator v = variables.begin(); v != variables.end(); ++v) {
 		VariableType type = v->type;
 
-		for (std::vector<const Variable *>::iterator d = v->duplicates.begin(); d != v->duplicates.end(); ++d)
+		for (std::set<const Variable *>::iterator d = v->duplicates.begin(); d != v->duplicates.end(); ++d)
 			if ((*d)->type != kTypeAny)
 				type = (*d)->type;
 
 		v->type = type;
-		for (std::vector<const Variable *>::iterator d = v->duplicates.begin(); d != v->duplicates.end(); ++d)
+		for (std::set<const Variable *>::iterator d = v->duplicates.begin(); d != v->duplicates.end(); ++d)
 			const_cast<Variable *>(*d)->type = type;
-
-		v->duplicates.clear();
 	}
 }
 
