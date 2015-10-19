@@ -901,7 +901,8 @@ static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 	int16 dontRemoveOffset = ctx.instruction->args[1];
 	int16 dontRemoveSize   = ctx.instruction->args[2];
 
-	if (((stackSize % 4) != 0) || ((dontRemoveOffset % 4) != 0) || ((dontRemoveOffset % 4) != 0))
+	if (((stackSize % 4) != 0) || ((dontRemoveOffset % 4) != 0) || ((dontRemoveSize % 4) != 0) ||
+	     (stackSize < 0)       ||  (dontRemoveOffset < 0)       ||  (dontRemoveSize < 0))
 		throw Common::Exception("analyzeStackDestruct(): @%08X: Invalid arguments %d, %d, %d",
 		                        ctx.instruction->address, stackSize, dontRemoveOffset, dontRemoveSize);
 
