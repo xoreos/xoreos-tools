@@ -198,7 +198,7 @@ void NCSFile::linkBranches() {
 			if      (i->opcode == kOpcodeJSR)
 				setAddressType(&*branch, kAddressTypeSubRoutine);
 			else if (i->opcode == kOpcodeSTORESTATE)
-				setAddressType(&*branch, kAddressTypeStateStore);
+				setAddressType(&*branch, kAddressTypeStoreState);
 			else
 				setAddressType(&*branch, kAddressTypeJumpLabel);
 

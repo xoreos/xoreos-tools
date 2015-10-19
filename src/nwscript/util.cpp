@@ -445,7 +445,7 @@ Common::UString formatSubRoutine(uint32 address) {
 	return Common::UString::format("sub_%08X", address);
 }
 
-Common::UString formatStateStore(uint32 address) {
+Common::UString formatStoreState(uint32 address) {
 	return Common::UString::format("sta_%08X", address);
 }
 
@@ -456,8 +456,8 @@ Common::UString formatJumpDestination(uint32 address) {
 Common::UString formatJumpLabel(const Instruction &instr) {
 	if (instr.addressType == kAddressTypeSubRoutine)
 		return formatSubRoutine(instr.address);
-	if (instr.addressType == kAddressTypeStateStore)
-		return formatStateStore(instr.address);
+	if (instr.addressType == kAddressTypeStoreState)
+		return formatStoreState(instr.address);
 	if (instr.addressType == kAddressTypeJumpLabel)
 		return formatJumpDestination(instr.address);
 

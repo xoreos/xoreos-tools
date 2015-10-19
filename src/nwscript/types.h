@@ -189,14 +189,14 @@ enum AddressType {
 	kAddressTypeNone,       ///< No special address type.
 	kAddressTypeTail,       ///< The tail (or false branch) of a jump instruction.
 	kAddressTypeJumpLabel,  ///< Address that's the destination of a jump label.
-	kAddressTypeStateStore, ///< Address that starts a subroutine with STATESTORE.
+	kAddressTypeStoreState, ///< Address that starts a subroutine with STORESTATE.
 	kAddressTypeSubRoutine  ///< Address that starts a subroutine.
 };
 
 /** The type of a subroutine. */
 enum SubRoutineType {
 	kSubRoutineTypeNone,       ///< A normal subroutine.
-	kSubRoutineTypeStateStore, ///< A subroutine created by a STORESTATE.
+	kSubRoutineTypeStoreState, ///< A subroutine created by a STORESTATE.
 	kSubRoutineTypeStart,      ///< The _start() subroutine, where execution starts.
 	kSubRoutineTypeGlobal,     ///< The _global() subroutine that sets up global variables.
 	kSubRoutineTypeMain,       ///< The main() subroutine.

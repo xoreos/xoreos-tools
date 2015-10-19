@@ -101,13 +101,13 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game 
  */
 Common::UString formatSubRoutine(uint32 address);
 
-/** Format this address to be the name of a subroutine started with STATESTORE.
+/** Format this address to be the name of a subroutine started with STORESTATE.
  *
  *  Example: "sta_000023FF".
  *
  *  Always exactly 12 characters long.
  */
-Common::UString formatStateStore(uint32 address);
+Common::UString formatStoreState(uint32 address);
 
 /** Format this address to be the name of a jump destination.
  *
@@ -121,8 +121,8 @@ Common::UString formatJumpDestination(uint32 address);
  *
  *  - If the instruction starts a subroutine, format its address
  *    as a subroutine (see formatSubRoutine())
- *  - If the instruction starts a subroutine with STATESTORE,
- *    format its address as a subroutine (see formatStateStore())
+ *  - If the instruction starts a subroutine with STORESTATE,
+ *    format its address as a subroutine (see formatStoreState())
  *  - If the instruction is a jump destination, format its address
  *    as a jump destination (see formatJumpDestination())
  *  - If the instruction is neither, return an empty string
