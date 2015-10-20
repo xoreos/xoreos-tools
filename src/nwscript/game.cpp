@@ -137,6 +137,10 @@ size_t getFunctionCount(Aurora::GameID game) {
 	return info->functionCount;
 }
 
+bool hasFunction(Aurora::GameID game, size_t n) {
+	return !getFunctionName(game, n).empty();
+}
+
 Common::UString getFunctionName(Aurora::GameID game, size_t n) {
 	const GameInfo *info = getGameInfo(game);
 	if (!info || (n >= info->functionCount))

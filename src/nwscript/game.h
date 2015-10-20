@@ -66,6 +66,9 @@ Common::UString getEngineTypeName(Aurora::GameID game, size_t n);
 /** Return the number of NWScript engine functions in this game. */
 size_t getFunctionCount(Aurora::GameID game);
 
+/** Does this NWScript engine function exist in this game. */
+bool hasFunction(Aurora::GameID game, size_t n);
+
 /** Return the name of this NWScript engine function for this game. */
 Common::UString getFunctionName(Aurora::GameID game, size_t n);
 
