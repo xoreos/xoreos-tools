@@ -140,9 +140,13 @@ struct AnalyzeStackContext {
 		return ((*stack)[offset].variable->type == kTypeAny) || ((*stack)[offset].variable->type == type);
 	}
 
-	void setVariableType(size_t offset, VariableType type) {
+	void setVariableType(Variable &var, VariableType type) {
 		if (type != kTypeAny)
-			(*stack)[offset].variable->type = type;
+			var.type = type;
+	}
+
+	void setVariableType(size_t offset, VariableType type) {
+		setVariableType(*(*stack)[offset].variable, type);
 	}
 
 	void sameVariableType(Variable *var1, Variable *var2) {
@@ -781,8 +785,20 @@ static void analyzeStackEq(AnalyzeStackContext &ctx) {
 	for (size_t i = 0; i < size; i++)
 		vars2.push_back(ctx.popVariable());
 
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < size; i++) {
+		VariableType type = kTypeAny;
+		if      (ctx.instruction->type == kInstTypeIntInt)
+			type = kTypeInt;
+		else if (ctx.instruction->type == kInstTypeFloatFloat)
+			type = kTypeFloat;
+		else if (ctx.instruction->type == kInstTypeVectorVector)
+			type = kTypeFloat;
+
+		ctx.setVariableType(*vars1[i], type);
+		ctx.setVariableType(*vars2[i], type);
+
 		ctx.sameVariableType(vars1[i], vars2[i]);
+	}
 
 	ctx.pushVariable(kTypeInt, kVariableUseLocal);
 }
