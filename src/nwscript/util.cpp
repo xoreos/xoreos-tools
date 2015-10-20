@@ -291,6 +291,70 @@ Common::UString getVariableTypeName(VariableType type, Aurora::GameID game) {
 	return kVarTypeName[(size_t)type];
 }
 
+VariableType typeToArrayType(VariableType type) {
+	switch (type) {
+		case kTypeInt:
+			return kTypeIntArray;
+		case kTypeFloat:
+			return kTypeFloatArray;
+		case kTypeString:
+			return kTypeStringArray;
+		case kTypeResource:
+			return kTypeResourceArray;
+		case kTypeObject:
+			return kTypeObjectArray;
+		case kTypeEngineType0:
+			return kTypeEngineType0Array;
+		case kTypeEngineType1:
+			return kTypeEngineType1Array;
+		case kTypeEngineType2:
+			return kTypeEngineType2Array;
+		case kTypeEngineType3:
+			return kTypeEngineType3Array;
+		case kTypeEngineType4:
+			return kTypeEngineType4Array;
+		case kTypeEngineType5:
+			return kTypeEngineType5Array;
+
+		default:
+			break;
+	}
+
+	return kTypeAny;
+}
+
+VariableType arrayTypeToType(VariableType type) {
+	switch (type) {
+		case kTypeIntArray:
+			return kTypeInt;
+		case kTypeFloatArray:
+			return kTypeFloat;
+		case kTypeStringArray:
+			return kTypeString;
+		case kTypeResourceArray:
+			return kTypeResource;
+		case kTypeObjectArray:
+			return kTypeObject;
+		case kTypeEngineType0Array:
+			return kTypeEngineType0;
+		case kTypeEngineType1Array:
+			return kTypeEngineType1;
+		case kTypeEngineType2Array:
+			return kTypeEngineType2;
+		case kTypeEngineType3Array:
+			return kTypeEngineType3;
+		case kTypeEngineType4Array:
+			return kTypeEngineType4;
+		case kTypeEngineType5Array:
+			return kTypeEngineType5;
+
+		default:
+			break;
+	}
+
+	return kTypeAny;
+}
+
 const OpcodeArgument *getDirectArguments(Opcode op) {
 	if ((size_t)op >= ARRAYSIZE(kOpcodeArguments))
 		return kOpcodeArguments[0];

@@ -45,6 +45,18 @@ VariableType instructionTypeToVariableType(InstructionType type);
 /** Return the textual name of the variable type. */
 Common::UString getVariableTypeName(VariableType type, Aurora::GameID game = Aurora::kGameIDUnknown);
 
+/** Convert a variable type to an array of this type.
+ *
+ *  Example: kTypeInt -> kTypeIntArray.
+ */
+VariableType typeToArrayType(VariableType type);
+
+/** Convert an array variable type to an element of this array type.
+ *
+ *  Example: kTypeIntArray -> kTypeInt.
+ */
+VariableType arrayTypeToType(VariableType type);
+
 /** Return the direct arguments this opcode takes.
  *
  *  Please note that there are 3 exceptions that require special handling:
