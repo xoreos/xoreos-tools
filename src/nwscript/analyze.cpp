@@ -290,7 +290,7 @@ static void fixupDuplicateTypes(VariableSpace &variables) {
 static void analyzeBlockStack      (AnalyzeStackContext &ctx);
 static void analyzeInstructionStack(AnalyzeStackContext &ctx);
 
-static void analyzeSubRoutineStack(AnalyzeStackContext &ctx) {
+static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursion = false) {
 	assert(ctx.sub);
 
 	if (ctx.sub->stackAnalyzeState == kStackAnalyzeStateFinished) {
@@ -318,8 +318,27 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx) {
 	}
 
 	// Are we currently already in the process of analyzing this very same subroutine?
-	if (ctx.sub->stackAnalyzeState == kStackAnalyzeStateStart)
+	if (ctx.sub->stackAnalyzeState == kStackAnalyzeStateStart) {
+		/* Are we currently already in the process of analyzing this very same
+		 * subroutine?  Then we've walked into a recursing subroutine. Yay.
+		 *
+		 * If we've been told to ignore recursion, simply return. Note that this
+		 * leaves the stack in a broken state, because the recursing subroutine may
+		 * take parameters it should have cleared off the stack. So we can only do
+		 * that in cases where the stack afterwards doesn't mater, namely as the
+		 * very last instructions of a STORESTATE subroutine.
+		 *
+		 * In all other cases, this is a fatal. It is impossible to analyze
+		 * recursion in the way we go about things. Unless we can find a dirty
+		 * trick to guess the number of parameters the recursing subroutine
+		 * takes without having to analyze it to the end, we need to error out.
+		 */
+
+		if (ignoreRecursion)
+			return;
+
 		throw Common::Exception("Recursion detected in subroutine %08X", ctx.sub->address);
+	}
 
 	ctx.sub->stackAnalyzeState = kStackAnalyzeStateStart;
 
@@ -476,11 +495,21 @@ static void analyzeStackJSR(AnalyzeStackContext &ctx) {
 	if ((sub->type == kSubRoutineTypeMain) || (sub->type == kSubRoutineTypeStartCond))
 		return;
 
+	/* The stack of a STORESTATE subroutine is thrown away as soon as the subroutine
+	 * returns; it does not contribute to the stack of the "caller". This means that
+	 * we can safely ignore tail recursion in STORESTATE subroutines and don't have
+	 * to error out there. */
+
+	bool isStoreStateTail = ctx.sub && ctx.instruction->follower &&
+	                       (ctx.sub->type == kSubRoutineTypeStoreState) &&
+	                       (ctx.instruction->opcode == kOpcodeJSR) &&
+	                       (ctx.instruction->follower->opcode == kOpcodeRETN);
+
 	AnalyzeStackContext oldCtx(ctx);
 
 	ctx.sub = sub;
 
-	analyzeSubRoutineStack(ctx);
+	analyzeSubRoutineStack(ctx, isStoreStateTail);
 
 	oldCtx.subStack = ctx.subStack;
 
