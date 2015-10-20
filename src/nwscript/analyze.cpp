@@ -705,6 +705,9 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackACTION(): @%08X: Invalid arguments %d, %d",
 		                        ctx.instruction->address, function, paramCount);
 
+	if (!hasFunction(ctx.game, function))
+		throw Common::Exception("analyzeStackACTION(): @%08X: Invalid function", ctx.instruction->address);
+
 	const size_t funcParamCount = getFunctionParameterCount(ctx.game, function);
 	if (funcParamCount < (size_t)paramCount)
 		throw Common::Exception("analyzeStackACTION(): @%08X: Invalid number of parameters (%u < %u)",
