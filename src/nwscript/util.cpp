@@ -455,7 +455,7 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 	if ((instr.opcode == kOpcodeACTION) && (instr.argCount == 2)) {
 		Common::UString functionName = getFunctionName(game, instr.args[0]);
 		if (functionName.empty())
-			functionName = Common::UString::format("%d", instr.args[0]);
+			functionName = Common::UString::format("InvalidFunction%d", instr.args[0]);
 
 		return str + " " + functionName + Common::UString::format(" %d", instr.args[1]);
 	}
