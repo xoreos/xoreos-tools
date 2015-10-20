@@ -479,7 +479,7 @@ static const char * const kFunctionNames[] = {
 	/* 440 */ "BeginConversation",
 	/* 441 */ "InvalidFunction441",
 	/* 442 */ "InvalidFunction442",
-	/* 443 */ "InvalidFunction443",
+	/* 443 */ "GetConversationEntryParameter",
 	/* 444 */ "HasConversation",
 	/* 445 */ "GetClusterCenter",
 	/* 446 */ "ClearPerceptionList",
@@ -586,8 +586,8 @@ static const char * const kFunctionNames[] = {
 	/* 547 */ "SetCommandFloat",
 	/* 548 */ "InvalidFunction548",
 	/* 549 */ "InvalidFunction549",
-	/* 550 */ "InvalidFunction550",
-	/* 551 */ "InvalidFunction551",
+	/* 550 */ "GetCommandObject",
+	/* 551 */ "SetCommandObject",
 	/* 552 */ "InvalidFunction552",
 	/* 553 */ "InvalidFunction553",
 	/* 554 */ "InvalidFunction554",
@@ -894,7 +894,11 @@ static const char * const kFunctionNames[] = {
 	/* 855 */ "RemoveEffectModifyProperty",
 	/* 856 */ "GetM2DARowIdFromRowIndex",
 	/* 857 */ "IsPRC",
-	/* 858 */ "SetPartyPickerStage"
+	/* 858 */ "SetPartyPickerStage",
+	/* 859 */ "GetAbilityList",
+	/* 860 */ "RequestTarget",
+	/* 861 */ "SetPlotActionCooldown",
+	/* 862 */ "IsPackageLoaded"
 };
 
 static const VariableType kFunctionSignatures[][GameInfo::kMaxSignatureSize] = {
@@ -1341,7 +1345,7 @@ static const VariableType kFunctionSignatures[][GameInfo::kMaxSignatureSize] = {
 	/* 440 */ { kTypeInt, kTypeObject, kTypeObject, kTypeResource },
 	/* 441 */ { kTypeVoid },
 	/* 442 */ { kTypeVoid },
-	/* 443 */ { kTypeVoid },
+	/* 443 */ { kTypeInt },
 	/* 444 */ { kTypeInt, kTypeObject },
 	/* 445 */ { kTypeEngineType1, kTypeObject, kTypeInt, kTypeInt, kTypeInt, kTypeInt },
 	/* 446 */ { kTypeVoid, kTypeObject },
@@ -1448,8 +1452,8 @@ static const VariableType kFunctionSignatures[][GameInfo::kMaxSignatureSize] = {
 	/* 547 */ { kTypeEngineType2, kTypeEngineType2, kTypeFloat, kTypeInt },
 	/* 548 */ { kTypeVoid },
 	/* 549 */ { kTypeVoid },
-	/* 550 */ { kTypeVoid },
-	/* 551 */ { kTypeVoid },
+	/* 550 */ { kTypeObject, kTypeEngineType2, kTypeInt },
+	/* 551 */ { kTypeEngineType2, kTypeEngineType2, kTypeObject, kTypeInt },
 	/* 552 */ { kTypeVoid },
 	/* 553 */ { kTypeVoid },
 	/* 554 */ { kTypeVoid },
@@ -1709,7 +1713,7 @@ static const VariableType kFunctionSignatures[][GameInfo::kMaxSignatureSize] = {
 	/* 808 */ { kTypeObjectArray, kTypeInt, kTypeInt },
 	/* 809 */ { kTypeString, kTypeString, kTypeString },
 	/* 810 */ { kTypeVoid, kTypeInt },
-	/* 811 */ { kTypeEngineType2, kTypeEngineType1 },
+	/* 811 */ { kTypeEngineType2, kTypeEngineType1, kTypeInt },
 	/* 812 */ { kTypeInt, kTypeObject, kTypeObject },
 	/* 813 */ { kTypeVoid, kTypeObject, kTypeInt },
 	/* 814 */ { kTypeVoid, kTypeObject, kTypeInt },
@@ -1756,7 +1760,11 @@ static const VariableType kFunctionSignatures[][GameInfo::kMaxSignatureSize] = {
 	/* 855 */ { kTypeVoid, kTypeEngineType3 },
 	/* 856 */ { kTypeInt, kTypeInt, kTypeInt, kTypeString },
 	/* 857 */ { kTypeInt, kTypeString, kTypeInt },
-	/* 858 */ { kTypeVoid, kTypeString, kTypeString }
+	/* 858 */ { kTypeVoid, kTypeString, kTypeString },
+	/* 859 */ { kTypeIntArray, kTypeObject, kTypeInt, kTypeInt },
+	/* 860 */ { kTypeVoid, kTypeInt, kTypeFloat, kTypeFloat, kTypeInt, kTypeObject, kTypeString },
+	/* 861 */ { kTypeVoid, kTypeInt, kTypeFloat, kTypeInt, kTypeObject, kTypeString },
+	/* 862 */ { kTypeInt, kTypeString }
 };
 
 } // End of namespace DragonAge
