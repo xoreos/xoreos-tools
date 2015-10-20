@@ -137,7 +137,10 @@ struct AnalyzeStackContext {
 	}
 
 	bool checkVariableType(size_t offset, VariableType type) {
-		return ((*stack)[offset].variable->type == kTypeAny) || ((*stack)[offset].variable->type == type);
+		if ((type == kTypeAny) || ((*stack)[offset].variable->type == kTypeAny))
+			return true;
+
+		return ((*stack)[offset].variable->type == type);
 	}
 
 	void setVariableType(Variable &var, VariableType type) {
