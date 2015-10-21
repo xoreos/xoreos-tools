@@ -801,6 +801,8 @@ static void analyzeStackEq(AnalyzeStackContext &ctx) {
 			type = kTypeInt;
 		else if (ctx.instruction->type == kInstTypeFloatFloat)
 			type = kTypeFloat;
+		else if (ctx.instruction->type == kInstTypeStringString)
+			type = kTypeString;
 		else if (ctx.instruction->type == kInstTypeVectorVector)
 			type = kTypeFloat;
 
