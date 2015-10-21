@@ -129,13 +129,13 @@ struct AnalyzeStackContext {
 		return var;
 	}
 
-	void duplicateVariable(size_t offset) {
+	void duplicateVariable(size_t offset, VariableUse use = kVariableUseUnknown) {
 		Variable *var1 = (*stack)[offset].variable;
 
 		(*stack)[offset].variable->readers.push_back(instruction);
 
 		subStack++;
-		stack->push_front(StackVariable(addVariable((*stack)[offset].variable->type)));
+		stack->push_front(StackVariable(addVariable((*stack)[offset].variable->type, use)));
 
 		Variable *var2 = stack->front().variable;
 
@@ -326,6 +326,8 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursio
 			Variable *var1 = const_cast<Variable *>(ctx.sub->params[i]);
 			Variable *var2 = const_cast<Variable *>(ctx.stack->front().variable);
 
+			var2->use = kVariableUseParameter;
+
 			ctx.sameVariableType(var1, var2);
 			ctx.popVariable(false);
 		}
@@ -333,6 +335,8 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursio
 		for (size_t i = 0; i < ctx.sub->returns.size(); i++) {
 			Variable *var1 = const_cast<Variable *>(ctx.sub->returns[i]);
 			Variable *var2 = const_cast<Variable *>((*ctx.stack)[i].variable);
+
+			var2->use = kVariableUseReturn;
 
 			ctx.sameVariableType(var1, var2);
 		}
@@ -569,6 +573,16 @@ static void analyzeStackRETN(AnalyzeStackContext &ctx) {
 		ctx.sub->returns.erase(ctx.sub->returns.begin(), ctx.sub->returns.begin() + subParams);
 
 		ctx.returnStack = *ctx.stack;
+
+		// Mark the variables uses
+
+		for (std::vector<const Variable *>::iterator p = ctx.sub->params.begin();
+		     p != ctx.sub->params.end(); ++p)
+			const_cast<Variable *>(*p)->use = kVariableUseParameter;
+
+		for (std::vector<const Variable *>::iterator r = ctx.sub->returns.begin();
+		     r != ctx.sub->returns.end(); ++r)
+			const_cast<Variable *>(*r)->use = kVariableUseReturn;
 	}
 
 	ctx.subRETN = true;
@@ -591,7 +605,7 @@ static void analyzeStackCPTOPSP(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackCPTOPSP(): @%08X: Stack underrun", ctx.instruction->address);
 
 	while (size-- > 0)
-		ctx.duplicateVariable(offset);
+		ctx.duplicateVariable(offset, kVariableUseLocal);
 }
 
 static void analyzeStackCPDOWNSP(AnalyzeStackContext &ctx) {
@@ -668,7 +682,7 @@ static void analyzeStackCPTOPBP(AnalyzeStackContext &ctx) {
 	while (size-- > 0) {
 		(*ctx.globals)[offset].variable->readers.push_back(ctx.instruction);
 
-		ctx.pushVariable((*ctx.globals)[offset].variable->type);
+		ctx.pushVariable((*ctx.globals)[offset].variable->type, kVariableUseLocal);
 
 		offset--;
 	}
