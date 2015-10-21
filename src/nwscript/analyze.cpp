@@ -170,28 +170,30 @@ struct AnalyzeStackContext {
 
 typedef void (*AnalyzeStackFunc)(AnalyzeStackContext &ctx);
 
-static void analyzeStackPush      (AnalyzeStackContext &ctx);
-static void analyzeStackPop       (AnalyzeStackContext &ctx);
-static void analyzeStackJSR       (AnalyzeStackContext &ctx);
-static void analyzeStackRETN      (AnalyzeStackContext &ctx);
-static void analyzeStackCPTOPSP   (AnalyzeStackContext &ctx);
-static void analyzeStackCPDOWNSP  (AnalyzeStackContext &ctx);
-static void analyzeStackCPTOPBP   (AnalyzeStackContext &ctx);
-static void analyzeStackCPDOWNBP  (AnalyzeStackContext &ctx);
-static void analyzeStackACTION    (AnalyzeStackContext &ctx);
-static void analyzeStackBool      (AnalyzeStackContext &ctx);
-static void analyzeStackEq        (AnalyzeStackContext &ctx);
-static void analyzeStackShift     (AnalyzeStackContext &ctx);
-static void analyzeStackUnArithm  (AnalyzeStackContext &ctx);
-static void analyzeStackBinArithm (AnalyzeStackContext &ctx);
-static void analyzeStackCond      (AnalyzeStackContext &ctx);
-static void analyzeStackDestruct  (AnalyzeStackContext &ctx);
-static void analyzeStackSAVEBP    (AnalyzeStackContext &ctx);
-static void analyzeStackRESTOREBP (AnalyzeStackContext &ctx);
-static void analyzeStackModifySP  (AnalyzeStackContext &ctx);
-static void analyzeStackModifyBP  (AnalyzeStackContext &ctx);
-static void analyzeStackREADARRAY (AnalyzeStackContext &ctx);
-static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx);
+static void analyzeStackPush       (AnalyzeStackContext &ctx);
+static void analyzeStackPop        (AnalyzeStackContext &ctx);
+static void analyzeStackJSR        (AnalyzeStackContext &ctx);
+static void analyzeStackRETN       (AnalyzeStackContext &ctx);
+static void analyzeStackCPTOPSP    (AnalyzeStackContext &ctx);
+static void analyzeStackCPDOWNSP   (AnalyzeStackContext &ctx);
+static void analyzeStackCPTOPBP    (AnalyzeStackContext &ctx);
+static void analyzeStackCPDOWNBP   (AnalyzeStackContext &ctx);
+static void analyzeStackACTION     (AnalyzeStackContext &ctx);
+static void analyzeStackBool       (AnalyzeStackContext &ctx);
+static void analyzeStackEq         (AnalyzeStackContext &ctx);
+static void analyzeStackShift      (AnalyzeStackContext &ctx);
+static void analyzeStackUnArithm   (AnalyzeStackContext &ctx);
+static void analyzeStackBinArithm  (AnalyzeStackContext &ctx);
+static void analyzeStackCond       (AnalyzeStackContext &ctx);
+static void analyzeStackDestruct   (AnalyzeStackContext &ctx);
+static void analyzeStackSAVEBP     (AnalyzeStackContext &ctx);
+static void analyzeStackRESTOREBP  (AnalyzeStackContext &ctx);
+static void analyzeStackModifySP   (AnalyzeStackContext &ctx);
+static void analyzeStackModifyBP   (AnalyzeStackContext &ctx);
+static void analyzeStackREADARRAY  (AnalyzeStackContext &ctx);
+static void analyzeStackWRITEARRAY (AnalyzeStackContext &ctx);
+static void analyzeStackGETREF     (AnalyzeStackContext &ctx);
+static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx);
 
 static const AnalyzeStackFunc kAnalyzeStackFunc[kOpcodeMAX] = {
 	// 0x00
@@ -263,10 +265,10 @@ static const AnalyzeStackFunc kAnalyzeStackFunc[kOpcodeMAX] = {
 	/*               */ 0,
 	/*               */ 0,
 	/*               */ 0,
-	/* GETREF        */ 0,
+	/* GETREF        */ analyzeStackGETREF,
 	// 0x38
 	/*               */ 0,
-	/* GETREFARRAY   */ 0,
+	/* GETREFARRAY   */ analyzeStackGETREFARRAY,
 	/*               */ 0,
 	/*               */ 0,
 	// 0x3C
@@ -1137,6 +1139,57 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 	ctx.setVariableType(0, arrayTypeToType(arrayType));
 
 	ctx.writeVariable(offset, typeToArrayType(elemType));
+}
+
+static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
+	/* A GETREF instruction, pushing a reference to another variable. */
+
+	if (ctx.instruction->type != kInstTypeDirect)
+		throw Common::Exception("analyzeStackGETREF(): @%08X: Invalid instruction type",
+		                        ctx.instruction->address);
+
+	int32 offset = ctx.instruction->args[0];
+	int32 size   = ctx.instruction->args[1];
+
+	if ((size != 4) || (offset > -4) || ((offset % 4) != 0))
+		throw Common::Exception("analyzeStackGETREF(): @%08X: Invalid arguments %d, %d",
+		                        ctx.instruction->address, offset, size);
+
+	offset = (offset / -4) - 1;
+
+	if ((size_t)offset > ctx.stack->size())
+		throw Common::Exception("analyzeStackGETREF(): @%08X: Stack underrun", ctx.instruction->address);
+
+	const VariableType type = typeToRefType(ctx.readVariable(offset));
+
+	ctx.pushVariable(type, kVariableUseLocal);
+}
+
+static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
+	/* A GETREFARRAY instruction, pushing a reference to an array element. */
+
+	if (ctx.instruction->type != kInstTypeDirect)
+		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Invalid instruction type",
+		                        ctx.instruction->address);
+
+	int32 offset = ctx.instruction->args[0];
+	int32 size   = ctx.instruction->args[1];
+
+	if ((size != 4) || (offset > -4) || ((offset % 4) != 0))
+		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Invalid arguments %d, %d",
+		                        ctx.instruction->address, offset, size);
+
+	offset = (offset / -4) - 1;
+
+	if ((size_t)offset > ctx.stack->size())
+		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Stack underrun", ctx.instruction->address);
+
+	const VariableType type = typeToRefType(arrayTypeToType(ctx.readVariable(offset)));
+
+	ctx.setVariableType(0, kTypeInt);
+	ctx.popVariable();
+
+	ctx.pushVariable(type, kVariableUseLocal);
 }
 
 void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals) {
