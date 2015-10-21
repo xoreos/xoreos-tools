@@ -349,6 +349,70 @@ VariableType arrayTypeToType(VariableType type) {
 	return kTypeAny;
 }
 
+VariableType typeToRefType(VariableType type) {
+	switch (type) {
+		case kTypeInt:
+			return kTypeIntRef;
+		case kTypeFloat:
+			return kTypeFloatRef;
+		case kTypeString:
+			return kTypeStringRef;
+		case kTypeResource:
+			return kTypeResourceRef;
+		case kTypeObject:
+			return kTypeObjectRef;
+		case kTypeEngineType0:
+			return kTypeEngineType0Ref;
+		case kTypeEngineType1:
+			return kTypeEngineType1Ref;
+		case kTypeEngineType2:
+			return kTypeEngineType2Ref;
+		case kTypeEngineType3:
+			return kTypeEngineType3Ref;
+		case kTypeEngineType4:
+			return kTypeEngineType4Ref;
+		case kTypeEngineType5:
+			return kTypeEngineType5Ref;
+
+		default:
+			break;
+	}
+
+	return kTypeAny;
+}
+
+VariableType refTypeToType(VariableType type) {
+	switch (type) {
+		case kTypeIntRef:
+			return kTypeInt;
+		case kTypeFloatRef:
+			return kTypeFloat;
+		case kTypeStringRef:
+			return kTypeString;
+		case kTypeResourceRef:
+			return kTypeResource;
+		case kTypeObjectRef:
+			return kTypeObject;
+		case kTypeEngineType0Ref:
+			return kTypeEngineType0;
+		case kTypeEngineType1Ref:
+			return kTypeEngineType1;
+		case kTypeEngineType2Ref:
+			return kTypeEngineType2;
+		case kTypeEngineType3Ref:
+			return kTypeEngineType3;
+		case kTypeEngineType4Ref:
+			return kTypeEngineType4;
+		case kTypeEngineType5Ref:
+			return kTypeEngineType5;
+
+		default:
+			break;
+	}
+
+	return kTypeAny;
+}
+
 const OpcodeArgument *getDirectArguments(Opcode op) {
 	if ((size_t)op >= ARRAYSIZE(kOpcodeArguments))
 		return kOpcodeArguments[0];

@@ -57,6 +57,18 @@ VariableType typeToArrayType(VariableType type);
  */
 VariableType arrayTypeToType(VariableType type);
 
+/** Convert a variable type to a reference of this type.
+ *
+ *  Example: kTypeInt -> kTypeIntRef.
+ */
+VariableType typeToRefType(VariableType type);
+
+/** Convert a reference type to a type of the variable it references.
+ *
+ *  Example: kTypeIntRef -> kTypeInt.
+ */
+VariableType refTypeToType(VariableType type);
+
 /** Return the direct arguments this opcode takes.
  *
  *  Please note that there are 3 exceptions that require special handling:
