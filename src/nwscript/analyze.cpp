@@ -140,12 +140,16 @@ struct AnalyzeStackContext {
 		if ((type == kTypeAny) || ((*stack)[offset].variable->type == kTypeAny))
 			return true;
 
+		if ((type == kTypeResource) && ((*stack)[offset].variable->type == kTypeString))
+			return true;
+
 		return ((*stack)[offset].variable->type == type);
 	}
 
 	void setVariableType(Variable &var, VariableType type) {
 		if (type != kTypeAny)
-			var.type = type;
+			if (!((var.type == kTypeResource) && (type == kTypeString)))
+				var.type = type;
 	}
 
 	void setVariableType(size_t offset, VariableType type) {
@@ -159,6 +163,10 @@ struct AnalyzeStackContext {
 		VariableType type = var1->type;
 		if (type == kTypeAny)
 			type = var2->type;
+
+		if (((var1->type == kTypeResource) && (var2->type == kTypeString)) ||
+		    ((var2->type == kTypeResource) && (var1->type == kTypeString)))
+			type = kTypeResource;
 
 		var1->type = var2->type = type;
 	}
