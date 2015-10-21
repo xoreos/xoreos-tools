@@ -44,7 +44,7 @@ static const char * const kOpcodeName[kOpcodeMAX] = {
 	/* 0x28 */ "DECBP",         "INCBP",       "SAVEBP",    "RESTOREBP",
 	/* 0x2C */ "STORESTATE",    "NOP",         "??",        "??",
 	/* 0x30 */ "WRITEARRAY",    "??",          "READARRAY", "??",
-	/* 0x34 */ "??",            "??",          "??",        "GETARAY",
+	/* 0x34 */ "??",            "??",          "??",        "GETREF",
 	/* 0x38 */ "??",            "GETARRAYREF", "??",        "??",
 	/* 0x3C */ "??",            "??",          "??",        "??",
 	/* 0x40 */ "??",            "??",          "SCRIPTSIZE"
