@@ -67,12 +67,13 @@ static const char * const kInstTypeName[kInstTypeInstTypeMAX] = {
 };
 
 static const char * const kVarTypeName[] = {
-	"void"  , "int"   , "float"  , "string"  , "resource"  , "object"  ,
-	"vector", "struct",
-	"E0"    , "E1"    , "E2"     , "E3"      , "E4"        , "E5"      ,
-	"action", "int[]" , "float[]", "string[]", "resource[]", "object[]",
-	"E0[]"  , "E1[]"  , "E2[]"   , "E3[]"    , "E4[]"      , "E5[]"    ,
-	"ref"   , "any"
+	"void"  , "int"   ,  "float"    , "string"    , "resource"     , "object"    ,
+	"vector", "struct" ,
+	"E0"    , "E1"     , "E2"       , "E3"        , "E4"           , "E5"        ,
+	"action", "int[]"  , "float[]"  , "string[]"  , "resource[]"   , "object[]"  ,
+	"E0[]"  , "E1[]"   , "E2[]"     , "E3[]"      , "E4[]"         , "E5[]"      ,
+	"any"   , "ref int", "ref float", "ref string", "ref resource" , "ref object",
+	"ref E0", "ref E1" , "ref E2"   , "ref E3"    , "ref E4"       , "ref E5"
 };
 
 static const OpcodeArgument kOpcodeArguments[kOpcodeMAX][kOpcodeMaxArgumentCount] = {
@@ -272,21 +273,14 @@ Common::UString getVariableTypeName(VariableType type, Aurora::GameID game) {
 	if ((size_t)type >= ARRAYSIZE(kVarTypeName))
 		return "";
 
-	if (((type >= kTypeEngineType0     ) && (type <= kTypeEngineType5     )) ||
-	    ((type >= kTypeEngineType0Array) && (type <= kTypeEngineType5Array))) {
+	if ((type >= kTypeEngineType0) && (type <= kTypeEngineType5))
+		return getEngineTypeName(game, (size_t)type - (size_t)kTypeEngineType0);
 
-		const size_t n = (type >= kTypeEngineType0Array) ? (((size_t)type) - (size_t)kTypeEngineType0Array) :
-		                                                   (((size_t)type) - (size_t)kTypeEngineType0);
+	if ((type >= kTypeEngineType0Array) && (type <= kTypeEngineType5Array))
+		return getEngineTypeName(game, (size_t)type - (size_t)kTypeEngineType0Array) + "[]";
 
-		Common::UString engineTypeName = getEngineTypeName(game, n);
-		if (engineTypeName.empty())
-			engineTypeName = getGenericEngineTypeName(n);
-
-		if (type >= kTypeEngineType0Array)
-			engineTypeName += "[]";
-
-		return engineTypeName;
-	}
+	if ((type >= kTypeEngineType0Ref) && (type <= kTypeEngineType5Ref))
+		return "ref " + getEngineTypeName(game, (size_t)type - (size_t)kTypeEngineType0Ref);
 
 	return kVarTypeName[(size_t)type];
 }

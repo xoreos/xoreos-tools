@@ -62,8 +62,18 @@ enum VariableType {
 	kTypeEngineType3Array    ,
 	kTypeEngineType4Array    ,
 	kTypeEngineType5Array    ,
-	kTypeReference           , ///< A reference/pointer to another variable.
-	kTypeAny                   ///< Any other type.
+	kTypeAny                 , ///< Any other type.
+	kTypeIntRef              ,
+	kTypeFloatRef            ,
+	kTypeStringRef           ,
+	kTypeResourceRef         ,
+	kTypeObjectRef           ,
+	kTypeEngineType0Ref      ,
+	kTypeEngineType1Ref      ,
+	kTypeEngineType2Ref      ,
+	kTypeEngineType3Ref      ,
+	kTypeEngineType4Ref      ,
+	kTypeEngineType5Ref
 };
 
 /** An instruction opcode, defining what it does. */
