@@ -124,7 +124,7 @@ Common::UString getGenericEngineTypeName(size_t n) {
 Common::UString getEngineTypeName(Aurora::GameID game, size_t n) {
 	const GameInfo *info = getGameInfo(game);
 	if (!info || (n >= info->engineTypeCount))
-		return "";
+		return getGenericEngineTypeName(n);
 
 	return info->engineTypeNames[n];
 }
