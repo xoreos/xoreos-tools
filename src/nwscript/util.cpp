@@ -211,7 +211,7 @@ VariableType instructionTypeToVariableType(InstructionType type) {
 
 		case kInstTypeEngineType1:
 		case kInstTypeEngineType1EngineType1:
-			return kTypeEngineType0;
+			return kTypeEngineType1;
 
 		case kInstTypeEngineType2:
 		case kInstTypeEngineType2EngineType2:
