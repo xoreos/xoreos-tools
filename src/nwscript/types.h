@@ -231,6 +231,16 @@ enum VariableUse {
 
 struct Instruction;
 
+/** A reference to an instruction that set the type of a variable. */
+struct TypeInference {
+	VariableType type;
+	const Instruction *instruction;
+
+
+	TypeInference(VariableType t, const Instruction *i) : type(t), instruction(i) {
+	}
+};
+
 /** A unique variable defined and used by a script. */
 struct Variable {
 	uint32 id;         ///< The unique ID of this variable.
@@ -246,6 +256,9 @@ struct Variable {
 
 	/** Variables that were created by duplicating this variable. */
 	std::set<const Variable *> duplicates;
+
+	/** Instructions that helped to infer the type of this variable. */
+	std::deque<TypeInference> typeInference;
 
 
 	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) :

@@ -79,6 +79,9 @@ struct AnalyzeStackContext {
 		variables->push_back(Variable(id, type, use));
 		variables->back().creator = instruction;
 
+		if (type != kTypeAny)
+			variables->back().typeInference.push_back(TypeInference(type, instruction));
+
 		return variables->back();
 	}
 
@@ -88,14 +91,24 @@ struct AnalyzeStackContext {
 		return (*stack)[offset].variable->type;
 	}
 
+	void setVariableType(Variable &var, VariableType type) {
+		if ((type == kTypeAny) || ((var.type == kTypeResource) && (type == kTypeString)))
+			return;
+
+		var.type = type;
+		var.typeInference.push_back(TypeInference(type, instruction));
+	}
+
+	void setVariableType(size_t offset, VariableType type) {
+		setVariableType(*(*stack)[offset].variable, type);
+	}
+
 	void writeVariable(size_t offset) {
 		(*stack)[offset].variable->writers.push_back(instruction);
 	}
 
 	void writeVariable(size_t offset, VariableType type) {
-		if (type != kTypeAny)
-			(*stack)[offset].variable->type = type;
-
+		setVariableType(offset, type);
 		writeVariable(offset);
 	}
 
@@ -146,16 +159,6 @@ struct AnalyzeStackContext {
 		return ((*stack)[offset].variable->type == type);
 	}
 
-	void setVariableType(Variable &var, VariableType type) {
-		if (type != kTypeAny)
-			if (!((var.type == kTypeResource) && (type == kTypeString)))
-				var.type = type;
-	}
-
-	void setVariableType(size_t offset, VariableType type) {
-		setVariableType(*(*stack)[offset].variable, type);
-	}
-
 	void sameVariableType(Variable *var1, Variable *var2) {
 		if (!var1 || !var2)
 			return;
@@ -168,7 +171,8 @@ struct AnalyzeStackContext {
 		    ((var2->type == kTypeResource) && (var1->type == kTypeString)))
 			type = kTypeResource;
 
-		var1->type = var2->type = type;
+		setVariableType(*var1, type);
+		setVariableType(*var2, type);
 	}
 
 	void sameVariableType(size_t offset1, size_t offset2) {
