@@ -319,7 +319,7 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 
 			/* If this is an instruction that influences control flow, break to evaluate the branches. */
 
-			branchBlock(sub, block, *blockInstr);
+			followBranchBlock(sub, block, *blockInstr);
 			break;
 		}
 
@@ -342,7 +342,7 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 	}
 }
 
-void NCSFile::branchBlock(SubRoutine &sub, Block &block, const Instruction &instr) {
+void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction &instr) {
 	/* Evaluate the branching paths of a block and follow them all. */
 
 	Block      *branchBlock = 0;
