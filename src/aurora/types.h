@@ -166,10 +166,13 @@ enum FileType {
 	kFileTypeMAB            =  3011, ///< Material, binary.
 	kFileTypeQST2           =  3012, ///< Quest, GFF.
 	kFileTypeSTO            =  3013, ///< GFF.
+	kFileTypeHEX            =  3015, ///< Hex grid file.
 	kFileTypeMDX2           =  3016, ///< Geometry, model mesh data.
 	kFileTypeTXB2           =  3017, ///< Texture.
 	kFileTypeFSM            =  3022, ///< Finite State Machine data.
 	kFileTypeART            =  3023, ///< Area enviroment settings, INI.
+	kFileTypeAMP            =  3024, ///< Brightening control.
+	kFileTypeCWA            =  3025, ///< Crowd attributes, GFF.
 	kFileTypeBIP            =  3028, ///< Lipsync data, binary LIP.
 	kFileTypeMDB2           =  4000,
 	kFileTypeMDA2           =  4001,
@@ -304,7 +307,7 @@ enum FileType {
 	kFileTypeABC            = 24003, ///< Font, character descriptions.
 	kFileTypeSBM            = 24004, ///< Font, character bitmap data.
 	kFileTypePVD            = 24005,
-	kFileTypeAMP            = 24006,
+	kFileTypeAMP2           = 24006,
 	kFileTypePLA            = 24007, ///< Placeable, GFF.
 	kFileTypeTRG            = 24008, ///< Trigger, GFF.
 	kFileTypePK             = 24009,
