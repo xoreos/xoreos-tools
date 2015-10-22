@@ -48,6 +48,7 @@ static const uint32 kGFFTypes[] = {
 	MKTAG('C', 'A', 'M', ' '),
 	MKTAG('C', 'R', 'E', ' '),
 	MKTAG('C', 'U', 'T', ' '),
+	MKTAG('C', 'W', 'A', ' '),
 	MKTAG('D', 'L', 'G', ' '),
 	MKTAG('F', 'A', 'C', ' '),
 	MKTAG('F', 'S', 'M', ' '),
