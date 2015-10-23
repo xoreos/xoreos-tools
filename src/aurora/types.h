@@ -43,8 +43,17 @@ namespace Aurora {
  *  archives. These are arbitrary numbers for files that are only found
  *  as plain files in the file system, or inside archives that do not
  *  use numerical type IDs. Should such a file ever be found in an archive
- *  with a type ID, this dummy entry needs to be deleted, and a real entry
- *  with the correct ID should be added instead.
+ *  with a type ID, this dummy entry in the block of IDs >= 19000 needs to
+ *  be deleted, and a real entry with the correct ID should be added
+ *  instead.
+ *
+ *  If there's a collision between types, if one game re-uses a type ID
+ *  for a different file type, the new ID needs to be added to he block
+ *  of IDs >= 19000, and the conflicting file type should be added to the
+ *  method FileTypeManager::aliasFileType(). A tool that needs to be able
+ *  to correctly differentiate between these aliased file types can call
+ *  this method to do so. If necessary, a command line switch to explictly
+ *  select the game can be added to the tool.
  */
 enum FileType {
 	kFileTypeNone           = -   1,
