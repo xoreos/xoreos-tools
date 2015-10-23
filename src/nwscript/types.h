@@ -233,7 +233,9 @@ struct Instruction;
 
 /** A reference to an instruction that set the type of a variable. */
 struct TypeInference {
+	/** The type we inferred. */
 	VariableType type;
+	/** The instruction where we inferred this type. */
 	const Instruction *instruction;
 
 
