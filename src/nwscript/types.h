@@ -319,6 +319,11 @@ struct Instruction {
 	 */
 	const Instruction *follower;
 
+	/** The instructions that lead into this instruction, either naturally
+	 *  or by a jump, as long as it's not across subroutine boundaries.
+	 */
+	std::vector<const Instruction *> predecessors;
+
 	/** The destinations of the branches this instruction takes.
 	 *
 	 *  If this vector has:

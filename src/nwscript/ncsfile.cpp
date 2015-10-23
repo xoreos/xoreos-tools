@@ -183,6 +183,9 @@ void NCSFile::linkBranches() {
 			Instructions::iterator follower = i + 1;
 
 			i->follower = (follower != _instructions.end()) ? &*follower : 0;
+
+			if (follower != _instructions.end())
+				follower->predecessors.push_back(&*i);
 		}
 
 		// Link destinations of unconditional branches
@@ -199,8 +202,10 @@ void NCSFile::linkBranches() {
 				setAddressType(&*branch, kAddressTypeSubRoutine);
 			else if (i->opcode == kOpcodeSTORESTATE)
 				setAddressType(&*branch, kAddressTypeStoreState);
-			else
+			else {
 				setAddressType(&*branch, kAddressTypeJumpLabel);
+				branch->predecessors.push_back(&*i);
+			}
 
 			setAddressType(const_cast<Instruction *>(i->follower), kAddressTypeTail);
 		}
@@ -222,6 +227,8 @@ void NCSFile::linkBranches() {
 
 			i->branches.push_back(&*branch);    // True branch
 			i->branches.push_back(i->follower); // False branch
+
+			branch->predecessors.push_back(&*i);
 		}
 	}
 }
