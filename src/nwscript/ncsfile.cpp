@@ -288,6 +288,9 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 	/* Recursively follow the path of instructions and construct individual but linked
 	 * blocks containing the path with all its branches. */
 
+	if (!sub.entry)
+		sub.entry = &instr;
+
 	const Instruction *blockInstr = &instr;
 	while (blockInstr) {
 		if (blockInstr->block) {
@@ -416,6 +419,10 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 			if (addBranchBlock(branchSub, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
 				constructBlocks(*branchSub, *branchBlock, *instr.follower);
 
+			break;
+
+		case kOpcodeRETN:
+			sub.exists.push_back(&instr);
 			break;
 
 		default:

@@ -411,6 +411,11 @@ struct SubRoutine {
 	std::set<const SubRoutine *> callers; ///< The subroutines calling this subroutine.
 	std::set<const SubRoutine *> callees; ///< The subroutines this subroutine calls.
 
+	/** The first instruction in this subroutine. */
+	const Instruction *entry;
+	/** The RETN instructions that leave this subroutine. */
+	std::vector<const Instruction *> exists;
+
 	/** The type of this subroutine. */
 	SubRoutineType type;
 
@@ -427,7 +432,7 @@ struct SubRoutine {
 	std::vector<const Variable *> returns;
 
 
-	SubRoutine(uint32 addr) : address(addr), type(kSubRoutineTypeNone),
+	SubRoutine(uint32 addr) : address(addr), entry(0), type(kSubRoutineTypeNone),
 		stackAnalyzeState(kStackAnalyzeStateNone) {
 
 	}
