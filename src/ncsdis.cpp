@@ -498,6 +498,10 @@ void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID 
 				case NWScript::kBlockEdgeTypeStoreState:
 					attr = "color=purple";
 					break;
+
+				case NWScript::kBlockEdgeTypeDead:
+					attr = "color=gray40";
+					break;
 			}
 
 			// If this is a jump back, make the edge bold
