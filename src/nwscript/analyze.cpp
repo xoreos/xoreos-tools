@@ -402,8 +402,16 @@ static void analyzeBlockStack(AnalyzeStackContext &ctx) {
 	assert(ctx.block);
 
 	// If we already analyzed this block previously, don't do it again
-	if (ctx.block->stackAnalyzeState == kStackAnalyzeStateFinished)
+	if (ctx.block->stackAnalyzeState == kStackAnalyzeStateFinished) {
+		if (ctx.block && !ctx.block->instructions.empty() && ctx.block->instructions.front()) {
+			const Instruction &instr = *ctx.block->instructions.front();
+			if (ctx.subStack != instr.stack.size())
+				throw Common::Exception("Unbalanced stack in block fork merge @%08X: %u != %u",
+				                        instr.address, (uint)ctx.subStack, (uint)instr.stack.size());
+		}
+
 		return;
+	}
 
 	// Are we currently already in the process of analyzing this very same block?
 	if (ctx.block->stackAnalyzeState == kStackAnalyzeStateStart)
