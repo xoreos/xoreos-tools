@@ -431,10 +431,12 @@ static void analyzeBlockStack(AnalyzeStackContext &ctx) {
 	assert(ctx.block->children.size() == ctx.block->childrenTypes.size());
 
 	for (size_t i = 0; i < ctx.block->children.size(); i++) {
-		/* Recurse into the child blocks, but not into subroutines or STORESTATEs */
+		/* Recurse into the child blocks, but not into subroutines or STORESTATEs.
+		 * Don't follow logically dead edges either. */
 
 		if ((ctx.block->childrenTypes[i] == kBlockEdgeTypeFunctionCall) ||
-		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeStoreState))
+		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeStoreState  ) ||
+		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeDead        ))
 			continue;
 
 		assert(ctx.block->children[i]);

@@ -123,6 +123,7 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 
 		linkBranches();
 		findBlocks();
+		findDeadEdges();
 
 		identifySubRoutineTypes();
 
@@ -427,6 +428,96 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 
 		default:
 			break;
+	}
+}
+
+static bool isStackDoubler(const Instruction &instr) {
+	/* Is this an instruction that doubles the element on top of the stack? */
+
+	return (instr.opcode == kOpcodeCPTOPSP) && (instr.argCount == 2) &&
+	       (instr.args[0] == -4) && (instr.args[1] == 4);
+}
+
+static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t *childIndex = 0) {
+	/* Does this block, as its last two instructions, double the top element of
+	 * the stack and then jump accordingly? If we've been given a child block,
+	 * return the index of this child block within the first block's children. */
+
+	if ((block.instructions.size() < 2) || (block.children.size() != 2))
+		return false;
+
+	const Instruction &last       = *block.instructions[block.instructions.size() - 1];
+	const Instruction &secondLast = *block.instructions[block.instructions.size() - 2];
+
+	if (!isStackDoubler(secondLast) || last.opcode != kOpcodeJZ)
+		return false;
+
+	if (child) {
+		size_t found = SIZE_MAX;
+		for (size_t i = 0; i < block.children.size(); i++) {
+			if (block.children[i] == child) {
+				found = i;
+				break;
+			}
+		}
+
+		if (found == SIZE_MAX)
+			return false;
+
+		if (childIndex) {
+			if ((*childIndex != SIZE_MAX) && (*childIndex != found))
+				return false;
+
+			*childIndex = found;
+		}
+	}
+
+	return true;
+}
+
+void NCSFile::findDeadEdges() {
+	/* Run through all blocks and find edges that are logically dead and will
+	 * never be taken.
+	 *
+	 * Currently, this is limited to one special case that occurs in scripts
+	 * compiled by the original BioWare NWScript compiler (at least in NWN and
+	 * KotOR): short-circuiting in if (x || y) conditionals. The original BioWare
+	 * compiler has a bug where it generates a JZ instead of a JMP, creating a
+	 * true branch that will never be taken and effectively disabling short-
+	 * circuiting. I.e. both x and y will always be evaluated; when x is true,
+	 * y will still be evaluated afterwards.
+	 *
+	 * We use very simple pattern-matching here. This is enough to find most
+	 * occurances of this case, but not all. */
+
+	for (Blocks::iterator b = _blocks.begin(); b != _blocks.end(); ++b) {
+		if (!isTopStackJumper(*b) || (b->instructions.size() != 2) || b->parents.empty())
+			continue;
+
+		/* Look through all parents of this block and make sure they fit the
+		 * pattern as well. They also all need to jump to this block with the
+		 * same branch edge (true or false). */
+		size_t parentEdge = SIZE_MAX;
+		for (std::vector<const Block *>::const_iterator p = b->parents.begin(); p != b->parents.end(); ++p) {
+			if (!isTopStackJumper(**p, &*b, &parentEdge)) {
+				parentEdge = SIZE_MAX;
+				break;
+			}
+		}
+		if (parentEdge == SIZE_MAX)
+			continue;
+
+		assert(parentEdge < 2);
+
+		/* We have now established that
+		 * 1) This block checks whether the top of the stack is == 0
+		 * 2) All parent blocks check whether the top of the stack is == 0
+		 * 3) All parent blocks jump with the same branch edge into this block
+		 *
+		 * Therefore, this block must also always follow the exact same edge.
+		 * This means the other edge is logically dead. */
+
+		b->childrenTypes[1 - parentEdge] = kBlockEdgeTypeDead;
 	}
 }
 

@@ -116,6 +116,7 @@ private:
 
 	void linkBranches();
 	void findBlocks();
+	void findDeadEdges();
 
 	void identifySubRoutineTypes();
 

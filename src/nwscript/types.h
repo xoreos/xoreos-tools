@@ -370,7 +370,8 @@ enum BlockEdgeType {
 	kBlockEdgeTypeConditionalFalse, ///< This block is a false branch of a conditional.
 	kBlockEdgeTypeFunctionCall,     ///< This block is a function call.
 	kBlockEdgeTypeFunctionReturn,   ///< This block is a function return.
-	kBlockEdgeTypeStoreState        ///< This block is a subroutine create by STORESTATE.
+	kBlockEdgeTypeStoreState,       ///< This block is a subroutine create by STORESTATE.
+	kBlockEdgeTypeDead              ///< This edge is logically dead and will never be taken.
 };
 
 /** A block of NWScript instructions. */
