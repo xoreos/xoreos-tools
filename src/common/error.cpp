@@ -115,4 +115,25 @@ void printException(Exception &e, const UString &prefix) {
 	}
 }
 
+void exceptionDispatcher() {
+	try {
+		try {
+			throw;
+		} catch (Exception &e) {
+			printException(e);
+			std::exit(1);
+		} catch (std::exception &e) {
+			Exception se(e);
+			printException(se);
+			std::exit(1);
+		} catch (...) {
+			Exception se("Unknown exception caught");
+			printException(se);
+			std::exit(1);
+		}
+	} catch (...) {
+		std::exit(2);
+	}
+}
+
 } // End of namespace Common

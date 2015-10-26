@@ -64,6 +64,7 @@ extern const Exception kSeekError;
 extern const Exception kWriteError;
 
 void printException(Exception &e, const UString &prefix = "ERROR: ");
+void exceptionDispatcher();
 
 } // End of namespace Common
 
