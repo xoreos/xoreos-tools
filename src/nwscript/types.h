@@ -246,7 +246,7 @@ struct TypeInference {
 
 /** A unique variable defined and used by a script. */
 struct Variable {
-	uint32 id;         ///< The unique ID of this variable.
+	size_t id;         ///< The unique ID of this variable.
 	VariableType type; ///< The type of this variable.
 	VariableUse  use;  ///< What this variable is used for.
 
@@ -272,7 +272,7 @@ struct Variable {
 	std::deque<TypeInference> typeInference;
 
 
-	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) :
+	Variable(size_t i, VariableType t, VariableUse u = kVariableUseUnknown) :
 		id(i), type(t), use(u), creator(0) {
 
 	}

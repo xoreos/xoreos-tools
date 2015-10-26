@@ -74,7 +74,7 @@ struct AnalyzeStackContext {
 	Variable &addVariable(VariableType type, VariableUse use = kVariableUseUnknown) {
 		assert(variables);
 
-		const uint32 id = variables->size();
+		const size_t id = variables->size();
 
 		variables->push_back(Variable(id, type, use));
 		variables->back().creator = instruction;
