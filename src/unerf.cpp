@@ -107,11 +107,8 @@ int main(int argc, char **argv) {
 		else if (command == kCommandExtractSub)
 			extractFiles(erf, game, files, kExtractModeSubstitute);
 
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return 1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcher();
 	}
 
 	return 0;

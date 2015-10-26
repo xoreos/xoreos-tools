@@ -65,11 +65,8 @@ int main(int argc, char **argv) {
 		LangMan.declareLanguages(game);
 
 		dumpTLK(inFile, outFile, encoding);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return 1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcher();
 	}
 
 	return 0;

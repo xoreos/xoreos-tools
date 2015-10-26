@@ -66,11 +66,8 @@ int main(int argc, char **argv) {
 			return returnValue;
 
 		convert(inFile, outFile, type, flip);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return 1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcher();
 	}
 
 	return 0;

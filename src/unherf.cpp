@@ -79,11 +79,8 @@ int main(int argc, char **argv) {
 		else if (command == kCommandExtract)
 			extractFiles(herf);
 
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return 1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcher();
 	}
 
 	return 0;
