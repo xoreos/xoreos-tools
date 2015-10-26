@@ -132,6 +132,9 @@ struct AnalyzeStackContext {
 	void connectSets(const Variable *v1, const Variable *v2,
 	                 std::set<const Variable *> &s1, std::set<const Variable *> &s2) {
 
+		s1.insert(v2);
+		s2.insert(v1);
+
 		s1.insert(s2.begin(), s2.end());
 		s2.insert(s1.begin(), s1.end());
 
