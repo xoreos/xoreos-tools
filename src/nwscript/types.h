@@ -25,6 +25,7 @@
 #ifndef NWSCRIPT_TYPES_H
 #define NWSCRIPT_TYPES_H
 
+#include <algorithm>
 #include <vector>
 #include <deque>
 #include <set>
@@ -259,6 +260,14 @@ struct Variable {
 	/** Variables that were created by duplicating this variable. */
 	std::set<const Variable *> duplicates;
 
+	/** Variables that are logically the very same variable as this one.
+	 *
+	 *  When control flow merges branching forks back together, these are
+	 *  variables that occupy the same stack space. They are logically the
+	 *  same variable, only created through a different potential path.
+	 */
+	std::set<const Variable *> siblings;
+
 	/** Instructions that helped to infer the type of this variable. */
 	std::deque<TypeInference> typeInference;
 
@@ -266,6 +275,24 @@ struct Variable {
 	Variable(uint32 i, VariableType t, VariableUse u = kVariableUseUnknown) :
 		id(i), type(t), use(u), creator(0) {
 
+	}
+
+	std::vector<size_t> getSiblingGroup() const {
+		std::vector<size_t> sib;
+
+		sib.reserve(siblings.size() + 1);
+
+		for (std::set<const Variable *>::const_iterator s = siblings.begin(); s != siblings.end(); ++s)
+			sib.push_back((*s)->id);
+		sib.push_back(id);
+
+		std::sort(sib.begin(), sib.end());
+
+		return sib;
+	}
+
+	size_t getLowestSibling() const {
+		return getSiblingGroup().front();
 	}
 };
 typedef std::deque<Variable> VariableSpace;

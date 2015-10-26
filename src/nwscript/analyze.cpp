@@ -129,6 +129,16 @@ struct AnalyzeStackContext {
 		return var;
 	}
 
+	void connectSets(const Variable *v1, const Variable *v2,
+	                 std::set<const Variable *> &s1, std::set<const Variable *> &s2) {
+
+		s1.insert(s2.begin(), s2.end());
+		s2.insert(s1.begin(), s1.end());
+
+		s1.erase(v1);
+		s2.erase(v2);
+	}
+
 	void duplicateVariable(size_t offset, VariableUse use = kVariableUseUnknown) {
 		Variable *var1 = (*stack)[offset].variable;
 
@@ -139,14 +149,7 @@ struct AnalyzeStackContext {
 
 		Variable *var2 = stack->front().variable;
 
-		std::set<const Variable *> d1 = var1->duplicates;
-		std::set<const Variable *> d2 = var2->duplicates;
-
-		var1->duplicates.insert(var2);
-		var2->duplicates.insert(var1);
-
-		var1->duplicates.insert(d2.begin(), d2.end());
-		var2->duplicates.insert(d1.begin(), d1.end());
+		connectSets(var1, var2, var1->duplicates, var2->duplicates);
 	}
 
 	bool checkVariableType(size_t offset, VariableType type) {
@@ -177,6 +180,12 @@ struct AnalyzeStackContext {
 
 	void sameVariableType(size_t offset1, size_t offset2) {
 		sameVariableType((*stack)[offset1].variable, (*stack)[offset2].variable);
+	}
+
+	void connectSiblings(Variable &var1, Variable &var2) {
+		sameVariableType(&var1, &var2);
+
+		connectSets(&var1, &var2, var1.siblings, var2.siblings);
 	}
 };
 
@@ -401,13 +410,31 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursio
 static void analyzeBlockStack(AnalyzeStackContext &ctx) {
 	assert(ctx.block);
 
-	// If we already analyzed this block previously, don't do it again
 	if (ctx.block->stackAnalyzeState == kStackAnalyzeStateFinished) {
+		/* If we already analyzed this block previously, don't do it again.
+		 * However, we're going to connect the variables on the stack now
+		 * with the variables on the stack then. Different variables on
+		 * the same stack space are obviously "siblings", essentially the
+		 * same logical variable. */
+
 		if (ctx.block && !ctx.block->instructions.empty() && ctx.block->instructions.front()) {
 			const Instruction &instr = *ctx.block->instructions.front();
+
+			// Make sure the stack is balanced between the two merging nodes
 			if (ctx.subStack != instr.stack.size())
 				throw Common::Exception("Unbalanced stack in block fork merge @%08X: %u != %u",
 				                        instr.address, (uint)ctx.subStack, (uint)instr.stack.size());
+
+			// Now connect the siblings, until we reached a point where the stack is identical again
+			for (size_t i = 0; i < ctx.subStack; i++) {
+				Variable *var1 = instr.stack[i].variable;
+				Variable *var2 = (*ctx.stack)[i].variable;
+
+				if (!var1 || !var2 || (var1 == var2) || (var1->id == var2->id))
+					break;
+
+				ctx.connectSiblings(*var1, *var2);
+			}
 		}
 
 		return;
