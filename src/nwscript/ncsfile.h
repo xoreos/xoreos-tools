@@ -89,6 +89,12 @@ public:
 	/** Find an instruction by address. */
 	const Instruction *findInstruction(uint32 address) const;
 
+	/** Return all the variables we found while analyzing this script. */
+	const VariableSpace &getVariables() const;
+
+	/** Return the global variables we found while analyzing this script. */
+	const Stack &getGlobals() const;
+
 
 private:
 	size_t _size;

@@ -142,6 +142,14 @@ NCSFile::Instructions::iterator NCSFile::findInstruction(uint32 address) {
 	return it;
 }
 
+const VariableSpace &NCSFile::getVariables() const {
+	return _variables;
+}
+
+const Stack &NCSFile::getGlobals() const {
+	return _globals;
+}
+
 void NCSFile::parse(Common::SeekableReadStream &ncs) {
 	while (parseStep(ncs))
 		;
