@@ -250,11 +250,25 @@ static void writeStack(Common::WriteStream &out, size_t indent,
 	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
 
 	for (size_t s = 0; s < instr.stack.size(); s++) {
+		const NWScript::Variable &var = *instr.stack[s].variable;
+
+		Common::UString siblings;
+		for (std::set<const NWScript::Variable *>::const_iterator sib = var.siblings.begin();
+		     sib != var.siblings.end(); ++sib) {
+
+			if (!siblings.empty())
+				siblings += ",";
+
+			siblings += Common::composeString((*sib)->id);
+		}
+
+		if (!siblings.empty())
+			siblings = " (" + siblings + ")";
+
 		out.writeString(Common::UString(' ', indent));
-		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)\n",
-		    (uint)s, (uint)instr.stack[s].variable->id,
-		    NWScript::getVariableTypeName(instr.stack[s].variable->type, game).toLower().c_str(),
-		    instr.stack[s].variable->creator ? instr.stack[s].variable->creator->address : 0));
+		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)%s\n",
+		    (uint)s, (uint)var.id, NWScript::getVariableTypeName(var.type, game).toLower().c_str(),
+		    var.creator ? var.creator->address : 0, siblings.c_str()));
 	}
 
 	out.writeString(Common::UString(' ', indent));
