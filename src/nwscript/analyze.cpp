@@ -112,16 +112,18 @@ struct AnalyzeStackContext {
 		writeVariable(offset);
 	}
 
-	void pushVariable(VariableType type, VariableUse use = kVariableUseUnknown) {
+	Variable &pushVariable(VariableType type, VariableUse use = kVariableUseUnknown) {
 		subStack++;
 		stack->push_front(StackVariable(addVariable(type, use)));
+
+		return *stack->front().variable;
 	}
 
-	Variable *popVariable(bool reading = true) {
+	Variable &popVariable(bool reading = true) {
 		if (reading)
 			readVariable(0);
 
-		Variable *var = stack->front().variable;
+		Variable &var = *stack->front().variable;
 
 		subStack--;
 		stack->pop_front();
@@ -189,6 +191,20 @@ struct AnalyzeStackContext {
 		sameVariableType(&var1, &var2);
 
 		connectSets(&var1, &var2, var1.siblings, var2.siblings);
+	}
+
+	void modifiesVariable(const Variable &var) {
+		if (!instruction)
+			return;
+
+		instruction->variables.push_back(&var);
+	}
+
+	void modifiesVariable(size_t offset) {
+		if (!stack)
+			return;
+
+		modifiesVariable(*(*stack)[offset].variable);
 	}
 };
 
@@ -521,7 +537,7 @@ static void analyzeStackPush(AnalyzeStackContext &ctx) {
 
 	VariableType type = instructionTypeToVariableType(ctx.instruction->type);
 
-	ctx.pushVariable(type, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
 
 static void analyzeStackPop(AnalyzeStackContext &ctx) {
@@ -543,7 +559,7 @@ static void analyzeStackPop(AnalyzeStackContext &ctx) {
 			ctx.sub->params.push_back(ctx.stack->front().variable);
 		}
 
-		ctx.popVariable(false);
+		ctx.modifiesVariable(ctx.popVariable(false));
 	}
 }
 
@@ -577,6 +593,9 @@ static void analyzeStackJSR(AnalyzeStackContext &ctx) {
 	ctx.sub = sub;
 
 	analyzeSubRoutineStack(ctx, isStoreStateTail);
+
+	for (size_t i = 0; i < (sub->params.size() + sub->returns.size()); i++)
+		oldCtx.modifiesVariable(i);
 
 	oldCtx.subStack = ctx.subStack;
 
@@ -644,8 +663,11 @@ static void analyzeStackCPTOPSP(AnalyzeStackContext &ctx) {
 	if ((size_t)offset >= ctx.stack->size())
 		throw Common::Exception("analyzeStackCPTOPSP(): @%08X: Stack underrun", ctx.instruction->address);
 
-	while (size-- > 0)
+	while (size-- > 0) {
+		ctx.modifiesVariable(offset);
 		ctx.duplicateVariable(offset, kVariableUseLocal);
+		ctx.modifiesVariable(0);
+	}
 }
 
 static void analyzeStackCPDOWNSP(AnalyzeStackContext &ctx) {
@@ -673,6 +695,9 @@ static void analyzeStackCPDOWNSP(AnalyzeStackContext &ctx) {
 			type = (*ctx.stack)[pos].variable->type = (*ctx.stack)[offset].variable->type;
 
 		ctx.writeVariable(offset, type);
+
+		ctx.modifiesVariable(pos);
+		ctx.modifiesVariable(offset);
 
 		if (!ctx.subRETN && ((size_t)offset >= ctx.subStack)) {
 			/* If we see an underrun during a CPDOWNSP instruction, this means the subroutine
@@ -720,9 +745,11 @@ static void analyzeStackCPTOPBP(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackCPTOPBP(): @%08X: Globals underrun", ctx.instruction->address);
 
 	while (size-- > 0) {
+		ctx.modifiesVariable(*(*ctx.globals)[offset].variable);
 		(*ctx.globals)[offset].variable->readers.push_back(ctx.instruction);
 
 		ctx.pushVariable((*ctx.globals)[offset].variable->type, kVariableUseLocal);
+		ctx.modifiesVariable(0);
 
 		offset--;
 	}
@@ -757,6 +784,9 @@ static void analyzeStackCPDOWNBP(AnalyzeStackContext &ctx) {
 		(*ctx.globals)[offset].variable->writers.push_back(ctx.instruction);
 
 		(*ctx.globals)[offset].variable->type = type;
+
+		ctx.modifiesVariable(pos);
+		ctx.modifiesVariable(*(*ctx.globals)[offset].variable);
 
 		offset--;
 		size--;
@@ -798,9 +828,7 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 				throw Common::Exception("analyzeStackACTION(): @%08X: Parameter type mismatch",
 				                        ctx.instruction->address);
 
-			ctx.setVariableType(0, type);
-
-			ctx.popVariable();
+			ctx.modifiesVariable(ctx.popVariable());
 		}
 	}
 
@@ -811,13 +839,13 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 	if (returnType == kTypeVector) {
 		// A vector is really 3 separate float variables
 
-		ctx.pushVariable(kTypeFloat, kVariableUseLocal);
-		ctx.pushVariable(kTypeFloat, kVariableUseLocal);
-		ctx.pushVariable(kTypeFloat, kVariableUseLocal);
+		ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
+		ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
+		ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
 		return;
 	}
 
-	ctx.pushVariable(returnType, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(returnType, kVariableUseLocal));
 }
 
 static void analyzeStackBool(AnalyzeStackContext &ctx) {
@@ -833,9 +861,9 @@ static void analyzeStackBool(AnalyzeStackContext &ctx) {
 	ctx.setVariableType(1, kTypeInt);
 
 	for (size_t i = 0; i < 2; i++)
-		ctx.popVariable();
+		ctx.modifiesVariable(ctx.popVariable());
 
-	ctx.pushVariable(kTypeInt, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(kTypeInt, kVariableUseLocal));
 }
 
 static void analyzeStackEq(AnalyzeStackContext &ctx) {
@@ -856,10 +884,10 @@ static void analyzeStackEq(AnalyzeStackContext &ctx) {
 	vars2.reserve(size);
 
 	for (size_t i = 0; i < size; i++)
-		vars1.push_back(ctx.popVariable());
+		vars1.push_back(&ctx.popVariable());
 
 	for (size_t i = 0; i < size; i++)
-		vars2.push_back(ctx.popVariable());
+		vars2.push_back(&ctx.popVariable());
 
 	for (size_t i = 0; i < size; i++) {
 		VariableType type = kTypeAny;
@@ -876,9 +904,12 @@ static void analyzeStackEq(AnalyzeStackContext &ctx) {
 		ctx.setVariableType(*vars2[i], type);
 
 		ctx.sameVariableType(vars1[i], vars2[i]);
+
+		ctx.modifiesVariable(*vars1[i]);
+		ctx.modifiesVariable(*vars2[i]);
 	}
 
-	ctx.pushVariable(kTypeInt, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(kTypeInt, kVariableUseLocal));
 }
 
 static void analyzeStackShift(AnalyzeStackContext &ctx) {
@@ -894,9 +925,9 @@ static void analyzeStackShift(AnalyzeStackContext &ctx) {
 	ctx.setVariableType(1, kTypeInt);
 
 	for (size_t i = 0; i < 2; i++)
-		ctx.popVariable();
+		ctx.modifiesVariable(ctx.popVariable());
 
-	ctx.pushVariable(kTypeInt, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(kTypeInt, kVariableUseLocal));
 }
 
 static void analyzeStackUnArithm(AnalyzeStackContext &ctx) {
@@ -915,8 +946,8 @@ static void analyzeStackUnArithm(AnalyzeStackContext &ctx) {
 
 	ctx.setVariableType(0, type);
 
-	ctx.popVariable();
-	ctx.pushVariable(type, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.popVariable());
+	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
 
 static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
@@ -946,10 +977,10 @@ static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 
 			for (size_t i = 0; i < 2; i++) {
 				ctx.setVariableType(0, type);
-				ctx.popVariable();
+				ctx.modifiesVariable(ctx.popVariable());
 			}
 
-			ctx.pushVariable(type, kVariableUseLocal);
+			ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 			break;
 
 		case kInstTypeIntFloat:
@@ -959,10 +990,10 @@ static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 			ctx.setVariableType(0, kTypeFloat);
 			ctx.setVariableType(1, kTypeInt);
 
-			ctx.popVariable();
-			ctx.popVariable();
+			ctx.modifiesVariable(ctx.popVariable());
+			ctx.modifiesVariable(ctx.popVariable());
 
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
 			break;
 
 		case kInstTypeFloatInt:
@@ -972,10 +1003,10 @@ static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 			ctx.setVariableType(0, kTypeInt);
 			ctx.setVariableType(1, kTypeFloat);
 
-			ctx.popVariable();
-			ctx.popVariable();
+			ctx.modifiesVariable(ctx.popVariable());
+			ctx.modifiesVariable(ctx.popVariable());
 
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
 			break;
 
 			break;
@@ -988,12 +1019,12 @@ static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 
 			for (size_t i = 0; i < 6; i++) {
 				ctx.setVariableType(0, kTypeFloat);
-				ctx.popVariable();
+				ctx.modifiesVariable(ctx.popVariable());
 			}
 
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
 			break;
 
 		case kInstTypeVectorFloat:
@@ -1004,12 +1035,12 @@ static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 
 			for (size_t i = 0; i < 4; i++) {
 				ctx.setVariableType(0, kTypeFloat);
-				ctx.popVariable();
+				ctx.modifiesVariable(ctx.popVariable());
 			}
 
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
-			ctx.pushVariable(kTypeFloat, kVariableUseLocal);
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
+			ctx.modifiesVariable(ctx.pushVariable(kTypeFloat, kVariableUseLocal));
 			break;
 
 		default:
@@ -1028,7 +1059,7 @@ static void analyzeStackCond(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackCond(): @%08X: Invalid types", ctx.instruction->address);
 
 	ctx.setVariableType(0, kTypeInt);
-	ctx.popVariable();
+	ctx.modifiesVariable(ctx.popVariable());
 }
 
 static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
@@ -1050,6 +1081,8 @@ static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 		if ((stackSize <= (dontRemoveOffset + dontRemoveSize)) &&
 		    (stackSize >   dontRemoveOffset))
 			tmp.push_back(ctx.stack->front());
+
+		ctx.modifiesVariable(*ctx.stack->front().variable);
 
 		ctx.subStack--;
 		ctx.stack->pop_front();
@@ -1090,7 +1123,7 @@ static void analyzeStackSAVEBP(AnalyzeStackContext &ctx) {
 		g->variable->use = kVariableUseGlobal;
 
 	// SAVEBP pushes the current BP value onto the stack
-	ctx.pushVariable(kTypeInt, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(kTypeInt, kVariableUseLocal));
 }
 
 static void analyzeStackRESTOREBP(AnalyzeStackContext &ctx) {
@@ -1099,7 +1132,7 @@ static void analyzeStackRESTOREBP(AnalyzeStackContext &ctx) {
 	if (ctx.stack->size() < 1)
 		throw Common::Exception("analyzeStackRESTOREBP(): @%08X: Stack underrun", ctx.instruction->address);
 
-	ctx.popVariable();
+	ctx.modifiesVariable(ctx.popVariable());
 }
 
 static void analyzeStackModifySP(AnalyzeStackContext &ctx) {
@@ -1123,6 +1156,7 @@ static void analyzeStackModifySP(AnalyzeStackContext &ctx) {
 
 	ctx.readVariable(offset);
 	ctx.writeVariable(offset);
+	ctx.modifiesVariable(offset);
 }
 
 static void analyzeStackModifyBP(AnalyzeStackContext &ctx) {
@@ -1144,6 +1178,7 @@ static void analyzeStackModifyBP(AnalyzeStackContext &ctx) {
 
 	(*ctx.globals)[offset].variable->readers.push_back(ctx.instruction);
 	(*ctx.globals)[offset].variable->writers.push_back(ctx.instruction);
+	ctx.modifiesVariable(*(*ctx.globals)[offset].variable);
 }
 
 static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
@@ -1168,9 +1203,9 @@ static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
 	const VariableType type = arrayTypeToType(ctx.readVariable(offset));
 
 	ctx.setVariableType(0, kTypeInt);
-	ctx.popVariable();
+	ctx.modifiesVariable(ctx.popVariable());
 
-	ctx.pushVariable(type, kVariableUseLocal);
+	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
 
 static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
@@ -1193,9 +1228,11 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.setVariableType(0, kTypeInt);
-	ctx.popVariable();
+	ctx.modifiesVariable(ctx.popVariable());
 
 	offset--;
+
+	ctx.modifiesVariable(0);
 
 	VariableType arrayType = (*ctx.stack)[offset].variable->type;
 	VariableType elemType  = ctx.readVariable(0);
@@ -1207,6 +1244,7 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 	ctx.setVariableType(0, arrayTypeToType(arrayType));
 
 	ctx.writeVariable(offset, typeToArrayType(elemType));
+	ctx.modifiesVariable(offset);
 }
 
 static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
@@ -1230,7 +1268,8 @@ static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
 
 	const VariableType type = typeToRefType(ctx.readVariable(offset));
 
-	ctx.pushVariable(type, kVariableUseLocal);
+	ctx.modifiesVariable(offset);
+	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
 
 static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
@@ -1255,9 +1294,10 @@ static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
 	const VariableType type = typeToRefType(arrayTypeToType(ctx.readVariable(offset)));
 
 	ctx.setVariableType(0, kTypeInt);
-	ctx.popVariable();
+	ctx.modifiesVariable(ctx.popVariable());
 
-	ctx.pushVariable(type, kVariableUseLocal);
+	ctx.modifiesVariable(offset - 1);
+	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
 
 void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals) {

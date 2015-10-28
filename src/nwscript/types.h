@@ -368,6 +368,9 @@ struct Instruction {
 	/** The NWScript stack before this instruction is executed. */
 	Stack stack;
 
+	/** The variables this instruction manipulates (creates, writes, reads). */
+	std::vector<const Variable *> variables;
+
 
 	Instruction(uint32 addr = 0) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
