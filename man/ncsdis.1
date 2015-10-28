@@ -3,7 +3,7 @@
 ..
 .if \n[.g] .mso www.tmac
 
-.TH ncsdis 1 2015-10-08 "xoreos-tools"
+.TH ncsdis 1 2015-10-28 "xoreos-tools"
 .SH NAME
 ncsdis - BioWare NWScript bytecode disassembler
 .SH SYNOPSIS
@@ -75,6 +75,10 @@ listing. Useful for modifying and extending the script.
 .B --dot
 Create a flow control graph in the dot language, to be plotted by
 the GraphViz suite.
+.TP 4
+.B --stack
+Print the stack frame for each instruction. Only available in
+list or assembly mode, not in dot mode.
 .TP 4
 .B --nwn
 Use engine function tables of the game
