@@ -24,7 +24,6 @@
 
 #include <cassert>
 
-#include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/maths.h"
 #include "src/common/readstream.h"
@@ -36,102 +35,6 @@
 #include "src/nwscript/game.h"
 
 namespace NWScript {
-
-static void writeInfo(Common::WriteStream &out, NCSFile &ncs) {
-	out.writeString(Common::UString::format("; %u bytes, %u instructions\n\n",
-	                (uint)ncs.size(), (uint)ncs.getInstructions().size()));
-}
-
-static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID game) {
-	size_t engineTypeCount = getEngineTypeCount(game);
-	if (engineTypeCount > 0) {
-		out.writeString("; Engine types:\n");
-
-		for (size_t i = 0; i < engineTypeCount; i++) {
-			const Common::UString name = getEngineTypeName(game, i);
-			if (name.empty())
-				continue;
-
-			const Common::UString gName = getGenericEngineTypeName(i);
-
-			out.writeString(Common::UString::format("; %s: %s\n", gName.c_str(), name.c_str()));
-		}
-
-		out.writeString("\n");
-	}
-}
-
-static void writeStack(Common::WriteStream &out, size_t indent,
-                       const Instruction &instr, Aurora::GameID game) {
-
-	out.writeString(Common::UString(' ', indent));
-	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
-
-	for (size_t s = 0; s < instr.stack.size(); s++) {
-		const Variable &var = *instr.stack[s].variable;
-
-		Common::UString siblings;
-		for (std::set<const Variable *>::const_iterator sib = var.siblings.begin();
-		     sib != var.siblings.end(); ++sib) {
-
-			if (!siblings.empty())
-				siblings += ",";
-
-			siblings += Common::composeString((*sib)->id);
-		}
-
-		if (!siblings.empty())
-			siblings = " (" + siblings + ")";
-
-		out.writeString(Common::UString(' ', indent));
-		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)%s\n",
-		    (uint)s, (uint)var.id, getVariableTypeName(var.type, game).toLower().c_str(),
-		    var.creator ? var.creator->address : 0, siblings.c_str()));
-	}
-
-	out.writeString(Common::UString(' ', indent));
-	out.writeString("; '--- ---------- ---\n");
-}
-
-static Common::UString getSignature(NCSFile &ncs, const SubRoutine &sub, Aurora::GameID game) {
-	if (!ncs.hasStackAnalysis())
-		return "";
-
-	if ((sub.type == kSubRoutineTypeStart) || (sub.type == kSubRoutineTypeGlobal) ||
-	    (sub.type == kSubRoutineTypeStoreState))
-		return "";
-
-	if (sub.stackAnalyzeState != kStackAnalyzeStateFinished)
-		return "";
-
-	return formatSignature(sub, game);
-}
-
-static Common::UString getSignature(NCSFile &ncs, const Instruction &instr, Aurora::GameID game) {
-	if (!ncs.hasStackAnalysis())
-		return "";
-
-	if ((instr.addressType != kAddressTypeSubRoutine) || !instr.block || !instr.block->subRoutine)
-		return "";
-
-	return getSignature(ncs, *instr.block->subRoutine, game);
-}
-
-static void writeJumpLabel(Common::WriteStream &out, NCSFile &ncs,
-                           const Instruction &instr, Aurora::GameID game) {
-
-	Common::UString jumpLabel = formatJumpLabelName(instr);
-	if (!jumpLabel.empty()) {
-		jumpLabel += ":";
-
-		const Common::UString signature = getSignature(ncs, instr, game);
-		if (!signature.empty())
-			jumpLabel += " ; " + signature;
-	}
-
-	if (!jumpLabel.empty())
-		out.writeString(jumpLabel + "\n");
-}
 
 static Common::UString quoteString(const Common::UString &str) {
 	Common::UString out;
@@ -165,16 +68,16 @@ void Disassembler::analyzeStack() {
 }
 
 void Disassembler::createListing(Common::WriteStream &out, bool printStack) {
-	writeInfo(out, *_ncs);
-	writeEngineTypes(out, _ncs->getGame());
+	writeInfo(out);
+	writeEngineTypes(out);
 
 	const NCSFile::Instructions &instr = _ncs->getInstructions();
 
 	for (NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		writeJumpLabel(out, *_ncs, *i, _ncs->getGame());
+		writeJumpLabel(out, *i);
 
 		if (_ncs->hasStackAnalysis() && printStack)
-			writeStack(out, 36, *i, _ncs->getGame());
+			writeStack(out, *i, 36);
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
@@ -187,16 +90,16 @@ void Disassembler::createListing(Common::WriteStream &out, bool printStack) {
 }
 
 void Disassembler::createAssembly(Common::WriteStream &out, bool printStack) {
-	writeInfo(out, *_ncs);
-	writeEngineTypes(out, _ncs->getGame());
+	writeInfo(out);
+	writeEngineTypes(out);
 
 	const NCSFile::Instructions &instr = _ncs->getInstructions();
 
 	for (NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		writeJumpLabel(out, *_ncs, *i, _ncs->getGame());
+		writeJumpLabel(out, *i);
 
 		if (_ncs->hasStackAnalysis() && printStack)
-			writeStack(out, 0, *i, _ncs->getGame());
+			writeStack(out, *i, 0);
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %s\n", formatInstruction(*i, _ncs->getGame()).c_str()));
@@ -240,7 +143,7 @@ void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out) {
 		                "    style=filled\n"
 		                "    color=lightgrey\n", s->address));
 
-		Common::UString clusterLabel = getSignature(*_ncs, *s, _ncs->getGame());
+		Common::UString clusterLabel = getSignature(*s);
 		if (clusterLabel.empty())
 			clusterLabel = formatJumpLabelName(*s);
 		if (clusterLabel.empty())
@@ -367,6 +270,98 @@ void Disassembler::writeDotBlockEdges(Common::WriteStream &out) {
 			out.writeString(" [ " + attr + " ]\n");
 		}
 	}
+}
+
+void Disassembler::writeInfo(Common::WriteStream &out) {
+	out.writeString(Common::UString::format("; %u bytes, %u instructions\n\n",
+	                (uint)_ncs->size(), (uint)_ncs->getInstructions().size()));
+}
+
+void Disassembler::writeEngineTypes(Common::WriteStream &out) {
+	size_t engineTypeCount = getEngineTypeCount(_ncs->getGame());
+	if (engineTypeCount > 0) {
+		out.writeString("; Engine types:\n");
+
+		for (size_t i = 0; i < engineTypeCount; i++) {
+			const Common::UString name = getEngineTypeName(_ncs->getGame(), i);
+			if (name.empty())
+				continue;
+
+			const Common::UString gName = getGenericEngineTypeName(i);
+
+			out.writeString(Common::UString::format("; %s: %s\n", gName.c_str(), name.c_str()));
+		}
+
+		out.writeString("\n");
+	}
+}
+
+void Disassembler::writeJumpLabel(Common::WriteStream &out, const Instruction &instr) {
+	Common::UString jumpLabel = formatJumpLabelName(instr);
+	if (!jumpLabel.empty()) {
+		jumpLabel += ":";
+
+		const Common::UString signature = getSignature(instr);
+		if (!signature.empty())
+			jumpLabel += " ; " + signature;
+	}
+
+	if (!jumpLabel.empty())
+		out.writeString(jumpLabel + "\n");
+}
+
+void Disassembler::writeStack(Common::WriteStream &out, const Instruction &instr, size_t indent) {
+	out.writeString(Common::UString(' ', indent));
+	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
+
+	for (size_t s = 0; s < instr.stack.size(); s++) {
+		const Variable &var = *instr.stack[s].variable;
+
+		Common::UString siblings;
+		for (std::set<const Variable *>::const_iterator sib = var.siblings.begin();
+		     sib != var.siblings.end(); ++sib) {
+
+			if (!siblings.empty())
+				siblings += ",";
+
+			siblings += Common::composeString((*sib)->id);
+		}
+
+		if (!siblings.empty())
+			siblings = " (" + siblings + ")";
+
+		out.writeString(Common::UString(' ', indent));
+		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)%s\n",
+		    (uint)s, (uint)var.id, getVariableTypeName(var.type, _ncs->getGame()).toLower().c_str(),
+		    var.creator ? var.creator->address : 0, siblings.c_str()));
+	}
+
+	out.writeString(Common::UString(' ', indent));
+	out.writeString("; '--- ---------- ---\n");
+}
+
+Common::UString Disassembler::getSignature(const SubRoutine &sub) {
+	if (!_ncs->hasStackAnalysis())
+		return "";
+
+	if ((sub.type == kSubRoutineTypeStart) || (sub.type == kSubRoutineTypeGlobal) ||
+	    (sub.type == kSubRoutineTypeStoreState))
+		return "";
+
+	if (sub.stackAnalyzeState != kStackAnalyzeStateFinished)
+		return "";
+
+	return formatSignature(sub);
+}
+
+Common::UString Disassembler::getSignature(const Instruction &instr) {
+	if (!_ncs->hasStackAnalysis())
+		return "";
+
+	if ((instr.addressType != kAddressTypeSubRoutine) || !instr.block || !instr.block->subRoutine)
+		return "";
+
+	return getSignature(*instr.block->subRoutine);
 }
 
 } // End of namespace NWScript

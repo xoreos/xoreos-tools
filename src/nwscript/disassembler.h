@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "src/common/types.h"
+#include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
 
@@ -39,6 +40,9 @@ namespace Common {
 namespace NWScript {
 
 class NCSFile;
+
+struct Instruction;
+struct SubRoutine;
 struct Block;
 
 class Disassembler {
@@ -61,6 +65,14 @@ public:
 private:
 	NCSFile *_ncs;
 
+
+	void writeInfo       (Common::WriteStream &out);
+	void writeEngineTypes(Common::WriteStream &out);
+	void writeJumpLabel  (Common::WriteStream &out, const Instruction &instr);
+	void writeStack      (Common::WriteStream &out, const Instruction &instr, size_t indent);
+
+	Common::UString getSignature(const SubRoutine  &sub);
+	Common::UString getSignature(const Instruction &instr);
 
 	void writeDotClusteredBlocks(Common::WriteStream &out);
 	void writeDotBlocks         (Common::WriteStream &out, const std::vector<const Block *> &blocks);
