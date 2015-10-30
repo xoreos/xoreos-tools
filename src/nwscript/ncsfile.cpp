@@ -42,13 +42,18 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 
 namespace NWScript {
 
-NCSFile::NCSFile(Common::SeekableReadStream &ncs) : _size(0), _multipleGlobal(false),
+NCSFile::NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game) :
+	_game(game), _size(0), _multipleGlobal(false),
 	_startSubRoutine(0), _globalSubRoutine(0), _mainSubRoutine(0), _hasStackAnalysis(false) {
 
 	load(ncs);
 }
 
 NCSFile::~NCSFile() {
+}
+
+Aurora::GameID NCSFile::getGame() const {
+	return _game;
 }
 
 size_t NCSFile::size() const {
@@ -620,7 +625,10 @@ void NCSFile::identifySubRoutineTypes() {
 	}
 }
 
-void NCSFile::analyzeStack(Aurora::GameID game) {
+void NCSFile::analyzeStack() {
+	if ((_game == Aurora::kGameIDUnknown) || _hasStackAnalysis)
+		return;
+
 	if (!_mainSubRoutine)
 		throw Common::Exception("Failed to identify the main subroutine");
 
@@ -628,9 +636,9 @@ void NCSFile::analyzeStack(Aurora::GameID game) {
 	_globals.clear();
 
 	if (_globalSubRoutine)
-		analyzeGlobals(*_globalSubRoutine, _variables, game, _globals);
+		analyzeGlobals(*_globalSubRoutine, _variables, _game, _globals);
 
-	analyzeSubRoutineStack(*_mainSubRoutine, _variables, game, &_globals);
+	analyzeSubRoutineStack(*_mainSubRoutine, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
 }

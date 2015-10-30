@@ -221,12 +221,12 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 			out = new Common::StdOutStream;
 
 		status("Disassembling script...");
-		NWScript::Disassembler disassembler(*ncs);
+		NWScript::Disassembler disassembler(*ncs, game);
 
 		if (game != Aurora::kGameIDUnknown) {
 			try {
 				status("Analyzing script stack...");
-				disassembler.analyzeStack(game);
+				disassembler.analyzeStack();
 			} catch (Common::Exception &e) {
 				e.add("Script analysis failed");
 				Common::printException(e, "WARNING: ");
@@ -235,15 +235,15 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 
 		switch (command) {
 			case kCommandListing:
-				disassembler.createListing(*out, game, printStack);
+				disassembler.createListing(*out, printStack);
 				break;
 
 			case kCommandAssembly:
-				disassembler.createAssembly(*out, game, printStack);
+				disassembler.createAssembly(*out, printStack);
 				break;
 
 			case kCommandDot:
-				disassembler.createDot(*out, game);
+				disassembler.createDot(*out);
 				break;
 
 			default:

@@ -42,7 +42,7 @@ static void writeInfo(Common::WriteStream &out, NCSFile &ncs) {
 	                (uint)ncs.size(), (uint)ncs.getInstructions().size()));
 }
 
-static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID &game) {
+static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID game) {
 	size_t engineTypeCount = getEngineTypeCount(game);
 	if (engineTypeCount > 0) {
 		out.writeString("; Engine types:\n");
@@ -62,7 +62,7 @@ static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID &game) {
 }
 
 static void writeStack(Common::WriteStream &out, size_t indent,
-                       const Instruction &instr, Aurora::GameID &game) {
+                       const Instruction &instr, Aurora::GameID game) {
 
 	out.writeString(Common::UString(' ', indent));
 	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
@@ -93,7 +93,7 @@ static void writeStack(Common::WriteStream &out, size_t indent,
 	out.writeString("; '--- ---------- ---\n");
 }
 
-static Common::UString getSignature(NCSFile &ncs, const SubRoutine &sub, Aurora::GameID &game) {
+static Common::UString getSignature(NCSFile &ncs, const SubRoutine &sub, Aurora::GameID game) {
 	if (!ncs.hasStackAnalysis())
 		return "";
 
@@ -107,7 +107,7 @@ static Common::UString getSignature(NCSFile &ncs, const SubRoutine &sub, Aurora:
 	return formatSignature(sub, game);
 }
 
-static Common::UString getSignature(NCSFile &ncs, const Instruction &instr, Aurora::GameID &game) {
+static Common::UString getSignature(NCSFile &ncs, const Instruction &instr, Aurora::GameID game) {
 	if (!ncs.hasStackAnalysis())
 		return "";
 
@@ -118,7 +118,7 @@ static Common::UString getSignature(NCSFile &ncs, const Instruction &instr, Auro
 }
 
 static void writeJumpLabel(Common::WriteStream &out, NCSFile &ncs,
-                           const Instruction &instr, Aurora::GameID &game) {
+                           const Instruction &instr, Aurora::GameID game) {
 
 	Common::UString jumpLabel = formatJumpLabelName(instr);
 	if (!jumpLabel.empty()) {
@@ -149,8 +149,8 @@ static Common::UString quoteString(const Common::UString &str) {
 }
 
 
-Disassembler::Disassembler(Common::SeekableReadStream &ncs) : _ncs(0) {
-	_ncs = new NCSFile(ncs);
+Disassembler::Disassembler(Common::SeekableReadStream &ncs, Aurora::GameID game) : _ncs(0) {
+	_ncs = new NCSFile(ncs, game);
 }
 
 Disassembler::Disassembler(NCSFile *ncs) : _ncs(ncs) {
@@ -160,28 +160,25 @@ Disassembler::~Disassembler() {
 	delete _ncs;
 }
 
-void Disassembler::analyzeStack(Aurora::GameID &game) {
-	if (_ncs->hasStackAnalysis())
-		return;
-
-	_ncs->analyzeStack(game);
+void Disassembler::analyzeStack() {
+	_ncs->analyzeStack();
 }
 
-void Disassembler::createListing(Common::WriteStream &out, Aurora::GameID &game, bool printStack) {
+void Disassembler::createListing(Common::WriteStream &out, bool printStack) {
 	writeInfo(out, *_ncs);
-	writeEngineTypes(out, game);
+	writeEngineTypes(out, _ncs->getGame());
 
 	const NCSFile::Instructions &instr = _ncs->getInstructions();
 
 	for (NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		writeJumpLabel(out, *_ncs, *i, game);
+		writeJumpLabel(out, *_ncs, *i, _ncs->getGame());
 
 		if (_ncs->hasStackAnalysis() && printStack)
-			writeStack(out, 36, *i, game);
+			writeStack(out, 36, *i, _ncs->getGame());
 
 		// Print the actual disassembly line
 		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
-			              formatBytes(*i).c_str(), formatInstruction(*i, game).c_str()));
+			              formatBytes(*i).c_str(), formatInstruction(*i, _ncs->getGame()).c_str()));
 
 		// If this instruction has no natural follower, print a separator
 		if (!i->follower)
@@ -189,20 +186,20 @@ void Disassembler::createListing(Common::WriteStream &out, Aurora::GameID &game,
 	}
 }
 
-void Disassembler::createAssembly(Common::WriteStream &out, Aurora::GameID &game, bool printStack) {
+void Disassembler::createAssembly(Common::WriteStream &out, bool printStack) {
 	writeInfo(out, *_ncs);
-	writeEngineTypes(out, game);
+	writeEngineTypes(out, _ncs->getGame());
 
 	const NCSFile::Instructions &instr = _ncs->getInstructions();
 
 	for (NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		writeJumpLabel(out, *_ncs, *i, game);
+		writeJumpLabel(out, *_ncs, *i, _ncs->getGame());
 
 		if (_ncs->hasStackAnalysis() && printStack)
-			writeStack(out, 0, *i, game);
+			writeStack(out, 0, *i, _ncs->getGame());
 
 		// Print the actual disassembly line
-		out.writeString(Common::UString::format("  %s\n", formatInstruction(*i, game).c_str()));
+		out.writeString(Common::UString::format("  %s\n", formatInstruction(*i, _ncs->getGame()).c_str()));
 
 		// If this instruction has no natural follower, print an empty line as separator
 		if (!i->follower)
@@ -210,7 +207,7 @@ void Disassembler::createAssembly(Common::WriteStream &out, Aurora::GameID &game
 	}
 }
 
-void Disassembler::createDot(Common::WriteStream &out, Aurora::GameID &game) {
+void Disassembler::createDot(Common::WriteStream &out) {
 	/* This creates a GraphViz dot file, which can be drawn into a graph image
 	 * with graphviz's dot tool.
 	 *
@@ -224,13 +221,13 @@ void Disassembler::createDot(Common::WriteStream &out, Aurora::GameID &game) {
 	out.writeString("  concentrate=true\n");
 	out.writeString("  splines=ortho\n\n");
 
-	writeDotClusteredBlocks(out, game);
+	writeDotClusteredBlocks(out);
 	writeDotBlockEdges     (out);
 
 	out.writeString("}\n");
 }
 
-void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, Aurora::GameID &game) {
+void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out) {
 	const NCSFile::SubRoutines &subs = _ncs->getSubRoutines();
 
 	// Block nodes grouped into subroutines clusters
@@ -243,7 +240,7 @@ void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, Aurora::Gam
 		                "    style=filled\n"
 		                "    color=lightgrey\n", s->address));
 
-		Common::UString clusterLabel = getSignature(*_ncs, *s, game);
+		Common::UString clusterLabel = getSignature(*_ncs, *s, _ncs->getGame());
 		if (clusterLabel.empty())
 			clusterLabel = formatJumpLabelName(*s);
 		if (clusterLabel.empty())
@@ -251,7 +248,7 @@ void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, Aurora::Gam
 
 		out.writeString(Common::UString::format("    label=\"%s\"\n\n", clusterLabel.c_str()));
 
-		writeDotBlocks(out, game, s->blocks);
+		writeDotBlocks(out, s->blocks);
 
 		out.writeString("  }\n\n");
 	}
@@ -264,9 +261,7 @@ static size_t calculateNodesPerBlock(size_t blockSize) {
 	return ceil(blockSize / (double)kMaxNodeSize);
 }
 
-void Disassembler::writeDotBlocks(Common::WriteStream &out, Aurora::GameID &game,
-                                  const std::vector<const Block *> &blocks) {
-
+void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<const Block *> &blocks) {
 	for (std::vector<const Block *>::const_iterator b = blocks.begin();
 	     b != blocks.end(); ++b) {
 
@@ -290,7 +285,7 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, Aurora::GameID &game
 		for (size_t i = 0; i < (*b)->instructions.size(); i++) {
 			const Instruction &instr = *(*b)->instructions[i];
 
-			labels[i / linesPerNode] += "  " + quoteString(formatInstruction(instr, game)) + "\\l";
+			labels[i / linesPerNode] += "  " + quoteString(formatInstruction(instr, _ncs->getGame())) + "\\l";
 		}
 
 		// Nodes

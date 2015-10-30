@@ -43,28 +43,27 @@ struct Block;
 
 class Disassembler {
 public:
-	Disassembler(Common::SeekableReadStream &ncs);
+	Disassembler(Common::SeekableReadStream &ncs, Aurora::GameID game = Aurora::kGameIDUnknown);
 	Disassembler(NCSFile *ncs);
 	~Disassembler();
 
 	/** Perform a deep analysis of the script stack, so that more information is available. */
-	void analyzeStack(Aurora::GameID &game);
+	void analyzeStack();
 
 	/** Create a full disassembly listing, with addresses and raw bytes. */
-	void createListing (Common::WriteStream &out, Aurora::GameID &game, bool printStack);
+	void createListing (Common::WriteStream &out, bool printStack);
 	/** Create bare disassembly output, potentially capable of being re-assembled. */
-	void createAssembly(Common::WriteStream &out, Aurora::GameID &game, bool printStack);
+	void createAssembly(Common::WriteStream &out, bool printStack);
 	/** Create a graphviz dot file that can be plotted into a control flow graph. */
-	void createDot     (Common::WriteStream &out, Aurora::GameID &game);
+	void createDot     (Common::WriteStream &out);
 
 
 private:
 	NCSFile *_ncs;
 
 
-	void writeDotClusteredBlocks(Common::WriteStream &out, Aurora::GameID &game);
-	void writeDotBlocks         (Common::WriteStream &out, Aurora::GameID &game,
-	                             const std::vector<const Block *> &blocks);
+	void writeDotClusteredBlocks(Common::WriteStream &out);
+	void writeDotBlocks         (Common::WriteStream &out, const std::vector<const Block *> &blocks);
 	void writeDotBlockEdges     (Common::WriteStream &out);
 };
 

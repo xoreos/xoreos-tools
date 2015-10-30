@@ -49,11 +49,24 @@ public:
 	typedef std::deque<SubRoutine>  SubRoutines;
 
 
-	NCSFile(Common::SeekableReadStream &ncs);
+	/** Read a script out of the NCS bytecode stream.
+	 *
+	 *  The game this NCS is from can't be autodetected and has to be
+	 *  manually specified. If this information is not supplied, the
+	 *  script can still be read, but no deeper stack analysis can be
+	 *  performed, and the meaning of which engine function (opcode
+	 *  ACTION) is which is lost.
+	 */
+	NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game = Aurora::kGameIDUnknown);
 	~NCSFile();
 
-	/** Perform a deep analysis of the script stack. */
-	void analyzeStack(Aurora::GameID game);
+	/** Return the game this allegedly script is from.
+	 *  This is the information that has been supplied in the constructor. */
+	Aurora::GameID getGame() const;
+
+	/** Perform a deep analysis of the script stack.
+	 *  For this to work, a game value has to have been supplied in the constructor. */
+	void analyzeStack();
 
 	/** Return the size of the script bytecode in bytes.
 	 *  Should be equal to the size of the containing stream. */
@@ -97,6 +110,8 @@ public:
 
 
 private:
+	Aurora::GameID _game;
+
 	size_t _size;
 
 	Instructions _instructions;
