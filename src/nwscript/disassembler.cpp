@@ -193,7 +193,8 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<co
 
 		// Nodes
 		for (size_t i = 0; i < labels.size(); i++) {
-			const Common::UString name = Common::UString::format("b%08X_%u", (*b)->address, (uint)i);
+			const Common::UString n    = Common::composeString(i);
+			const Common::UString name = Common::UString::format("b%08X_%s", (*b)->address, n.c_str());
 
 			out.writeString(Common::UString::format("    \"%s\" ", name.c_str()));
 			out.writeString("[ shape=\"box\" label=\"" + labels[i] + "\" ]\n");
@@ -202,8 +203,10 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<co
 		// Edges between the divided block nodes
 		if (labels.size() > 1) {
 			for (size_t i = 0; i < labels.size(); i++) {
+				const Common::UString n = Common::composeString(i);
+
 				out.writeString((i == 0) ? "    " : " -> ");
-				out.writeString(Common::UString::format("b%08X_%u", (*b)->address, (uint)i));
+				out.writeString(Common::UString::format("b%08X_%s", (*b)->address, n.c_str()));
 			}
 			out.writeString(" [ style=dotted ]\n");
 		}
@@ -220,10 +223,10 @@ void Disassembler::writeDotBlockEdges(Common::WriteStream &out) {
 		assert(b->children.size() == b->childrenTypes.size());
 
 		for (size_t i = 0; i < b->children.size(); i++) {
+			const size_t lastIndex = calculateNodesPerBlock(b->instructions.size()) - 1;
 
-			out.writeString(Common::UString::format("  b%08X_%u -> b%08X_0", b->address,
-			                (uint)(calculateNodesPerBlock(b->instructions.size()) - 1),
-			                b->children[i]->address));
+			out.writeString(Common::UString::format("  b%08X_%s -> b%08X_0", b->address,
+			                Common::composeString(lastIndex).c_str(), b->children[i]->address));
 
 			Common::UString attr;
 
@@ -273,8 +276,9 @@ void Disassembler::writeDotBlockEdges(Common::WriteStream &out) {
 }
 
 void Disassembler::writeInfo(Common::WriteStream &out) {
-	out.writeString(Common::UString::format("; %u bytes, %u instructions\n\n",
-	                (uint)_ncs->size(), (uint)_ncs->getInstructions().size()));
+	out.writeString(Common::UString::format("; %s bytes, %s instructions\n\n",
+	                Common::composeString(_ncs->size()).c_str(),
+	                Common::composeString(_ncs->getInstructions().size()).c_str()));
 }
 
 void Disassembler::writeEngineTypes(Common::WriteStream &out) {
@@ -311,8 +315,10 @@ void Disassembler::writeJumpLabel(Common::WriteStream &out, const Instruction &i
 }
 
 void Disassembler::writeStack(Common::WriteStream &out, const Instruction &instr, size_t indent) {
+	const Common::UString stackSize = Common::composeString(instr.stack.size());
+
 	out.writeString(Common::UString(' ', indent));
-	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
+	out.writeString(Common::UString::format("; .--- Stack: %4s ---\n", stackSize.c_str()));
 
 	for (size_t s = 0; s < instr.stack.size(); s++) {
 		const Variable &var = *instr.stack[s].variable;
@@ -330,9 +336,13 @@ void Disassembler::writeStack(Common::WriteStream &out, const Instruction &instr
 		if (!siblings.empty())
 			siblings = " (" + siblings + ")";
 
+		const Common::UString stackIndex = Common::composeString(s);
+		const Common::UString stackID    = Common::composeString(var.id);
+
 		out.writeString(Common::UString(' ', indent));
-		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)%s\n",
-		    (uint)s, (uint)var.id, getVariableTypeName(var.type, _ncs->getGame()).toLower().c_str(),
+		out.writeString(Common::UString::format("; | %4s - %6s: %-8s (%08X)%s\n",
+		    stackIndex.c_str(), stackID.c_str(),
+		    getVariableTypeName(var.type, _ncs->getGame()).toLower().c_str(),
 		    var.creator ? var.creator->address : 0, siblings.c_str()));
 	}
 

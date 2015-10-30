@@ -23,6 +23,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/strutil.h"
 
 #include "src/nwscript/game.h"
 #include "src/nwscript/game_nwn.h"
@@ -118,7 +119,7 @@ size_t getEngineTypeCount(Aurora::GameID game) {
 }
 
 Common::UString getGenericEngineTypeName(size_t n) {
-	return Common::UString::format("E%u", (uint)n);
+	return Common::UString::format("E") + Common::composeString(n);
 }
 
 Common::UString getEngineTypeName(Aurora::GameID game, size_t n) {
