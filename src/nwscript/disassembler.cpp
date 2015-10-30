@@ -224,17 +224,13 @@ void Disassembler::createDot(Common::WriteStream &out, Aurora::GameID &game) {
 	out.writeString("  concentrate=true\n");
 	out.writeString("  splines=ortho\n\n");
 
-	std::map<uint32, size_t> blockNodeCount;
-
-	writeDotClusteredBlocks(out, game, blockNodeCount);
-	writeDotBlockEdges(out, blockNodeCount);
+	writeDotClusteredBlocks(out, game);
+	writeDotBlockEdges     (out);
 
 	out.writeString("}\n");
 }
 
-void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, Aurora::GameID &game,
-                                           std::map<uint32, size_t> &blockNodeCount) {
-
+void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, Aurora::GameID &game) {
 	const NCSFile::SubRoutines &subs = _ncs->getSubRoutines();
 
 	// Block nodes grouped into subroutines clusters
@@ -255,18 +251,21 @@ void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, Aurora::Gam
 
 		out.writeString(Common::UString::format("    label=\"%s\"\n\n", clusterLabel.c_str()));
 
-		writeDotBlocks(out, game, s->blocks, blockNodeCount);
+		writeDotBlocks(out, game, s->blocks);
 
 		out.writeString("  }\n\n");
 	}
 }
 
-void Disassembler::writeDotBlocks(Common::WriteStream &out, Aurora::GameID &game,
-                                  const std::vector<const Block *> &blocks,
-                                  std::map<uint32, size_t> &blockNodeCount) {
-
+static size_t calculateNodesPerBlock(size_t blockSize) {
 	// Max number of instructions per node
 	static const size_t kMaxNodeSize = 10;
+
+	return ceil(blockSize / (double)kMaxNodeSize);
+}
+
+void Disassembler::writeDotBlocks(Common::WriteStream &out, Aurora::GameID &game,
+                                  const std::vector<const Block *> &blocks) {
 
 	for (std::vector<const Block *>::const_iterator b = blocks.begin();
 	     b != blocks.end(); ++b) {
@@ -274,12 +273,10 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, Aurora::GameID &game
 		/* To keep large nodes from messing up the layout, we divide blocks with
 		 * a huge amount of instructions into several, equal-sized nodes. */
 
-		const size_t nodeCount = ceil((*b)->instructions.size() / (double)kMaxNodeSize);
+		const size_t nodeCount = calculateNodesPerBlock((*b)->instructions.size());
 
 		std::vector<Common::UString> labels;
 		labels.resize(nodeCount);
-
-		blockNodeCount[(*b)->address] = nodeCount;
 
 		const size_t linesPerNode = ceil((*b)->instructions.size() / (double)labels.size());
 
@@ -318,8 +315,7 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, Aurora::GameID &game
 	}
 }
 
-void Disassembler::writeDotBlockEdges(Common::WriteStream &out, std::map<uint32, size_t> &blockNodeCount) {
-
+void Disassembler::writeDotBlockEdges(Common::WriteStream &out) {
 	const NCSFile::Blocks &blocks = _ncs->getBlocks();
 
 	for (NCSFile::Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
@@ -328,7 +324,8 @@ void Disassembler::writeDotBlockEdges(Common::WriteStream &out, std::map<uint32,
 		for (size_t i = 0; i < b->children.size(); i++) {
 
 			out.writeString(Common::UString::format("  b%08X_%u -> b%08X_0", b->address,
-			                (uint)(blockNodeCount[b->address] - 1), b->children[i]->address));
+			                (uint)(calculateNodesPerBlock(b->instructions.size()) - 1),
+			                b->children[i]->address));
 
 			Common::UString attr;
 

@@ -25,7 +25,6 @@
 #ifndef NWSCRIPT_DISASSEMBLER_H
 #define NWSCRIPT_DISASSEMBLER_H
 
-#include <map>
 #include <vector>
 
 #include "src/common/types.h"
@@ -63,12 +62,10 @@ private:
 	NCSFile *_ncs;
 
 
-	void writeDotClusteredBlocks(Common::WriteStream &out, Aurora::GameID &game,
-	                             std::map<uint32, size_t> &blockNodeCount);
+	void writeDotClusteredBlocks(Common::WriteStream &out, Aurora::GameID &game);
 	void writeDotBlocks         (Common::WriteStream &out, Aurora::GameID &game,
-	                             const std::vector<const Block *> &blocks,
-	                             std::map<uint32, size_t> &blockNodeCount);
-	void writeDotBlockEdges     (Common::WriteStream &out, std::map<uint32, size_t> &blockNodeCount);
+	                             const std::vector<const Block *> &blocks);
+	void writeDotBlockEdges     (Common::WriteStream &out);
 };
 
 } // End of namespace NWScript
