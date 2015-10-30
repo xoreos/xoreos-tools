@@ -27,14 +27,11 @@
 #include <cstdio>
 
 #include <vector>
-#include <map>
 
 #include "src/common/version.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
-#include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/maths.h"
 #include "src/common/platform.h"
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
@@ -42,9 +39,7 @@
 
 #include "src/aurora/types.h"
 
-#include "src/nwscript/ncsfile.h"
-#include "src/nwscript/util.h"
-#include "src/nwscript/game.h"
+#include "src/nwscript/disassembler.h"
 
 enum Command {
 	kCommandNone     = -1,
@@ -61,12 +56,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack);
-
-void createList    (NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
-                    bool printStack);
-void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
-                    bool printStack);
-void createDot     (NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
@@ -219,321 +208,10 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-static void writeInfo(Common::WriteStream &out, NWScript::NCSFile &ncs) {
-	out.writeString(Common::UString::format("; %u bytes, %u instructions\n\n",
-	                (uint)ncs.size(), (uint)ncs.getInstructions().size()));
-}
-
-static void writeEngineTypes(Common::WriteStream &out, Aurora::GameID &game) {
-	size_t engineTypeCount = NWScript::getEngineTypeCount(game);
-	if (engineTypeCount > 0) {
-		out.writeString("; Engine types:\n");
-
-		for (size_t i = 0; i < engineTypeCount; i++) {
-			const Common::UString name = NWScript::getEngineTypeName(game, i);
-			if (name.empty())
-				continue;
-
-			const Common::UString gName = NWScript::getGenericEngineTypeName(i);
-
-			out.writeString(Common::UString::format("; %s: %s\n", gName.c_str(), name.c_str()));
-		}
-
-		out.writeString("\n");
-	}
-}
-
-static void writeStack(Common::WriteStream &out, size_t indent,
-                       const NWScript::Instruction &instr, Aurora::GameID &game) {
-
-	out.writeString(Common::UString(' ', indent));
-	out.writeString(Common::UString::format("; .--- Stack: %3u ---\n", (uint)instr.stack.size()));
-
-	for (size_t s = 0; s < instr.stack.size(); s++) {
-		const NWScript::Variable &var = *instr.stack[s].variable;
-
-		Common::UString siblings;
-		for (std::set<const NWScript::Variable *>::const_iterator sib = var.siblings.begin();
-		     sib != var.siblings.end(); ++sib) {
-
-			if (!siblings.empty())
-				siblings += ",";
-
-			siblings += Common::composeString((*sib)->id);
-		}
-
-		if (!siblings.empty())
-			siblings = " (" + siblings + ")";
-
-		out.writeString(Common::UString(' ', indent));
-		out.writeString(Common::UString::format("; | %04u - %06u: %s (%08X)%s\n",
-		    (uint)s, (uint)var.id, NWScript::getVariableTypeName(var.type, game).toLower().c_str(),
-		    var.creator ? var.creator->address : 0, siblings.c_str()));
-	}
-
-	out.writeString(Common::UString(' ', indent));
-	out.writeString("; '--- ---------- ---\n");
-}
-
-static Common::UString getSignature(NWScript::NCSFile &ncs, const NWScript::SubRoutine &sub,
-                                    Aurora::GameID &game) {
-	if (!ncs.hasStackAnalysis())
-		return "";
-
-	if ((sub.type == NWScript::kSubRoutineTypeStart) || (sub.type == NWScript::kSubRoutineTypeGlobal) ||
-	    (sub.type == NWScript::kSubRoutineTypeStoreState))
-		return "";
-
-	if (sub.stackAnalyzeState != NWScript::kStackAnalyzeStateFinished)
-		return "";
-
-	return NWScript::formatSignature(sub, game);
-}
-
-static Common::UString getSignature(NWScript::NCSFile &ncs, const NWScript::Instruction &instr,
-                                    Aurora::GameID &game) {
-	if (!ncs.hasStackAnalysis())
-		return "";
-
-	if ((instr.addressType != NWScript::kAddressTypeSubRoutine) || !instr.block || !instr.block->subRoutine)
-		return "";
-
-	return getSignature(ncs, *instr.block->subRoutine, game);
-}
-
-static void writeJumpLabel(Common::WriteStream &out, NWScript::NCSFile &ncs,
-                           const NWScript::Instruction &instr, Aurora::GameID &game) {
-
-	Common::UString jumpLabel = NWScript::formatJumpLabelName(instr);
-	if (!jumpLabel.empty()) {
-		jumpLabel += ":";
-
-		const Common::UString signature = getSignature(ncs, instr, game);
-		if (!signature.empty())
-			jumpLabel += " ; " + signature;
-	}
-
-	if (!jumpLabel.empty())
-		out.writeString(jumpLabel + "\n");
-}
-
-void createList(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
-                bool printStack) {
-
-	writeInfo(out, ncs);
-	writeEngineTypes(out, game);
-
-	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
-
-	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		writeJumpLabel(out, ncs, *i, game);
-
-		if (printStack)
-			writeStack(out, 36, *i, game);
-
-		// Print the actual disassembly line
-		out.writeString(Common::UString::format("  %08X %-26s %s\n", i->address,
-			              NWScript::formatBytes(*i).c_str(), NWScript::formatInstruction(*i, game).c_str()));
-
-		// If this instruction has no natural follower, print a separator
-		if (!i->follower)
-			out.writeString("  -------- -------------------------- ---\n");
-	}
-}
-
-void createAssembly(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game,
-                    bool printStack) {
-
-	writeInfo(out, ncs);
-	writeEngineTypes(out, game);
-
-	const NWScript::NCSFile::Instructions &instr = ncs.getInstructions();
-
-	for (NWScript::NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
-		writeJumpLabel(out, ncs, *i, game);
-
-		if (printStack)
-			writeStack(out, 0, *i, game);
-
-		// Print the actual disassembly line
-		out.writeString(Common::UString::format("  %s\n", NWScript::formatInstruction(*i, game).c_str()));
-
-		// If this instruction has no natural follower, print an empty line as separator
-		if (!i->follower)
-			out.writeString("\n");
-	}
-}
-
-static Common::UString quoteString(const Common::UString &str) {
-	Common::UString out;
-
-	for (Common::UString::iterator c = str.begin(); c != str.end(); ++c) {
-		if      (*c == '\\')
-			out += "\\\\";
-		else if (*c == '"')
-			out += "\\\"";
-		else
-			out += *c;
-	}
-
-	return out;
-}
-
-void createDot(NWScript::NCSFile &ncs, Common::WriteStream &out, Aurora::GameID &game) {
-	/* This creates a GraphViz dot file, which can be drawn into a graph image
-	 * with graphviz's dot tool.
-	 *
-	 * Each block of NWScript instructions is drawn into one (or several, for large blocks)
-	 * node, clustered by subroutine. Edges are drawn between the nodes to show the control
-	 * flow.
-	 */
-
-	// Max number of instructions per node
-	static const size_t kMaxNodeSize = 10;
-
-	const NWScript::NCSFile::SubRoutines &subs   = ncs.getSubRoutines();
-	const NWScript::NCSFile::Blocks      &blocks = ncs.getBlocks();
-
-	out.writeString("digraph {\n");
-	out.writeString("  overlap=false\n");
-	out.writeString("  concentrate=true\n");
-	out.writeString("  splines=ortho\n\n");
-
-	std::map<uint32, size_t> blockNodeCount;
-
-	// Block nodes grouped into subroutines clusters
-	for (NWScript::NCSFile::SubRoutines::const_iterator s = subs.begin(); s != subs.end(); ++s) {
-		if (s->blocks.empty() || s->blocks.front()->instructions.empty())
-			continue;
-
-		out.writeString(Common::UString::format(
-		                "  subgraph cluster_s%08X {\n"
-		                "    style=filled\n"
-		                "    color=lightgrey\n", s->address));
-
-		Common::UString clusterLabel = getSignature(ncs, *s, game);
-		if (clusterLabel.empty())
-			clusterLabel = NWScript::formatJumpLabelName(*s);
-		if (clusterLabel.empty())
-			clusterLabel = NWScript::formatJumpDestination(s->address);
-
-		out.writeString(Common::UString::format("    label=\"%s\"\n\n", clusterLabel.c_str()));
-
-		// Blocks
-		for (std::vector<const NWScript::Block *>::const_iterator b = s->blocks.begin();
-		     b != s->blocks.end(); ++b) {
-
-			/* To keep large nodes from messing up the layout, we divide blocks with
-			 * a huge amount of instructions into several, equal-sized nodes. */
-
-			const size_t nodeCount = ceil((*b)->instructions.size() / (double)kMaxNodeSize);
-
-			std::vector<Common::UString> labels;
-			labels.resize(nodeCount);
-
-			blockNodeCount[(*b)->address] = nodeCount;
-
-			const size_t linesPerNode = ceil((*b)->instructions.size() / (double)labels.size());
-
-			labels[0] = NWScript::formatJumpLabelName(**b);
-			if (labels[0].empty())
-				labels[0] = NWScript::formatJumpDestination((*b)->instructions.front()->address);
-
-			labels[0] += ":\\l";
-
-			// Instructions
-			for (size_t i = 0; i < (*b)->instructions.size(); i++) {
-				const NWScript::Instruction &instr = *(*b)->instructions[i];
-
-				labels[i / linesPerNode] += "  " + quoteString(NWScript::formatInstruction(instr, game)) + "\\l";
-			}
-
-			// Nodes
-			for (size_t i = 0; i < labels.size(); i++) {
-				const Common::UString name = Common::UString::format("b%08X_%u", (*b)->address, (uint)i);
-
-				out.writeString(Common::UString::format("    \"%s\" ", name.c_str()));
-				out.writeString("[ shape=\"box\" label=\"" + labels[i] + "\" ]\n");
-			}
-
-			// Edges between the divided block nodes
-			if (labels.size() > 1) {
-				for (size_t i = 0; i < labels.size(); i++) {
-					out.writeString((i == 0) ? "    " : " -> ");
-					out.writeString(Common::UString::format("b%08X_%u", (*b)->address, (uint)i));
-				}
-				out.writeString(" [ style=dotted ]\n");
-			}
-
-			if (b != --s->blocks.end())
-				out.writeString("\n");
-		}
-
-		out.writeString("  }\n\n");
-	}
-
-	// Edges
-	for (NWScript::NCSFile::Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
-		assert(b->children.size() == b->childrenTypes.size());
-
-		for (size_t i = 0; i < b->children.size(); i++) {
-
-			out.writeString(Common::UString::format("  b%08X_%u -> b%08X_0", b->address,
-			                (uint)(blockNodeCount[b->address] - 1), b->children[i]->address));
-
-			Common::UString attr;
-
-			// Color the edge specific to the flow type
-			switch (b->childrenTypes[i]) {
-				default:
-				case NWScript::kBlockEdgeTypeUnconditional:
-					attr = "color=blue";
-					break;
-
-				case NWScript::kBlockEdgeTypeConditionalTrue:
-					attr = "color=green";
-					break;
-
-				case NWScript::kBlockEdgeTypeConditionalFalse:
-					attr = "color=red";
-					break;
-
-				case NWScript::kBlockEdgeTypeFunctionCall:
-					attr = "color=cyan";
-					break;
-
-				case NWScript::kBlockEdgeTypeFunctionReturn:
-					attr = "color=orange";
-					break;
-
-				case NWScript::kBlockEdgeTypeStoreState:
-					attr = "color=purple";
-					break;
-
-				case NWScript::kBlockEdgeTypeDead:
-					attr = "color=gray40";
-					break;
-			}
-
-			// If this is a jump back, make the edge bold
-			if (b->children[i]->address < b->address)
-				attr += " style=bold";
-
-			// If this edge goes between subroutines, don't let the edge influence the node rank
-			if (b->subRoutine != b->children[i]->subRoutine)
-				attr += " constraint=false";
-
-			out.writeString(" [ " + attr + " ]\n");
-		}
-	}
-
-	out.writeString("}\n");
-}
-
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack) {
 
-	Common::SeekableReadStream *ncsFile = new Common::ReadFile(inFile);
+	Common::SeekableReadStream *ncs = new Common::ReadFile(inFile);
 
 	Common::WriteStream *out = 0;
 	try {
@@ -543,15 +221,13 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 			out = new Common::StdOutStream;
 
 		status("Disassembling script...");
-		NWScript::NCSFile ncs(*ncsFile);
+		NWScript::Disassembler disassembler(*ncs);
 
 		if (game != Aurora::kGameIDUnknown) {
 			try {
 				status("Analyzing script stack...");
-				ncs.analyzeStack(game);
+				disassembler.analyzeStack(game);
 			} catch (Common::Exception &e) {
-				printStack = false;
-
 				e.add("Script analysis failed");
 				Common::printException(e, "WARNING: ");
 			}
@@ -559,15 +235,15 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 
 		switch (command) {
 			case kCommandListing:
-				createList(ncs, *out, game, printStack);
+				disassembler.createListing(*out, game, printStack);
 				break;
 
 			case kCommandAssembly:
-				createAssembly(ncs, *out, game, printStack);
+				disassembler.createAssembly(*out, game, printStack);
 				break;
 
 			case kCommandDot:
-				createDot(ncs, *out, game);
+				disassembler.createDot(*out, game);
 				break;
 
 			default:
@@ -575,7 +251,7 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 		}
 
 	} catch (...) {
-		delete ncsFile;
+		delete ncs;
 		delete out;
 		throw;
 	}
@@ -585,6 +261,6 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 	if (!outFile.empty())
 		status("Disassembled \"%s\" into \"%s\"", inFile.c_str(), outFile.c_str());
 
-	delete ncsFile;
+	delete ncs;
 	delete out;
 }

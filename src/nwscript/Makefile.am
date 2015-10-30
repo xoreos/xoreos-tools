@@ -17,6 +17,7 @@ noinst_HEADERS = \
                  game_witcher.h \
                  game_dragonage.h \
                  game_dragonage2.h \
+                 disassembler.h \
                  $(EMPTY)
 
 libnwscript_la_SOURCES = \
@@ -25,4 +26,5 @@ libnwscript_la_SOURCES = \
                          parse.cpp \
                          analyze.cpp \
                          game.cpp \
+                         disassembler.cpp \
                          $(EMPTY)
