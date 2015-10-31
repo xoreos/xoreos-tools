@@ -211,11 +211,17 @@ Common::UString formatParameters(const std::vector<const Variable *> &params,
 Common::UString formatReturn(const std::vector<const Variable *> &returns,
                              Aurora::GameID game = Aurora::kGameIDUnknown);
 
-/** Format the signature of a function.
+/** Format the signature of a subroutine.
  *
- *  Example: "void main(int, string, object)"
+ *  @param sub   The subroutine to format
+ *  @param game  The game the script is from. Used to format the parameter types
+ *  @param names Also print the parameter variable names?
+ *
+ *  Examples: "void main(int, string, object)"
+ *            "void main(int arg_32, string arg_124)"
  */
-Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game = Aurora::kGameIDUnknown);
+Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game = Aurora::kGameIDUnknown,
+                                bool names = false);
 
 } // End of namespace NWScript
 
