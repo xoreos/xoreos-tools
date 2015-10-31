@@ -23,6 +23,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/strutil.h"
 #include "src/common/error.h"
 
 #include "src/nwscript/util.h"
@@ -622,13 +623,17 @@ Common::UString formatJumpLabelName(const SubRoutine &sub) {
 	return formatJumpLabelName(*sub.blocks.front());
 }
 
-Common::UString formatParameters(const std::vector<const Variable *> &params, Aurora::GameID game) {
+Common::UString formatParameters(const std::vector<const Variable *> &params,
+                                 Aurora::GameID game, bool names) {
+
 	Common::UString paramTypes;
 	for (std::vector<const Variable *>::const_iterator p = params.begin(); p != params.end(); ++p) {
 		if (p != params.begin())
 			paramTypes += ", ";
 
 		paramTypes += getVariableTypeName(*p ? (*p)->type : kTypeAny, game).toLower();
+		if (names && *p)
+			paramTypes += " arg_" + Common::composeString((*p)->id);
 	}
 
 	return paramTypes;

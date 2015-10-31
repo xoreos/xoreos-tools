@@ -194,9 +194,11 @@ Common::UString formatJumpLabelName(const SubRoutine &sub);
  *  separated by a comma.
  *
  *  Example: "int, float, string, string"
+ *  Example: "int arg_32, float arg_124"
  */
 Common::UString formatParameters(const std::vector<const Variable *> &params,
-                                 Aurora::GameID game = Aurora::kGameIDUnknown);
+                                 Aurora::GameID game = Aurora::kGameIDUnknown,
+                                 bool names = false);
 
 /** Format a list of subroutine return types.
  *
