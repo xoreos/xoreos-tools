@@ -203,7 +203,7 @@ Common::UString formatParameters(const std::vector<const Variable *> &params,
  *  - If the list is empty, the resulting string will be "void"
  *  - If the list contains one element, the resulting string will be the
  *    textual name of this type
- *  - If the list contains more than one element, he resulting string will
+ *  - If the list contains more than one element, the resulting string will
  *    be "struct"
  */
 Common::UString formatReturn(const std::vector<const Variable *> &returns,
