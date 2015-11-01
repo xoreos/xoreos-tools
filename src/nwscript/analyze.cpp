@@ -1200,10 +1200,13 @@ static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
 	if ((size_t)offset > ctx.stack->size())
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
+	ctx.modifiesVariable(0);
+	ctx.modifiesVariable(offset);
+
 	const VariableType type = arrayTypeToType(ctx.readVariable(offset));
 
 	ctx.setVariableType(0, kTypeInt);
-	ctx.modifiesVariable(ctx.popVariable());
+	ctx.popVariable();
 
 	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
@@ -1232,6 +1235,7 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 
 	offset--;
 
+	ctx.modifiesVariable(offset);
 	ctx.modifiesVariable(0);
 
 	VariableType arrayType = (*ctx.stack)[offset].variable->type;
@@ -1244,7 +1248,6 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 	ctx.setVariableType(0, arrayTypeToType(arrayType));
 
 	ctx.writeVariable(offset, typeToArrayType(elemType));
-	ctx.modifiesVariable(offset);
 }
 
 static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
