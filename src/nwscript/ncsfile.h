@@ -128,7 +128,8 @@ private:
 
 	bool parseStep(Common::SeekableReadStream &ncs);
 
-	void identifySubRoutineTypes();
+	void analyzeBlocks();
+	void analyzeSubRoutines();
 };
 
 } // End of namespace NWScript

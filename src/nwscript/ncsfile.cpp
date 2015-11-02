@@ -121,16 +121,8 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 
 		parse(ncs);
 
-		linkInstructionBranches(_instructions);
-
-		constructBlocks(_blocks, _instructions);
-		findDeadBlockEdges(_blocks);
-
-		constructSubRoutines(_subRoutines, _blocks);
-		linkSubRoutineCallers(_subRoutines);
-		findSubRoutineEntryAndExits(_subRoutines);
-
-		identifySubRoutineTypes();
+		analyzeBlocks();
+		analyzeSubRoutines();
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to load NCS file");
@@ -163,7 +155,28 @@ bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
 	return true;
 }
 
-void NCSFile::identifySubRoutineTypes() {
+void NCSFile::analyzeBlocks() {
+	/* Analyze the instructions on a block level. */
+
+	// Link branching instructions to their destination instructions
+	linkInstructionBranches(_instructions);
+	// Contruct a block graph by following the code flow
+	constructBlocks(_blocks, _instructions);
+	// Mark logically dead block edges
+	findDeadBlockEdges(_blocks);
+}
+
+void NCSFile::analyzeSubRoutines() {
+	/* Analyze the instructions and blocks on a subroutine level. */
+
+	// Construct a set of sobroutines over our blocks
+	constructSubRoutines(_subRoutines, _blocks);
+	// Interlink subroutine callers and callees
+	linkSubRoutineCallers(_subRoutines);
+	// Find entry and exist points of our subroutines
+	findSubRoutineEntryAndExits(_subRoutines);
+
+	// Now analyze the subroutine types and see if we can identify a few special ones
 	try {
 		_specialSubRoutines = analyzeSubRoutineTypes(_subRoutines);
 	} catch (...) {
