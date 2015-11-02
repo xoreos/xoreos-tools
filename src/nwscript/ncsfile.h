@@ -133,10 +133,14 @@ private:
 
 	void identifySubRoutineTypes();
 
-	void constructBlocks  (SubRoutine  &sub, Block &block, const Instruction &instr);
-	void followBranchBlock(SubRoutine  &sub, Block &block, const Instruction &instr);
-	bool addBranchBlock   (SubRoutine *&sub, Block &block, const Instruction &branchDestination,
+	void constructBlocks  (Block &block, const Instruction &instr);
+	void followBranchBlock(Block &block, const Instruction &instr);
+	bool addBranchBlock   (Block &block, const Instruction &branchDestination,
 	                       Block *&branchBlock, BlockEdgeType type);
+
+	void findSubRoutines(SubRoutines &subs, Blocks &blocks);
+	void linkCallers(SubRoutines &subs);
+	void findEntryExits(SubRoutines &subs);
 };
 
 } // End of namespace NWScript

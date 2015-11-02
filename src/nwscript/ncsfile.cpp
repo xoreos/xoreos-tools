@@ -40,6 +40,16 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 
 namespace NWScript {
 
+static size_t findParentChildBlock(const Block &parent, const Block &child) {
+	/* Find the index of a block within another block's children. */
+
+	for (size_t i = 0; i < parent.children.size(); i++)
+		if (parent.children[i] == &child)
+			return i;
+
+	return SIZE_MAX;
+}
+
 NCSFile::NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game) :
 	_game(game), _size(0), _hasStackAnalysis(false) {
 
@@ -126,6 +136,9 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 		linkInstructionBranches(_instructions);
 
 		findBlocks();
+		findSubRoutines(_subRoutines, _blocks);
+		linkCallers(_subRoutines);
+		findEntryExits(_subRoutines);
 		findDeadEdges();
 
 		identifySubRoutineTypes();
@@ -162,19 +175,15 @@ bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
 }
 
 void NCSFile::findBlocks() {
-	/* Create the first subroutine and first block containing the very first
-	 * instruction in this script. Then follow the complete codeflow from this
-	 * instruction onwards. */
+	/* Create the first block containing the very first instruction in this script.
+	 * Then follow the complete codeflow from this instruction onwards. */
 
-	_subRoutines.push_back(SubRoutine(_instructions.front().address));
-	_blocks.push_back(Block(_instructions.front().address, _subRoutines.back()));
+	_blocks.push_back(Block(_instructions.front().address));
 
-	_subRoutines.back().blocks.push_back(&_blocks.back());
-
-	constructBlocks(_subRoutines.back(), _blocks.back(), _instructions.front());
+	constructBlocks(_blocks.back(), _instructions.front());
 }
 
-bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction &branchDestination,
+bool NCSFile::addBranchBlock(Block &block, const Instruction &branchDestination,
                              Block *&branchBlock, BlockEdgeType type) {
 
 	/* Prepare to follow one branch of the path.
@@ -185,18 +194,7 @@ bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction &
 	// See if we have already handled this branch. If not, create a new block for it.
 	branchBlock = const_cast<Block *>(branchDestination.block);
 	if (!branchBlock) {
-		if (!sub) {
-			// We weren't given a subroutine this block belongs to. Create a new one.
-
-			_subRoutines.push_back(SubRoutine(branchDestination.address));
-			sub = &_subRoutines.back();
-		}
-
-		// Create a new block and link it with its subroutine
-
-		_blocks.push_back(Block(branchDestination.address, *sub));
-
-		sub->blocks.push_back(&_blocks.back());
+		_blocks.push_back(Block(branchDestination.address));
 
 		branchBlock = &_blocks.back();
 		needAdd     = true;
@@ -212,12 +210,9 @@ bool NCSFile::addBranchBlock(SubRoutine *&sub, Block &block, const Instruction &
 	return needAdd;
 }
 
-void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &instr) {
+void NCSFile::constructBlocks(Block &block, const Instruction &instr) {
 	/* Recursively follow the path of instructions and construct individual but linked
 	 * blocks containing the path with all its branches. */
-
-	if (!sub.entry)
-		sub.entry = &instr;
 
 	const Instruction *blockInstr = &instr;
 	while (blockInstr) {
@@ -238,11 +233,10 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 			 * we create a new block and link them together. Since we're handing
 			 * off this path, we don't need to follow it ourselves anymore. */
 
-			Block      *branchBlock = 0;
-			SubRoutine *branchSub   = &sub;
+			Block *branchBlock = 0;
 
-			if (addBranchBlock(branchSub, block, *blockInstr, branchBlock, kBlockEdgeTypeUnconditional))
-				constructBlocks(*branchSub, *branchBlock, *blockInstr);
+			if (addBranchBlock(block, *blockInstr, branchBlock, kBlockEdgeTypeUnconditional))
+				constructBlocks(*branchBlock, *blockInstr);
 
 			break;
 		}
@@ -257,7 +251,7 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 
 			/* If this is an instruction that influences control flow, break to evaluate the branches. */
 
-			followBranchBlock(sub, block, *blockInstr);
+			followBranchBlock(block, *blockInstr);
 			break;
 		}
 
@@ -266,11 +260,10 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 	}
 }
 
-void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction &instr) {
+void NCSFile::followBranchBlock(Block &block, const Instruction &instr) {
 	/* Evaluate the branching paths of a block and follow them all. */
 
-	Block      *branchBlock = 0;
-	SubRoutine *branchSub   = &sub;
+	Block *branchBlock = 0;
 
 	switch (instr.opcode) {
 		case kOpcodeJMP:
@@ -278,8 +271,8 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 
 			assert(instr.branches.size() == 1);
 
-			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeUnconditional))
-				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
+			if (addBranchBlock(block, *instr.branches[0], branchBlock, kBlockEdgeTypeUnconditional))
+				constructBlocks(*branchBlock, *instr.branches[0]);
 
 			break;
 
@@ -289,10 +282,10 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 
 			assert(instr.branches.size() == 2);
 
-			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
-				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
-			if (addBranchBlock(branchSub, block, *instr.branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
-				constructBlocks(*branchSub, *branchBlock, *instr.branches[1]);
+			if (addBranchBlock(block, *instr.branches[0], branchBlock, kBlockEdgeTypeConditionalTrue))
+				constructBlocks(*branchBlock, *instr.branches[0]);
+			if (addBranchBlock(block, *instr.branches[1], branchBlock, kBlockEdgeTypeConditionalFalse))
+				constructBlocks(*branchBlock, *instr.branches[1]);
 
 			break;
 
@@ -302,20 +295,10 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 			assert(instr.branches.size() == 1);
 			assert(instr.follower);
 
-			branchSub = 0;
-			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
-				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
-
-			if (branchBlock && branchBlock->subRoutine) {
-				// Link the caller and the callee
-
-				sub.callees.insert(branchBlock->subRoutine);
-				const_cast<SubRoutine *>(branchBlock->subRoutine)->callers.insert(&sub);
-			}
-
-			branchSub = &sub;
-			if (addBranchBlock(branchSub, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
-				constructBlocks(*branchSub, *branchBlock, *instr.follower);
+			if (addBranchBlock(block, *instr.branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
+				constructBlocks(*branchBlock, *instr.branches[0]);
+			if (addBranchBlock(block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
+				constructBlocks(*branchBlock, *instr.follower);
 
 			break;
 
@@ -325,18 +308,11 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 			assert(instr.branches.size() == 1);
 			assert(instr.follower);
 
-			branchSub = 0;
-			if (addBranchBlock(branchSub, block, *instr.branches[0], branchBlock, kBlockEdgeTypeStoreState))
-				constructBlocks(*branchSub, *branchBlock, *instr.branches[0]);
+			if (addBranchBlock(block, *instr.branches[0], branchBlock, kBlockEdgeTypeStoreState))
+				constructBlocks(*branchBlock, *instr.branches[0]);
+			if (addBranchBlock(block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
+				constructBlocks(*branchBlock, *instr.follower);
 
-			branchSub = &sub;
-			if (addBranchBlock(branchSub, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
-				constructBlocks(*branchSub, *branchBlock, *instr.follower);
-
-			break;
-
-		case kOpcodeRETN:
-			sub.exits.push_back(&instr);
 			break;
 
 		default:
@@ -366,14 +342,7 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 		return false;
 
 	if (child) {
-		size_t found = SIZE_MAX;
-		for (size_t i = 0; i < block.children.size(); i++) {
-			if (block.children[i] == child) {
-				found = i;
-				break;
-			}
-		}
-
+		const size_t found = findParentChildBlock(block, *child);
 		if (found == SIZE_MAX)
 			return false;
 
@@ -458,6 +427,119 @@ void NCSFile::analyzeStack() {
 	analyzeStackSubRoutine(*_specialSubRoutines.mainSub, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
+}
+
+static void addSubRoutineBlock(SubRoutine &sub, Block &block) {
+	/* Recursively add a block and all its children to this subroutine.
+	 * If this block is already in a subroutine, this must be the very
+	 * same subroutine. If it is, we found a loop and don't have to
+	 * follow its children. If it isn't we found a block that logically
+	 * belongs to more than one subroutine. We can't handle that, and
+	 * so we error out. */
+
+	if (block.subRoutine) {
+		if (block.subRoutine != &sub)
+			throw Common::Exception("Block %08X belongs to subroutines %08X and %08X",
+			                        block.address, sub.address, block.subRoutine->address);
+
+		return;
+	}
+
+	block.subRoutine = &sub;
+	sub.blocks.push_back(&block);
+
+	assert(block.children.size() == block.childrenTypes.size());
+
+	for (size_t i = 0; i < block.children.size(); i++)
+		if ((block.childrenTypes[i] != kBlockEdgeTypeFunctionCall) &&
+		    (block.childrenTypes[i] != kBlockEdgeTypeStoreState))
+			addSubRoutineBlock(sub, *const_cast<Block *>(block.children[i]));
+}
+
+static bool isNewSubRoutineBlock(const Block &block) {
+	/* Is this a block that starts a new subroutine?
+	 * We determine that by going through all parent blocks of this block and see
+	 * if any of them lead into this block through a function call or STORESTATE
+	 * edge. If so, this block starts a new subroutine. */
+
+	if (block.parents.empty())
+		return true;
+
+	for (std::vector<const Block *>::const_iterator p = block.parents.begin(); p != block.parents.end(); ++p) {
+		if (!*p)
+			continue;
+
+		const size_t childIndex = findParentChildBlock(**p, block);
+		if (childIndex == SIZE_MAX)
+			throw Common::Exception("Child %08X does not exist in block %08X", block.address, (*p)->address);
+
+		const BlockEdgeType edgeType = (*p)->childrenTypes[childIndex];
+		if ((edgeType == kBlockEdgeTypeFunctionCall) || (edgeType == kBlockEdgeTypeStoreState))
+			return true;
+	}
+
+	return false;
+}
+
+void NCSFile::findSubRoutines(SubRoutines &subs, Blocks &blocks) {
+	/* Go through all blocks and see if they logically start a new subroutine.
+	 * If they do, create the subroutine and recursively add the block and its
+	 * children to the subroutine. */
+
+	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
+		if (isNewSubRoutineBlock(*b)) {
+			subs.push_back(SubRoutine(b->address));
+			addSubRoutineBlock(subs.back(), *b);
+		}
+	}
+}
+
+void NCSFile::linkCallers(SubRoutines &subs) {
+	/* Link all subroutines to their callers and callees. */
+
+	for (SubRoutines::iterator s = subs.begin(); s != subs.end(); ++s) {
+		for (std::vector<const Block *>::const_iterator b = s->blocks.begin(); b != s->blocks.end(); ++b) {
+			for (std::vector<const Instruction *>::const_iterator i = (*b)->instructions.begin();
+			     i != (*b)->instructions.end(); ++i) {
+
+				if (!*i || ((*i)->opcode != kOpcodeJSR) || ((*i)->branches.size() != 1) || !(*i)->branches[0])
+					continue;
+
+				const Block *callerBlock = (*i)->block;
+				const Block *calleeBlock = (*i)->branches[0]->block;
+
+				if (!callerBlock || !callerBlock->subRoutine ||
+						!calleeBlock || !calleeBlock->subRoutine)
+					continue;
+
+				SubRoutine *caller = const_cast<SubRoutine *>(callerBlock->subRoutine);
+				SubRoutine *callee = const_cast<SubRoutine *>(calleeBlock->subRoutine);
+
+				caller->callees.insert(callee);
+				callee->callers.insert(caller);
+			}
+		}
+	}
+}
+
+void NCSFile::findEntryExits(SubRoutines &subs) {
+	/* Find the entry point and all exit points of all subroutines. */
+
+	for (SubRoutines::iterator s = subs.begin(); s != subs.end(); ++s) {
+		if (!s->blocks.empty() && s->blocks.front() && !s->blocks.front()->instructions.empty())
+			s->entry = s->blocks.front()->instructions.front();
+
+		for (std::vector<const Block *>::const_iterator b = s->blocks.begin(); b != s->blocks.end(); ++b) {
+			for (std::vector<const Instruction *>::const_iterator i = (*b)->instructions.begin();
+			     i != (*b)->instructions.end(); ++i) {
+
+				if (!*i || ((*i)->opcode != kOpcodeRETN))
+					continue;
+
+				s->exits.push_back(*i);
+			}
+		}
+	}
 }
 
 } // End of namespace NWScript

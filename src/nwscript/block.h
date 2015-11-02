@@ -69,7 +69,7 @@ struct Block {
 	StackAnalyzeState stackAnalyzeState;
 
 
-	Block(uint32 addr, const SubRoutine &sub) : address(addr), subRoutine(&sub),
+	Block(uint32 addr) : address(addr), subRoutine(0),
 		stackAnalyzeState(kStackAnalyzeStateNone) {
 
 	}
