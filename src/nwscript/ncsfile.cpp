@@ -22,8 +22,6 @@
  *  Handling BioWare's NCS, compiled NWScript bytecode.
  */
 
-#include <cassert>
-
 #include <algorithm>
 
 #include "src/common/util.h"
@@ -130,8 +128,7 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 
 		constructSubRoutines(_subRoutines, _blocks);
 		linkSubRoutineCallers(_subRoutines);
-
-		findEntryExits(_subRoutines);
+		findSubRoutineEntryAndExits(_subRoutines);
 
 		identifySubRoutineTypes();
 
@@ -190,26 +187,6 @@ void NCSFile::analyzeStack() {
 	analyzeStackSubRoutine(*_specialSubRoutines.mainSub, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
-}
-
-void NCSFile::findEntryExits(SubRoutines &subs) {
-	/* Find the entry point and all exit points of all subroutines. */
-
-	for (SubRoutines::iterator s = subs.begin(); s != subs.end(); ++s) {
-		if (!s->blocks.empty() && s->blocks.front() && !s->blocks.front()->instructions.empty())
-			s->entry = s->blocks.front()->instructions.front();
-
-		for (std::vector<const Block *>::const_iterator b = s->blocks.begin(); b != s->blocks.end(); ++b) {
-			for (std::vector<const Instruction *>::const_iterator i = (*b)->instructions.begin();
-			     i != (*b)->instructions.end(); ++i) {
-
-				if (!*i || ((*i)->opcode != kOpcodeRETN))
-					continue;
-
-				s->exits.push_back(*i);
-			}
-		}
-	}
 }
 
 } // End of namespace NWScript

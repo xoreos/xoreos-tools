@@ -232,4 +232,22 @@ void linkSubRoutineCallers(SubRoutines &subs) {
 	}
 }
 
+void findSubRoutineEntryAndExits(SubRoutines &subs) {
+	for (SubRoutines::iterator s = subs.begin(); s != subs.end(); ++s) {
+		if (!s->blocks.empty() && s->blocks.front() && !s->blocks.front()->instructions.empty())
+			s->entry = s->blocks.front()->instructions.front();
+
+		for (std::vector<const Block *>::const_iterator b = s->blocks.begin(); b != s->blocks.end(); ++b) {
+			for (std::vector<const Instruction *>::const_iterator i = (*b)->instructions.begin();
+			     i != (*b)->instructions.end(); ++i) {
+
+				if (!*i || ((*i)->opcode != kOpcodeRETN))
+					continue;
+
+				s->exits.push_back(*i);
+			}
+		}
+	}
+}
+
 } // End of namespace NWScript
