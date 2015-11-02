@@ -37,6 +37,8 @@ namespace NWScript {
 struct Instruction;
 struct SubRoutine;
 
+typedef std::deque<Instruction> Instructions;
+
 /** The types of an edge between blocks. */
 enum BlockEdgeType {
 	kBlockEdgeTypeUnconditional,    ///< This block follows unconditionally.
@@ -77,6 +79,11 @@ struct Block {
 
 /** The whole set of blocks found in a script. */
 typedef std::deque<Block> Blocks;
+
+/** Construct a control flow graph of interconnected blocks from this complete
+ *  set of script instructions.
+ */
+void constructBlocks(Blocks &blocks, Instructions &instructions);
 
 } // End of namespace NWScript
 

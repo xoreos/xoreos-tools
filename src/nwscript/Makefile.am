@@ -26,6 +26,7 @@ libnwscript_la_SOURCES = \
                          variable.cpp \
                          stack.cpp \
                          instruction.cpp \
+                         block.cpp \
                          subroutine.cpp \
                          util.cpp \
                          ncsfile.cpp \
