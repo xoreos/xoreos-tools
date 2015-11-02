@@ -128,7 +128,6 @@ private:
 
 	bool parseStep(Common::SeekableReadStream &ncs);
 
-	void linkBranches();
 	void findBlocks();
 	void findDeadEdges();
 
@@ -138,9 +137,6 @@ private:
 	void followBranchBlock(SubRoutine  &sub, Block &block, const Instruction &instr);
 	bool addBranchBlock   (SubRoutine *&sub, Block &block, const Instruction &branchDestination,
 	                       Block *&branchBlock, BlockEdgeType type);
-
-
-	Instructions::iterator findInstruction(uint32 address);
 };
 
 } // End of namespace NWScript

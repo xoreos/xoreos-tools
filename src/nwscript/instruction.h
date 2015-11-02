@@ -260,6 +260,9 @@ typedef std::deque<Instruction> Instructions;
 /** Parse an instruction out of the NCS stream. */
 bool parseInstruction(Common::SeekableReadStream &ncs, Instruction &instr);
 
+/** Given a whole set of script instructions, interlink branching instructions. */
+void linkInstructionBranches(Instructions &instructions);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_INSTRUCTION_H

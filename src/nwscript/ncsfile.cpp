@@ -123,7 +123,8 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 
 		parse(ncs);
 
-		linkBranches();
+		linkInstructionBranches(_instructions);
+
 		findBlocks();
 		findDeadEdges();
 
@@ -134,14 +135,6 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 
 		throw e;
 	}
-}
-
-Instructions::iterator NCSFile::findInstruction(uint32 address) {
-	Instructions::iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
-	if ((it == _instructions.end()) || (it->address != address))
-		return _instructions.end();
-
-	return it;
 }
 
 const VariableSpace &NCSFile::getVariables() const {
@@ -166,82 +159,6 @@ bool NCSFile::parseStep(Common::SeekableReadStream &ncs) {
 	_instructions.push_back(instr);
 
 	return true;
-}
-
-static void setAddressType(Instruction *instr, AddressType type) {
-	/* Only update the address type of an instruction with a higher-priority one. */
-
-	if (!instr || ((uint)instr->addressType >= (uint)type))
-		return;
-
-	instr->addressType = type;
-}
-
-void NCSFile::linkBranches() {
-	/* Go through all instructions and link them according to the flow graph.
-	 *
-	 * In specifics, link each instruction's follower, the instruction that
-	 * naturally follows if no branches are taken. Also fill in the branches
-	 * array, which contains all branches an instruction can take. This
-	 * directly creates an address type for each instruction: does it start
-	 * a subroutine, is it a jump destination, is it a tail of a jump or none
-	 * of these?
-	 */
-
-	for (Instructions::iterator i = _instructions.begin(); i != _instructions.end(); ++i) {
-		// If this is an instruction that has a natural follower, link it
-		if ((i->opcode != kOpcodeJMP) && (i->opcode != kOpcodeRETN)) {
-			Instructions::iterator follower = i + 1;
-
-			i->follower = (follower != _instructions.end()) ? &*follower : 0;
-
-			if (follower != _instructions.end())
-				follower->predecessors.push_back(&*i);
-		}
-
-		// Link destinations of unconditional branches
-		if ((i->opcode == kOpcodeJMP) || (i->opcode == kOpcodeJSR) || (i->opcode == kOpcodeSTORESTATE)) {
-			assert(((i->opcode == kOpcodeSTORESTATE) && (i->argCount == 3)) || (i->argCount == 1));
-
-			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
-			if (branch == _instructions.end())
-				throw Common::Exception("Can't find destination of unconditional branch");
-
-			i->branches.push_back(&*branch);
-
-			if      (i->opcode == kOpcodeJSR)
-				setAddressType(&*branch, kAddressTypeSubRoutine);
-			else if (i->opcode == kOpcodeSTORESTATE)
-				setAddressType(&*branch, kAddressTypeStoreState);
-			else {
-				setAddressType(&*branch, kAddressTypeJumpLabel);
-				branch->predecessors.push_back(&*i);
-			}
-
-			setAddressType(const_cast<Instruction *>(i->follower), kAddressTypeTail);
-		}
-
-		// Link destinations of conditional branches
-		if ((i->opcode == kOpcodeJZ) || (i->opcode == kOpcodeJNZ)) {
-			assert(i->argCount == 1);
-
-			if (!i->follower)
-				throw Common::Exception("Conditional branch has no false destination");
-
-			Instructions::iterator branch = findInstruction(i->address + i->args[0]);
-			if (branch == _instructions.end())
-				throw Common::Exception("Can't find destination of conditional branch");
-
-			setAddressType(&*branch, kAddressTypeJumpLabel);
-
-			setAddressType(const_cast<Instruction *>(i->follower), kAddressTypeTail);
-
-			i->branches.push_back(&*branch);    // True branch
-			i->branches.push_back(i->follower); // False branch
-
-			branch->predecessors.push_back(&*i);
-		}
-	}
 }
 
 void NCSFile::findBlocks() {
