@@ -227,9 +227,8 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 			try {
 				status("Analyzing script stack...");
 				disassembler.analyzeStack();
-			} catch (Common::Exception &e) {
-				e.add("Script analysis failed");
-				Common::printException(e, "WARNING: ");
+			} catch (...) {
+				Common::exceptionDispatcherWarnAndIgnore("Script analysis failed");
 			}
 		}
 
