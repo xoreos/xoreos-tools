@@ -336,7 +336,7 @@ void NCSFile::followBranchBlock(SubRoutine &sub, Block &block, const Instruction
 			break;
 
 		case kOpcodeRETN:
-			sub.exists.push_back(&instr);
+			sub.exits.push_back(&instr);
 			break;
 
 		default:

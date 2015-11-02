@@ -63,7 +63,7 @@ struct SubRoutine {
 	/** The first instruction in this subroutine. */
 	const Instruction *entry;
 	/** The RETN instructions that leave this subroutine. */
-	std::vector<const Instruction *> exists;
+	std::vector<const Instruction *> exits;
 
 	/** The type of this subroutine. */
 	SubRoutineType type;
