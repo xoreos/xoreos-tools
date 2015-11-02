@@ -39,6 +39,8 @@ namespace NWScript {
 struct Instruction;
 struct Block;
 
+typedef std::deque<Block> Blocks;
+
 /** The type of a subroutine. */
 enum SubRoutineType {
 	kSubRoutineTypeNone,       ///< A normal subroutine.
@@ -99,6 +101,11 @@ struct SpecialSubRoutines {
 	SpecialSubRoutines() : startSub(0), globalSub(0), mainSub(0) {
 	}
 };
+
+/** Given a whole set of script blocks, construct a set of subroutines
+ * incorporating these blocks.
+ */
+void constructSubRoutines(SubRoutines &subs, Blocks &blocks);
 
 /** Given a whole set of script subroutines, analyze their types.
  *

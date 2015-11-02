@@ -126,11 +126,12 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 		linkInstructionBranches(_instructions);
 
 		constructBlocks(_blocks, _instructions);
+		findDeadBlockEdges(_blocks);
 
-		findSubRoutines(_subRoutines, _blocks);
+		constructSubRoutines(_subRoutines, _blocks);
+
 		linkCallers(_subRoutines);
 		findEntryExits(_subRoutines);
-		findDeadBlockEdges(_blocks);
 
 		identifySubRoutineTypes();
 
@@ -189,71 +190,6 @@ void NCSFile::analyzeStack() {
 	analyzeStackSubRoutine(*_specialSubRoutines.mainSub, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
-}
-
-static void addSubRoutineBlock(SubRoutine &sub, Block &block) {
-	/* Recursively add a block and all its children to this subroutine.
-	 * If this block is already in a subroutine, this must be the very
-	 * same subroutine. If it is, we found a loop and don't have to
-	 * follow its children. If it isn't we found a block that logically
-	 * belongs to more than one subroutine. We can't handle that, and
-	 * so we error out. */
-
-	if (block.subRoutine) {
-		if (block.subRoutine != &sub)
-			throw Common::Exception("Block %08X belongs to subroutines %08X and %08X",
-			                        block.address, sub.address, block.subRoutine->address);
-
-		return;
-	}
-
-	block.subRoutine = &sub;
-	sub.blocks.push_back(&block);
-
-	assert(block.children.size() == block.childrenTypes.size());
-
-	for (size_t i = 0; i < block.children.size(); i++)
-		if ((block.childrenTypes[i] != kBlockEdgeTypeFunctionCall) &&
-		    (block.childrenTypes[i] != kBlockEdgeTypeStoreState))
-			addSubRoutineBlock(sub, *const_cast<Block *>(block.children[i]));
-}
-
-static bool isNewSubRoutineBlock(const Block &block) {
-	/* Is this a block that starts a new subroutine?
-	 * We determine that by going through all parent blocks of this block and see
-	 * if any of them lead into this block through a function call or STORESTATE
-	 * edge. If so, this block starts a new subroutine. */
-
-	if (block.parents.empty())
-		return true;
-
-	for (std::vector<const Block *>::const_iterator p = block.parents.begin(); p != block.parents.end(); ++p) {
-		if (!*p)
-			continue;
-
-		const size_t childIndex = findParentChildBlock(**p, block);
-		if (childIndex == SIZE_MAX)
-			throw Common::Exception("Child %08X does not exist in block %08X", block.address, (*p)->address);
-
-		const BlockEdgeType edgeType = (*p)->childrenTypes[childIndex];
-		if ((edgeType == kBlockEdgeTypeFunctionCall) || (edgeType == kBlockEdgeTypeStoreState))
-			return true;
-	}
-
-	return false;
-}
-
-void NCSFile::findSubRoutines(SubRoutines &subs, Blocks &blocks) {
-	/* Go through all blocks and see if they logically start a new subroutine.
-	 * If they do, create the subroutine and recursively add the block and its
-	 * children to the subroutine. */
-
-	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
-		if (isNewSubRoutineBlock(*b)) {
-			subs.push_back(SubRoutine(b->address));
-			addSubRoutineBlock(subs.back(), *b);
-		}
-	}
 }
 
 void NCSFile::linkCallers(SubRoutines &subs) {
