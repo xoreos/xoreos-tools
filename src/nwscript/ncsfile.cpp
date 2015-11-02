@@ -129,8 +129,8 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 		findDeadBlockEdges(_blocks);
 
 		constructSubRoutines(_subRoutines, _blocks);
+		linkSubRoutineCallers(_subRoutines);
 
-		linkCallers(_subRoutines);
 		findEntryExits(_subRoutines);
 
 		identifySubRoutineTypes();
@@ -190,34 +190,6 @@ void NCSFile::analyzeStack() {
 	analyzeStackSubRoutine(*_specialSubRoutines.mainSub, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
-}
-
-void NCSFile::linkCallers(SubRoutines &subs) {
-	/* Link all subroutines to their callers and callees. */
-
-	for (SubRoutines::iterator s = subs.begin(); s != subs.end(); ++s) {
-		for (std::vector<const Block *>::const_iterator b = s->blocks.begin(); b != s->blocks.end(); ++b) {
-			for (std::vector<const Instruction *>::const_iterator i = (*b)->instructions.begin();
-			     i != (*b)->instructions.end(); ++i) {
-
-				if (!*i || ((*i)->opcode != kOpcodeJSR) || ((*i)->branches.size() != 1) || !(*i)->branches[0])
-					continue;
-
-				const Block *callerBlock = (*i)->block;
-				const Block *calleeBlock = (*i)->branches[0]->block;
-
-				if (!callerBlock || !callerBlock->subRoutine ||
-						!calleeBlock || !calleeBlock->subRoutine)
-					continue;
-
-				SubRoutine *caller = const_cast<SubRoutine *>(callerBlock->subRoutine);
-				SubRoutine *callee = const_cast<SubRoutine *>(calleeBlock->subRoutine);
-
-				caller->callees.insert(callee);
-				callee->callers.insert(caller);
-			}
-		}
-	}
 }
 
 void NCSFile::findEntryExits(SubRoutines &subs) {

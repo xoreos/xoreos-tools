@@ -130,7 +130,6 @@ private:
 
 	void identifySubRoutineTypes();
 
-	void linkCallers(SubRoutines &subs);
 	void findEntryExits(SubRoutines &subs);
 };
 

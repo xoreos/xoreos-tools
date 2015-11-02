@@ -107,6 +107,9 @@ struct SpecialSubRoutines {
  */
 void constructSubRoutines(SubRoutines &subs, Blocks &blocks);
 
+/** Given a whole set of script subroutines, link all callers with all callees. */
+void linkSubRoutineCallers(SubRoutines &subs);
+
 /** Given a whole set of script subroutines, analyze their types.
  *
  *  Each subroutine will have its type field updated, and a set of special
