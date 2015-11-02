@@ -33,7 +33,11 @@
 #include "src/aurora/types.h"
 #include "src/aurora/aurorafile.h"
 
-#include "src/nwscript/types.h"
+#include "src/nwscript/variable.h"
+#include "src/nwscript/stack.h"
+#include "src/nwscript/instruction.h"
+#include "src/nwscript/block.h"
+#include "src/nwscript/subroutine.h"
 
 namespace Common {
 	class SeekableReadStream;

@@ -1,0 +1,91 @@
+/* xoreos - A reimplementation of BioWare's Aurora engine
+ *
+ * xoreos is the legal property of its developers, whose names
+ * can be found in the AUTHORS file distributed with this source
+ * distribution.
+ *
+ * xoreos is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * xoreos is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with xoreos. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** @file
+ *  A subroutine in BioWare's NWScript.
+ */
+
+#ifndef NWSCRIPT_SUBROUTINE_H
+#define NWSCRIPT_SUBROUTINE_H
+
+#include <vector>
+#include <set>
+
+#include "src/common/types.h"
+#include "src/common/ustring.h"
+
+#include "src/nwscript/stack.h"
+
+namespace NWScript {
+
+struct Instruction;
+struct Block;
+
+/** The type of a subroutine. */
+enum SubRoutineType {
+	kSubRoutineTypeNone,       ///< A normal subroutine.
+	kSubRoutineTypeStoreState, ///< A subroutine created by a STORESTATE.
+	kSubRoutineTypeStart,      ///< The _start() subroutine, where execution starts.
+	kSubRoutineTypeGlobal,     ///< The _global() subroutine that sets up global variables.
+	kSubRoutineTypeMain,       ///< The main() subroutine.
+	kSubRoutineTypeStartCond   ///< The StartingConditional() subroutine.
+};
+
+/** A subroutine of NWScript blocks. */
+struct SubRoutine {
+	/** The address that starts this subroutine. */
+	uint32 address;
+
+	/** The blocks that are inside this subroutine. */
+	std::vector<const Block *> blocks;
+
+	std::set<const SubRoutine *> callers; ///< The subroutines calling this subroutine.
+	std::set<const SubRoutine *> callees; ///< The subroutines this subroutine calls.
+
+	/** The first instruction in this subroutine. */
+	const Instruction *entry;
+	/** The RETN instructions that leave this subroutine. */
+	std::vector<const Instruction *> exists;
+
+	/** The type of this subroutine. */
+	SubRoutineType type;
+
+	/** The name of this subroutine, if we have identified or assigned one. */
+	Common::UString name;
+
+	/** The current state of analyzing the stack of this while subroutine. */
+	StackAnalyzeState stackAnalyzeState;
+
+	/** The types of the parameters this subroutine takes. */
+	std::vector<const Variable *> params;
+
+	/** The types of the variables this subroutine returns. */
+	std::vector<const Variable *> returns;
+
+
+	SubRoutine(uint32 addr) : address(addr), entry(0), type(kSubRoutineTypeNone),
+		stackAnalyzeState(kStackAnalyzeStateNone) {
+
+	}
+};
+
+} // End of namespace NWScript
+
+#endif // NWSCRIPT_SUBROUTINE_H

@@ -28,6 +28,9 @@
 #include "src/common/error.h"
 
 #include "src/nwscript/analyze.h"
+#include "src/nwscript/instruction.h"
+#include "src/nwscript/block.h"
+#include "src/nwscript/subroutine.h"
 #include "src/nwscript/util.h"
 #include "src/nwscript/game.h"
 

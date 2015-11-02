@@ -3,7 +3,11 @@ include $(top_srcdir)/Makefile.common
 noinst_LTLIBRARIES = libnwscript.la
 
 noinst_HEADERS = \
-                 types.h \
+                 variable.h \
+                 stack.h \
+                 instruction.h \
+                 block.h \
+                 subroutine.h \
                  util.h \
                  ncsfile.h \
                  parse.h \
@@ -21,6 +25,7 @@ noinst_HEADERS = \
                  $(EMPTY)
 
 libnwscript_la_SOURCES = \
+                         variable.cpp \
                          util.cpp \
                          ncsfile.cpp \
                          parse.cpp \

@@ -27,6 +27,8 @@
 #include "src/common/error.h"
 
 #include "src/nwscript/util.h"
+#include "src/nwscript/block.h"
+#include "src/nwscript/subroutine.h"
 #include "src/nwscript/game.h"
 
 namespace NWScript {
@@ -77,7 +79,7 @@ static const char * const kVarTypeName[] = {
 	"ref E0", "ref E1" , "ref E2"   , "ref E3"    , "ref E4"       , "ref E5"
 };
 
-static const OpcodeArgument kOpcodeArguments[kOpcodeMAX][kOpcodeMaxArgumentCount] = {
+static const OpcodeArgument kOpcodeArguments[kOpcodeMAX][Instruction::kOpcodeMaxArgumentCount] = {
 	// 0x00
 	/*               */ { },
 	/* CPDOWNSP      */ { kOpcodeArgSint32, kOpcodeArgSint16 },
@@ -428,7 +430,7 @@ size_t getDirectArgumentCount(Opcode op) {
 	const OpcodeArgument * const args = kOpcodeArguments[(size_t)op];
 
 	size_t n = 0;
-	for (size_t i = 0; i < kOpcodeMaxArgumentCount; i++, n++)
+	for (size_t i = 0; i < Instruction::kOpcodeMaxArgumentCount; i++, n++)
 		if (args[i] == kOpcodeArgNone)
 			break;
 

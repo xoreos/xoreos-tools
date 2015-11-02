@@ -19,63 +19,25 @@
  */
 
 /** @file
- *  Types found in BioWare's NWScript.
+ *  An instruction in BioWare's NWScript bytecode.
  */
 
-#ifndef NWSCRIPT_TYPES_H
-#define NWSCRIPT_TYPES_H
+#ifndef NWSCRIPT_INSTRUCTION_H
+#define NWSCRIPT_INSTRUCTION_H
 
-#include <algorithm>
 #include <vector>
-#include <deque>
-#include <set>
 
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
+#include "src/nwscript/stack.h"
+
 namespace NWScript {
 
-/** The type of an NWScript variable. */
-enum VariableType {
-	kTypeVoid             = 0,
-	kTypeInt                 ,
-	kTypeFloat               ,
-	kTypeString              ,
-	kTypeResource            ,
-	kTypeObject              ,
-	kTypeVector              ,
-	kTypeStruct              ,
-	kTypeEngineType0         ,
-	kTypeEngineType1         ,
-	kTypeEngineType2         ,
-	kTypeEngineType3         ,
-	kTypeEngineType4         ,
-	kTypeEngineType5         ,
-	kTypeScriptState         , ///< "action".
-	kTypeIntArray            ,
-	kTypeFloatArray          ,
-	kTypeStringArray         ,
-	kTypeResourceArray       ,
-	kTypeObjectArray         ,
-	kTypeEngineType0Array    ,
-	kTypeEngineType1Array    ,
-	kTypeEngineType2Array    ,
-	kTypeEngineType3Array    ,
-	kTypeEngineType4Array    ,
-	kTypeEngineType5Array    ,
-	kTypeAny                 , ///< Any other type.
-	kTypeIntRef              ,
-	kTypeFloatRef            ,
-	kTypeStringRef           ,
-	kTypeResourceRef         ,
-	kTypeObjectRef           ,
-	kTypeEngineType0Ref      ,
-	kTypeEngineType1Ref      ,
-	kTypeEngineType2Ref      ,
-	kTypeEngineType3Ref      ,
-	kTypeEngineType4Ref      ,
-	kTypeEngineType5Ref
-};
+struct Variable;
+
+struct Block;
+struct SubRoutine;
 
 /** An instruction opcode, defining what it does. */
 enum Opcode {
@@ -204,116 +166,10 @@ enum AddressType {
 	kAddressTypeSubRoutine  ///< Address that starts a subroutine.
 };
 
-/** The type of a subroutine. */
-enum SubRoutineType {
-	kSubRoutineTypeNone,       ///< A normal subroutine.
-	kSubRoutineTypeStoreState, ///< A subroutine created by a STORESTATE.
-	kSubRoutineTypeStart,      ///< The _start() subroutine, where execution starts.
-	kSubRoutineTypeGlobal,     ///< The _global() subroutine that sets up global variables.
-	kSubRoutineTypeMain,       ///< The main() subroutine.
-	kSubRoutineTypeStartCond   ///< The StartingConditional() subroutine.
-};
-
-/** The current state of analyzing the stack of a script. */
-enum StackAnalyzeState {
-	kStackAnalyzeStateNone,    ///< No stack analysis was performed.
-	kStackAnalyzeStateStart,   ///< Stack analysis started.
-	kStackAnalyzeStateFinished ///< Stack analysis completed.
-};
-
-/** What a variable is used for. */
-enum VariableUse {
-	kVariableUseUnknown,   ///< We don't know anything about this variable.
-	kVariableUseGlobal,    ///< This is a global variable.
-	kVariableUseLocal,     ///< This is a subroutine-local variable.
-	kVariableUseParameter, ///< This is a subroutine parameter.
-	kVariableUseReturn     ///< This is a subroutine return value.
-};
-
-struct Instruction;
-
-/** A reference to an instruction that set the type of a variable. */
-struct TypeInference {
-	/** The type we inferred. */
-	VariableType type;
-	/** The instruction where we inferred this type. */
-	const Instruction *instruction;
-
-
-	TypeInference(VariableType t, const Instruction *i) : type(t), instruction(i) {
-	}
-};
-
-/** A unique variable defined and used by a script. */
-struct Variable {
-	size_t id;         ///< The unique ID of this variable.
-	VariableType type; ///< The type of this variable.
-	VariableUse  use;  ///< What this variable is used for.
-
-	const Instruction *creator; ///< The instruction that created this variable.
-
-	/** Instructions that read this variable. */
-	std::vector<const Instruction *> readers;
-	/** Instructions that write this variable. */
-	std::vector<const Instruction *> writers;
-
-	/** Variables that were created by duplicating this variable. */
-	std::set<const Variable *> duplicates;
-
-	/** Variables that are logically the very same variable as this one.
-	 *
-	 *  When control flow merges branching forks back together, these are
-	 *  variables that occupy the same stack space. They are logically the
-	 *  same variable, only created through a different potential path.
-	 */
-	std::set<const Variable *> siblings;
-
-	/** Instructions that helped to infer the type of this variable. */
-	std::deque<TypeInference> typeInference;
-
-
-	Variable(size_t i, VariableType t, VariableUse u = kVariableUseUnknown) :
-		id(i), type(t), use(u), creator(0) {
-
-	}
-
-	std::vector<size_t> getSiblingGroup() const {
-		std::vector<size_t> sib;
-
-		sib.reserve(siblings.size() + 1);
-
-		for (std::set<const Variable *>::const_iterator s = siblings.begin(); s != siblings.end(); ++s)
-			sib.push_back((*s)->id);
-		sib.push_back(id);
-
-		std::sort(sib.begin(), sib.end());
-
-		return sib;
-	}
-
-	size_t getLowestSibling() const {
-		return getSiblingGroup().front();
-	}
-};
-typedef std::deque<Variable> VariableSpace;
-
-/** A variable on the NWScript stack. */
-struct StackVariable {
-	Variable *variable; ///< The actual variable this stack elements refers to.
-
-
-	StackVariable(Variable &var) : variable(&var) {
-	}
-};
-typedef std::deque<StackVariable> Stack;
-
-static const size_t kOpcodeMaxArgumentCount = 3;
-
-struct Block;
-struct SubRoutine;
-
 /** An NWScript bytecode instruction. */
 struct Instruction {
+	static const size_t kOpcodeMaxArgumentCount = 3;
+
 	uint32 address; ///< The address of this intruction with the NCS file
 
 	Opcode opcode;        ///< The opcode of this instruction.
@@ -393,82 +249,6 @@ struct Instruction {
 	}
 };
 
-/** The types of an edge between blocks. */
-enum BlockEdgeType {
-	kBlockEdgeTypeUnconditional,    ///< This block follows unconditionally.
-	kBlockEdgeTypeConditionalTrue,  ///< This block is a true branch of a conditional.
-	kBlockEdgeTypeConditionalFalse, ///< This block is a false branch of a conditional.
-	kBlockEdgeTypeFunctionCall,     ///< This block is a function call.
-	kBlockEdgeTypeFunctionReturn,   ///< This block is a function return.
-	kBlockEdgeTypeStoreState,       ///< This block is a subroutine create by STORESTATE.
-	kBlockEdgeTypeDead              ///< This edge is logically dead and will never be taken.
-};
-
-/** A block of NWScript instructions. */
-struct Block {
-	/** The address that starts this block. */
-	uint32 address;
-
-	/** The instructions making up this block. */
-	std::vector<const Instruction *> instructions;
-
-	std::vector<const Block *> parents;  ///< The blocks leading into this block.
-	std::vector<const Block *> children; ///< The blocks following this block.
-
-	/** How this block leads into its children. */
-	std::vector<BlockEdgeType> childrenTypes;
-
-	/** The subroutine this block belongs to. */
-	const SubRoutine *subRoutine;
-
-	/** The current state of analyzing the stack of this block. */
-	StackAnalyzeState stackAnalyzeState;
-
-
-	Block(uint32 addr, const SubRoutine &sub) : address(addr), subRoutine(&sub),
-		stackAnalyzeState(kStackAnalyzeStateNone) {
-
-	}
-};
-
-/** A subroutine of NWScript blocks. */
-struct SubRoutine {
-	/** The address that starts this subroutine. */
-	uint32 address;
-
-	/** The blocks that are inside this subroutine. */
-	std::vector<const Block *> blocks;
-
-	std::set<const SubRoutine *> callers; ///< The subroutines calling this subroutine.
-	std::set<const SubRoutine *> callees; ///< The subroutines this subroutine calls.
-
-	/** The first instruction in this subroutine. */
-	const Instruction *entry;
-	/** The RETN instructions that leave this subroutine. */
-	std::vector<const Instruction *> exists;
-
-	/** The type of this subroutine. */
-	SubRoutineType type;
-
-	/** The name of this subroutine, if we have identified or assigned one. */
-	Common::UString name;
-
-	/** The current state of analyzing the stack of this while subroutine. */
-	StackAnalyzeState stackAnalyzeState;
-
-	/** The types of the parameters this subroutine takes. */
-	std::vector<const Variable *> params;
-
-	/** The types of the variables this subroutine returns. */
-	std::vector<const Variable *> returns;
-
-
-	SubRoutine(uint32 addr) : address(addr), entry(0), type(kSubRoutineTypeNone),
-		stackAnalyzeState(kStackAnalyzeStateNone) {
-
-	}
-};
-
 } // End of namespace NWScript
 
-#endif // NWSCRIPT_TYPES_H
+#endif // NWSCRIPT_INSTRUCTION_H

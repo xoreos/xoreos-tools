@@ -27,9 +27,12 @@
 
 #include "src/aurora/types.h"
 
-#include "src/nwscript/types.h"
+#include "src/nwscript/variable.h"
+#include "src/nwscript/stack.h"
 
 namespace NWScript {
+
+struct SubRoutine;
 
 /** Analyze this "_global"-type subroutine.
  *

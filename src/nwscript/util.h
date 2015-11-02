@@ -29,9 +29,13 @@
 
 #include "src/aurora/types.h"
 
-#include "src/nwscript/types.h"
+#include "src/nwscript/variable.h"
+#include "src/nwscript/instruction.h"
 
 namespace NWScript {
+
+struct Block;
+struct SubRoutine;
 
 /** Return the textual name of the opcode. */
 Common::UString getOpcodeName(Opcode op);

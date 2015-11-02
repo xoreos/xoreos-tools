@@ -27,7 +27,7 @@
 #include "src/common/readstream.h"
 
 #include "src/nwscript/parse.h"
-#include "src/nwscript/types.h"
+#include "src/nwscript/instruction.h"
 #include "src/nwscript/util.h"
 
 namespace NWScript {

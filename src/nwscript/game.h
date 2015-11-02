@@ -30,7 +30,7 @@
 
 #include "src/aurora/types.h"
 
-#include "src/nwscript/types.h"
+#include "src/nwscript/variable.h"
 
 namespace NWScript {
 
