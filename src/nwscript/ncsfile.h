@@ -43,17 +43,20 @@ namespace Common {
 
 namespace NWScript {
 
-/** Parse an NCS file, compiled NWScript bytecode, into a structure of instructions. */
+/** Parse an NCS file, compiled NWScript bytecode, into a structure of
+ *  instructions.
+ *
+ *  This structure is then automatically analyzed on a block and subroutine
+ *  level, giving access to a control flow graph of interconnected blocks of
+ *  uninterrupted instructions, grouped into subroutines that call each other.
+ *
+ *  Additionally, a deeper stack analysis can be performed by calling the
+ *  analyzeStack() method. Since this depends on game-dependant information,
+ *  the game this script is from needs to be passed into the constructor for
+ *  this to work.
+ */
 class NCSFile : public Aurora::AuroraBase {
 public:
-	/** Read a script out of the NCS bytecode stream.
-	 *
-	 *  The game this NCS is from can't be autodetected and has to be
-	 *  manually specified. If this information is not supplied, the
-	 *  script can still be read, but no deeper stack analysis can be
-	 *  performed, and the meaning of which engine function (opcode
-	 *  ACTION) is which is lost.
-	 */
 	NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game = Aurora::kGameIDUnknown);
 	~NCSFile();
 
