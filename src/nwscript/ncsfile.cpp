@@ -42,8 +42,7 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 namespace NWScript {
 
 NCSFile::NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game) :
-	_game(game), _size(0), _multipleGlobal(false),
-	_startSubRoutine(0), _globalSubRoutine(0), _mainSubRoutine(0), _hasStackAnalysis(false) {
+	_game(game), _size(0), _hasStackAnalysis(false) {
 
 	load(ncs);
 }
@@ -83,15 +82,15 @@ const SubRoutines &NCSFile::getSubRoutines() const {
 }
 
 const SubRoutine *NCSFile::getStartSubRoutine() const {
-	return _startSubRoutine;
+	return _specialSubRoutines.startSub;
 }
 
 const SubRoutine *NCSFile::getGlobalSubRoutine() const {
-	return _globalSubRoutine;
+	return _specialSubRoutines.globalSub;
 }
 
 const SubRoutine *NCSFile::getMainSubRoutine() const {
-	return _mainSubRoutine;
+	return _specialSubRoutines.mainSub;
 }
 
 const Instruction *NCSFile::findInstruction(uint32 address) const {
@@ -346,20 +345,6 @@ void NCSFile::constructBlocks(SubRoutine &sub, Block &block, const Instruction &
 			break;
 		}
 
-		if (blockInstr->opcode == kOpcodeSAVEBP) {
-			/* The SAVEBP instruction is used to set a reference point for global variables.
-			 * When we encounter it, we remember this current subroutine as the one that
-			 * initialize this global variable frame. */
-
-			if (_globalSubRoutine && (_globalSubRoutine != &sub)) {
-				warning("Found multiple subroutines that call SAVEBP: %08X, %08X",
-				        _globalSubRoutine->address, sub.address);
-
-				_multipleGlobal = true;
-			} else
-				_globalSubRoutine = &sub;
-		}
-
 		// Else, continue with the next instruction
 		blockInstr = blockInstr->follower;
 	}
@@ -534,93 +519,10 @@ void NCSFile::findDeadEdges() {
 }
 
 void NCSFile::identifySubRoutineTypes() {
-	/* Identify special subroutine types, like _start(), _global() and main(). */
-
-	if (_subRoutines.empty())
-		return;
-
-	// Mark all STORESTATE subroutines as such
-	for (SubRoutines::iterator s = _subRoutines.begin(); s != _subRoutines.end(); ++s) {
-		if (s->blocks.empty() || s->blocks.front()->instructions.empty())
-			continue;
-
-		if (s->blocks.front()->instructions.front()->addressType == kAddressTypeStoreState)
-			s->type = kSubRoutineTypeStoreState;
-	}
-
-	// The very first subroutine is the _start() one
-	_startSubRoutine = &_subRoutines.front();
-	_startSubRoutine->type = kSubRoutineTypeStart;
-	_startSubRoutine->name = "_start";
-
-	if (!_startSubRoutine->blocks.front()->instructions.empty()) {
-		Instruction *instr = const_cast<Instruction *>(_startSubRoutine->blocks.front()->instructions.front());
-		assert(instr);
-
-		instr->addressType = kAddressTypeSubRoutine;
-	}
-
-	// If we found multiple global subroutines, there's something fishy going on. Let's ignore them
-	if (_multipleGlobal)
-		_globalSubRoutine = 0;
-
-	// If we have a _global() subroutine, mark it
-	if (_globalSubRoutine) {
-		_globalSubRoutine->type = kSubRoutineTypeGlobal;
-		_globalSubRoutine->name = "_global";
-	}
-
-	// If we have a global subroutine, it calls main(). Otherwise, _start() calls main()
-	SubRoutine *mainCaller = _globalSubRoutine ? _globalSubRoutine : _startSubRoutine;
-
-	if (mainCaller->callees.size() > 1)
-		warning("More than one potential main subroutine found");
-
-	// Assume that the last subroutine the main caller calls is the main()
-	if (mainCaller->callees.size() >= 1) {
-		_mainSubRoutine = const_cast<SubRoutine *>(*--mainCaller->callees.end());
-		assert(_mainSubRoutine);
-
-		if (!_startSubRoutine->blocks.empty()) {
-			/* Try to find out whether this script is an event script or a dialogue
-			 * conditional script.
-			 *
-			 * Event scripts are called by events happening on objects. They don't
-			 * return a value and their main function is called "main".
-			 *
-			 * Dialogue conditional scripts are called to evaluate whether a branch
-			 * in dialogue tree is visible to the user (on a user line), or whether
-			 * it should be taken (on an NPC line). They return an int that will be
-			 * interpreted as a boolean value. Their main function is called
-			 * "StartingConditional".
-			 *
-			 * Therefore, we can differentiate them by the very first instructions
-			 * in the _start() subroutine. If the _start() subroutine directly jumps
-			 * into the main (or the _global()) subroutine, this is an event script.
-			 * If _start() adds an integer to the stack as a placeholder for the
-			 * return value and then jumps, this is a dialogue conditional script.
-			 * If neither is true, something we don't know about happens there. */
-
-			const std::vector<const Instruction *> &instr = _startSubRoutine->blocks[0]->instructions;
-
-			if        ((instr.size() >= 1) &&
-			           (instr[0]->opcode == kOpcodeJSR)) {
-
-				_mainSubRoutine->type = kSubRoutineTypeMain;
-				_mainSubRoutine->name = "main";
-
-			} else if ((instr.size() >= 2) &&
-			           (instr[0]->opcode == kOpcodeRSADD) &&
-			           (instr[0]->type   == kInstTypeInt) &&
-			           (instr[1]->opcode == kOpcodeJSR)) {
-
-				_mainSubRoutine->type = kSubRoutineTypeStartCond;
-				_mainSubRoutine->name = "StartingConditional";
-			}
-		}
-
-		if (_mainSubRoutine->type == kSubRoutineTypeNone)
-			_mainSubRoutine = 0;
+	try {
+		_specialSubRoutines = analyzeSubRoutineTypes(_subRoutines);
+	} catch (...) {
+		Common::exceptionDispatcherWarnAndIgnore();
 	}
 }
 
@@ -628,16 +530,16 @@ void NCSFile::analyzeStack() {
 	if ((_game == Aurora::kGameIDUnknown) || _hasStackAnalysis)
 		return;
 
-	if (!_mainSubRoutine)
+	if (!_specialSubRoutines.mainSub)
 		throw Common::Exception("Failed to identify the main subroutine");
 
 	_variables.clear();
 	_globals.clear();
 
-	if (_globalSubRoutine)
-		analyzeStackGlobals(*_globalSubRoutine, _variables, _game, _globals);
+	if (_specialSubRoutines.globalSub)
+		analyzeStackGlobals(*_specialSubRoutines.globalSub, _variables, _game, _globals);
 
-	analyzeStackSubRoutine(*_mainSubRoutine, _variables, _game, &_globals);
+	analyzeStackSubRoutine(*_specialSubRoutines.mainSub, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
 }

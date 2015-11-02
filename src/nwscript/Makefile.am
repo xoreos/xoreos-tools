@@ -26,6 +26,7 @@ noinst_HEADERS = \
 libnwscript_la_SOURCES = \
                          variable.cpp \
                          stack.cpp \
+                         subroutine.cpp \
                          util.cpp \
                          ncsfile.cpp \
                          parse.cpp \

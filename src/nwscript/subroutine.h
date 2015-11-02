@@ -90,6 +90,23 @@ struct SubRoutine {
 /** The whole set of subroutines found in a script. */
 typedef std::deque<SubRoutine> SubRoutines;
 
+/** A set of special subroutines found in a script. */
+struct SpecialSubRoutines {
+	SubRoutine *startSub;  ///< The _start() subroutine.
+	SubRoutine *globalSub; ///< The _global() subroutine.
+	SubRoutine *mainSub;   ///< The main subroutine (main() or StartingConditional()).
+
+	SpecialSubRoutines() : startSub(0), globalSub(0), mainSub(0) {
+	}
+};
+
+/** Given a whole set of script subroutines, analyze their types.
+ *
+ *  Each subroutine will have its type field updated, and a set of special
+ *  subroutines that have been identified will be returned.
+ */
+SpecialSubRoutines analyzeSubRoutineTypes(SubRoutines &subs);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_SUBROUTINE_H
