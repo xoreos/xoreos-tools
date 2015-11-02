@@ -33,6 +33,10 @@
 
 #include "src/nwscript/stack.h"
 
+namespace Common {
+	class SeekableReadStream;
+}
+
 namespace NWScript {
 
 struct Variable;
@@ -252,6 +256,9 @@ struct Instruction {
 
 /** The whole set of instructions found in a script. */
 typedef std::deque<Instruction> Instructions;
+
+/** Parse an instruction out of the NCS stream. */
+bool parseInstruction(Common::SeekableReadStream &ncs, Instruction &instr);
 
 } // End of namespace NWScript
 

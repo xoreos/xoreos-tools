@@ -10,7 +10,6 @@ noinst_HEADERS = \
                  subroutine.h \
                  util.h \
                  ncsfile.h \
-                 parse.h \
                  game.h \
                  game_nwn.h \
                  game_nwn2.h \
@@ -26,10 +25,10 @@ noinst_HEADERS = \
 libnwscript_la_SOURCES = \
                          variable.cpp \
                          stack.cpp \
+                         instruction.cpp \
                          subroutine.cpp \
                          util.cpp \
                          ncsfile.cpp \
-                         parse.cpp \
                          game.cpp \
                          disassembler.cpp \
                          $(EMPTY)

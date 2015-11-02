@@ -34,7 +34,6 @@
 
 #include "src/nwscript/ncsfile.h"
 #include "src/nwscript/util.h"
-#include "src/nwscript/parse.h"
 
 static const uint32 kNCSID     = MKTAG('N', 'C', 'S', ' ');
 static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');

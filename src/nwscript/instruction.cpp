@@ -19,14 +19,13 @@
  */
 
 /** @file
- *  Utility functions parsing NWScript instructions.
+ *  An instruction in BioWare's NWScript bytecode.
  */
 
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
 
-#include "src/nwscript/parse.h"
 #include "src/nwscript/instruction.h"
 #include "src/nwscript/util.h"
 
@@ -158,28 +157,6 @@ static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t
 }
 
 
-bool parseInstruction(Common::SeekableReadStream &ncs, Instruction &instr) {
-	instr.address = ncs.pos();
-
-	try {
-		instr.opcode = (Opcode)          ncs.readByte();
-		instr.type   = (InstructionType) ncs.readByte();
-	} catch (...) {
-		if (ncs.eos())
-			return false;
-
-		throw;
-	}
-
-	if (((size_t)instr.opcode >= ARRAYSIZE(kParseFunc)) || !kParseFunc[(size_t)instr.opcode])
-		throw Common::Exception("Invalid opcode 0x%02X", (uint8)instr.opcode);
-
-	const ParseFunc func = kParseFunc[(size_t)instr.opcode];
-	(*func)(instr, ncs);
-
-	return true;
-}
-
 void parseOpcodeConst(Instruction &instr, Common::SeekableReadStream &ncs) {
 	switch (instr.type) {
 		case kInstTypeInt:
@@ -274,6 +251,29 @@ void parseOpcodeDefault(Instruction &instr, Common::SeekableReadStream &ncs) {
 				break;
 		}
 	}
+}
+
+
+bool parseInstruction(Common::SeekableReadStream &ncs, Instruction &instr) {
+	instr.address = ncs.pos();
+
+	try {
+		instr.opcode = (Opcode)          ncs.readByte();
+		instr.type   = (InstructionType) ncs.readByte();
+	} catch (...) {
+		if (ncs.eos())
+			return false;
+
+		throw;
+	}
+
+	if (((size_t)instr.opcode >= ARRAYSIZE(kParseFunc)) || !kParseFunc[(size_t)instr.opcode])
+		throw Common::Exception("Invalid opcode 0x%02X", (uint8)instr.opcode);
+
+	const ParseFunc func = kParseFunc[(size_t)instr.opcode];
+	(*func)(instr, ncs);
+
+	return true;
 }
 
 } // End of namespace NWScript
