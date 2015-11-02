@@ -128,8 +128,6 @@ private:
 
 	bool parseStep(Common::SeekableReadStream &ncs);
 
-	void findDeadEdges();
-
 	void identifySubRoutineTypes();
 
 	void findSubRoutines(SubRoutines &subs, Blocks &blocks);

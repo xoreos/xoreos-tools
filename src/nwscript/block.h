@@ -85,6 +85,19 @@ typedef std::deque<Block> Blocks;
  */
 void constructBlocks(Blocks &blocks, Instructions &instructions);
 
+/** Find the index of a block within another block's children.
+ *
+ *  If this child does not exist within the parent's children, return SIZE_MAX.
+ */
+size_t findParentChildBlock(const Block &parent, const Block &child);
+
+/** Given a complete set of script blocks, find edges between blocks that are logically
+ *  dead and will never be taken.
+ *
+ *  Updates their edge type kBlockEdgeTypeDead.
+ */
+void findDeadBlockEdges(Blocks &blocks);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_BLOCK_H
