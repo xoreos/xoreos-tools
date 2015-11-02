@@ -68,6 +68,9 @@ void printException(Exception &e, const UString &prefix = "ERROR: ");
 /** Default exception dispatcher that prints the exception and errors out. */
 void exceptionDispatcherError();
 
+/** Exception dispatcher that prints the exception as a warning and ignores it otherwise. */
+void exceptionDispatcherWarnAndIgnore(const UString &reason = "");
+
 } // End of namespace Common
 
 #endif // COMMON_ERROR_H

@@ -66,6 +66,7 @@ void StackException::add(const char *s, ...) {
 	_stack.push(buf);
 }
 
+
 void StackException::add(const std::exception &e) {
 	add("%s", e.what());
 }
@@ -133,6 +134,31 @@ void exceptionDispatcherError() {
 		}
 	} catch (...) {
 		std::exit(2);
+	}
+}
+
+void exceptionDispatcherWarnAndIgnore(const UString &reason) {
+	try {
+		try {
+			throw;
+		} catch (Exception &e) {
+			if (!reason.empty())
+				e.add(reason.c_str());
+
+			printException(e, "WARNING: ");
+		} catch (std::exception &e) {
+			Exception se(e);
+			if (!reason.empty())
+				se.add(reason.c_str());
+
+			printException(se, "WARNING: ");
+		} catch (...) {
+			if (!reason.empty()) {
+				Exception se("%s", reason.c_str());
+				printException(se, "WARNING: ");
+			}
+		}
+	} catch (...) {
 	}
 }
 
