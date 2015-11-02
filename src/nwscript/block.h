@@ -26,6 +26,7 @@
 #define NWSCRIPT_BLOCK_H
 
 #include <vector>
+#include <deque>
 
 #include "src/common/types.h"
 
@@ -73,6 +74,9 @@ struct Block {
 
 	}
 };
+
+/** The whole set of blocks found in a script. */
+typedef std::deque<Block> Blocks;
 
 } // End of namespace NWScript
 

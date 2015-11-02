@@ -63,11 +63,11 @@ bool NCSFile::hasStackAnalysis() const {
 	return _hasStackAnalysis;
 }
 
-const NCSFile::Instructions &NCSFile::getInstructions() const {
+const Instructions &NCSFile::getInstructions() const {
 	return _instructions;
 }
 
-const NCSFile::Blocks &NCSFile::getBlocks() const {
+const Blocks &NCSFile::getBlocks() const {
 	return _blocks;
 }
 
@@ -78,7 +78,7 @@ const Block &NCSFile::getRootBlock() const {
 	return _blocks.front();
 }
 
-const NCSFile::SubRoutines &NCSFile::getSubRoutines() const {
+const SubRoutines &NCSFile::getSubRoutines() const {
 	return _subRoutines;
 }
 
@@ -138,7 +138,7 @@ void NCSFile::load(Common::SeekableReadStream &ncs) {
 	}
 }
 
-NCSFile::Instructions::iterator NCSFile::findInstruction(uint32 address) {
+Instructions::iterator NCSFile::findInstruction(uint32 address) {
 	Instructions::iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
 	if ((it == _instructions.end()) || (it->address != address))
 		return _instructions.end();

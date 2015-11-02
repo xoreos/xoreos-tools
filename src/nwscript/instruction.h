@@ -26,6 +26,7 @@
 #define NWSCRIPT_INSTRUCTION_H
 
 #include <vector>
+#include <deque>
 
 #include "src/common/types.h"
 #include "src/common/ustring.h"
@@ -248,6 +249,9 @@ struct Instruction {
 		return address < right;
 	}
 };
+
+/** The whole set of instructions found in a script. */
+typedef std::deque<Instruction> Instructions;
 
 } // End of namespace NWScript
 

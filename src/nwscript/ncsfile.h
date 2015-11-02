@@ -25,8 +25,6 @@
 #ifndef NWSCRIPT_NCSFILE_H
 #define NWSCRIPT_NCSFILE_H
 
-#include <deque>
-
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
@@ -48,11 +46,6 @@ namespace NWScript {
 /** Parse an NCS file, compiled NWScript bytecode, into a structure of instructions. */
 class NCSFile : public Aurora::AuroraBase {
 public:
-	typedef std::deque<Instruction> Instructions;
-	typedef std::deque<Block>       Blocks;
-	typedef std::deque<SubRoutine>  SubRoutines;
-
-
 	/** Read a script out of the NCS bytecode stream.
 	 *
 	 *  The game this NCS is from can't be autodetected and has to be

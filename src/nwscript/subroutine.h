@@ -26,6 +26,7 @@
 #define NWSCRIPT_SUBROUTINE_H
 
 #include <vector>
+#include <deque>
 #include <set>
 
 #include "src/common/types.h"
@@ -85,6 +86,9 @@ struct SubRoutine {
 
 	}
 };
+
+/** The whole set of subroutines found in a script. */
+typedef std::deque<SubRoutine> SubRoutines;
 
 } // End of namespace NWScript
 

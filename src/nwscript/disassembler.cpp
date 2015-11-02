@@ -71,9 +71,9 @@ void Disassembler::createListing(Common::WriteStream &out, bool printStack) {
 	writeInfo(out);
 	writeEngineTypes(out);
 
-	const NCSFile::Instructions &instr = _ncs->getInstructions();
+	const Instructions &instr = _ncs->getInstructions();
 
-	for (NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
+	for (Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
 		writeJumpLabel(out, *i);
 
 		if (_ncs->hasStackAnalysis() && printStack)
@@ -93,9 +93,9 @@ void Disassembler::createAssembly(Common::WriteStream &out, bool printStack) {
 	writeInfo(out);
 	writeEngineTypes(out);
 
-	const NCSFile::Instructions &instr = _ncs->getInstructions();
+	const Instructions &instr = _ncs->getInstructions();
 
-	for (NCSFile::Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
+	for (Instructions::const_iterator i = instr.begin(); i != instr.end(); ++i) {
 		writeJumpLabel(out, *i);
 
 		if (_ncs->hasStackAnalysis() && printStack)
@@ -131,10 +131,10 @@ void Disassembler::createDot(Common::WriteStream &out) {
 }
 
 void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out) {
-	const NCSFile::SubRoutines &subs = _ncs->getSubRoutines();
+	const SubRoutines &subs = _ncs->getSubRoutines();
 
 	// Block nodes grouped into subroutines clusters
-	for (NCSFile::SubRoutines::const_iterator s = subs.begin(); s != subs.end(); ++s) {
+	for (SubRoutines::const_iterator s = subs.begin(); s != subs.end(); ++s) {
 		if (s->blocks.empty() || s->blocks.front()->instructions.empty())
 			continue;
 
@@ -165,9 +165,7 @@ static size_t calculateNodesPerBlock(size_t blockSize) {
 }
 
 void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<const Block *> &blocks) {
-	for (std::vector<const Block *>::const_iterator b = blocks.begin();
-	     b != blocks.end(); ++b) {
-
+	for (std::vector<const Block *>::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		/* To keep large nodes from messing up the layout, we divide blocks with
 		 * a huge amount of instructions into several, equal-sized nodes. */
 
@@ -217,9 +215,9 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<co
 }
 
 void Disassembler::writeDotBlockEdges(Common::WriteStream &out) {
-	const NCSFile::Blocks &blocks = _ncs->getBlocks();
+	const Blocks &blocks = _ncs->getBlocks();
 
-	for (NCSFile::Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
+	for (Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		assert(b->children.size() == b->childrenTypes.size());
 
 		for (size_t i = 0; i < b->children.size(); i++) {
