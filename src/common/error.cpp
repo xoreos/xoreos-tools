@@ -115,7 +115,7 @@ void printException(Exception &e, const UString &prefix) {
 	}
 }
 
-void exceptionDispatcher() {
+void exceptionDispatcherError() {
 	try {
 		try {
 			throw;

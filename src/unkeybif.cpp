@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 		for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
 			delete *b;
 
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)

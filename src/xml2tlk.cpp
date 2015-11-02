@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
 		createTLK(inFile, outFile, encoding, version, language);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

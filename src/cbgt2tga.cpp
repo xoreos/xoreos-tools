@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
 		convert(cbgtFile, palFile, twoDAFile, outFile);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

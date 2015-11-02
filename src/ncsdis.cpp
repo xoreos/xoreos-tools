@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 		disNCS(inFile, outFile, game, command, printStack);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

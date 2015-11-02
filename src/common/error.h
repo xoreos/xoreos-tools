@@ -64,7 +64,9 @@ extern const Exception kSeekError;
 extern const Exception kWriteError;
 
 void printException(Exception &e, const UString &prefix = "ERROR: ");
-void exceptionDispatcher();
+
+/** Default exception dispatcher that prints the exception and errors out. */
+void exceptionDispatcherError();
 
 } // End of namespace Common
 

@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 			extractFiles(nsbtx);
 
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

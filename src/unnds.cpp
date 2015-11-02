@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 			extractFiles(nds);
 
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

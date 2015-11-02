@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
 		dumpGFF(inFile, outFile, encoding);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

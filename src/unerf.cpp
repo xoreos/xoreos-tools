@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 			extractFiles(erf, game, files, kExtractModeSubstitute);
 
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

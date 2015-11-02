@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
 		convert(ncgrFiles, nclrFile, outFile, width, height);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

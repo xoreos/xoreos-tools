@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
 		convert2DA(files, outFile, format);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

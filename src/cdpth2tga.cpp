@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 
 		convert(cdpthFile, twoDAFile, outFile);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 			extractFiles(herf);
 
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

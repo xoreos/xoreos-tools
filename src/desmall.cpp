@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
 		desmall(inFile, outFile);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

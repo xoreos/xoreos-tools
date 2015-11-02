@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
 		convert(inFile, outFile, type, flip);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;

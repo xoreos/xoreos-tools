@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
 		dumpTLK(inFile, outFile, encoding);
 	} catch (...) {
-		Common::exceptionDispatcher();
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
