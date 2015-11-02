@@ -35,7 +35,6 @@
 #include "src/nwscript/ncsfile.h"
 #include "src/nwscript/util.h"
 #include "src/nwscript/parse.h"
-#include "src/nwscript/analyze.h"
 
 static const uint32 kNCSID     = MKTAG('N', 'C', 'S', ' ');
 static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
@@ -636,9 +635,9 @@ void NCSFile::analyzeStack() {
 	_globals.clear();
 
 	if (_globalSubRoutine)
-		analyzeGlobals(*_globalSubRoutine, _variables, _game, _globals);
+		analyzeStackGlobals(*_globalSubRoutine, _variables, _game, _globals);
 
-	analyzeSubRoutineStack(*_mainSubRoutine, _variables, _game, &_globals);
+	analyzeStackSubRoutine(*_mainSubRoutine, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
 }

@@ -27,9 +27,13 @@
 
 #include <deque>
 
+#include "src/aurora/types.h"
+
+#include "src/nwscript/variable.h"
+
 namespace NWScript {
 
-struct Variable;
+struct SubRoutine;
 
 /** The current state of analyzing the stack of a script. */
 enum StackAnalyzeState {
@@ -49,6 +53,33 @@ struct StackVariable {
 
 /** A stack frame in a script. */
 typedef std::deque<StackVariable> Stack;
+
+/** Analyze the stack of this "_global"-type subroutine.
+ *
+ *  Every single instruction in every single block of this subroutine will be
+ *  analyzed, and its stack information updated. Subroutines are *not* recursed
+ *  into.
+ *
+ *  At the end, the parameter globals will be updated with information on all
+ *  the global variables this "_global" subroutine defines.
+ */
+void analyzeStackGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals);
+
+/** Analyze the stack throughout this subroutine.
+ *
+ *  Every single instruction in every single block of this subroutine will be
+ *  analyzed, and its stack information updated. Subroutines that are called
+ *  will be recursed into and also updated.
+ *
+ *  The game the subroutine's script is from needs to be set to a valid value.
+ *
+ *  Subroutines that themselves recurse are not supported and will lead to
+ *  an analysis failure.
+ *
+ *  Should the analysis fail for any reason, an exception will be thrown.
+ */
+void analyzeStackSubRoutine(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game,
+                            Stack *globals = 0);
 
 } // End of namespace NWScript
 

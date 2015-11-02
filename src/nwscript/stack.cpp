@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Utility functions analyzing low-level NWScript structure for higher-level concepts.
+ *  The stack in BioWare's NWScript bytecode.
  */
 
 #include <cassert>
@@ -27,7 +27,7 @@
 #include "src/common/util.h"
 #include "src/common/error.h"
 
-#include "src/nwscript/analyze.h"
+#include "src/nwscript/stack.h"
 #include "src/nwscript/instruction.h"
 #include "src/nwscript/block.h"
 #include "src/nwscript/subroutine.h"
@@ -341,10 +341,10 @@ static void fixupDuplicateTypes(VariableSpace &variables) {
 }
 
 
-static void analyzeBlockStack      (AnalyzeStackContext &ctx);
-static void analyzeInstructionStack(AnalyzeStackContext &ctx);
+static void analyzeStackBlock      (AnalyzeStackContext &ctx);
+static void analyzeStackInstruction(AnalyzeStackContext &ctx);
 
-static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursion = false) {
+static void analyzeStackSubRoutine(AnalyzeStackContext &ctx, bool ignoreRecursion = false) {
 	assert(ctx.sub);
 
 	if (ctx.sub->stackAnalyzeState == kStackAnalyzeStateFinished) {
@@ -414,7 +414,7 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursio
 		ctx.subRETN  = false;
 		ctx.returnStack.clear();
 
-		analyzeBlockStack(ctx);
+		analyzeStackBlock(ctx);
 
 		*oldCtx.stack = ctx.returnStack;
 
@@ -429,7 +429,7 @@ static void analyzeSubRoutineStack(AnalyzeStackContext &ctx, bool ignoreRecursio
 	fixupDuplicateTypes(*ctx.variables);
 }
 
-static void analyzeBlockStack(AnalyzeStackContext &ctx) {
+static void analyzeStackBlock(AnalyzeStackContext &ctx) {
 	assert(ctx.block);
 
 	if (ctx.block->stackAnalyzeState == kStackAnalyzeStateFinished) {
@@ -478,7 +478,7 @@ static void analyzeBlockStack(AnalyzeStackContext &ctx) {
 
 		ctx.instruction = const_cast<Instruction *>(*i);
 
-		analyzeInstructionStack(ctx);
+		analyzeStackInstruction(ctx);
 
 		ctx.instruction = 0;
 	}
@@ -504,7 +504,7 @@ static void analyzeBlockStack(AnalyzeStackContext &ctx) {
 		ctx.block = const_cast<Block *>(ctx.block->children[i]);
 		ctx.stack = &cStack;
 
-		analyzeBlockStack(ctx);
+		analyzeStackBlock(ctx);
 		if (ctx.subRETN)
 			oldCtx.subRETN = true;
 
@@ -515,7 +515,7 @@ static void analyzeBlockStack(AnalyzeStackContext &ctx) {
 	}
 }
 
-static void analyzeInstructionStack(AnalyzeStackContext &ctx) {
+static void analyzeStackInstruction(AnalyzeStackContext &ctx) {
 	ctx.instruction->stack = *ctx.stack;
 
 	// For the instruction stack, only keep the stack frame of the current subroutine
@@ -595,7 +595,7 @@ static void analyzeStackJSR(AnalyzeStackContext &ctx) {
 
 	ctx.sub = sub;
 
-	analyzeSubRoutineStack(ctx, isStoreStateTail);
+	analyzeStackSubRoutine(ctx, isStoreStateTail);
 
 	for (size_t i = 0; i < (sub->params.size() + sub->returns.size()); i++)
 		oldCtx.modifiesVariable(i);
@@ -1306,7 +1306,8 @@ static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
 	ctx.modifiesVariable(ctx.pushVariable(type, kVariableUseLocal));
 }
 
-void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals) {
+
+void analyzeStackGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals) {
 	AnalyzeStackContext ctx(kAnalyzeStackGlobal, sub, variables, game);
 
 	ctx.globals = &globals;
@@ -1317,10 +1318,10 @@ void analyzeGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID ga
 	for (size_t i = 0; i < kDummyStackFrameSize; i++)
 		ctx.pushVariable(kTypeAny);
 
-	analyzeSubRoutineStack(ctx);
+	analyzeStackSubRoutine(ctx);
 }
 
-void analyzeSubRoutineStack(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack *globals) {
+void analyzeStackSubRoutine(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack *globals) {
 	AnalyzeStackContext ctx(kAnalyzeStackSubRoutine, sub, variables, game);
 
 	ctx.globals = globals;
@@ -1331,7 +1332,7 @@ void analyzeSubRoutineStack(SubRoutine &sub, VariableSpace &variables, Aurora::G
 	for (size_t i = 0; i < kDummyStackFrameSize; i++)
 		ctx.pushVariable(kTypeAny);
 
-	analyzeSubRoutineStack(ctx);
+	analyzeStackSubRoutine(ctx);
 }
 
 } // End of namespace NWScript
