@@ -75,6 +75,16 @@ struct Block {
 		stackAnalyzeState(kStackAnalyzeStateNone) {
 
 	}
+
+	/** Does this block have child blocks that are conditionally followed? */
+	bool hasConditionalChildren() const {
+		for (std::vector<BlockEdgeType>::const_iterator t = childrenTypes.begin();
+		     t != childrenTypes.end(); ++t)
+			if (*t == kBlockEdgeTypeConditionalTrue || *t == kBlockEdgeTypeConditionalFalse)
+				return true;
+
+		return false;
+	}
 };
 
 /** The whole set of blocks found in a script. */
