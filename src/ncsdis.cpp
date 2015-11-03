@@ -52,10 +52,11 @@ enum Command {
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game, Command &command, bool &printStack);
+                      Aurora::GameID &game, Command &command,
+                      bool &printStack, bool &printControlTypes);
 
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
-            Aurora::GameID &game, Command &command, bool printStack);
+            Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
@@ -66,13 +67,14 @@ int main(int argc, char **argv) {
 	int returnValue = 1;
 	Command command = kCommandNone;
 	bool printStack = false;
+	bool printControlTypes = false;
 	Common::UString inFile, outFile;
 
 	try {
-		if (!parseCommandLine(args, returnValue, inFile, outFile, game, command, printStack))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, game, command, printStack, printControlTypes))
 			return returnValue;
 
-		disNCS(inFile, outFile, game, command, printStack);
+		disNCS(inFile, outFile, game, command, printStack, printControlTypes);
 	} catch (...) {
 		Common::exceptionDispatcherError();
 	}
@@ -82,7 +84,8 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game, Command &command, bool &printStack) {
+                      Aurora::GameID &game, Command &command,
+                      bool &printStack, bool &printControlTypes) {
 
 	inFile.clear();
 	outFile.clear();
@@ -129,6 +132,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			} else if (argv[i] == "--stack") {
 				isOption   = true;
 				printStack = true;
+			} else if (argv[i] == "--control") {
+				isOption          = true;
+				printControlTypes = true;
 			} else if (argv[i] == "--nwn") {
 				isOption = true;
 				game     = Aurora::kGameIDNWN;
@@ -196,7 +202,10 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "          --list              Create full disassembly listing (default)\n");
 	std::fprintf(stream, "          --assembly          Only create disassembly mnemonics\n");
 	std::fprintf(stream, "          --dot               Create a graphviz dot file\n\n");
-	std::fprintf(stream, "          --stack             Print the stack frame for each instruction \n\n");
+	std::fprintf(stream, "          --stack             Print the stack frame for each instruction\n");
+	std::fprintf(stream, "                              (Only available in list or assembly mode)\n");
+	std::fprintf(stream, "          --control           Print the control types for each block\n");
+	std::fprintf(stream, "                              (Only available in dot mode)\n\n");
 	std::fprintf(stream, "          --nwn               This is a Neverwinter Nights script\n");
 	std::fprintf(stream, "          --nwn2              This is a Neverwinter Nights 2 script\n");
 	std::fprintf(stream, "          --kotor             This is a Knights of the Old Republic script\n");
@@ -209,7 +218,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 }
 
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
-            Aurora::GameID &game, Command &command, bool printStack) {
+            Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes) {
 
 	Common::SeekableReadStream *ncs = new Common::ReadFile(inFile);
 
@@ -230,6 +239,13 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 			} catch (...) {
 				Common::exceptionDispatcherWarnAndIgnore("Script analysis failed");
 			}
+
+			try {
+				status("Analyzing control flow...");
+				disassembler.analyzeControlFlow();
+			} catch (...) {
+				Common::exceptionDispatcherWarnAndIgnore("Control flow analysis failed");
+			}
 		}
 
 		switch (command) {
@@ -242,7 +258,7 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 				break;
 
 			case kCommandDot:
-				disassembler.createDot(*out);
+				disassembler.createDot(*out, printControlTypes);
 				break;
 
 			default:
