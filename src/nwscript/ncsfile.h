@@ -54,6 +54,9 @@ namespace NWScript {
  *  analyzeStack() method. Since this depends on game-dependant information,
  *  the game this script is from needs to be passed into the constructor for
  *  this to work.
+ *
+ *  Likewise, a deeper analysis of the control flow can be performed by calling
+ *  the analyzeControlFlow() method. This also requires a GameID.
  */
 class NCSFile : public Aurora::AuroraBase {
 public:
@@ -68,12 +71,19 @@ public:
 	 *  For this to work, a game value has to have been supplied in the constructor. */
 	void analyzeStack();
 
+	/** Perform a deep analysis of the control flow.
+	 *  For this to work, a game value has to have been supplied in the constructor. */
+	void analyzeControlFlow();
+
 	/** Return the size of the script bytecode in bytes.
 	 *  Should be equal to the size of the containing stream. */
 	size_t size() const;
 
 	/** Did we successfully analyze the script stack? */
 	bool hasStackAnalysis() const;
+
+	/** Did we successfully analyze the control flow? */
+	bool hasControlFlowAnalysis() const;
 
 	/** Return all the instructions within this NCS file. */
 	const Instructions &getInstructions() const;
@@ -121,6 +131,7 @@ private:
 	SpecialSubRoutines _specialSubRoutines;
 
 	bool _hasStackAnalysis;
+	bool _hasControlFlowAnalysis;
 
 	VariableSpace _variables;
 	Stack _globals;

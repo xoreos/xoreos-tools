@@ -32,6 +32,7 @@
 
 #include "src/nwscript/ncsfile.h"
 #include "src/nwscript/util.h"
+#include "src/nwscript/controlflow.h"
 
 static const uint32 kNCSID     = MKTAG('N', 'C', 'S', ' ');
 static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
@@ -39,7 +40,7 @@ static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
 namespace NWScript {
 
 NCSFile::NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game) :
-	_game(game), _size(0), _hasStackAnalysis(false) {
+	_game(game), _size(0), _hasStackAnalysis(false), _hasControlFlowAnalysis(false) {
 
 	load(ncs);
 }
@@ -57,6 +58,10 @@ size_t NCSFile::size() const {
 
 bool NCSFile::hasStackAnalysis() const {
 	return _hasStackAnalysis;
+}
+
+bool NCSFile::hasControlFlowAnalysis() const {
+	return _hasControlFlowAnalysis;
 }
 
 const Instructions &NCSFile::getInstructions() const {
@@ -200,6 +205,15 @@ void NCSFile::analyzeStack() {
 	analyzeStackSubRoutine(*_specialSubRoutines.mainSub, _variables, _game, &_globals);
 
 	_hasStackAnalysis = true;
+}
+
+void NCSFile::analyzeControlFlow() {
+	if ((_game == Aurora::kGameIDUnknown) || _hasControlFlowAnalysis)
+		return;
+
+	NWScript::analyzeControlFlow(_blocks);
+
+	_hasControlFlowAnalysis = true;
 }
 
 } // End of namespace NWScript
