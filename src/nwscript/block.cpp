@@ -209,6 +209,10 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 	return true;
 }
 
+static bool isSubRoutineCall(BlockEdgeType type) {
+	return (type == kBlockEdgeTypeFunctionCall) || (type == kBlockEdgeTypeStoreState);
+}
+
 static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 	// The two blocks are the same => we found a path
 	if (block1.address == block2.address)
@@ -225,6 +229,51 @@ static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 			return true;
 
 	return false;
+}
+
+
+std::vector<const Block *> Block::getEarlierChildren(bool includeSubRoutines) const {
+	std::vector<const Block *> result;
+
+	for (std::vector<const Block *>::const_iterator c = children.begin(); c != children.end(); ++c)
+		if ((*c)->address < address)
+			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(*this, **c)))
+				result.push_back(*c);
+
+	return result;
+}
+
+std::vector<const Block *> Block::getLaterChildren(bool includeSubRoutines) const {
+	std::vector<const Block *> result;
+
+	for (std::vector<const Block *>::const_iterator c = children.begin(); c != children.end(); ++c)
+		if ((*c)->address >= address)
+			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(*this, **c)))
+				result.push_back(*c);
+
+	return result;
+}
+
+std::vector<const Block *> Block::getEarlierParents(bool includeSubRoutines) const {
+	std::vector<const Block *> result;
+
+	for (std::vector<const Block *>::const_iterator p = parents.begin(); p != parents.end(); ++p)
+		if ((*p)->address < address)
+			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(**p, *this)))
+				result.push_back(*p);
+
+	return result;
+}
+
+std::vector<const Block *> Block::getLaterParents(bool includeSubRoutines) const {
+	std::vector<const Block *> result;
+
+	for (std::vector<const Block *>::const_iterator p = parents.begin(); p != parents.end(); ++p)
+		if ((*p)->address >= address)
+			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(**p, *this)))
+				result.push_back(*p);
+
+	return result;
 }
 
 

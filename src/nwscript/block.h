@@ -96,6 +96,18 @@ struct Block {
 
 		return false;
 	}
+
+	/** Return all child blocks that jump backward, to an earlier, smaller address. */
+	std::vector<const Block *> getEarlierChildren(bool includeSubRoutines = false) const;
+
+	/** Return all child blocks that jump forward, to a later, larger address. */
+	std::vector<const Block *> getLaterChildren(bool includeSubRoutines = false) const;
+
+	/** Return all parent blocks that jump forward, from an earlier, smaller address. */
+	std::vector<const Block *> getEarlierParents(bool includeSubRoutines = false) const;
+
+	/** Return all parent blocks that jump backward, from a later, larger address. */
+	std::vector<const Block *> getLaterParents(bool includeSubRoutines = false) const;
 };
 
 /** The whole set of blocks found in a script. */
