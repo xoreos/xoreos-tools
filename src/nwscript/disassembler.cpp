@@ -67,6 +67,10 @@ void Disassembler::analyzeStack() {
 	_ncs->analyzeStack();
 }
 
+void Disassembler::analyzeControlFlow() {
+	_ncs->analyzeControlFlow();
+}
+
 void Disassembler::createListing(Common::WriteStream &out, bool printStack) {
 	writeInfo(out);
 	writeEngineTypes(out);

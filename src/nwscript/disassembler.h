@@ -53,6 +53,8 @@ public:
 
 	/** Perform a deep analysis of the script stack, so that more information is available. */
 	void analyzeStack();
+	/** Perform a deep analysis of the control flow, so that more information is available. */
+	void analyzeControlFlow();
 
 	/** Create a full disassembly listing, with addresses and raw bytes. */
 	void createListing (Common::WriteStream &out, bool printStack = false);
