@@ -232,6 +232,14 @@ size_t findParentChildBlock(const Block &parent, const Block &child) {
 	return SIZE_MAX;
 }
 
+BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child) {
+	size_t index = findParentChildBlock(parent, child);
+	if (index == SIZE_MAX)
+		throw Common::Exception("Child %08X does not exist in block %08X", child.address, parent.address);
+
+	return parent.childrenTypes[index];
+}
+
 void findDeadBlockEdges(Blocks &blocks) {
 	/* Run through all blocks and find edges that are logically dead and will
 	 * never be taken.

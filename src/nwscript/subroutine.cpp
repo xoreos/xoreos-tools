@@ -72,11 +72,7 @@ static bool isNewSubRoutineBlock(const Block &block) {
 		if (!*p)
 			continue;
 
-		const size_t childIndex = findParentChildBlock(**p, block);
-		if (childIndex == SIZE_MAX)
-			throw Common::Exception("Child %08X does not exist in block %08X", block.address, (*p)->address);
-
-		const BlockEdgeType edgeType = (*p)->childrenTypes[childIndex];
+		const BlockEdgeType edgeType = getParentChildEdgeType(**p, block);
 		if ((edgeType == kBlockEdgeTypeFunctionCall) || (edgeType == kBlockEdgeTypeStoreState))
 			return true;
 	}
