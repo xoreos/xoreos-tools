@@ -276,6 +276,23 @@ std::vector<const Block *> Block::getLaterParents(bool includeSubRoutines) const
 	return result;
 }
 
+bool Block::getLoop(const Block *&head, const Block *&tail, const Block *&next) const {
+	head = tail = next = 0;
+
+	const ControlStructure *c = 0;
+	for (size_t i = (size_t)kControlTypeDoWhileHead; i <= (size_t)kControlTypeWhileNext; i++)
+		if ((c = getControl((ControlType)i)))
+			break;
+
+	if (!c)
+		return false;
+
+	head = c->loopHead;
+	tail = c->loopTail;
+	next = c->loopNext;
+	return true;
+}
+
 
 void constructBlocks(Blocks &blocks, Instructions &instructions) {
 	/* Create the first block containing the very first instruction in this script.

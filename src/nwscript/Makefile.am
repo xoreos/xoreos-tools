@@ -19,6 +19,7 @@ noinst_HEADERS = \
                  game_witcher.h \
                  game_dragonage.h \
                  game_dragonage2.h \
+                 controlflow.h \
                  disassembler.h \
                  $(EMPTY)
 
@@ -31,5 +32,6 @@ libnwscript_la_SOURCES = \
                          util.cpp \
                          ncsfile.cpp \
                          game.cpp \
+                         controlflow.cpp \
                          disassembler.cpp \
                          $(EMPTY)
