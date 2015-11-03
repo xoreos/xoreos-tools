@@ -61,7 +61,7 @@ public:
 	/** Create bare disassembly output, potentially capable of being re-assembled. */
 	void createAssembly(Common::WriteStream &out, bool printStack = false);
 	/** Create a graphviz dot file that can be plotted into a control flow graph. */
-	void createDot     (Common::WriteStream &out);
+	void createDot     (Common::WriteStream &out, bool printControlTypes = false);
 
 
 private:
@@ -76,8 +76,9 @@ private:
 	Common::UString getSignature(const SubRoutine  &sub);
 	Common::UString getSignature(const Instruction &instr);
 
-	void writeDotClusteredBlocks(Common::WriteStream &out);
-	void writeDotBlocks         (Common::WriteStream &out, const std::vector<const Block *> &blocks);
+	void writeDotClusteredBlocks(Common::WriteStream &out, bool printControlTypes);
+	void writeDotBlocks         (Common::WriteStream &out, bool printControlTypes,
+	                             const std::vector<const Block *> &blocks);
 	void writeDotBlockEdges     (Common::WriteStream &out);
 };
 

@@ -114,7 +114,7 @@ void Disassembler::createAssembly(Common::WriteStream &out, bool printStack) {
 	}
 }
 
-void Disassembler::createDot(Common::WriteStream &out) {
+void Disassembler::createDot(Common::WriteStream &out, bool printControlTypes) {
 	/* This creates a GraphViz dot file, which can be drawn into a graph image
 	 * with graphviz's dot tool.
 	 *
@@ -128,13 +128,13 @@ void Disassembler::createDot(Common::WriteStream &out) {
 	out.writeString("  concentrate=true\n");
 	out.writeString("  splines=ortho\n\n");
 
-	writeDotClusteredBlocks(out);
+	writeDotClusteredBlocks(out, printControlTypes);
 	writeDotBlockEdges     (out);
 
 	out.writeString("}\n");
 }
 
-void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out) {
+void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, bool printControlTypes) {
 	const SubRoutines &subs = _ncs->getSubRoutines();
 
 	// Block nodes grouped into subroutines clusters
@@ -155,7 +155,7 @@ void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out) {
 
 		out.writeString(Common::UString::format("    label=\"%s\"\n\n", clusterLabel.c_str()));
 
-		writeDotBlocks(out, s->blocks);
+		writeDotBlocks(out, printControlTypes, s->blocks);
 
 		out.writeString("  }\n\n");
 	}
@@ -168,7 +168,72 @@ static size_t calculateNodesPerBlock(size_t blockSize) {
 	return ceil(blockSize / (double)kMaxNodeSize);
 }
 
-void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<const Block *> &blocks) {
+static Common::UString getBlockControl(const Block &block) {
+	Common::UString control;
+
+	for (std::vector<ControlStructure>::const_iterator c = block.controls.begin();
+	     c != block.controls.end(); ++c) {
+
+		switch (c->type) {
+			case kControlTypeNone:
+				control += "<NONE>";
+				break;
+			case kControlTypeDoWhileHead:
+				control += "<DOWHILEHEAD>";
+				break;
+			case kControlTypeDoWhileTail:
+				control += "<DOWHILETAIL>";
+				break;
+			case kControlTypeDoWhileNext:
+				control += "<DOWHILENEXT>";
+				break;
+			case kControlTypeWhileHead:
+				control += "<WHILEHEAD>";
+				break;
+			case kControlTypeWhileTail:
+				control += "<WHILETAIL>";
+				break;
+			case kControlTypeWhileNext:
+				control += "<WHILENEXT>";
+				break;
+			case kControlTypeBreak:
+				control += "<BREAK>";
+				break;
+			case kControlTypeContinue:
+				control += "<CONTINUE>";
+				break;
+			case kControlTypeReturn:
+				control += "<RETURN>";
+				break;
+			case kControlTypeIfCond:
+				control += "<IFCOND>";
+				break;
+			case kControlTypeIfTrue:
+				control += "<IFTRUE>";
+				break;
+			case kControlTypeIfElse:
+				control += "<IFELSE>";
+				break;
+			case kControlTypeIfNext:
+				control += "<IFNEXT>";
+				break;
+			default:
+				control += "<>";
+				break;
+		}
+
+		control += "\\n";
+	}
+
+	if (!control.empty())
+		control += "\\n";
+
+	return control;
+}
+
+void Disassembler::writeDotBlocks(Common::WriteStream &out, bool printControlTypes,
+                                  const std::vector<const Block *> &blocks) {
+
 	for (std::vector<const Block *>::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		/* To keep large nodes from messing up the layout, we divide blocks with
 		 * a huge amount of instructions into several, equal-sized nodes. */
@@ -180,11 +245,17 @@ void Disassembler::writeDotBlocks(Common::WriteStream &out, const std::vector<co
 
 		const size_t linesPerNode = ceil((*b)->instructions.size() / (double)labels.size());
 
+		Common::UString control;
+		if (printControlTypes)
+			control = getBlockControl(**b);
+
 		labels[0] = formatJumpLabelName(**b);
 		if (labels[0].empty())
 			labels[0] = formatJumpDestination((*b)->instructions.front()->address);
 
 		labels[0] += ":\\l";
+
+		labels[0] = control + labels[0];
 
 		// Instructions
 		for (size_t i = 0; i < (*b)->instructions.size(); i++) {
