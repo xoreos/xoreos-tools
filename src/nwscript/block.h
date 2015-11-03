@@ -85,6 +85,17 @@ struct Block {
 
 		return false;
 	}
+
+	bool hasUnconditionalChildren() const {
+		if ((childrenTypes.size() == 1) && (childrenTypes[0] == kBlockEdgeTypeUnconditional))
+			return true;
+
+		if ((childrenTypes.size() == 2) &&
+		    ((childrenTypes[0] == kBlockEdgeTypeDead) || (childrenTypes[1] == kBlockEdgeTypeDead)))
+			return true;
+
+		return false;
+	}
 };
 
 /** The whole set of blocks found in a script. */
