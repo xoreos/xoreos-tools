@@ -94,6 +94,12 @@ size_t findParentChildBlock(const Block &parent, const Block &child);
 /** Return the edge type that connects these two blocks. */
 BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child);
 
+/** Given a complete set of script blocks, find the block directly following a block. */
+const Block *getNextBlock(const Blocks &blocks, const Block &block);
+
+/** Given a complete set of script blocks, find the block directly preceding a block. */
+const Block *getPreviousBlock(const Blocks &blocks, const Block &block);
+
 /** Given a complete set of script blocks, find edges between blocks that are logically
  *  dead and will never be taken.
  *

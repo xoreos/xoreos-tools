@@ -240,6 +240,24 @@ BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child) {
 	return parent.childrenTypes[index];
 }
 
+const Block *getNextBlock(const Blocks &blocks, const Block &block) {
+	const Block *result = 0;
+	for (Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b)
+		if ((!result || (b->address < result->address)) && (b->address > block.address))
+			result = &*b;
+
+	return result;
+}
+
+const Block *getPreviousBlock(const Blocks &blocks, const Block &block) {
+	const Block *result = 0;
+	for (Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b)
+		if ((!result || (b->address > result->address)) && (b->address < block.address))
+			result = &*b;
+
+	return result;
+}
+
 void findDeadBlockEdges(Blocks &blocks) {
 	/* Run through all blocks and find edges that are logically dead and will
 	 * never be taken.
