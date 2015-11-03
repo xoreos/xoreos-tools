@@ -55,9 +55,9 @@ public:
 	void analyzeStack();
 
 	/** Create a full disassembly listing, with addresses and raw bytes. */
-	void createListing (Common::WriteStream &out, bool printStack);
+	void createListing (Common::WriteStream &out, bool printStack = false);
 	/** Create bare disassembly output, potentially capable of being re-assembled. */
-	void createAssembly(Common::WriteStream &out, bool printStack);
+	void createAssembly(Common::WriteStream &out, bool printStack = false);
 	/** Create a graphviz dot file that can be plotted into a control flow graph. */
 	void createDot     (Common::WriteStream &out);
 
