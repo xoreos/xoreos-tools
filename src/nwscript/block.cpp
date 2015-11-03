@@ -209,6 +209,24 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 	return true;
 }
 
+static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
+	// The two blocks are the same => we found a path
+	if (block1.address == block2.address)
+		return true;
+
+	// We moved past the destination => no path
+	if (block1.address > block2.address)
+		return false;
+
+	// Continue along the children
+	for (std::vector<const Block *>::const_iterator c = block1.children.begin();
+	     c != block1.children.end(); ++c)
+		if (hasLinearPathInternal(**c, block2))
+			return true;
+
+	return false;
+}
+
 
 void constructBlocks(Blocks &blocks, Instructions &instructions) {
 	/* Create the first block containing the very first instruction in this script.
@@ -238,6 +256,13 @@ BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child) {
 		throw Common::Exception("Child %08X does not exist in block %08X", child.address, parent.address);
 
 	return parent.childrenTypes[index];
+}
+
+bool hasLinearPath(const Block &block1, const Block &block2) {
+	if (block1.address < block2.address)
+		return hasLinearPathInternal(block1, block2);
+
+	return hasLinearPathInternal(block2, block1);
 }
 
 const Block *getNextBlock(const Blocks &blocks, const Block &block) {

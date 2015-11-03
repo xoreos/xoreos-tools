@@ -94,6 +94,9 @@ size_t findParentChildBlock(const Block &parent, const Block &child);
 /** Return the edge type that connects these two blocks. */
 BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child);
 
+/** Is there a linear path between these two blocks? */
+bool hasLinearPath(const Block &block1, const Block &block2);
+
 /** Given a complete set of script blocks, find the block directly following a block. */
 const Block *getNextBlock(const Blocks &blocks, const Block &block);
 
