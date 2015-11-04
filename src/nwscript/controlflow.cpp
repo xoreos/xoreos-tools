@@ -84,6 +84,24 @@ static bool isReturnBlock(const Block &block) {
 	return false;
 }
 
+/** Is this a block that has a Return control types? */
+static bool isReturnControl(const Block &block, bool checkChildren = false) {
+	if (block.isControl(kControlTypeReturn))
+		return true;
+
+	if (checkChildren) {
+		if (block.hasConditionalChildren())
+			return false;
+
+		for (std::vector<const Block *>::const_iterator c = block.children.begin();
+		     c != block.children.end(); ++c)
+			if ((*c)->isControl(kControlTypeReturn))
+				return true;
+	}
+
+	return false;
+}
+
 /** Return the block that has the earliest, lowest address. */
 static const Block *getEarliestBlock(const std::vector<const Block *> &blocks) {
 	const Block *result = 0;
@@ -317,15 +335,126 @@ static void detectIf(Blocks &blocks) {
 }
 
 
-void analyzeControlFlow(Blocks &blocks) {
-	/* Detect the different control structures. The order is important! */
+static std::vector<const ControlStructure *> collectControls(const Blocks &blocks, ControlType type) {
+	std::vector<const ControlStructure *> controls;
 
+	for (Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b)
+		for (std::vector<ControlStructure>::const_iterator c = b->controls.begin(); c != b->controls.end(); ++c)
+			if (c->type == type)
+				controls.push_back(&*c);
+
+	return controls;
+}
+
+
+static void verifyBlocks(const Blocks &blocks) {
+	for (Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
+		if (b->hasBackEdge() && !b->isLoop())
+			throw Common::Exception("Block %08X has back edges but is no loop", b->address);
+
+		if (b->hasConditionalChildren()) {
+			if (!b->isControl(kControlTypeIfCond))
+				throw Common::Exception("Block %08X has conditional children but is no if", b->address);
+
+			for (std::vector<const Block *>::const_iterator c = b->children.begin(); c != b->children.end(); ++c)
+				if (!(*c)->isIfCond() && !(*c)->isControl(kControlTypeIfNext))
+					throw Common::Exception("Block %08X is child of if %08X but is not an if type",
+					                        (*c)->address, b->address);
+		}
+	}
+}
+
+static void verifyLoopBlocks(const Block &block, const Block &head, const Block &tail, const Block &next) {
+	if ((block.address > tail.address) || (block.address < head.address))
+		return;
+
+	for (size_t i = 0; i < block.children.size(); i++) {
+		if (block.isSubRoutineChild(i))
+			continue;
+
+		const Block &child = *block.children[i];
+
+		if ( (child.address < head.address) ||
+		    ((child.address > tail.address) && (child.address != next.address))) {
+
+			if (!isReturnControl(block) && !isReturnControl(child, true))
+				throw Common::Exception("Loop block jumps outside loop: %08X, %08X, %08X: %08X => %08X",
+				                        head.address, tail.address, next.address, block.address, child.address);
+		}
+
+		if (child.address > block.address)
+			verifyLoopBlocks(child, head, tail, next);
+	}
+}
+
+static void verifyLoop(const Block &head, const Block &tail, const Block &next) {
+	if ((head.address >= tail.address) || (next.address <= tail.address))
+		throw Common::Exception("Loop blocks out of order: %08X, %08X, %08X",
+		                        head.address, tail.address, next.address);
+
+	if (!hasLinearPath(head, tail) || !hasLinearPath(tail, next))
+		throw Common::Exception("Loop blocks have no linear path: %08X, %08X, %08X",
+		                        head.address, tail.address, next.address);
+
+	verifyLoopBlocks(head, head, tail, next);
+}
+
+static void verifyLoops(const std::vector<const ControlStructure *> &loops) {
+	for (std::vector<const ControlStructure *>::const_iterator l = loops.begin(); l != loops.end(); ++l)
+		verifyLoop(*(*l)->loopHead, *(*l)->loopTail, *(*l)->loopNext);
+}
+
+static void verifyLoops(const Blocks &blocks) {
+	std::vector<const ControlStructure *> doWhileLoops = collectControls(blocks, kControlTypeDoWhileHead);
+	verifyLoops(doWhileLoops);
+
+	std::vector<const ControlStructure *> whileLoops   = collectControls(blocks, kControlTypeWhileHead);
+	verifyLoops(whileLoops);
+}
+
+static void verifyIf(const Block *ifCond, const Block *ifTrue, const Block *ifElse, const Block *ifNext) {
+	assert(ifCond && ifTrue);
+
+	if (ifTrue && ifNext)
+		if (!hasLinearPath(*ifTrue, *ifNext))
+			throw Common::Exception("If blocks true and next have no linear path: %08X, %08X, %08X",
+			                        ifCond->address, ifTrue->address, ifNext->address);
+
+	if (ifElse && ifNext)
+		if (!hasLinearPath(*ifElse, *ifNext))
+			throw Common::Exception("If blocks else and next have no linear path: %08X, %08X, %08X",
+			                        ifCond->address, ifTrue->address, ifNext->address);
+}
+
+static void verifyIf(const Blocks &blocks) {
+	std::vector<const ControlStructure *> ifs = collectControls(blocks, kControlTypeIfCond);
+	for (std::vector<const ControlStructure *>::const_iterator i = ifs.begin(); i != ifs.end(); ++i)
+		verifyIf((*i)->ifCond, (*i)->ifTrue, (*i)->ifElse, (*i)->ifNext);
+}
+
+
+static void detectControlFlow(Blocks &blocks) {
+	// The order is important!
 	detectDoWhile (blocks);
 	detectWhile   (blocks);
 	detectBreak   (blocks);
 	detectContinue(blocks);
 	detectReturn  (blocks);
 	detectIf      (blocks);
+}
+
+static void verifyControlFlow(const Blocks &blocks) {
+	verifyBlocks(blocks);
+	verifyLoops (blocks);
+	verifyIf    (blocks);
+}
+
+
+void analyzeControlFlow(Blocks &blocks) {
+	/* Analyze the control flow to detect (and verify) different control structures. */
+
+	detectControlFlow(blocks);
+	verifyControlFlow(blocks);
 }
 
 } // End of namespace NWScript
