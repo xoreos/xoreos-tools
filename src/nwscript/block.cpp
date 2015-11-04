@@ -228,12 +228,20 @@ static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 }
 
 
+bool Block::isSubRoutineChild(size_t i) const {
+	return (i < childrenTypes.size() && isSubRoutineCall(childrenTypes[i]));
+}
+
+bool Block::isSubRoutineChild(const Block &child) const {
+	return isSubRoutineCall(getParentChildEdgeType(*this, child));
+}
+
 std::vector<const Block *> Block::getEarlierChildren(bool includeSubRoutines) const {
 	std::vector<const Block *> result;
 
 	for (std::vector<const Block *>::const_iterator c = children.begin(); c != children.end(); ++c)
 		if ((*c)->address < address)
-			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(*this, **c)))
+			if (includeSubRoutines || !isSubRoutineChild(**c))
 				result.push_back(*c);
 
 	return result;
@@ -244,7 +252,7 @@ std::vector<const Block *> Block::getLaterChildren(bool includeSubRoutines) cons
 
 	for (std::vector<const Block *>::const_iterator c = children.begin(); c != children.end(); ++c)
 		if ((*c)->address >= address)
-			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(*this, **c)))
+			if (includeSubRoutines || !isSubRoutineChild(**c))
 				result.push_back(*c);
 
 	return result;
@@ -255,7 +263,7 @@ std::vector<const Block *> Block::getEarlierParents(bool includeSubRoutines) con
 
 	for (std::vector<const Block *>::const_iterator p = parents.begin(); p != parents.end(); ++p)
 		if ((*p)->address < address)
-			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(**p, *this)))
+			if (includeSubRoutines || !(*p)->isSubRoutineChild(*this))
 				result.push_back(*p);
 
 	return result;
@@ -266,7 +274,7 @@ std::vector<const Block *> Block::getLaterParents(bool includeSubRoutines) const
 
 	for (std::vector<const Block *>::const_iterator p = parents.begin(); p != parents.end(); ++p)
 		if ((*p)->address >= address)
-			if (includeSubRoutines || !isSubRoutineCall(getParentChildEdgeType(**p, *this)))
+			if (includeSubRoutines || !(*p)->isSubRoutineChild(*this))
 				result.push_back(*p);
 
 	return result;

@@ -268,6 +268,12 @@ struct Block {
 		return false;
 	}
 
+	/** Is this child block jumped to by a subroutine call? */
+	bool isSubRoutineChild(size_t i) const;
+
+	/** Is this child block jumped to by a subroutine call? */
+	bool isSubRoutineChild(const Block &child) const;
+
 	/** Return all child blocks that jump backward, to an earlier, smaller address. */
 	std::vector<const Block *> getEarlierChildren(bool includeSubRoutines = false) const;
 
