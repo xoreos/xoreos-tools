@@ -209,10 +209,6 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 	return true;
 }
 
-static bool isSubRoutineCall(BlockEdgeType type) {
-	return (type == kBlockEdgeTypeFunctionCall) || (type == kBlockEdgeTypeStoreState);
-}
-
 static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 	// The two blocks are the same => we found a path
 	if (block1.address == block2.address)
@@ -322,6 +318,10 @@ BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child) {
 		throw Common::Exception("Child %08X does not exist in block %08X", child.address, parent.address);
 
 	return parent.childrenTypes[index];
+}
+
+bool isSubRoutineCall(BlockEdgeType type) {
+	return (type == kBlockEdgeTypeFunctionCall) || (type == kBlockEdgeTypeStoreState);
 }
 
 bool hasLinearPath(const Block &block1, const Block &block2) {
