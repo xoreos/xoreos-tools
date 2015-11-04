@@ -291,6 +291,36 @@ struct Block {
 
 	/** Return all parent blocks that jump backward, from a later, larger address. */
 	std::vector<const Block *> getLaterParents(bool includeSubRoutines = false) const;
+
+	/** Does this block have incoming edges from later in the script? */
+	bool hasIncomingBackEdge() const {
+		return !getLaterParents().empty();
+	}
+
+	/** Does this block have outgoing edges to earlier in the script? */
+	bool hasOutgoingBackEdge() const {
+		return !getEarlierChildren().empty();
+	}
+
+	/** Does this block have any back edges (incoming or outgoing)? */
+	bool hasBackEdge() const {
+		return hasIncomingBackEdge() || hasOutgoingBackEdge();
+	}
+
+	/** Does this block have incoming edges from earlier in the script? */
+	bool hasIncomingForwardEdge() const {
+		return !getEarlierParents().empty();
+	}
+
+	/** Does this block have outgoing edges to later in the script? */
+	bool hasOutgoingForwardEdge() const {
+		return !getLaterChildren().empty();
+	}
+
+	/** Does this block have any forward edges (incoming or outgoing)? */
+	bool hasForwardEdge() const {
+		return hasIncomingForwardEdge() || hasOutgoingForwardEdge();
+	}
 };
 
 /** The whole set of blocks found in a script. */
