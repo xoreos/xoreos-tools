@@ -235,6 +235,11 @@ struct Block {
 	/** If this block is a loop or loop next control type, return all the loop blocks. */
 	bool getLoop(const Block *&head, const Block *&tail, const Block *&next) const;
 
+	/** Is this block part of an if condition? */
+	bool isIfCond() const {
+		return isControl(kControlTypeIfCond) || isControl(kControlTypeIfTrue) || isControl(kControlTypeIfElse);
+	}
+
 	/** Do we already have a "main" control structure for a block?
 	 *
 	 *  There are several control structure types that exclusively determine
