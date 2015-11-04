@@ -257,6 +257,7 @@ struct Block {
 		return false;
 	}
 
+	/** Does this block have only children that are followed unconditionally? */
 	bool hasUnconditionalChildren() const {
 		if ((childrenTypes.size() == 1) && (childrenTypes[0] == kBlockEdgeTypeUnconditional))
 			return true;
