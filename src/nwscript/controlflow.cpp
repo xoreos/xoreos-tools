@@ -335,6 +335,7 @@ static void detectIf(Blocks &blocks) {
 }
 
 
+/** Collect all control structures of a certain type from all blocks. */
 static std::vector<const ControlStructure *> collectControls(const Blocks &blocks, ControlType type) {
 	std::vector<const ControlStructure *> controls;
 
@@ -348,6 +349,10 @@ static std::vector<const ControlStructure *> collectControls(const Blocks &block
 
 
 static void verifyBlocks(const Blocks &blocks) {
+	/* Verify that all blocks that should have control structures attached do,
+	 * in fact, have control structures attached. If we find one that doesn't,
+	 * that's a fatal error. */
+
 	for (Blocks::const_iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		if (b->hasBackEdge() && !b->isLoop())
 			throw Common::Exception("Block %08X has back edges but is no loop", b->address);
@@ -365,6 +370,12 @@ static void verifyBlocks(const Blocks &blocks) {
 }
 
 static void verifyLoopBlocks(const Block &block, const Block &head, const Block &tail, const Block &next) {
+	/* Recursively verify that all blocks inside a jump control structure don't
+	 * jump to random script locations. The only valid jump destinations for
+	 * a block of a loop is to another block of the loop, the block directly
+	 * following the loop (thus ending the loop), or a return block (thus
+	 * returning from the subroutine entirely). */
+
 	if ((block.address > tail.address) || (block.address < head.address))
 		return;
 
@@ -388,6 +399,10 @@ static void verifyLoopBlocks(const Block &block, const Block &head, const Block 
 }
 
 static void verifyLoop(const Block &head, const Block &tail, const Block &next) {
+	/* Verify the loop assumption by making sure that the critical loop
+	 * blocks are ordered correctly, that there is a path between them,
+	 * and that all blocks within the loop jump to valid locations. */
+
 	if ((head.address >= tail.address) || (next.address <= tail.address))
 		throw Common::Exception("Loop blocks out of order: %08X, %08X, %08X",
 		                        head.address, tail.address, next.address);
@@ -413,6 +428,9 @@ static void verifyLoops(const Blocks &blocks) {
 }
 
 static void verifyIf(const Block *ifCond, const Block *ifTrue, const Block *ifElse, const Block *ifNext) {
+	/* Verify the if assumption by making sure that there is a path between
+	 * the critical blocks of the if condition. */
+
 	assert(ifCond && ifTrue);
 
 	if (ifTrue && ifNext)
