@@ -34,7 +34,7 @@ class SeekableReadStream;
 class MemoryWriteStreamDynamic;
 
 /** Print a quick hex dump of the given data. */
-void printDataHex(SeekableReadStream &stream);
+void printDataHex(SeekableReadStream &stream, size_t size = SIZE_MAX);
 /** Print a quick hex dump of the given data. */
 void printDataHex(const byte *data, size_t size);
 
