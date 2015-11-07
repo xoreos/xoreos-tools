@@ -7,6 +7,8 @@ Someday, ????-??-?? (Version 0.0.4)
 	- TLK2XML:
 		- Improved parameter parsing to not silently ignore extra filenames
 		- Added a status message when converting directly into a file
+	- UNERF:
+		- Add support for Neverwinter Nights premium modules
 
 Wednesday, 2015-09-30 (Version 0.0.3)
 	- Tools added:
