@@ -38,6 +38,7 @@
 #include "src/common/readfile.h"
 #include "src/common/filepath.h"
 #include "src/common/hash.h"
+#include "src/common/md5.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/erffile.h"
@@ -70,6 +71,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 bool findHashedName(uint64 hash, Common::UString &name);
 
 void parsePassword(const Common::UString &arg, std::vector<byte> &password);
+void readNWMMD5   (const Common::UString &arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &erf, Aurora::GameID game);
@@ -145,6 +147,12 @@ void parsePassword(const Common::UString &arg, std::vector<byte> &password) {
 	}
 }
 
+void readNWMMD5(const Common::UString &arg, std::vector<byte> &password) {
+	Common::ReadFile keyFile(arg);
+
+	Common::hashMD5(keyFile, password);
+}
+
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password) {
@@ -199,6 +207,19 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				}
 
 				parsePassword(argv[i], password);
+
+			} else if (argv[i] == "--nwm") {
+				isOption = true;
+
+				// Needs the file as the next parameter
+				if (i++ == (argv.size() - 1)) {
+					printUsage(stdout, argv[0]);
+					returnValue = 0;
+
+					return false;
+				}
+
+				readNWMMD5(argv[i], password);
 
 			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
@@ -258,7 +279,9 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "        --nwn2        Alias file types according to Neverwinter Nights 2 rules\n");
 	std::fprintf(stream, "        --jade        Alias file types according to Jade Empire rules\n");
 	std::fprintf(stream, "        --pass <hex>  Decryption password, if required, in hex notation\n");
-	std::fprintf(stream, "                      (e.g. \"4CF223AB\")\n\n");
+	std::fprintf(stream, "                      (e.g. \"4CF223AB\")\n");
+	std::fprintf(stream, "        --nwm <file>  Neverwinter Nights premium module file\n");
+	std::fprintf(stream, "                      (for decrypting their HAK file\n\n");
 	std::fprintf(stream, "Commands:\n");
 	std::fprintf(stream, "  i          Display meta-information\n");
 	std::fprintf(stream, "  l          List archive\n");
@@ -283,6 +306,7 @@ void displayInfo(Aurora::ERFFile &erf) {
 	std::printf("Build Year: %d\n", erf.getBuildYear());
 	std::printf("Build Day: %d\n", erf.getBuildDay());
 	std::printf("Number of files: %u\n", (uint)erf.getResources().size());
+
 
 	const Aurora::LocString &description = erf.getDescription();
 	if (description.getString().empty() && (description.getID() == Aurora::kStrRefInvalid))
