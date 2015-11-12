@@ -9,6 +9,9 @@ Someday, ????-??-?? (Version 0.0.4)
 		- Added a status message when converting directly into a file
 	- UNERF:
 		- Added support for Neverwinter Nights premium modules
+	- BUILD:
+		- Fixed small bug preventing the CMake build system to be used with
+		  non-MSVC compilers
 
 Wednesday, 2015-09-30 (Version 0.0.3)
 	- Tools added:
