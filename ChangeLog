@@ -12,6 +12,8 @@ Someday, ????-??-?? (Version 0.0.4)
 	- BUILD:
 		- Fixed small bug preventing the CMake build system to be used with
 		  non-MSVC compilers
+	- DOCS:
+		- Improved documentation in various files
 
 Wednesday, 2015-09-30 (Version 0.0.3)
 	- Tools added:
