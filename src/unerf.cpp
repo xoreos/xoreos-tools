@@ -201,7 +201,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				// Needs the password as the next parameter
 				if (i++ == (argv.size() - 1)) {
 					printUsage(stdout, argv[0]);
-					returnValue = 0;
+					returnValue = 1;
 
 					return false;
 				}
@@ -214,7 +214,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				// Needs the file as the next parameter
 				if (i++ == (argv.size() - 1)) {
 					printUsage(stdout, argv[0]);
-					returnValue = 0;
+					returnValue = 1;
 
 					return false;
 				}
