@@ -35,6 +35,7 @@ dist_man1_MANS = \
                  man/cbgt2tga.1 \
                  man/cdpth2tga.1 \
                  man/convert2da.1 \
+                 man/fixpremiumgff.1 \
                  man/desmall.1 \
                  man/gff2xml.1 \
                  man/nbfs2tga.1 \

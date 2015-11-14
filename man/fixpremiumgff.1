@@ -1,0 +1,77 @@
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+
+.TH fixpremiumgff 1 2015-11-14 "xoreos-tools"
+.SH NAME
+fixpremiumgff - Repair BioWare GFF files from encrypted NWN premium module HAKs
+.SH SYNOPSIS
+fixpremiumgff [<options>] <input file> <output file>
+.SH DESCRIPTION
+.PP
+In addition to being encrypted, the main HAK (ERF archive) of
+.I "Neverwinter Nights"
+premium modules also contains GFF files that have been deliberately
+broken.
+.B fixpremiumgff
+repairs those GFF files, turning them back into standard BioWare GFF
+files that can be read and manipulated by the usual GFF tools.
+.SH OPTIONS
+.TP 4
+.B -h
+.PD 0
+.TP 4
+.B --help
+.PD
+Show a help text and exit.
+.TP 4
+.B --version
+Show version information and exit.
+.TP 4
+.BR --id " <id>"
+Write this string into the ID fields of the repaired GFF. By default,
+the ID is auto-detected from the file name of the broken file. For
+example, a broken "module.ifo" will by default turned into a standard
+GFF with an ID of "IFO", while an "aribeth.dlg" will get the "DLG"
+id.
+.TP 4
+<input file>
+The GFF file to repair.
+.TP 4
+<output file>
+The repaired GFF file be be written there. This can be the same as
+the input file, to repair a broken GFF file in-place.
+.SH EXAMPLES
+.ad l
+.B Repair the file module.ifo:
+.nf
+.ad l
+fixpremiumgff module.ifo module_fixed.ifo
+.PP
+.fi
+.ad l
+.B Repair the file module.ifo, but overwrite the ID:
+.nf
+.ad l
+fixpremiumgff --id DLG module.ifo module_fixed.ifo
+.PP
+.fi
+.ad l
+.B Repair the file module.ifo in-place:
+.nf
+.ad l
+fixpremiumgff module.ifo module.ifo
+.PP
+.fi
+.ad b
+.SH "SEE ALSO"
+.BR gff2xml (1),
+.BR unerf (1)
+.PP
+More information about the xoreos project can be found on
+.URL "https://xoreos.org/" "its website" .
+.SH AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the AUTHORS file for details.
