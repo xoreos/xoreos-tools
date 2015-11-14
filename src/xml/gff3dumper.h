@@ -47,7 +47,7 @@ public:
 
 	/** Dump the GFF into XML. */
 	void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
-	          Common::Encoding encoding);
+	          Common::Encoding encoding, bool allowNWNPremium = false);
 
 private:
 	Aurora::GFF3File *_gff3;

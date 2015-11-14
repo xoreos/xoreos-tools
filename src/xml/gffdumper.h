@@ -40,11 +40,11 @@ public:
 	virtual ~GFFDumper();
 
 	/** Factory function: identifies the version of the GFF and returns a proper dumper instance. */
-	static GFFDumper *identify(Common::SeekableReadStream &input);
+	static GFFDumper *identify(Common::SeekableReadStream &input, bool allowNWNPremium = false);
 
 	/** Dump the GFF into XML. */
 	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
-	                  Common::Encoding encoding) = 0;
+	                  Common::Encoding encoding, bool allowNWNPremium = false) = 0;
 };
 
 } // End of namespace XML

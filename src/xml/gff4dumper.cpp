@@ -70,7 +70,7 @@ Common::UString GFF4Dumper::findFieldName(uint32 label) const {
 }
 
 void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
-                      Common::Encoding encoding) {
+                      Common::Encoding encoding, bool UNUSED(allowNWNPremium)) {
 
 	_encoding = encoding;
 

@@ -115,7 +115,7 @@ GFFDumper::GFFDumper() {
 GFFDumper::~GFFDumper() {
 }
 
-static GFFVersion identifyGFF(Common::SeekableReadStream &input) {
+static GFFVersion identifyGFF(Common::SeekableReadStream &input, bool allowNWNPremium) {
 	uint32 id = 0xFFFFFFFF, version = 0xFFFFFFFF;
 
 	try {
@@ -131,11 +131,15 @@ static GFFVersion identifyGFF(Common::SeekableReadStream &input) {
 	}
 
 	GFFVersion gffVersion;
-	if      ((version == kVersion32) || (version == kVersion33))
-		gffVersion = kGFFVersion3;
-	else if ((version == kVersion40) || (version == kVersion41))
-		gffVersion = kGFFVersion4;
-	else
+	if        ((version == kVersion32) || (version == kVersion33)) {
+		gffVersion      = kGFFVersion3;
+		allowNWNPremium = false;
+	} else if ((version == kVersion40) || (version == kVersion41)) {
+		gffVersion      = kGFFVersion4;
+		allowNWNPremium = false;
+	} else if (allowNWNPremium && (FROM_BE_32(id) >= 0x30) && (FROM_BE_32(id) <= 0x12F)) {
+		gffVersion      = kGFFVersion3;
+	} else
 		throw Common::Exception("Invalid GFF %s, %s",
 		                        Common::debugTag(id).c_str(), Common::debugTag(version).c_str());
 
@@ -147,14 +151,14 @@ static GFFVersion identifyGFF(Common::SeekableReadStream &input) {
 		}
 	}
 
-	if (foundType == 0xFFFFFFFF)
+	if ((foundType == 0xFFFFFFFF) && !allowNWNPremium)
 		warning("Unknown GFF type %s", Common::debugTag(id).c_str());
 
 	return gffVersion;
 }
 
-GFFDumper *GFFDumper::identify(Common::SeekableReadStream &input) {
-	const GFFVersion version = identifyGFF(input);
+GFFDumper *GFFDumper::identify(Common::SeekableReadStream &input, bool allowNWNPremium) {
+	const GFFVersion version = identifyGFF(input, allowNWNPremium);
 
 	switch (version) {
 		case kGFFVersion3:

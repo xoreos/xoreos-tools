@@ -52,10 +52,10 @@ void GFF3Dumper::clear() {
 }
 
 void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
-                      Common::Encoding UNUSED(encoding)) {
+                      Common::Encoding UNUSED(encoding), bool allowNWNPremium) {
 
 	try {
-		_gff3 = new Aurora::GFF3File(input, 0xFFFFFFFF);
+		_gff3 = new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium);
 		_xml  = new XMLWriter(output);
 
 		_xml->openTag("gff3");
