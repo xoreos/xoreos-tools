@@ -50,7 +50,7 @@ class GFF3Struct;
  */
 class GFF3File : public AuroraBase {
 public:
-	GFF3File(Common::SeekableReadStream *gff3, uint32 id = 0xFFFFFFFF);
+	GFF3File(Common::SeekableReadStream *gff3, uint32 id = 0xFFFFFFFF, bool repairNWNPremium = false);
 	~GFF3File();
 
 	/** Return the GFF3's specific type. */
@@ -88,6 +88,11 @@ private:
 	Common::SeekableReadStream *_stream;
 
 	Header _header; ///< The GFF's header
+
+	/** Should we try to read GFF files found in Neverwinter Nights premium modules? */
+	bool   _repairNWNPremium;
+	/** The correctional value for offsets to repair Neverwinter Nights premium modules. */
+	uint32 _offsetCorrection;
 
 	StructArray _structs; ///< Our structs.
 	ListArray   _lists;   ///< Our lists.
