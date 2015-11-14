@@ -40,24 +40,27 @@
 
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &inFile, Common::UString &outFile, Common::Encoding &encoding);
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, bool &nwnPremium);
 
-void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding);
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
+             Common::Encoding encoding, bool nwnPremium);
 
 int main(int argc, char **argv) {
 	std::vector<Common::UString> args;
 	Common::Platform::getParameters(argc, argv, args);
 
 	Common::Encoding encoding = Common::kEncodingUTF16LE;
+	bool nwnPremium = false;
 
 	int returnValue = 1;
 	Common::UString inFile, outFile;
 
 	try {
-		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, nwnPremium))
 			return returnValue;
 
-		dumpGFF(inFile, outFile, encoding);
+		dumpGFF(inFile, outFile, encoding, nwnPremium);
 	} catch (...) {
 		Common::exceptionDispatcherError();
 	}
@@ -66,7 +69,8 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &inFile, Common::UString &outFile, Common::Encoding &encoding) {
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, bool &nwnPremium) {
 
 	inFile.clear();
 	outFile.clear();
@@ -99,11 +103,16 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				return false;
 			}
 
-			if (argv[i] == "--cp1252") {
+			if        (argv[i] == "--cp1252") {
 				// Set the GFF4 string encoding to CP1252
 
 				isOption = true;
 				encoding = Common::kEncodingCP1252;
+
+			} else if (argv[i] == "--nwnpremium") {
+
+				isOption   = true;
+				nwnPremium = true;
 
 			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
@@ -143,16 +152,20 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "Usage: %s [<options>] <input file> [<output file>]\n", name.c_str());
 	std::fprintf(stream, "  -h      --help              This help text\n");
 	std::fprintf(stream, "          --version           Display version information\n");
-	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n\n");
+	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n");
+	std::fprintf(stream, "          --nwnpremium        This is a broken GFF from a Neverwinter\n");
+	std::fprintf(stream, "                              Nights premium module\n\n");
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
 }
 
-void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
+             Common::Encoding encoding, bool nwnPremium) {
+
 	Common::SeekableReadStream *gff = new Common::ReadFile(inFile);
 
 	XML::GFFDumper *dumper = 0;
 	try {
-		dumper = XML::GFFDumper::identify(*gff);
+		dumper = XML::GFFDumper::identify(*gff, nwnPremium);
 	} catch (...) {
 		delete gff;
 		throw;
@@ -166,7 +179,7 @@ void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Comm
 		else
 			out = new Common::StdOutStream;
 
-		dumper->dump(*out, gff, encoding);
+		dumper->dump(*out, gff, encoding, nwnPremium);
 
 	} catch (...) {
 		delete dumper;
