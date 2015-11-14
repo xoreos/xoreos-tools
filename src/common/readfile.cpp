@@ -136,4 +136,10 @@ size_t ReadFile::read(void *dataPtr, size_t dataSize) {
 	return std::fread(dataPtr, 1, dataSize, _handle);
 }
 
+MemoryReadStream *ReadFile::readIntoMemory(const UString &fileName) {
+	ReadFile file(fileName);
+
+	return file.readStream(file.size());
+}
+
 } // End of namespace Common

@@ -34,6 +34,7 @@
 namespace Common {
 
 class UString;
+class MemoryReadStream;
 
 /** A simple streaming file reading class. */
 class ReadFile : public SeekableReadStream, public NonCopyable {
@@ -65,6 +66,10 @@ public:
 
 	size_t seek(ptrdiff_t offset, Origin whence = kOriginBegin);
 	size_t read(void *dataPtr, size_t dataSize);
+
+	/** Read the whole file into memory and return a stream of its contents. */
+	static MemoryReadStream *readIntoMemory(const UString &fileName);
+
 
 protected:
 	std::FILE *_handle; ///< The actual file handle.
