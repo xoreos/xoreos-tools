@@ -19,6 +19,7 @@ bin_PROGRAMS = \
                tlk2xml \
                xml2tlk \
                convert2da \
+               fixpremiumgff \
                unerf \
                unherf \
                unrim \
@@ -72,6 +73,15 @@ convert2da_LDADD   = \
                      common/libcommon.la \
                      $(LDADD) \
                      $(EMPTY)
+
+fixpremiumgff_SOURCES = \
+                        fixpremiumgff.cpp \
+                        $(EMPTY)
+fixpremiumgff_LDADD   = \
+                        aurora/libaurora.la \
+                        common/libcommon.la \
+                        $(LDADD) \
+                        $(EMPTY)
 
 unerf_SOURCES = \
                 unerf.cpp \

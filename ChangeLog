@@ -1,5 +1,6 @@
 Someday, ????-??-?? (Version 0.0.4)
 	- Tools added:
+		- fixpremiumgff
 		- ncsdis
 	- GFF2XML:
 		- Improved parameter parsing to not silently ignore extra filenames

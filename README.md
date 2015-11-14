@@ -17,6 +17,7 @@ Currently, the following tools are included:
 * tlk2xml: Convert BioWare TLK to XML
 * xml2tlk: Convert XML back to BioWare TLK
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
+* fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
 * unerf: Extract BioWare ERF archives
 * unherf: Extract BioWare HERF archives
 * unrim: Extract BioWare RIM archives
