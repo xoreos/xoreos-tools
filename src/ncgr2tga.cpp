@@ -49,15 +49,15 @@ void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
              Common::UString &outFile, uint32 width, uint32 height);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	uint32 width, height;
-	std::vector<Common::UString> ncgrFiles;
-	Common::UString nclrFile, outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		uint32 width, height;
+		std::vector<Common::UString> ncgrFiles;
+		Common::UString nclrFile, outFile;
+
 		if (!parseCommandLine(args, returnValue, width, height, ncgrFiles, nclrFile, outFile))
 			return returnValue;
 

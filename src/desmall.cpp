@@ -43,13 +43,13 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void desmall(const Common::UString &inFile, const Common::UString &outFile);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	Common::UString inFile, outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+
 		if (!parseCommandLine(args, returnValue, inFile, outFile))
 			return returnValue;
 

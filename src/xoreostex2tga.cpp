@@ -53,15 +53,15 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
              Aurora::FileType type, bool flip);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	Common::UString inFile, outFile;
-	Aurora::FileType type = Aurora::kFileTypeNone;
-	bool flip = false;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+		Aurora::FileType type = Aurora::kFileTypeNone;
+		bool flip = false;
+
 		if (!parseCommandLine(args, returnValue, inFile, outFile, type, flip))
 			return returnValue;
 

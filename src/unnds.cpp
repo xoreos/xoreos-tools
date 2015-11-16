@@ -56,14 +56,14 @@ void listFiles(Aurora::NDSFile &nds);
 void extractFiles(Aurora::NDSFile &nds);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	Command command = kCommandNone;
-	Common::UString file;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		Common::UString file;
+
 		if (!parseCommandLine(args, returnValue, command, file))
 			return returnValue;
 

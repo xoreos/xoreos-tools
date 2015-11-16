@@ -48,14 +48,14 @@ void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,
              const Common::UString &outFile, uint32 width, uint32 height);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	Common::UString nbfsFile, nbfpFile, outFile;
-	uint32 width = 0xFFFFFFFF, height = 0xFFFFFFFF;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString nbfsFile, nbfpFile, outFile;
+		uint32 width = 0xFFFFFFFF, height = 0xFFFFFFFF;
+
 		if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))
 			return returnValue;
 

@@ -51,19 +51,19 @@ void createTLK(const Common::UString &inFile, const Common::UString &outFile, Co
                XML::TLKCreator::Version &version, uint32 &language);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Common::Encoding encoding = Common::kEncodingInvalid;
-	Aurora::GameID   game     = Aurora::kGameIDUnknown;
-
-	XML::TLKCreator::Version version = XML::TLKCreator::kVersionInvalid;
-	uint32 language = Aurora::kLanguageInvalid;
-
-	int returnValue = 1;
-	Common::UString inFile, outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Common::Encoding encoding = Common::kEncodingInvalid;
+		Aurora::GameID   game     = Aurora::kGameIDUnknown;
+
+		XML::TLKCreator::Version version = XML::TLKCreator::kVersionInvalid;
+		uint32 language = Aurora::kLanguageInvalid;
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+
 		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, version, language))
 			return returnValue;
 

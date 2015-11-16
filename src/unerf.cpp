@@ -80,12 +80,11 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
                   std::set<Common::UString> &files, ExtractMode mode);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Aurora::GameID game = Aurora::kGameIDUnknown;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Aurora::GameID game = Aurora::kGameIDUnknown;
 
 		int returnValue = 1;
 		Command command = kCommandNone;

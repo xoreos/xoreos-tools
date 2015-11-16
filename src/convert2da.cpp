@@ -57,16 +57,16 @@ void convert2DA(const Common::UString &file, const Common::UString &outFile, For
 void convert2DA(const std::vector<Common::UString> &files, const Common::UString &outFile, Format format);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Format format = kFormat2DA;
-
-	int returnValue = 1;
-	std::vector<Common::UString> files;
-	Common::UString outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Format format = kFormat2DA;
+
+		int returnValue = 1;
+		std::vector<Common::UString> files;
+		Common::UString outFile;
+
 		if (!parseCommandLine(args, returnValue, files, outFile, format))
 			return returnValue;
 

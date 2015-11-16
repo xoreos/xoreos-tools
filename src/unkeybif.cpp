@@ -71,19 +71,19 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
 void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Aurora::GameID game = Aurora::kGameIDUnknown;
-
-	int returnValue = 1;
-	Command command = kCommandNone;
-	std::list<Common::UString> files;
-
 	std::vector<Aurora::KEYFile *> keys;
 	std::vector<Aurora::BIFFile *> bifs;
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Aurora::GameID game = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		std::list<Common::UString> files;
+
 		if (!parseCommandLine(args, returnValue, command, files, game))
 			return returnValue;
 

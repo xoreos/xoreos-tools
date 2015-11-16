@@ -48,13 +48,13 @@ void convert(const Common::UString &cdpthFile, const Common::UString &twoDAFile,
              const Common::UString &outFile);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	Common::UString cdpthFile, twoDAFile, outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString cdpthFile, twoDAFile, outFile;
+
 		if (!parseCommandLine(args, returnValue, cdpthFile, twoDAFile, outFile))
 			return returnValue;
 

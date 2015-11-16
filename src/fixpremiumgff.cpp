@@ -48,13 +48,13 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::UString &id);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	int returnValue = 1;
-	Common::UString inFile, outFile, id;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString inFile, outFile, id;
+
 		if (!parseCommandLine(args, returnValue, inFile, outFile, id))
 			return returnValue;
 

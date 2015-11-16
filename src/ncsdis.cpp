@@ -59,18 +59,18 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Aurora::GameID game = Aurora::kGameIDUnknown;
-
-	int returnValue = 1;
-	Command command = kCommandNone;
-	bool printStack = false;
-	bool printControlTypes = false;
-	Common::UString inFile, outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Aurora::GameID game = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		bool printStack = false;
+		bool printControlTypes = false;
+		Common::UString inFile, outFile;
+
 		if (!parseCommandLine(args, returnValue, inFile, outFile, game, command, printStack, printControlTypes))
 			return returnValue;
 

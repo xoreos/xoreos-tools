@@ -54,16 +54,16 @@ void listFiles(Aurora::RIMFile &rim, Aurora::GameID game);
 void extractFiles(Aurora::RIMFile &rim, Aurora::GameID);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Aurora::GameID game = Aurora::kGameIDUnknown;
-
-	int returnValue = 1;
-	Command command = kCommandNone;
-	Common::UString file;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Aurora::GameID game = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		Common::UString file;
+
 		if (!parseCommandLine(args, returnValue, command, file, game))
 			return returnValue;
 

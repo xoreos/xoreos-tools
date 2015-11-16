@@ -49,16 +49,16 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding);
 
 int main(int argc, char **argv) {
-	std::vector<Common::UString> args;
-	Common::Platform::getParameters(argc, argv, args);
-
-	Common::Encoding encoding = Common::kEncodingInvalid;
-	Aurora::GameID   game     = Aurora::kGameIDUnknown;
-
-	int returnValue = 1;
-	Common::UString inFile, outFile;
-
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Common::Encoding encoding = Common::kEncodingInvalid;
+		Aurora::GameID   game     = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+
 		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game))
 			return returnValue;
 
