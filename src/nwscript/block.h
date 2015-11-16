@@ -89,12 +89,12 @@ struct ControlStructure {
 	const Block *ifNext;   ///< he block directly following the whole if.
 
 
-	ControlStructure(ControlType t = kControlTypeNone) : type(t),
-		loopHead(0), loopTail(0), loopNext(0), retn(0), ifCond(0), ifTrue(0), ifElse(0), ifNext(0) {
+	ControlStructure(ControlType t = kControlTypeNone) :
+		type(t), loopHead(0), loopTail(0), loopNext(0), retn(0), ifCond(0), ifTrue(0), ifElse(0), ifNext(0) {
 	}
 
 	ControlStructure(ControlType t, const Block &blockRTN) :
-		type(t), loopHead(0), loopTail(0), loopNext(0), retn(0) {
+		type(t), loopHead(0), loopTail(0), loopNext(0), retn(0), ifCond(0), ifTrue(0), ifElse(0), ifNext(0) {
 
 		switch (type) {
 			case kControlTypeReturn:
