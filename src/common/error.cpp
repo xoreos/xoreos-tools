@@ -143,13 +143,13 @@ void exceptionDispatcherWarnAndIgnore(const UString &reason) {
 			throw;
 		} catch (Exception &e) {
 			if (!reason.empty())
-				e.add(reason.c_str());
+				e.add("%s", reason.c_str());
 
 			printException(e, "WARNING: ");
 		} catch (std::exception &e) {
 			Exception se(e);
 			if (!reason.empty())
-				se.add(reason.c_str());
+				se.add("%s", reason.c_str());
 
 			printException(se, "WARNING: ");
 		} catch (...) {
