@@ -439,7 +439,7 @@ static void analyzeStackBlock(AnalyzeStackContext &ctx) {
 		 * the same stack space are obviously "siblings", essentially the
 		 * same logical variable. */
 
-		if (ctx.block && !ctx.block->instructions.empty() && ctx.block->instructions.front()) {
+		if (!ctx.block->instructions.empty() && ctx.block->instructions.front()) {
 			const Instruction &instr = *ctx.block->instructions.front();
 
 			// Make sure the stack is balanced between the two merging nodes
