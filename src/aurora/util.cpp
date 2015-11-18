@@ -413,6 +413,8 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 					return kFileTypePLA;
 				case kFileTypeBTT:
 					return kFileTypeTRG;
+				case kFileTypeGIT:
+					return kFileTypeSAV;
 				default:
 					break;
 			}
