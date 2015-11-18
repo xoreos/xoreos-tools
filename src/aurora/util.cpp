@@ -345,6 +345,7 @@ FileTypeManager::~FileTypeManager() {
 }
 
 FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
+	// Disambiguate reused type IDs that describe a different file format in a specific game
 	switch (game) {
 		case kGameIDNWN2:
 			switch ((int) type) {
@@ -424,6 +425,7 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 			break;
 	}
 
+	// Alias multiple type IDs that describe the same format
 	switch (type) {
 		case kFileTypeQST2:
 			return kFileTypeQST;
