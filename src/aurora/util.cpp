@@ -436,9 +436,9 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 		case kFileTypeMDA2:
 			return kFileTypeMDA;
 		case kFileTypeSPT2:
-			return kFileTypeSPT2;
+			return kFileTypeSPT;
 		case kFileTypeJPG2:
-			return kFileTypeJPG2;
+			return kFileTypeJPG;
 		default:
 			break;
 	}
