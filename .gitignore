@@ -59,6 +59,15 @@ Makefile.am.cmake
 # Netbeans project files
 /nbproject/
 
+# Debian temp files
+/debian
+/dists/debian/autoreconf.after
+/dists/debian/autoreconf.before
+/dists/debian/files
+/dists/debian/xoreos-tools.debhelper.log
+/dists/debian/xoreos-tools.substvars
+/dists/debian/xoreos-tools/
+
 # git versioning stamp
 /gitstamp/gitstamp
 
