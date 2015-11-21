@@ -44,9 +44,9 @@ static bool isSingularBlock(const Block &block) {
 	return block.instructions.size() == 1;
 }
 
-/** Is this an independant block that consists of a single JMP?
+/** Is this an independent block that consists of a single JMP?
  *
- *  A dependant block is one that has only parents that unconditionally seemlessy jump
+ *  A dependent block is one that has only parents that unconditionally, seamlessy jump
  *  to this block. Essentially, the block has only been divided because a third
  *  block jumps into its middle.
  */
@@ -69,7 +69,7 @@ static bool isLoneJump(const Block *block) {
 	return loneJump && independ;
 }
 
-/** Is this a block that *doesn't* consists of a single JMP or isn't independant? */
+/** Is this a block that *doesn't* consist of a single JMP or isn't independent? */
 static bool isNotLoneJump(const Block *block) {
 	return !isLoneJump(block);
 }
@@ -84,7 +84,7 @@ static bool isReturnBlock(const Block &block) {
 	return false;
 }
 
-/** Is this a block that has a Return control types? */
+/** Is this a block that has a Return control type? */
 static bool isReturnControl(const Block &block, bool checkChildren = false) {
 	if (block.isControl(kControlTypeReturn))
 		return true;
@@ -136,7 +136,7 @@ static void findPathMerge(std::vector<const Block *> &merges, const Block &block
 		findPathMerge(merges, block1, **c);
 }
 
-/** Find the block where the path of these two blocks come back together. */
+/** Find the block where the paths of these two blocks come back together. */
 static const Block *findPathMerge(const Block &block1, const Block &block2) {
 	std::vector<const Block *> merges;
 
@@ -159,7 +159,7 @@ static void detectDoWhile(Blocks &blocks) {
 		std::vector<const Block *> parents = head->getLaterParents();
 		parents.erase(std::remove_if(parents.begin(), parents.end(), isNotLoneJump), parents.end());
 
-		// Get the parent thas has the highest address and make sure it's still undetermined
+		// Get the parent that has the highest address and make sure it's still undetermined
 		Block *tail = const_cast<Block *>(getLatestBlock(parents));
 		if (!tail || tail->hasMainControl())
 			continue;
@@ -177,14 +177,14 @@ static void detectDoWhile(Blocks &blocks) {
 
 static void detectWhile(Blocks &blocks) {
 	/* Find all while loops. A while loop has a tail block that isn't a
-	 * do-while loop tail, tha jumps back to the loop head. */
+	 * do-while loop tail, that jumps back to the loop head. */
 
 	for (Blocks::iterator head = blocks.begin(); head != blocks.end(); ++head) {
 		// Find all parents of this block from later in the script
 
 		std::vector<const Block *> parents = head->getLaterParents();
 
-		// Get the parent thas has the highest address and make sure it's still undetermined
+		// Get the parent that has the highest address and make sure it's still undetermined
 		Block *tail = const_cast<Block *>(getLatestBlock(parents));
 		if (!tail || tail ->hasMainControl())
 			continue;
