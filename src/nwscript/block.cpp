@@ -370,7 +370,107 @@ void findDeadBlockEdges(Blocks &blocks) {
 	 * y will still be evaluated afterwards.
 	 *
 	 * We use very simple pattern-matching here. This is enough to find most
-	 * occurrences of this case, but not all. */
+	 * occurrences of this case, but not all.
+	 *
+	 * For example, this is the control flow diagram for the bytecode, as
+	 * compiled by the original BioWare compiler, for
+	 *
+	 * if ((global_variable == 1) || (global_variable == 3))
+	 *
+	 *        .
+	 *        |
+	 *        V
+	 * .-------------------.
+	 * | CPTOPBP -4 4      |
+	 * | CONSTI 1          |
+	 * | EQII              |
+	 * | CPTOPSP -4 4      |
+	 * | JZ                |
+	 * '-------------------'
+	 *  (true)|    |(false)
+	 *        |    V (1)
+	 *        | .--------------------.
+	 *        | | CPTOPSP -4 4       |
+	 *        | | JZ                 | (4)
+	 *        | '--------------------'
+	 *        |  (false)|     |(true)
+	 *        |    (2)  |     |  (3)
+	 *        V         V     |
+	 * .-------------------.  |
+	 * | CPTOPBP -4 4      |  |
+	 * | CONSTI 3          |  |
+	 * | EQII              |  |
+	 * '-------------------'  |
+	 *         |              |
+	 *         V              |
+	 * .-------------------.  |
+	 * | LOGORII -4 4      |  |
+	 * | JZ                |<-'
+	 * '-------------------'
+	 *  (true) |   |(false)
+	 *         '   '
+	 *
+	 * "CPTOPSP -4 4" takes the top element on the stack and, without
+	 * popping it, pushes it again onto the top, creating a duplicate.
+	 *
+	 * When taking the false branch at (1) (which means that the variable
+	 * *is* equal to 1), we have already established that the top element
+	 * on the stack (which is getting copied a few times, so it's not
+	 * vanishing) is of a certain value. This means that the false branch
+	 * at (2) has to be taken as well. The true branch at (3) can't ever
+	 * be taken, and is therefore logically dead.
+	 *
+	 * Moreover, if the true branch at (3) would have been taken, this
+	 * had resulted in a stack smash, because JZ consumes a stack element,
+	 * and the LOGORII would now be one element short.
+	 *
+	 * Essentially, the whole block at (4) evaluates to a NOP.
+	 *
+	 * How this *should* have been compiled is thusly:
+	 *
+	 *        .
+	 *        |
+	 *        V
+	 * .-------------------.
+	 * | CPTOPBP -4 4      |
+	 * | CONSTI 1          |
+	 * | EQII              |
+	 * | CPTOPSP -4 4      |
+	 * | JZ                |
+	 * '-------------------'
+	 *  (true)|    |(false)
+	 *        |    V
+	 *        | .--------------------.
+	 *        | | CPTOPSP -4 4       | (5)
+	 *        | | JMP                |
+	 *        | '--------------------'
+	 *        |               |
+	 *        |               |
+	 *        V               |
+	 * .-------------------.  |
+	 * | CPTOPBP -4 4      |  |
+	 * | CONSTI 3          |  |
+	 * | EQII              |  |
+	 * '-------------------'  |
+	 *         |              |
+	 *         V      (6)     |
+	 * .-------------------.  |
+	 * | LOGORII -4 4      |  |
+	 * | JZ                |<-'
+	 * '-------------------'
+	 *  (true) |   |(false)
+	 *         '   '
+	 *
+	 * In the block at (5), the top element is now copied, and the code
+	 * jumps unconditionally to the LOGORII block at (6). In contrast
+	 * to JZ, JMP does not pop an element from the stack. The LOGORII
+	 * has enough elements to do its comparison.
+	 *
+	 * This is exactly what the OpenKnights compiler does. And this has
+	 * been fixed by BioWare by the time of Neverwinter Nights 2 as well.
+	 *
+	 * The short-circuiting && construct does not seem to have this fault.
+	 */
 
 	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		if (!isTopStackJumper(*b) || (b->instructions.size() != 2) || b->parents.empty())
