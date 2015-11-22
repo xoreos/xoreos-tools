@@ -401,7 +401,7 @@ static void analyzeStackSubRoutine(AnalyzeStackContext &ctx, bool ignoreRecursio
 	ctx.sub->stackAnalyzeState = kStackAnalyzeStateStart;
 
 	if (!ctx.sub->blocks.empty()) {
-		/* Start analyzing the control flow of this soubroutine with its
+		/* Start analyzing the control flow of this subroutine with its
 		 * first block. The following blocks and their subroutine calls
 		 * will be recursively followed. */
 
@@ -556,7 +556,7 @@ static void analyzeStackPop(AnalyzeStackContext &ctx) {
 		if (ctx.subStack == 0) {
 			/* If we see an underrun during a MOVSP instruction, this means the subroutine is
 			 * clearing its parameters from the stack. So we can now connect the parameter
-			 * with the the caller stack element. */
+			 * with the caller stack element. */
 
 			ctx.subStack++;
 			ctx.sub->params.push_back(ctx.stack->front().variable);

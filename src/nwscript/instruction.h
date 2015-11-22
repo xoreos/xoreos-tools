@@ -175,7 +175,7 @@ enum AddressType {
 struct Instruction {
 	static const size_t kOpcodeMaxArgumentCount = 3;
 
-	uint32 address; ///< The address of this intruction with the NCS file
+	uint32 address; ///< The address of this instruction with the NCS file.
 
 	Opcode opcode;        ///< The opcode of this instruction.
 	InstructionType type; ///< The type of this instruction.

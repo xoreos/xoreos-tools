@@ -174,7 +174,7 @@ void NCSFile::analyzeBlocks() {
 void NCSFile::analyzeSubRoutines() {
 	/* Analyze the instructions and blocks on a subroutine level. */
 
-	// Construct a set of sobroutines over our blocks
+	// Construct a set of subroutines over our blocks
 	constructSubRoutines(_subRoutines, _blocks);
 	// Interlink subroutine callers and callees
 	linkSubRoutineCallers(_subRoutines);

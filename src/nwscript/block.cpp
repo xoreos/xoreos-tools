@@ -300,7 +300,7 @@ bool Block::getLoop(const Block *&head, const Block *&tail, const Block *&next) 
 
 void constructBlocks(Blocks &blocks, Instructions &instructions) {
 	/* Create the first block containing the very first instruction in this script.
-	 * Then follow the complete codeflow from this instruction onwards. */
+	 * Then follow the complete code flow from this instruction onwards. */
 
 	assert(blocks.empty());
 	if (instructions.empty())
@@ -370,7 +370,7 @@ void findDeadBlockEdges(Blocks &blocks) {
 	 * y will still be evaluated afterwards.
 	 *
 	 * We use very simple pattern-matching here. This is enough to find most
-	 * occurances of this case, but not all. */
+	 * occurrences of this case, but not all. */
 
 	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		if (!isTopStackJumper(*b) || (b->instructions.size() != 2) || b->parents.empty())
