@@ -39,7 +39,19 @@
 
 namespace NWScript {
 
-/** Does this block have only one instruction? */
+/** Does this block have only one instruction?
+ *
+ *  For example, this block would qualify:
+ *
+ *            .
+ *            |
+ *            V
+ *  .------------------.
+ *  | JMP loc_00000042 |
+ *  '------------------'
+ *            |
+ *            '
+ */
 static bool isSingularBlock(const Block &block) {
 	return block.instructions.size() == 1;
 }
@@ -49,6 +61,22 @@ static bool isSingularBlock(const Block &block) {
  *  A dependent block is one that has only parents that unconditionally, seamlessy jump
  *  to this block. Essentially, the block has only been divided because a third
  *  block jumps into its middle.
+ *
+ *  For example, the block at (1) would qualify:
+ *
+ *            .                        .
+ *            |                        |
+ *            V                        V
+ *  .------------------.     .-----------------.
+ *  | MOVSP -4         |     | EQI             |
+ *  '------------------'     | JZ loc_00000023 |
+ *            |              '-----------------'
+ *   (1)      V              (true)|      |(false)
+ *  .------------------.           |      |
+ *  | JMP loc_00000042 |<----------'      |
+ *  '------------------'                  |
+ *            |                           |
+ *            '                           '
  */
 static bool isLoneJump(const Block *block) {
 	if (!block)
@@ -69,12 +97,29 @@ static bool isLoneJump(const Block *block) {
 	return loneJump && independ;
 }
 
-/** Is this a block that *doesn't* consist of a single JMP or isn't independent? */
+/** Is this a block that *doesn't* consist of a single JMP or isn't independent?
+ *
+ *  This is a convenience negation of isLoneJump(), to be used in combination with
+ *  std::remove_if().
+ */
 static bool isNotLoneJump(const Block *block) {
 	return !isLoneJump(block);
 }
 
-/** Is this a block that has a return instruction? */
+/** Is this a block that has a return instruction?
+ *
+ *  Any block with a RETN instruction qualifies. For example:
+ *
+ *            .
+ *            |
+ *            V
+ *  .----------------.
+ *  | CPDOWNSP -24 4 |
+ *  | MOVSP -4       |
+ *  | MOVSP -12      |
+ *  | RETN           |
+ *  '----------------'
+ */
 static bool isReturnBlock(const Block &block) {
 	for (std::vector<const Instruction *>::const_iterator i = block.instructions.begin();
 	     i != block.instructions.end(); i++)
@@ -84,7 +129,22 @@ static bool isReturnBlock(const Block &block) {
 	return false;
 }
 
-/** Is this a block that has a Return control type? */
+/** Is this a block that has a Return control type?
+ *
+ *  Any block with a RETN instruction that has been previously detected by
+ *  detectReturn() qualifies. For example:
+ *
+ *            .
+ *            |
+ *            V
+ *  .----------------.
+ *  |     <RETN>     |
+ *  | CPDOWNSP -24 4 |
+ *  | MOVSP -4       |
+ *  | MOVSP -12      |
+ *  | RETN           |
+ *  '----------------'
+ */
 static bool isReturnControl(const Block &block, bool checkChildren = false) {
 	if (block.isControl(kControlTypeReturn))
 		return true;
@@ -102,7 +162,7 @@ static bool isReturnControl(const Block &block, bool checkChildren = false) {
 	return false;
 }
 
-/** Return the block that has the earliest, lowest address. */
+/** Given a vector of pointers to blocks, return the block that has the earliest, lowest address. */
 static const Block *getEarliestBlock(const std::vector<const Block *> &blocks) {
 	const Block *result = 0;
 	for (std::vector<const Block *>::const_iterator b = blocks.begin(); b != blocks.end(); ++b)
@@ -112,7 +172,7 @@ static const Block *getEarliestBlock(const std::vector<const Block *> &blocks) {
 	return result;
 }
 
-/** Return the block that has the latest, largest address. */
+/** Given a vector of pointers to blocks, return the block that has the latest, largest address. */
 static const Block *getLatestBlock(const std::vector<const Block *> &blocks) {
 	const Block *result = 0;
 	for (std::vector<const Block *>::const_iterator b = blocks.begin(); b != blocks.end(); ++b)
@@ -122,7 +182,8 @@ static const Block *getLatestBlock(const std::vector<const Block *> &blocks) {
 	return result;
 }
 
-static void findPathMerge(std::vector<const Block *> &merges, const Block &block1, const Block &block2) {
+/** Recursive internal convenience function to be used by findPathMerge(). */
+static void findPathMergeRec(std::vector<const Block *> &merges, const Block &block1, const Block &block2) {
 	if (block1.address > block2.address)
 		return;
 
@@ -133,17 +194,53 @@ static void findPathMerge(std::vector<const Block *> &merges, const Block &block
 
 	for (std::vector<const Block *>::const_iterator c = block2.children.begin();
 	     c != block2.children.end(); ++c)
-		findPathMerge(merges, block1, **c);
+		findPathMergeRec(merges, block1, **c);
 }
 
-/** Find the block where the paths of these two blocks come back together. */
+/** Find the block where the paths of these two blocks come back together.
+ *
+ *  For example, when given the two blocks at (1) and (2), findPathMerge()
+ *  will find the block at (3).
+ *
+ *                .
+ *                |
+ *                V
+ *      .-----------------.
+ *      | EQI             |
+ *      | JZ loc_00000023 |
+ *      '-----------------'
+ *      (true)|     |(false)
+ *      .-----'     '-----.
+ *      |                 |
+ *      V  (1)       (2)  V
+ * .----------.     .----------.
+ * |          |     |          |
+ * '----------'     '----------'
+ *      |                 |
+ *      V                 V
+ * .----------.     .----------.
+ * |          |     |          |
+ * '----------'     '----------'
+ *      |                 |
+ *      V                 |
+ * .----------.           |
+ * |          |           |
+ * '----------'           |
+ *      |        .--------'
+ *      V   (3)  V
+ *    .------------.
+ *    |            |
+ *    '------------'
+ *          |
+ *          '
+ */
 static const Block *findPathMerge(const Block &block1, const Block &block2) {
 	std::vector<const Block *> merges;
 
 	if (block1.address < block2.address)
-		findPathMerge(merges, block1, block2);
+		findPathMergeRec(merges, block1, block2);
 	else
-		findPathMerge(merges, block2, block1);
+		findPathMergeRec(merges, block2, block1);
 
 	return getEarliestBlock(merges);
 }
@@ -151,7 +248,39 @@ static const Block *findPathMerge(const Block &block1, const Block &block2) {
 
 static void detectDoWhile(Blocks &blocks) {
 	/* Find all do-while loops. A do-while loop has a tail block that
-	 * only has a single JMP that jumps back to the loop head. */
+	 * only has a single JMP that jumps back to the loop head.
+	 *
+	 * For example:
+	 *
+	 *        .
+	 *        |
+	 *  (1)   V
+	 * .-------------.
+	 * |             |
+	 * |             |<---------------------------.
+	 * '-------------'                            |
+	 *        |                                   |
+	 *        V                                   |
+	 * .-------------.                            |
+	 * |             |                            |
+	 * |             |                            |
+	 * '-------------'                            |
+	 *  (true)|   |(false)                        |
+	 *        |   '--------------------.          |
+	 *        |               (2)      V          |
+	 *        |              .------------------. |
+	 *        |              | JMP loc_00000042 | |
+	 *  (3)   V              '------------------' |
+	 * .-------------.                 |          |
+	 * |             |                 '----------'
+	 * |             |
+	 * '-------------'
+	 *        |
+	 *        '
+	 *
+	 * Here, the block at (1) is the loop head, (2) is the loop tail and
+	 * the block at (3) is the block immediately after the whole loop.
+	 */
 
 	for (Blocks::iterator head = blocks.begin(); head != blocks.end(); ++head) {
 		// Find all parents of this block from later in the script that only consist of a single JMP.
@@ -177,7 +306,44 @@ static void detectDoWhile(Blocks &blocks) {
 
 static void detectWhile(Blocks &blocks) {
 	/* Find all while loops. A while loop has a tail block that isn't a
-	 * do-while loop tail, that jumps back to the loop head. */
+	 * do-while loop tail, that jumps back to the loop head.
+	 *
+	 * For example:
+	 *
+	 *           .
+	 *           |
+	 *     (1)   V
+	 *    .-------------.
+	 *    |             |
+	 *    |             |<-----.
+	 *    '-------------'      |
+	 *    (true)|   |(false)   |
+	 * .--------'   |          |
+	 * |            V          |
+	 * |  .------------.       |
+	 * |  |            |       |
+	 * |  '------------'       |
+	 * |            |          |
+	 * |    (2)     V          |
+	 * |  .------------------. |
+	 * |  |                  | |
+	 * |  |                  | |
+	 * |  |                  | |
+	 * |  | JMP loc_00000042 | |
+	 * |  '------------------' |
+	 * |            |          |
+	 * |            '----------'
+	 * |   (3)
+	 * |  .-------------.
+	 * '->|             |
+	 *    |             |
+	 *    '-------------'
+	 *           |
+	 *           '
+	 *
+	 * Here, the block at (1) is the loop head, (2) is the loop tail and
+	 * the block at (3) is the block immediately after the whole loop.
+	 */
 
 	for (Blocks::iterator head = blocks.begin(); head != blocks.end(); ++head) {
 		// Find all parents of this block from later in the script
@@ -202,7 +368,53 @@ static void detectWhile(Blocks &blocks) {
 
 static void detectBreak(Blocks &blocks) {
 	/* Find all "break;" statements. A break is created by a block that
-	 * only contains a single JMP that jumps directly outside the loop. */
+	 * only contains a single JMP that jumps directly outside the loop.
+	 *
+	 * For example:
+	 *
+	 *           .
+	 *           |
+	 *     (1)   V
+	 *    .-------------.
+	 *    |             |
+	 *    |             |<---------------------------.
+	 *    '-------------'                            |
+	 *           |                                   |
+	 *     (4)   V                                   |
+	 *    .-------------.                            |
+	 *    |             |                            |
+	 *    |             |                            |
+	 *    '-------------'                            |
+	 *     (true)|   |(false)                        |
+	 * .---------'   |                               |
+	 * |             V                               |
+	 * |  .-------------.                            |
+	 * |  |             |                            |
+	 * |  |             |                            |
+	 * |  '-------------'                            |
+	 * |         |                                   |
+	 * |         V                                   |
+	 * |  .-------------.                            |
+	 * |  |             |                            |
+	 * |  |             |                            |
+	 * |  '-------------'                            |
+	 * |   (true)|   |(false)                        |
+	 * |         |   '--------------------.          |
+	 * |         |               (2)      V          |
+	 * |         |              .------------------. |
+	 * |         |              | JMP loc_00000042 | |
+	 * |   (3)   V              '------------------' |
+	 * |  .-------------.                 |          |
+	 * |  |             |                 '----------'
+	 * '->|             |
+	 *    '-------------'
+	 *           |
+	 *           '
+	 *
+	 * Here, the block at (1) is the loop head, (2) is the loop tail and
+	 * the block at (3) is the block immediately after the whole loop.
+	 * The block at (4) is then a break statement.
+	 */
 
 	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		// Find all undetermined blocks that consist of a single JMP
@@ -225,7 +437,50 @@ static void detectBreak(Blocks &blocks) {
 
 static void detectContinue(Blocks &blocks) {
 	/* Find all "continue;" statements. A continue is created by a block that
-	 * only contains a single JMP that jumps directly to the tail of the loop. */
+	 * only contains a single JMP that jumps directly to the tail of the loop.
+	 *
+	 * For example:
+	 *
+	 *        .
+	 *        |
+	 *  (1)   V
+	 * .-------------.
+	 * |             |
+	 * |             |<---------------------------.
+	 * '-------------'                            |
+	 *        |                                   |
+	 *  (4)   V                                   |
+	 * .-------------.                            |
+	 * |             |                            |
+	 * |             |                            |
+	 * '-------------'                            |
+	 *  (true)|   |(false)                        |
+	 *        |   '--------------------.          |
+	 *        |                        |          |
+	 * .-------------.                 |          |
+	 * |             |                 |          |
+	 * |             |                 |          |
+	 * '-------------'                 |          |
+	 *        |                        |          |
+	 *        V                        |          |
+	 * .-------------.                 |          |
+	 * |             |                 |          |
+	 * |             |                 |          |
+	 * '-------------'        (2)      V          |
+	 *  (true)|   |(false)   .------------------. |
+	 *        |   '--------->| JMP loc_00000042 | |
+	 *  (3)   V              '------------------' |
+	 * .-------------.                 |          |
+	 * |             |                 '----------'
+	 * |             |
+	 * '-------------'
+	 *        |
+	 *        '
+	 *
+	 * Here, the block at (1) is the loop head, (2) is the loop tail and
+	 * the block at (3) is the block immediately after the whole loop.
+	 * The block at (4) is then a continue statement.
+	 */
 
 	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		// Find all undetermined blocks that consist of a single JMP
@@ -249,7 +504,84 @@ static void detectContinue(Blocks &blocks) {
 static void detectReturn(Blocks &blocks) {
 	/* Find all "return;" (and "return $value;") statements. A return block is
 	 * a block that contains a RETN statement, or that unconditionally jumps
-	 * to a block with a RETN statement. */
+	 * to a block with a RETN statement.
+	 *
+	 *           .                         .
+	 *           |                         |
+	 *           V                         V
+	 *    .-------------.              .-------.
+	 *    |             |              |       |
+	 *    |             |              '-------'
+	 *    '-------------'                  |
+	 *     (true)|    |(false)             V
+	 *     .-----'    |                .-------.
+	 *     |          V                |       |
+	 *     |      .-------.            '-------'
+	 *     |      |       |                |
+	 *     |      '-------'            (3) V
+	 *     |          |                .-------.
+	 *     |          V                | RETN  |
+	 *     |      .-------.            '-------'
+	 *     |      |       |
+	 *     |      '-------'
+	 *     |          |
+	 * (1) |      (2) V
+	 * .-------.  .-------.
+	 * |       |  |       |
+	 * '-------'  '-------'
+	 *     |          |
+	 *     |          V
+	 *     |      .-------.
+	 *     '----->| RETN  |
+	 *            '-------'
+	 *
+	 *           .
+	 *           |
+	 *           V
+	 *    .-------------.
+	 *    |             |
+	 *    |             |<---------------------------------------.
+	 *    '-------------'                                        |
+	 *           |                                               |
+	 *           V                                               |
+	 *    .-------------.                                        |
+	 *    |             |                                        |
+	 *    |             |                                        |
+	 *    '-------------'                                        |
+	 *     (true)|   |(false)                                    |
+	 *       .---'   '-------.                                   |
+	 *       |               |                                   |
+	 *  (5)  V               V                                   |
+	 * .-----------.  .-------------.                            |
+	 * |           |  |             |                            |
+	 * '           |  |             |                            |
+	 * '-----------'  '-------------'                            |
+	 *       |               |                                   |
+	 *       |               V                                   |
+	 *       |        .-------------.                            |
+	 *       |        |             |                            |
+	 *       |        |             |                            |
+	 *       |        '-------------'                            |
+	 *       |         (true)|   |(false)   .------------------. |
+	 *       |               |   '--------->| JMP loc_00000042 | |
+	 *       |               V              '------------------' |
+	 *       |        .-------------.                 |          |
+	 *       |        |             |                 '----------'
+	 *       |        |             |
+	 *       |        '-------------'
+	 *       |               |
+	 *       |         (4)   V
+	 *       |        .-------------.
+	 *       |        |             |
+	 *       |        '-------------'
+	 *       |               |
+	 *       |               V
+	 *       |            .------.
+	 *       '----------->| RETN |
+	 *                    '------'
+	 *
+	 * Here, the blocks at (1), (2), (3), (4) and (5) are all return statements.
+	 */
 
 	for (Blocks::iterator b = blocks.begin(); b != blocks.end(); ++b) {
 		// Find all undetermined blocks with a RETN
@@ -284,7 +616,43 @@ static void detectReturn(Blocks &blocks) {
 
 static void detectIf(Blocks &blocks) {
 	/* Detect if and if-else statements. An if starts with a yet undetermined block
-	 * that contains a conditional jump (JZ or JNZ). */
+	 * that contains a conditional jump (JZ or JNZ).
+	 *
+	 * For example:
+	 *
+	 *             .                          .
+	 *             |                          |
+	 *     (1)     V                  (4)     V
+	 *    .-----------------.        .-----------------.
+	 *    |                 |        |                 |
+	 *    | EQI             |        | EQI             |
+	 *    | JZ loc_00000023 |        | JZ loc_00000042 |
+	 *    '-----------------'        '-----------------'
+	 *     (true)|    |(false)        (true)|    |(false)
+	 *      .----'    |                .----'    '----.
+	 *      |         |                |              |
+	 *  (2) V         |            (5) V          (6) V
+	 * .---------.    |           .---------.    .---------.
+	 * |         |    |           |         |    |         |
+	 * '---------'    |           '---------'    '---------'
+	 *      |         |                |              |
+	 *      V         |                V              |
+	 * .---------.    |           .---------.         |
+	 * |         |    |           |         |         |
+	 * '---------'    |           '---------'         |
+	 *      |         |                |              |
+	 *  (3) V         |                |   (7)        |
+	 * .---------.    |                |  .--------.  |
+	 * |         |<---'                '->|        |<-'
+	 * '---------'                        '--------'
+	 *      |                                  |
+	 *      '                                  '
+	 *
+	 * Here, the blocks at (1) and (4) are conditional blocks, the blocks
+	 * at (2) and (5) are the starting blocks of the true branch, the block
+	 * at (6) is the starting block of the else branch, and the blocks at
+	 * (3) and (7) are the blocks following the whole if construct.
+	 */
 
 	for (Blocks::iterator ifCond = blocks.begin(); ifCond != blocks.end(); ++ifCond) {
 		// Find all undetermined blocks (but while heads are okay, too)
