@@ -194,7 +194,8 @@ static void findPathMergeRec(std::vector<const Block *> &merges, const Block &bl
 
 	for (std::vector<const Block *>::const_iterator c = block2.children.begin();
 	     c != block2.children.end(); ++c)
-		findPathMergeRec(merges, block1, **c);
+		if ((*c)->address > block2.address)
+			findPathMergeRec(merges, block1, **c);
 }
 
 /** Find the block where the paths of these two blocks come back together.
