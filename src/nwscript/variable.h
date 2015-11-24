@@ -37,44 +37,44 @@ struct Instruction;
 
 /** The type of an NWScript variable. */
 enum VariableType {
-	kTypeVoid             = 0,
-	kTypeInt                 ,
-	kTypeFloat               ,
-	kTypeString              ,
-	kTypeResource            ,
-	kTypeObject              ,
-	kTypeVector              ,
-	kTypeStruct              ,
-	kTypeEngineType0         ,
-	kTypeEngineType1         ,
-	kTypeEngineType2         ,
-	kTypeEngineType3         ,
-	kTypeEngineType4         ,
-	kTypeEngineType5         ,
-	kTypeScriptState         , ///< "action".
-	kTypeIntArray            ,
-	kTypeFloatArray          ,
-	kTypeStringArray         ,
-	kTypeResourceArray       ,
-	kTypeObjectArray         ,
-	kTypeEngineType0Array    ,
-	kTypeEngineType1Array    ,
-	kTypeEngineType2Array    ,
-	kTypeEngineType3Array    ,
-	kTypeEngineType4Array    ,
-	kTypeEngineType5Array    ,
-	kTypeAny                 , ///< Any other type.
-	kTypeIntRef              ,
-	kTypeFloatRef            ,
-	kTypeStringRef           ,
-	kTypeResourceRef         ,
-	kTypeObjectRef           ,
-	kTypeEngineType0Ref      ,
-	kTypeEngineType1Ref      ,
-	kTypeEngineType2Ref      ,
-	kTypeEngineType3Ref      ,
-	kTypeEngineType4Ref      ,
-	kTypeEngineType5Ref
+	kTypeVoid             = 0, ///< void. Unknown type or no variable.
+	kTypeInt                 , ///< int. Signed 32-bit integer.
+	kTypeFloat               , ///< float. 32-bit IEEE floating point.
+	kTypeString              , ///< string. 0-terminated, ASCII.
+	kTypeResource            , ///< resource. A game resource filename string.
+	kTypeObject              , ///< object. An opaque pointer to an object in the game world.
+	kTypeVector              , ///< vector. Three float variables.
+	kTypeStruct              , ///< struct. An aggregation of several base types.
+	kTypeEngineType0         , ///< For example: effect. Opaque pointer to a game-specific type.
+	kTypeEngineType1         , ///< For example: event. Opaque pointer to a game-specific type.
+	kTypeEngineType2         , ///< For example: location. Opaque pointer to a game-specific type.
+	kTypeEngineType3         , ///< For example: talent. Opaque pointer to a game-specific type.
+	kTypeEngineType4         , ///< For example: itemproperty. Opaque pointer to a game-specific type.
+	kTypeEngineType5         , ///< For example: player. Opaque pointer to a game-specific type.
+	kTypeScriptState         , ///< action. A functor, implemented as stackframe plus offset.
+	kTypeIntArray            , ///< int[]. Dynamic array of integers.
+	kTypeFloatArray          , ///< float[]. Dynamic array of floating point numbers.
+	kTypeStringArray         , ///< string[]. Dynamic array of strings.
+	kTypeResourceArray       , ///< resource[]. Dynamic array of game resource filenames.
+	kTypeObjectArray         , ///< object[]. Dynamic array of opaque pointers to game world objects.
+	kTypeEngineType0Array    , ///< For example: effect[]. Dynamic array of game-specific types.
+	kTypeEngineType1Array    , ///< For example: event[]. Dynamic array of game-specific types.
+	kTypeEngineType2Array    , ///< For example: location[]. Dynamic array of game-specific types.
+	kTypeEngineType3Array    , ///< For example: talent[]. Dynamic array of game-specific types.
+	kTypeEngineType4Array    , ///< For example: itemproperty[]. Dynamic array of game-specific types.
+	kTypeEngineType5Array    , ///< For example: player[]. Dynamic array of game-specific types.
+	kTypeAny                 , ///< any. Can hold any other type.
+	kTypeIntRef              , ///< ref int. Reference to an integer.
+	kTypeFloatRef            , ///< ref float. Reference to a floating point number.
+	kTypeStringRef           , ///< ref string. Reference to a string.
+	kTypeResourceRef         , ///< ref resource. Reference to a game resource filename.
+	kTypeObjectRef           , ///< ref object. Reference to an opaque pointer to game world object.
+	kTypeEngineType0Ref      , ///< For example: ref effect. Reference to game-specific type.
+	kTypeEngineType1Ref      , ///< For example: ref event. Reference to game-specific type.
+	kTypeEngineType2Ref      , ///< For example: ref location. Reference to game-specific type.
+	kTypeEngineType3Ref      , ///< For example: ref talent. Reference to game-specific type.
+	kTypeEngineType4Ref      , ///< For example: ref itemproperty. Reference to game-specific type.
+	kTypeEngineType5Ref        ///< For example: ref player. Reference to game-specific type.
 };
 
 /** What a variable is used for. */
