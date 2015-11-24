@@ -153,13 +153,13 @@ enum InstructionType {
 
 /** The type of a direct instruction argument. */
 enum OpcodeArgument {
-	kOpcodeArgNone,
-	kOpcodeArgUint8,
-	kOpcodeArgUint16,
-	kOpcodeArgSint16,
-	kOpcodeArgSint32,
-	kOpcodeArgUint32,
-	kOpcodeArgVariable
+	kOpcodeArgNone,    ///< Empty/Unused direct argument.
+	kOpcodeArgUint8,   ///< Unsigned 8-bit integer.
+	kOpcodeArgUint16,  ///< Unsigned 16-bit integer.
+	kOpcodeArgSint16,  ///< Signed 16-bit integer.
+	kOpcodeArgSint32,  ///< Signed 32-bit integer.
+	kOpcodeArgUint32,  ///< Unsigned 32-bit integer.
+	kOpcodeArgVariable ///< A variable value, as supplied by kOpcodeCONST.
 };
 
 /** The type of an instruction address. */
