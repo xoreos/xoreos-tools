@@ -103,50 +103,50 @@ enum Opcode {
 /** An instruction type, defining on what arguments it operates. */
 enum InstructionType {
 	// Unary
-	kInstTypeNone        =  0,
-	kInstTypeDirect      =  1,
-	kInstTypeInt         =  3,
-	kInstTypeFloat       =  4,
-	kInstTypeString      =  5,
-	kInstTypeObject      =  6,
-	kInstTypeResource    = 96,
-	kInstTypeEngineType0 = 16, // NWN:     effect        DA: event
-	kInstTypeEngineType1 = 17, // NWN:     event         DA: location
-	kInstTypeEngineType2 = 18, // NWN:     location      DA: command
-	kInstTypeEngineType3 = 19, // NWN:     talent        DA: effect
-	kInstTypeEngineType4 = 20, // NWN:     itemproperty  DA: itemproperty
-	kInstTypeEngineType5 = 21, // Witcher: mod           DA: player
+	kInstTypeNone        =  0, ///< This instruction takes no arguments at all.
+	kInstTypeDirect      =  1, ///< This instruction takes only direct arguments.
+	kInstTypeInt         =  3, ///< This instruction takes an integer variable from the stack.
+	kInstTypeFloat       =  4, ///< This instruction takes a floating point variable from the stack.
+	kInstTypeString      =  5, ///< This instruction takes a string variable from the stack.
+	kInstTypeObject      =  6, ///< This instruction takes an object variable from the stack.
+	kInstTypeResource    = 96, ///< This instruction takes a resource variable from the stack.
+	kInstTypeEngineType0 = 16, ///< This instruction takes an engine type (0) variable from the stack.
+	kInstTypeEngineType1 = 17, ///< This instruction takes an engine type (1) variable from the stack.
+	kInstTypeEngineType2 = 18, ///< This instruction takes an engine type (2) variable from the stack.
+	kInstTypeEngineType3 = 19, ///< This instruction takes an engine type (3) variable from the stack.
+	kInstTypeEngineType4 = 20, ///< This instruction takes an engine type (4) variable from the stack.
+	kInstTypeEngineType5 = 21, ///< This instruction takes an engine type (5) variable from the stack.
 
 	// Arrays
-	kInstTypeIntArray          = 64,
-	kInstTypeFloatArray        = 65,
-	kInstTypeStringArray       = 66,
-	kInstTypeObjectArray       = 67,
-	kInstTypeResourceArray     = 68,
-	kInstTypeEngineType0Array  = 80,
-	kInstTypeEngineType1Array  = 81,
-	kInstTypeEngineType2Array  = 82,
-	kInstTypeEngineType3Array  = 83,
-	kInstTypeEngineType4Array  = 84,
-	kInstTypeEngineType5Array  = 85,
+	kInstTypeIntArray          = 64, ///< This instruction operates on an array of integers.
+	kInstTypeFloatArray        = 65, ///< This instruction operates on an array of floating pointer numbers.
+	kInstTypeStringArray       = 66, ///< This instruction operates on an array of strings.
+	kInstTypeObjectArray       = 67, ///< This instruction operates on an array of objects.
+	kInstTypeResourceArray     = 68, ///< This instruction operates on an array of resources.
+	kInstTypeEngineType0Array  = 80, ///< This instruction operates on an array of engine types (0).
+	kInstTypeEngineType1Array  = 81, ///< This instruction operates on an array of engine types (1).
+	kInstTypeEngineType2Array  = 82, ///< This instruction operates on an array of engine types (2).
+	kInstTypeEngineType3Array  = 83, ///< This instruction operates on an array of engine types (3).
+	kInstTypeEngineType4Array  = 84, ///< This instruction operates on an array of engine types (4).
+	kInstTypeEngineType5Array  = 85, ///< This instruction operates on an array of engine types (5).
 
 	// Binary
-	kInstTypeIntInt                 = 32,
-	kInstTypeFloatFloat             = 33,
-	kInstTypeObjectObject           = 34,
-	kInstTypeStringString           = 35,
-	kInstTypeStructStruct           = 36,
-	kInstTypeIntFloat               = 37,
-	kInstTypeFloatInt               = 38,
-	kInstTypeEngineType0EngineType0 = 48,
-	kInstTypeEngineType1EngineType1 = 49,
-	kInstTypeEngineType2EngineType2 = 50,
-	kInstTypeEngineType3EngineType3 = 51,
-	kInstTypeEngineType4EngineType4 = 52,
-	kInstTypeEngineType5EngineType5 = 53,
-	kInstTypeVectorVector           = 58,
-	kInstTypeVectorFloat            = 59,
-	kInstTypeFloatVector            = 60,
+	kInstTypeIntInt                 = 32, ///< This instruction operates on two integers.
+	kInstTypeFloatFloat             = 33, ///< This instruction operates on two floating point numbers.
+	kInstTypeObjectObject           = 34, ///< This instruction operates on two objects.
+	kInstTypeStringString           = 35, ///< This instruction operates on two strings.
+	kInstTypeStructStruct           = 36, ///< This instruction operates on two structs.
+	kInstTypeIntFloat               = 37, ///< This instruction operates on an integer and a float.
+	kInstTypeFloatInt               = 38, ///< This instruction operates on a float and an integer.
+	kInstTypeEngineType0EngineType0 = 48, ///< This instruction operates on two engine types (0).
+	kInstTypeEngineType1EngineType1 = 49, ///< This instruction operates on two engine types (1).
+	kInstTypeEngineType2EngineType2 = 50, ///< This instruction operates on two engine types (2).
+	kInstTypeEngineType3EngineType3 = 51, ///< This instruction operates on two engine types (3).
+	kInstTypeEngineType4EngineType4 = 52, ///< This instruction operates on two engine types (4).
+	kInstTypeEngineType5EngineType5 = 53, ///< This instruction operates on two engine types (5).
+	kInstTypeVectorVector           = 58, ///< This instruction operates on two vectors.
+	kInstTypeVectorFloat            = 59, ///< This instruction operates on a vector and a float.
+	kInstTypeFloatVector            = 60, ///< This instruction operates on a float and a vector.
 
 	kInstTypeInstTypeMAX = 97
 };
