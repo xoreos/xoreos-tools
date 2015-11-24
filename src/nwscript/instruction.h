@@ -46,56 +46,56 @@ struct SubRoutine;
 
 /** An instruction opcode, defining what it does. */
 enum Opcode {
-	kOpcodeCPDOWNSP      = 0x01,
-	kOpcodeRSADD         = 0x02,
-	kOpcodeCPTOPSP       = 0x03,
-	kOpcodeCONST         = 0x04,
-	kOpcodeACTION        = 0x05,
-	kOpcodeLOGAND        = 0x06,
-	kOpcodeLOGOR         = 0x07,
-	kOpcodeINCOR         = 0x08,
-	kOpcodeEXCOR         = 0x09,
-	kOpcodeBOOLAND       = 0x0A,
-	kOpcodeEQ            = 0x0B,
-	kOpcodeNEQ           = 0x0C,
-	kOpcodeGEQ           = 0x0D,
-	kOpcodeGT            = 0x0E,
-	kOpcodeLT            = 0x0F,
-	kOpcodeLEQ           = 0x10,
-	kOpcodeSHLEFT        = 0x11,
-	kOpcodeSHRIGHT       = 0x12,
-	kOpcodeUSHRIGHT      = 0x13,
-	kOpcodeADD           = 0x14,
-	kOpcodeSUB           = 0x15,
-	kOpcodeMUL           = 0x16,
-	kOpcodeDIV           = 0x17,
-	kOpcodeMOD           = 0x18,
-	kOpcodeNEG           = 0x19,
-	kOpcodeCOMP          = 0x1A,
-	kOpcodeMOVSP         = 0x1B,
-	kOpcodeSTORESTATEALL = 0x1C,
-	kOpcodeJMP           = 0x1D,
-	kOpcodeJSR           = 0x1E,
-	kOpcodeJZ            = 0x1F,
-	kOpcodeRETN          = 0x20,
-	kOpcodeDESTRUCT      = 0x21,
-	kOpcodeNOT           = 0x22,
-	kOpcodeDECSP         = 0x23,
-	kOpcodeINCSP         = 0x24,
-	kOpcodeJNZ           = 0x25,
-	kOpcodeCPDOWNBP      = 0x26,
-	kOpcodeCPTOPBP       = 0x27,
-	kOpcodeDECBP         = 0x28,
-	kOpcodeINCBP         = 0x29,
-	kOpcodeSAVEBP        = 0x2A,
-	kOpcodeRESTOREBP     = 0x2B,
-	kOpcodeSTORESTATE    = 0x2C,
-	kOpcodeNOP           = 0x2D,
-	kOpcodeWRITEARRAY    = 0x30,
-	kOpcodeREADARRAY     = 0x32,
-	kOpcodeGETREF        = 0x37,
-	kOpcodeGETREFARRAY   = 0x39,
-	kOpcodeSCRIPTSIZE    = 0x42,
+	kOpcodeCPDOWNSP      = 0x01, ///< CPDOWNSP. Copy a value into an existing stack element.
+	kOpcodeRSADD         = 0x02, ///< RSADD. Push an empty element onto the stack.
+	kOpcodeCPTOPSP       = 0x03, ///< CPTOPSP. Push a copy of a stack element on top of the stack.
+	kOpcodeCONST         = 0x04, ///< CONST. Push a predetermined value onto the stack.
+	kOpcodeACTION        = 0x05, ///< ACTION. Call a game-specific engine function.
+	kOpcodeLOGAND        = 0x06, ///< LOGAND. Perform a logical boolean AND (&&)
+	kOpcodeLOGOR         = 0x07, ///< LOGOR. Perform a logical boolean OR (||).
+	kOpcodeINCOR         = 0x08, ///< INCOR. Perform a bit-wise inclusive OR (|).
+	kOpcodeEXCOR         = 0x09, ///< EXCOR. Perform a bit-wise exclusive OR (^).
+	kOpcodeBOOLAND       = 0x0A, ///< BOOLAND. Perform a bit-wise AND (&).
+	kOpcodeEQ            = 0x0B, ///< EQ. Compare the top-most stack elements for equality (==).
+	kOpcodeNEQ           = 0x0C, ///< NEQ. Compare the top-most stack elements for inequality (!=).
+	kOpcodeGEQ           = 0x0D, ///< GEQ. Compare the top-most stack elements, greater-or-equal (>=).
+	kOpcodeGT            = 0x0E, ///< GT. Compare the top-most stack elements, greater (>).
+	kOpcodeLT            = 0x0F, ///< LT. Compare the top-most stack elements, less (<).
+	kOpcodeLEQ           = 0x10, ///< LEQ. Compare the top-most stack elements, less-or-equal (<=).
+	kOpcodeSHLEFT        = 0x11, ///< SHLEFT. Shift the top-most stack element to the left (<<).
+	kOpcodeSHRIGHT       = 0x12, ///< SHRIGHT. Signed-shift the top-most stack element to the right (>>>).
+	kOpcodeUSHRIGHT      = 0x13, ///< USHRIGHT. Shift the top-most stack element to the right (>>).
+	kOpcodeADD           = 0x14, ///< ADD. Add the top-most stack elements (+).
+	kOpcodeSUB           = 0x15, ///< SUB. Substract the top-most stack elements (-).
+	kOpcodeMUL           = 0x16, ///< MUL. Multiply the top-most stack elements (*).
+	kOpcodeDIV           = 0x17, ///< DIV. Divide the top-most stack elements (/).
+	kOpcodeMOD           = 0x18, ///< MOD. Calculate the remainder of an integer division (%).
+	kOpcodeNEG           = 0x19, ///< NEG. Negate the top-most stack element (unary -).
+	kOpcodeCOMP          = 0x1A, ///< COMP. Calculate the 1-complement of the top-most stack element (~).
+	kOpcodeMOVSP         = 0x1B, ///< MOVSP. Pop elements off the stack.
+	kOpcodeSTORESTATEALL = 0x1C, ///< STORESTATEALL. Unused, obsolete opcode.
+	kOpcodeJMP           = 0x1D, ///< JMP. Jump directly to a different script offset.
+	kOpcodeJSR           = 0x1E, ///< JSR. Call a subroutine.
+	kOpcodeJZ            = 0x1F, ///< JZ. Jump if the top-most stack element is 0.
+	kOpcodeRETN          = 0x20, ///< RETN. Return from a subroutine call.
+	kOpcodeDESTRUCT      = 0x21, ///< DESTRUCT. Remove elements from the stack.
+	kOpcodeNOT           = 0x22, ///< NOT. Boolean-negate the top-most stack element (!).
+	kOpcodeDECSP         = 0x23, ///< DECSP. Decrement the value of a stack element (--).
+	kOpcodeINCSP         = 0x24, ///< INCSP. Increment the value of a stack element (++).
+	kOpcodeJNZ           = 0x25, ///< JNZ. Jump if the top-most stack element is not 0.
+	kOpcodeCPDOWNBP      = 0x26, ///< CPDOWNBP. Copy a value into an existing base-pointer stack element.
+	kOpcodeCPTOPBP       = 0x27, ///< CPTOPBP. Push a copy of a base-pointer stack element on top of the stack.
+	kOpcodeDECBP         = 0x28, ///< DECBP. Decrement the value of a base-pointer stack element (--).
+	kOpcodeINCBP         = 0x29, ///< INCBP. Increment the value of a base-pointer stack element (++).
+	kOpcodeSAVEBP        = 0x2A, ///< SAVEBP. Set the value of the base-pointer.
+	kOpcodeRESTOREBP     = 0x2B, ///< RESTOREBP. Restore the value of the base-pointer to a prior value.
+	kOpcodeSTORESTATE    = 0x2C, ///< STORESTATE. Create a functor of a subroutine with the current stack.
+	kOpcodeNOP           = 0x2D, ///< NOP. No operation.
+	kOpcodeWRITEARRAY    = 0x30, ///< WRITEARRAY. Write the value of an array element on the stack.
+	kOpcodeREADARRAY     = 0x32, ///< READARRAY. Push the value of an array element onto of the stack.
+	kOpcodeGETREF        = 0x37, ///< GETREF. Push the reference to a stack element onto the stack.
+	kOpcodeGETREFARRAY   = 0x39, ///< GETREFARRAY. Push the reference to an array element onto the stack.
+	kOpcodeSCRIPTSIZE    = 0x42, ///< SCRIPTSIZE. Specify the size of the following script bytecode in bytes.
 
 	kOpcodeMAX
 };
