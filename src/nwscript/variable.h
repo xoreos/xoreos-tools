@@ -35,7 +35,43 @@ namespace NWScript {
 
 struct Instruction;
 
-/** The type of an NWScript variable. */
+/** The type of an NWScript variable.
+ *
+ *  For the most part, this denotes a simple variable type, like
+ *  an integer or a string. There are a few special cases, though.
+ *
+ *  A variable with a struct type does not actually exist. Instead,
+ *  it is implemented by storing the individual components of the
+ *  struct as individual variable on the stack. For example, a struct
+ *  consisting of an integer and a float is represented by an integer
+ *  and a float variable. To quickly isolate a single member of a
+ *  struct, the opcode DESTRUCT is often used.
+ *
+ *  Likewise, a vector is in actuality three consecutive float
+ *  variables.
+ *
+ *  Arrays, on the other hand, only occupy a single element on the
+ *  stack. They are also dynamic, growing and shrinking in size as
+ *  needed.
+ *
+ *  A resource type is internally handled quite like a string. In
+ *  fact, string/string comparisons between a string and a resource
+ *  are legal.
+ *
+ *  An object is an opaque pointer to the script. However, there are
+ *  a few special values, used by the CONST opcode. For example,
+ *  there's OBJECT_INVALID, which stands for an invalid object, and
+ *  OBJECT_SELF, which is the object executing the current script.
+ *
+ *  The engine types are also handled opaquely, but even more so.
+ *  There are no special values, and the game can redefine what each
+ *  engine means. For example, in Neverwinter Nights, EngineType0 is
+ *  "effect", while in Dragon Age: Origins this is "event".
+ *
+ *  The any type can represent a variable of any type. This is, for
+ *  example, used to implement a generic GetSize() engine function
+ *  that queries the cardinality of a variable of any array type.
+ */
 enum VariableType {
 	kTypeVoid             = 0, ///< void. Unknown type or no variable.
 	kTypeInt                 , ///< int. Signed 32-bit integer.
