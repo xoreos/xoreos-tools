@@ -61,7 +61,9 @@ typedef std::deque<StackVariable> Stack;
  *  into.
  *
  *  At the end, the parameter globals will be updated with information on all
- *  the global variables this "_global" subroutine defines.
+ *  the global variables this "_global" subroutine defines, and the parameter
+ *  variables will contain unique Variable objects for each variable created
+ *  during the subroutine.
  */
 void analyzeStackGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::GameID game, Stack &globals);
 
@@ -69,7 +71,9 @@ void analyzeStackGlobals(SubRoutine &sub, VariableSpace &variables, Aurora::Game
  *
  *  Every single instruction in every single block of this subroutine will be
  *  analyzed, and its stack information updated. Subroutines that are called
- *  will be recursed into and also updated.
+ *  will be recursed into and also updated. Each unique variable created
+ *  during this process will have a Variable object added to the variables
+ *  parameter.
  *
  *  The game the subroutine's script is from needs to be set to a valid value.
  *

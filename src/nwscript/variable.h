@@ -135,7 +135,11 @@ struct TypeInference {
 	}
 };
 
-/** A unique variable defined and used by a script. */
+/** A unique variable defined and used by a script.
+ *
+ *  A Variable is usually created by the stack analysis of NWScript bytecode
+ *  (see analyzeStackGlobals() and analyzeStackSubRoutine() in stack.h).
+ */
 struct Variable {
 	size_t id;         ///< The unique ID of this variable.
 	VariableType type; ///< The type of this variable.
