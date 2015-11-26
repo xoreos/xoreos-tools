@@ -184,20 +184,29 @@ static const Block *getLatestBlock(const std::vector<const Block *> &blocks) {
 
 /** Recursive internal convenience function to be used by findPathMerge(). */
 static void findPathMergeRec(std::vector<const Block *> &merges, const Block &block1, const Block &block2) {
+	/* We hold the earlier block and recursively descend into the children
+	 * of the later block. If at any point, there is a linear path between
+	 * the earlier block and the later block (or one of its children), we
+	 * have found a merge point. */
+
+	// We moved past the destination => no merge here
 	if (block1.address > block2.address)
 		return;
 
+	// There's a linear path => we found a merge point
 	if (hasLinearPath(block1, block2)) {
 		merges.push_back(&block2);
 		return;
 	}
 
+	// Continue along the children
 	assert(block2.children.size() == block2.childrenTypes.size());
 
 	for (size_t i = 0; i < block2.children.size(); i++) {
 		const Block        &child = *block2.children[i];
 		const BlockEdgeType type  =  block2.childrenTypes[i];
 
+		// Don't follow subroutine calls, and don't jump backwards
 		if (!isSubRoutineCall(type) && (child.address > block2.address))
 			findPathMergeRec(merges, block1, child);
 	}
@@ -243,11 +252,13 @@ static void findPathMergeRec(std::vector<const Block *> &merges, const Block &bl
 static const Block *findPathMerge(const Block &block1, const Block &block2) {
 	std::vector<const Block *> merges;
 
+	// Correctly order the two blocks we want to check
 	if (block1.address < block2.address)
 		findPathMergeRec(merges, block1, block2);
 	else
 		findPathMergeRec(merges, block2, block1);
 
+	// We're only interested in the earliest merge point
 	return getEarliestBlock(merges);
 }
 
