@@ -210,6 +210,11 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 }
 
 static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
+	/* Checks that a linear path exists between two blocks, by recursively
+	 * descending into the children of the earlier block, until we either
+	 * reached the later block (which means there is a path), or moved
+	 * past the later block (which means there is no path). */
+
 	// The two blocks are the same => we found a path
 	if (block1.address == block2.address)
 		return true;
@@ -225,6 +230,7 @@ static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 		const Block        &child = *block1.children[i];
 		const BlockEdgeType type  =  block1.childrenTypes[i];
 
+		// Don't follow subroutine calls, and don't jump backwards
 		if (!isSubRoutineCall(type) && (child.address > block1.address))
 			if (hasLinearPathInternal(child, block2))
 				return true;
@@ -339,10 +345,11 @@ bool isSubRoutineCall(BlockEdgeType type) {
 }
 
 bool hasLinearPath(const Block &block1, const Block &block2) {
+	// Correctly order the two blocks we want to check
 	if (block1.address < block2.address)
 		return hasLinearPathInternal(block1, block2);
-
-	return hasLinearPathInternal(block2, block1);
+	else
+		return hasLinearPathInternal(block2, block1);
 }
 
 const Block *getNextBlock(const Blocks &blocks, const Block &block) {
