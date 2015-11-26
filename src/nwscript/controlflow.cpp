@@ -780,9 +780,9 @@ static void verifyLoop(const Block &head, const Block &tail, const Block &next) 
 		throw Common::Exception("Loop blocks out of order: %08X, %08X, %08X",
 		                        head.address, tail.address, next.address);
 
-	if (!hasLinearPath(head, tail) || !hasLinearPath(tail, next))
-		throw Common::Exception("Loop blocks have no linear path: %08X, %08X, %08X",
-		                        head.address, tail.address, next.address);
+	if (!hasLinearPath(head, tail) || !hasLinearPath(head, next))
+	   throw Common::Exception("Loop blocks have no linear path: %08X, %08X, %08X",
+	                           head.address, tail.address, next.address);
 
 	verifyLoopBlocks(head, head, tail, next);
 }
