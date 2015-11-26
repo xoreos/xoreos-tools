@@ -219,10 +219,16 @@ static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 		return false;
 
 	// Continue along the children
-	for (std::vector<const Block *>::const_iterator c = block1.children.begin();
-	     c != block1.children.end(); ++c)
-		if (hasLinearPathInternal(**c, block2))
-			return true;
+	assert(block1.children.size() == block1.childrenTypes.size());
+
+	for (size_t i = 0; i < block1.children.size(); i++) {
+		const Block        &child = *block1.children[i];
+		const BlockEdgeType type  =  block1.childrenTypes[i];
+
+		if (!isSubRoutineCall(type) && (child.address > block1.address))
+			if (hasLinearPathInternal(child, block2))
+				return true;
+	}
 
 	return false;
 }
