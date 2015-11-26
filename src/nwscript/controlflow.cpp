@@ -192,10 +192,15 @@ static void findPathMergeRec(std::vector<const Block *> &merges, const Block &bl
 		return;
 	}
 
-	for (std::vector<const Block *>::const_iterator c = block2.children.begin();
-	     c != block2.children.end(); ++c)
-		if ((*c)->address > block2.address)
-			findPathMergeRec(merges, block1, **c);
+	assert(block2.children.size() == block2.childrenTypes.size());
+
+	for (size_t i = 0; i < block2.children.size(); i++) {
+		const Block        &child = *block2.children[i];
+		const BlockEdgeType type  =  block2.childrenTypes[i];
+
+		if (!isSubRoutineCall(type) && (child.address > block2.address))
+			findPathMergeRec(merges, block1, child);
+	}
 }
 
 /** Find the block where the paths of these two blocks come back together.
