@@ -147,9 +147,9 @@ static void followBranchBlock(Blocks &blocks, Block &block, const Instruction &i
 			assert(instr.branches.size() == 1);
 			assert(instr.follower);
 
-			if (addBranchBlock(blocks, block, *instr.branches[0], branchBlock, kBlockEdgeTypeFunctionCall))
+			if (addBranchBlock(blocks, block, *instr.branches[0], branchBlock, kBlockEdgeTypeSubRoutineCall))
 				constructBlocks(blocks, *branchBlock, *instr.branches[0]);
-			if (addBranchBlock(blocks, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
+			if (addBranchBlock(blocks, block, *instr.follower   , branchBlock, kBlockEdgeTypeSubRoutineTail))
 				constructBlocks(blocks, *branchBlock, *instr.follower);
 
 			break;
@@ -160,9 +160,9 @@ static void followBranchBlock(Blocks &blocks, Block &block, const Instruction &i
 			assert(instr.branches.size() == 1);
 			assert(instr.follower);
 
-			if (addBranchBlock(blocks, block, *instr.branches[0], branchBlock, kBlockEdgeTypeStoreState))
+			if (addBranchBlock(blocks, block, *instr.branches[0], branchBlock, kBlockEdgeTypeSubRoutineStore))
 				constructBlocks(blocks, *branchBlock, *instr.branches[0]);
-			if (addBranchBlock(blocks, block, *instr.follower   , branchBlock, kBlockEdgeTypeFunctionReturn))
+			if (addBranchBlock(blocks, block, *instr.follower   , branchBlock, kBlockEdgeTypeSubRoutineTail))
 				constructBlocks(blocks, *branchBlock, *instr.follower);
 
 			break;
@@ -329,7 +329,7 @@ BlockEdgeType getParentChildEdgeType(const Block &parent, const Block &child) {
 }
 
 bool isSubRoutineCall(BlockEdgeType type) {
-	return (type == kBlockEdgeTypeFunctionCall) || (type == kBlockEdgeTypeStoreState);
+	return (type == kBlockEdgeTypeSubRoutineCall) || (type == kBlockEdgeTypeSubRoutineStore);
 }
 
 bool hasLinearPath(const Block &block1, const Block &block2) {

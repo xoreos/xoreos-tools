@@ -318,15 +318,15 @@ void Disassembler::writeDotBlockEdges(Common::WriteStream &out) {
 					attr = "color=red";
 					break;
 
-				case kBlockEdgeTypeFunctionCall:
+				case kBlockEdgeTypeSubRoutineCall:
 					attr = "color=cyan";
 					break;
 
-				case kBlockEdgeTypeFunctionReturn:
+				case kBlockEdgeTypeSubRoutineTail:
 					attr = "color=orange";
 					break;
 
-				case kBlockEdgeTypeStoreState:
+				case kBlockEdgeTypeSubRoutineStore:
 					attr = "color=purple";
 					break;
 

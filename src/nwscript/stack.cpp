@@ -491,9 +491,9 @@ static void analyzeStackBlock(AnalyzeStackContext &ctx) {
 		/* Recurse into the child blocks, but not into subroutines or STORESTATEs.
 		 * Don't follow logically dead edges either. */
 
-		if ((ctx.block->childrenTypes[i] == kBlockEdgeTypeFunctionCall) ||
-		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeStoreState  ) ||
-		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeDead        ))
+		if ((ctx.block->childrenTypes[i] == kBlockEdgeTypeSubRoutineCall ) ||
+		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeSubRoutineStore) ||
+		    (ctx.block->childrenTypes[i] == kBlockEdgeTypeDead           ))
 			continue;
 
 		assert(ctx.block->children[i]);

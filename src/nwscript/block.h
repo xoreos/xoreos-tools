@@ -45,9 +45,9 @@ enum BlockEdgeType {
 	kBlockEdgeTypeUnconditional,    ///< This block follows unconditionally.
 	kBlockEdgeTypeConditionalTrue,  ///< This block is a true branch of a conditional.
 	kBlockEdgeTypeConditionalFalse, ///< This block is a false branch of a conditional.
-	kBlockEdgeTypeFunctionCall,     ///< This block is a function call.
-	kBlockEdgeTypeFunctionReturn,   ///< This block is a function return.
-	kBlockEdgeTypeStoreState,       ///< This block is a subroutine create by STORESTATE.
+	kBlockEdgeTypeSubRoutineCall,   ///< This block is a subroutine call created by JSR.
+	kBlockEdgeTypeSubRoutineStore,  ///< This block is a subroutine functor created by STORESTATE.
+	kBlockEdgeTypeSubRoutineTail,   ///< This block is a tail following a subroutine call or functor.
 	kBlockEdgeTypeDead              ///< This edge is logically dead and will never be taken.
 };
 

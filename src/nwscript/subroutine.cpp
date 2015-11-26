@@ -54,8 +54,8 @@ static void addSubRoutineBlock(SubRoutine &sub, Block &block) {
 	assert(block.children.size() == block.childrenTypes.size());
 
 	for (size_t i = 0; i < block.children.size(); i++)
-		if ((block.childrenTypes[i] != kBlockEdgeTypeFunctionCall) &&
-		    (block.childrenTypes[i] != kBlockEdgeTypeStoreState))
+		if ((block.childrenTypes[i] != kBlockEdgeTypeSubRoutineCall) &&
+		    (block.childrenTypes[i] != kBlockEdgeTypeSubRoutineStore))
 			addSubRoutineBlock(sub, *const_cast<Block *>(block.children[i]));
 }
 
@@ -73,7 +73,7 @@ static bool isNewSubRoutineBlock(const Block &block) {
 			continue;
 
 		const BlockEdgeType edgeType = getParentChildEdgeType(**p, block);
-		if ((edgeType == kBlockEdgeTypeFunctionCall) || (edgeType == kBlockEdgeTypeStoreState))
+		if ((edgeType == kBlockEdgeTypeSubRoutineCall) || (edgeType == kBlockEdgeTypeSubRoutineStore))
 			return true;
 	}
 
