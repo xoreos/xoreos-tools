@@ -91,7 +91,6 @@ private:
 	void writeTag();
 
 	Common::UString escape(const Common::UString &str);
-	void encodeBase64(std::list<Common::UString> &base64, Common::SeekableReadStream &data);
 };
 
 } // End of namespace XML
