@@ -50,6 +50,11 @@ void encodeBase64(ReadStream &data, UString &base64);
 /** Encode the binary stream data into a list of Base64 strings of at max lineLength characters. */
 void encodeBase64(ReadStream &data, std::list<UString> &base64, size_t lineLength);
 
+/** Decode the Base64 string into binary data, returning a newly allocated stream. */
+SeekableReadStream *decodeBase64(const UString &base64);
+/** Decode the list of Base64 strings into binary data, returning a newly allocated stream. */
+SeekableReadStream *decodeBase64(const std::list<UString> &base64);
+
 } // End of namespace Common
 
 #endif // COMMON_BASE64_H

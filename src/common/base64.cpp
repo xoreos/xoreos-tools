@@ -28,10 +28,23 @@
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
+#include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 
 namespace Common {
 
 static const char kBase64Char[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static const uint8 kBase64Values[128] = {
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3E, 0xFF, 0xFF, 0xFF, 0x3F,
+	0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
+	0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	0xFF, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+	0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+};
 
 /** Write a character into our base64 string, and update the remaining
  *  string length.
@@ -61,6 +74,14 @@ static bool writeCharacters(UString &base64, UString &str, size_t &lineLength) {
 	}
 
 	return lineLength > 0;
+}
+
+/** Find the raw value of a base64-encoded character. */
+static uint8 findCharacterValue(uint32 c) {
+	if ((c >= 128) || (kBase64Values[c] > 0x3F))
+		throw Exception("Invalid base64 character");
+
+	return kBase64Values[c];
 }
 
 /** Encode data into base64 and write the result into the string, but only up
@@ -115,6 +136,53 @@ static bool encodeBase64(ReadStream &data, UString &base64, size_t maxLength, US
 	return false;
 }
 
+static void decodeBase64(WriteStream &data, const UString &base64, UString &overhang) {
+	assert(overhang.size() < 4);
+
+	for (UString::iterator c = base64.begin(); c != base64.end(); ++c) {
+		overhang += *c;
+
+		if (overhang.size() == 4) {
+			uint32 code = 0;
+
+			uint8 n = 0;
+			for (UString::iterator o = overhang.begin(); o != overhang.end(); ++o) {
+				code <<= 6;
+
+				if (*o != '=') {
+					code += findCharacterValue(*o);
+					n    += 6;
+				}
+			}
+
+			for (size_t i = 0; i < (n / 8); i++, code <<= 8)
+				data.writeByte((byte) ((code & 0x00FF0000) >> 16));
+
+			overhang.clear();
+		}
+	}
+}
+
+static size_t countLength(const UString &str) {
+	const size_t dataLength = str.size();
+
+	if ((dataLength % 4) != 0)
+		throw Exception("Invalid length for a base64-encoded string");
+
+	return dataLength;
+}
+
+static size_t countLength(const std::list<UString> &str) {
+	size_t dataLength = 0;
+	for (std::list<UString>::const_iterator s = str.begin(); s != str.end(); ++s)
+		dataLength += s->size();
+
+	if ((dataLength % 4) != 0)
+		throw Exception("Invalid length for a base64-encoded string");
+
+	return dataLength;
+}
+
 
 void encodeBase64(ReadStream &data, UString &base64) {
 	UString overhang;
@@ -133,6 +201,45 @@ void encodeBase64(ReadStream &data, std::list<UString> &base64, size_t lineLengt
 	// Trim empty strings from the back
 	while (!base64.empty() && base64.back().empty())
 		base64.pop_back();
+}
+
+SeekableReadStream *decodeBase64(const UString &base64) {
+	const size_t dataLength = (countLength(base64) / 4) * 3;
+	byte *data = new byte[dataLength];
+
+	MemoryWriteStream output(data, dataLength);
+
+	try {
+		UString overhang;
+
+		decodeBase64(output, base64, overhang);
+
+	} catch (...) {
+		delete[] data;
+		throw;
+	}
+
+	return new MemoryReadStream(data, output.pos(), true);
+}
+
+SeekableReadStream *decodeBase64(const std::list<UString> &base64) {
+	const size_t dataLength = (countLength(base64) / 4) * 3;
+	byte *data = new byte[dataLength];
+
+	MemoryWriteStream output(data, dataLength);
+
+	try {
+		UString overhang;
+
+		for (std::list<UString>::const_iterator b = base64.begin(); b != base64.end(); ++b)
+			decodeBase64(output, *b, overhang);
+
+	} catch (...) {
+		delete[] data;
+		throw;
+	}
+
+	return new MemoryReadStream(data, output.pos(), true);
 }
 
 } // End of namespace Common
