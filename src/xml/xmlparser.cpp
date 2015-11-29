@@ -48,7 +48,7 @@ static void errorFuncThrow(void *UNUSED(ctx), const char *msg, ...) {
 }
 
 static int readStream(void *context, char *buffer, int len) {
-	Common::ReadStream *stream = (Common::ReadStream *) context;
+	Common::ReadStream *stream = static_cast<Common::ReadStream *>(context);
 	if (!stream)
 		return -1;
 
@@ -80,7 +80,7 @@ XMLParser::XMLParser(Common::ReadStream &stream, bool makeLower) : _rootNode(0) 
 		const int options = XML_PARSE_NOWARNING | XML_PARSE_NOBLANKS | XML_PARSE_NONET |
 		                    XML_PARSE_NSCLEAN   | XML_PARSE_NOCDATA;
 
-		xml = xmlReadIO(readStream, closeStream, (void *) &stream, "stream.xml", 0, options);
+		xml = xmlReadIO(readStream, closeStream, static_cast<void *>(&stream), "stream.xml", 0, options);
 		if (!xml)
 			throw Common::Exception("XML document failed to parse");
 
