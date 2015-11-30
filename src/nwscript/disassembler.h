@@ -35,7 +35,7 @@
 namespace Common {
 	class SeekableReadStream;
 	class WriteStream;
-};
+}
 
 namespace NWScript {
 
