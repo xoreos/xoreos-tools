@@ -53,7 +53,7 @@ void Platform::getParameters(int UNUSED(argc), char **UNUSED(argv), std::vector<
 	args.reserve(argc);
 
 	for (int i = 0; i < argc; i++)
-		args.push_back(readString((const byte *) argv[i], wcslen(argv[i]) * 2, kEncodingUTF16LE));
+		args.push_back(readString(reinterpret_cast<const byte *>(argv[i]), wcslen(argv[i]) * 2, kEncodingUTF16LE));
 }
 
 #else
@@ -81,7 +81,7 @@ std::FILE *Platform::openFile(const UString &fileName, FileMode mode) {
 
 	MemoryReadStream *utf16Name = convertString(fileName, kEncodingUTF16LE);
 
-	file = _wfopen((const wchar_t *) utf16Name->getData(), modeStrings[(uint) mode]);
+	file = _wfopen(reinterpret_cast<const wchar_t *>(utf16Name->getData()), modeStrings[(uint) mode]);
 
 	delete utf16Name;
 #else
