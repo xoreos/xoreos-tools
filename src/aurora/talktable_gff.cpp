@@ -263,7 +263,7 @@ Common::UString TalkTable_GFF::readString05(Common::SeekableReadStream *huffTree
 
 	} while (utf16Str.back() != 0);
 
-	const byte  *data = (const byte *) &utf16Str[0];
+	const byte  *data = reinterpret_cast<const byte *>(&utf16Str[0]);
 	const size_t size = utf16Str.size() * 2;
 
 	return Common::readString(data, size, Common::kEncodingUTF16LE);
