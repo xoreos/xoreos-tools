@@ -136,7 +136,7 @@ void CDPTH::drawImage(ReadContext &ctx) {
 	const uint32 cellHeight = 64;
 	const uint32 cellsX     = ctx.width  / cellWidth;
 
-	uint16 *data = (uint16 *) _mipMaps.back()->data;
+	uint16 *data = reinterpret_cast<uint16 *>(_mipMaps.back()->data);
 	for (size_t i = 0; i < ctx.cells.size(); i++) {
 		Common::SeekableReadStream *cell = ctx.cells[i];
 		if (!cell)
