@@ -114,7 +114,7 @@ void printStream(MemoryWriteStreamDynamic &stream) {
 static bool tagToString(uint32 tag, bool trim, UString &str) {
 	tag = TO_BE_32(tag);
 
-	const char *tS = (const char *) &tag;
+	const char *tS = reinterpret_cast<const char *>(&tag);
 	if (!std::isprint(tS[0]) || !std::isprint(tS[1]) || !std::isprint(tS[2]) || !std::isprint(tS[3]))
 		return false;
 
