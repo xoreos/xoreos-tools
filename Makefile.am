@@ -16,6 +16,8 @@ EXTRA_DIST = \
              .uncrustifyrc \
              CMakeLists.txt \
              cmake/CMakeAM.cmake \
+             cmake/FindIconv.cmake \
+             cmake/SetCheckCompilerFlag.cmake \
              cmake/toolchain/i686-windows-mingw.cmake \
              cmake/toolchain/x86_64-windows-mingw.cmake \
              $(EMPTY)
