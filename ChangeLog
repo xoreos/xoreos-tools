@@ -17,6 +17,9 @@ Someday, ????-??-?? (Version 0.0.4)
 		- Added dynamic supported warning flag detected to CMake
 	- DOCS:
 		- Improved documentation in various files
+	- MISC:
+		- Changed C-style casts to static_cast and reinterpret_cast
+		  in various places
 
 Wednesday, 2015-09-30 (Version 0.0.3)
 	- Tools added:
