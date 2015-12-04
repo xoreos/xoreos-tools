@@ -1,78 +1,64 @@
-.de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
-..
-.if \n[.g] .mso www.tmac
-
-.TH nbfs2tga 1 2015-07-23 "xoreos-tools"
-.SH NAME
-nbfs2tga - Nintendo raw NBFS image to TGA converter
-.SH SYNOPSIS
-nbfs2tga [<options>] <nbfs> <nbfp> <tga> [<width>] [<height>]
-.SH DESCRIPTION
-.PP
-.B nbfs2tga
-converts Nintendo's raw NBFS images into common TGA images. Both
-an NBFS file, containing the pixel data, and an NBFP file with
-the palette data are needed. If no height is specified, it is
+.Dd July 23, 2015
+.Dt NBFS2TGA 1
+.Os
+.Sh NAME
+.Nm nbfs2tga
+.Nd Nintendo raw NBFS image to TGA converter
+.Sh SYNOPSIS
+.Nm nbfs2tga
+.Op Ar options
+.Ar nbfs nbfp tga
+.Op Ar width Op Ar height
+.Sh DESCRIPTION
+.Nm
+converts Nintendo's raw NBFS images into common TGA images.
+Both an NBFS file, containing the pixel data, and an NBFP file with
+the palette data are needed.
+If no height is specified, it is
 calculated using the width value and the size of the NBFS file.
 If no width is specified either, this tool tries to guess the
-dimensions. It might guess the wrong dimensions.
-.PP
-.SH OPTIONS
-.TP 4
-.B -h
-.PD 0
-.TP 4
-.B --help
-.PD
+dimensions.
+It might guess the wrong dimensions.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
 Show a help text and exit.
-.TP 4
-.B --version
+.It Fl Fl version
 Show version information and exit.
-.TP 4
-<nbfs>
-The name of the NBFS file to read. The NBFS contains the pixel
-graphics part of the image.
-.TP 4
-<nbfp>
-The name of the NBFP file to use. The NBFP file contains the palette
-part of the image.
-.TP 4
-<tga>
+.El
+.Bl -tag -width xx -compact
+.It Ar nbfs
+The name of the NBFS file to read.
+The NBFS contains the pixel graphics part of the image.
+.It Ar nbfp
+The name of the NBFP file to use.
+The NBFP file contains the palette part of the image.
+.It Ar tga
 The resulting TGA file will be written there.
-.TP 4
-[<width>]
+.It Ar width
 The width of the NBFS image.
-.TP 4
-[<height>]
+.It Ar height
 The height of the NBFS image.
-.SH EXAMPLES
-.ad l
-.B Convert an NBFS+NBFP into a TGA and specify dimensions:
-.nf
-.ad l
-nbfs2tga a.nbfs a.nbfp a.tga 64 64
-.PP
-.fi
-.ad l
-.B Convert an NBFS+NBFP into a TGA and only specify width:
-.nf
-.ad l
-nbfs2tga a.nbfs a.nbfp a.tga 64
-.PP
-.fi
-.ad l
-.B Convert an NBFS+NBFP into a TGA and guess image dimensions:
-.nf
-.ad l
-nbfs2tga a.nbfs a.nbfp a.tga
-.PP
-.fi
-.ad b
-.SH "SEE ALSO"
+.El
+.Sh EXAMPLES
+Convert an NBFS+NBFP into a TGA and specify dimensions:
+.Pp
+.Dl $ nbfs2tga a.nbfs a.nbfp a.tga 64 64
+.Pp
+Convert an NBFS+NBFP into a TGA and only specify width:
+.Pp
+.Dl $ nbfs2tga a.nbfs a.nbfp a.tga 64
+.Pp
+Convert an NBFS+NBFP into a TGA and guess image dimensions:
+.Pp
+.Dl $ nbfs2tga a.nbfs a.nbfp a.tga
+.Sh SEE ALSO
 More information about the xoreos project can be found on
-.URL "https://xoreos.org/" "its website" .
-.SH AUTHORS
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
 This program is part of the xoreos-tools package, which in turn is
 part of the xoreos project, and was written by the xoreos team.
-Please see the AUTHORS file for details.
+Please see the
+.Pa AUTHORS
+file for details.

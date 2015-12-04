@@ -1,164 +1,159 @@
-.de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
-..
-.if \n[.g] .mso www.tmac
-
-.TH unerf 1 2015-11-14 "xoreos-tools"
-.SH NAME
-unerf - BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor
-.SH SYNOPSIS
-unerf [<options>] <command> <archive> [<file> [...]]
-.SH DESCRIPTION
-.PP
-.B unerf
-extract BioWare ERF archives, found in many BioWare games as files
-with the extension .erf, .mod, .nwm or .sav. Moreover, in some
-games, a .rim file might be an ERF instead of a RIM.
-.PP
-There's several different versions of ERFs. This tool supports the
-version V1.0, V1.1, V2.0, V2.2 and V3.0.
-.PP
-.B Supported features:
-.PD 0
-.IP - 2
+.Dd November 14, 2015
+.Dt UNERF 1
+.Os
+.Sh NAME
+.Nm unerf
+.Nd BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor
+.Sh SYNOPSIS
+.Nm unerf
+.Op Ar options
+.Ar command
+.Ar archive
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+extracts BioWare ERF archives, found in many BioWare games as files
+with the extension .erf, .mod, .nwm or .sav.
+Moreover, in some games, a .rim file might be an ERF instead of a RIM.
+.Pp
+There's several different versions of ERFs.
+This tool supports the version V1.0, V1.1, V2.0, V2.2 and V3.0.
+.Pp
+Supported features:
+.Bl -bullet -compact
+.It
 Archives with stripped filenames. The name hash is searched for in
-a big lookup table. If it is not found, the file is listed and
+a big lookup table.
+If it is not found, the file is listed and
 extracted as a hexadecimal representation of the hash
-.IP - 2
+.It
 zlib-compressed files are supported and transparently decompressed
-.IP - 2
+.It
 Blowfish-encrypted archives are supported and are, provided you know
 the password, transparently decrypted
-.IP - 2
-Archives that contain full paths are supported. You can either strip
-the directory and extract the plain filenames, or substitute the
-directory separator with a '='
-.IP - 2
+.It
+Archives that contain full paths are supported.
+You can either strip the directory and extract the plain filenames,
+or substitute the directory separator with a
+.Ql =
+.It
 Archives with numerical extension IDs belonging to different games
 can be aliased accordingly.
-.PD
-.PP
-.B Unsupported features:
-.PD 0
-.IP - 2
+.El
+.Pp
+Unsupported features:
+.Bl -bullet -compact
+.It
 XOR-encrypted archives
-.IP - 2
+.It
 Creating directories when extracting archives with full paths.
-.br
+.Pp
 Please also note that by stripped the directories of files in these
 archives, you might overwrite already extracted files
-.PD
-.SH OPTIONS
-.TP 4
-.B -h
-.PD 0
-.TP 4
-.B --help
-.PD
+.El
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
 Show a help text and exit.
-.TP 4
-.B --version
+.It Fl Fl version
 Show version information and exit.
-.TP 4
-.B --nwn2
+.It Fl Fl nwn2
 Alias file types according to
-.IR "Neverwinter Nights 2" " rules."
-.br
-.IR "Neverwinter Nights 2"
+.Em Neverwinter Nights 2
+rules.
+.Pp
+.Em Neverwinter Nights 2
 reuses a few file extension IDs differently than other BioWare games.
-.TP 4
-.B --jade
+.It Fl Fl jade
 Alias file types according to
-.IR "Jade Empire" " rules."
-.br
-.IR "Jade Empire"
+.Em Jade Empire
+rules.
+.Pp
+.Em Jade Empire
 reuses a few file extension IDs differently than other BioWare games.
-.TP 4
-.BR --pass " <hex>"
-Password to decrypt this archive. This password needs to be specified
-in hexadecimal notation, even if it's an ASCII string. For example,
-"4CF223AB" would be a valid password string. "Foobar" would not.
-.TP 4
-.BR --nwm " <file>"
+.It Fl Fl pass Ar hex
+Password to decrypt this archive.
+This password needs to be specified in hexadecimal notation,
+even if it's an ASCII string.
+For example,
+.Dq 4CF223AB
+would be a valid password string.
+.Dq Foobar
+would not.
+.It Fl Fl nwm Ar file
 Calculate the MD5 of this NWM file to complement the decryption key
 of a HAK file for a Neverwinter Nights premium module.
-.TP 4
-<command>
-i  Display meta-information about the archive
-.br
-l  List archive contents
-.br
-v  List archive contents with full paths
-.br
-e  Extract files to current directory
-.br
-s  Extract files to current directory with full name
-.TP 4
-<archive>
+.El
+.Bl -tag -width xxxx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm i
+Display meta-information about the archive
+.It Cm l
+List archive contents
+.It Cm v
+List archive contents with full paths
+.It Cm e
+Extract files to current directory
+.It Cm s
+Extract files to current directory with full name
+.El
+.It Ar archive
 The ERF archive to read.
-.TP 4
-[<file>]
-One or more files to extract. If none are given, the whole archive is
-extracted.
-.SH EXAMPLES
-.ad l
-.B View meta-information of the archive Shadowlords1.mod:
-.nf
-.ad l
-unerf i Shadowlords1.mod
-.PP
-.fi
-.ad l
-.B List all files contained in the archive Chapter1.nwm:
-.nf
-.ad l
-unerf l Chapter1.nwm
-.PP
-.fi
-.ad l
-.B List all files, with full path, in the archive areas.erf:
-.nf
-.ad l
-unerf v areas.erf
-.PP
-.fi
-.ad l
-.B Extract all files from the archive foo.mod:
-.nf
-.ad l
-unerf e foo.mod
-.PP
-.fi
-.ad l
-.B Extract the file area1.are from the archive foo.mod:
-.nf
-.ad l
-unerf e foo.mod area1.are
-.PP
-.fi
-.ad l
-.B Extract all files, with full path, in the archive areas.erf:
-.nf
-.ad l
-unerf s areas.erf
-.PP
-.fi
-.ad l
-.B Extract the file areas\\\\area1.are from the archive areas.erf:
-.nf
-.ad l
-unerf s areas.erf areas\\\\area1.are
-.PP
-.fi
-.ad b
-.SH "SEE ALSO"
-.BR unherf (1),
-.BR unrim (1),
-.BR fixpremiumgff (1)
-.PP
+.It Ar file
+One or more files to extract.
+If none are given, the whole archive is extracted.
+.El
+.Sh EXAMPLES
+View meta-information of the archive
+.Pa Shadowlords1.mod :
+.Pp
+.Dl $ unerf i Shadowlords1.mod
+.Pp
+List all files contained in the archive
+.Pa Chapter1.nwm :
+.Pp
+.Dl $ unerf l Chapter1.nwm
+.Pp
+List all files, with full path, in the archive
+.Pa areas.erf :
+.Pp
+.Dl $ unerf v areas.erf
+.Pp
+Extract all files from the archive
+.Pa foo.mod :
+.Pp
+.Dl $ unerf e foo.mod
+.Pp
+Extract the file
+.Pa area1.are
+from the archive
+.Pa foo.mod :
+.Pp
+.Dl $ unerf e foo.mod area1.are
+.Pp
+Extract all files, with full path, in the archive
+.Pa areas.erf :
+.Pp
+.Dl $ unerf s areas.erf
+.Pp
+Extract the file
+.Pa areas\earea1.are
+from the archive
+.Pa areas.erf :
+.Pp
+.Dl $ unerf s areas.erf areas\e\earea1.are
+.Sh SEE ALSO
+.Xr fixpremiumgff 1 ,
+.Xr unherf 1 ,
+.Xr unrim 1
+.Pp
 More information about the xoreos project can be found on
-.URL "https://xoreos.org/" "its website" .
-.SH AUTHORS
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
 This program is part of the xoreos-tools package, which in turn is
 part of the xoreos project, and was written by the xoreos team.
-Please see the AUTHORS file for details.
+Please see the
+.Pa AUTHORS
+file for details.

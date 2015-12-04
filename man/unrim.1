@@ -1,75 +1,70 @@
-.de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
-..
-.if \n[.g] .mso www.tmac
-
-.TH unrim 1 2015-07-23 "xoreos-tools"
-.SH NAME
-unrim - BioWare RIM archive extractor
-.SH SYNOPSIS
-unrim [<options>] <command> <file>
-.SH DESCRIPTION
-.PP
-.B unrim
-extract BioWare RIM archives, found in many BioWare games.
-.PP
+.Dd July 23, 2015
+.Dt UNRIM 1
+.Os
+.Sh NAME
+.Nm unrim
+.Nd BioWare RIM archive extractor
+.Sh SYNOPSIS
+.Nm unrim
+.Op Ar options
+.Ar command file
+.Sh DESCRIPTION
+.Nm
+extracts BioWare RIM archives, found in many BioWare games.
+.Pp
 RIM archives are simplified ERF archives, stripped of everything
 not related to holding files (like the description string).
-.SH OPTIONS
-.TP 4
-.B -h
-.PD 0
-.TP 4
-.B --help
-.PD
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
 Show a help text and exit.
-.TP 4
-.B --version
+.It Fl Fl version
 Show version information and exit.
-.TP 4
-.B --nwn2
+.It Fl Fl nwn2
 Alias file types according to
-.IR "Neverwinter Nights 2" " rules."
-.br
-.IR "Neverwinter Nights 2"
+.Em Neverwinter Nights 2
+rules.
+.Pp
+.Em Neverwinter Nights 2
 reuses a few file extension IDs differently than other BioWare games.
-.TP 4
-.B --jade
+.It Fl Fl jade
 Alias file types according to
-.IR "Jade Empire" " rules."
-.br
-.IR "Jade Empire"
+.Em Jade Empire
+rules.
+.Pp
+.Em Jade Empire
 reuses a few file extension IDs differently than other BioWare games.
-.TP 4
-<command>
-l  List archive contents
-.br
-e  Extract files to current directory
-.TP 4
-<file>
+.El
+.Bl -tag -width xx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm l
+List archive contents
+.It Cm e
+Extract files to current directory
+.El
+.It Ar file
 The RIM archive to read.
-.SH EXAMPLES
-.ad l
-.B List all files contained in the archive archive.rim:
-.nf
-.ad l
-unrim l archive.rim
-.PP
-.fi
-.ad l
-.B Extract all files from the archive archive.rim:
-.nf
-.ad l
-unrim e archive.rim
-.PP
-.fi
-.ad b
-.SH "SEE ALSO"
-.BR unerf (1)
-.PP
+.El
+.Sh EXAMPLES
+List all files contained in the archive
+.Pa archive.rim :
+.Pp
+.Dl $ unrim l archive.rim
+.Pp
+Extract all files from the archive
+.Pa archive.rim :
+.Pp
+.Dl $ unrim e archive.rim
+.Sh SEE ALSO
+.Xr unerf 1
+.Pp
 More information about the xoreos project can be found on
-.URL "https://xoreos.org/" "its website" .
-.SH AUTHORS
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
 This program is part of the xoreos-tools package, which in turn is
 part of the xoreos project, and was written by the xoreos team.
-Please see the AUTHORS file for details.
+Please see the
+.Pa AUTHORS
+file for details.
