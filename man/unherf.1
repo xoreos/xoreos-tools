@@ -1,66 +1,62 @@
-.de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
-..
-.if \n[.g] .mso www.tmac
-
-.TH unherf 1 2015-07-23 "xoreos-tools"
-.SH NAME
-unherf - BioWare HERF archive extractor
-.SH SYNOPSIS
-unherf [<options>] <command> <file>
-.SH DESCRIPTION
-.PP
-.B unherf
+.Dd July 23, 2015
+.Dt UNHERF 1
+.Os
+.Sh NAME
+.Nm unherf
+.Nd BioWare HERF archive extractor
+.Sh SYNOPSIS
+.Nm unherf
+.Op Ar options
+.Ar command file
+.Sh DESCRIPTION
+.Nm
 extract BioWare HERF archives, found in the Nintendo DS game
-.IR "Sonic Chronicles: The Dark Brotherhood" .
-.PP
+.Em Sonic Chronicles: The Dark Brotherhood .
+.Pp
 A HERF, Hashed ERF, is a very simple archive, similar to BioWare's
-ERF and RIM files. Unlike those, HERF usually only store djb2 hashes
-of the contained filenames. This tool has a lookup table to convert
-the hashes back into readable filenames. Not all names are known yet.
-.PD
-.SH OPTIONS
-.TP 4
-.B -h
-.PD 0
-.TP 4
-.B --help
-.PD
+ERF and RIM files.
+Unlike those, HERF usually only store djb2 hashes of the contained filenames.
+This tool has a lookup table to convert
+the hashes back into readable filenames.
+Not all names are known yet.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
 Show a help text and exit.
-.TP 4
-.B --version
+.It Fl Fl version
 Show version information and exit.
-.TP 4
-<command>
-l  List archive contents
-.br
-e  Extract files to current directory
-.TP 4
-<file>
+.El
+.Bl -tag -width xx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm l
+List archive contents
+.It Cm e
+Extract files to current directory
+.El
+.It Ar file
 The HERF archive to read.
-.SH EXAMPLES
-.ad l
-.B List all files contained in the archive archive.herf:
-.nf
-.ad l
-unherf l archive.herf
-.PP
-.fi
-.ad l
-.B Extract all files from the archive archive.herf:
-.nf
-.ad l
-unherf e archive.herf
-.PP
-.fi
-.ad b
-.SH "SEE ALSO"
-.BR unerf (1),
-.BR unrim (1)
-.PP
+.El
+.Sh EXAMPLES
+List all files contained in the archive
+.Pa archive.herf :
+.Pp
+.Dl $ unherf l archive.herf
+.Pp
+Extract all files from the archive
+.Pa archive.herf :
+.Pp
+.Dl $ unherf e archive.herf
+.Sh SEE ALSO
+.Xr unerf 1 ,
+.Xr unrim 1
+.Pp
 More information about the xoreos project can be found on
-.URL "https://xoreos.org/" "its website" .
-.SH AUTHORS
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
 This program is part of the xoreos-tools package, which in turn is
 part of the xoreos project, and was written by the xoreos team.
-Please see the AUTHORS file for details.
+Please see the
+.Pa AUTHORS
+file for details.

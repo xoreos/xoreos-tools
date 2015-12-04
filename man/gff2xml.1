@@ -1,103 +1,106 @@
-.de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
-..
-.if \n[.g] .mso www.tmac
-
-.TH gff2xml 1 2015-11-14 "xoreos-tools"
-.SH NAME
-gff2xml - BioWare GFF to XML converter
-.SH SYNOPSIS
-gff2xml [<options>] <input file> [<output file>]
-.SH DESCRIPTION
-.PP
-.B gff2xml
+.Dd November 14, 2015
+.Dt GFF2XML 1
+.Os
+.Sh NAME
+.Nm gff2xml
+.Nd BioWare GFF to XML converter
+.Sh SYNOPSIS
+.Nm gff2xml
+.Op Ar options
+.Ar input_file
+.Op Ar output_file
+.Sh DESCRIPTION
+.Nm
 converts BioWare's GFF files (versions V3.2/V3.3 and V4.0/V4.1)
-into human-readable XML. GFF are hierarchical data files, similar
-to XML in concept, but stored in binary. As such, these files are
-used as a basis for many of the file formats found in the BioWare
-games. For example, an UTC file is a GFF holding a template for a
+into human-readable XML.
+GFF are hierarchical data files, similar
+to XML in concept, but stored in binary.
+As such, these files are used as a basis for many of the file formats
+found in the BioWare games.
+For example, an UTC file is a GFF holding a template for a
 creature, while a GUI file is a GFF describing an in-game menu.
-.PP
+.Pp
 Both version 3 of the format (V3.2/V3.3) and version 4 (V4.0/V4.1)
-are supported. While they are similar, the 4th version carries
+are supported.
+While they are similar, the 4th version carries
 several changes to make the files more efficient to read in-game.
 This includes replacing the string field names (which map
 to XML tags) with numerical identifiers, resulting in converted
-XML files that are stripped of their meaning. To compensate, this
-tool adds readable aliases to many of these numerical identifiers,
-giving them back their meaning. Unfortunately, not all of them
-are known. Most notably, the identifiers introduced in
-.IR "Sonic Chronicles: The Dark Brotherhood" " and " "Dragon Age 2"
+XML files that are stripped of their meaning.
+To compensate, this tool adds readable aliases to many of these
+numerical identifiers, giving them back their meaning.
+Unfortunately, not all of them are known.
+Most notably, the identifiers introduced in
+.Em Sonic Chronicles: The Dark Brotherhood
+and
+.Em Dragon Age 2
 are still missing.
-.PP
+.Pp
 The changes in the minor versions (V3.2 vs. V3.3 and V4.0 vs.
-V4.1) are less significant. V3.3 simply changes which languages
-are supported, and V4.1 adds a common string table at the start
-of the file. Both of these additions are handled transparently.
-.SH OPTIONS
-.TP 4
-.B -h
-.PD 0
-.TP 4
-.B --help
-.PD
+V4.1) are less significant.
+V3.3 simply changes which languages are supported,
+and V4.1 adds a common string table at the start of the file.
+Both of these additions are handled transparently.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
 Show a help text and exit.
-.TP 4
-.B --version
+.It Fl Fl version
 Show version information and exit.
-.TP 4
-.B --cp1252
-Read GFF4 strings as Windows CP-1252. Usually, strings in version
-4 of the GFF format are encoded in little-endian UTF-16. But some
-files store them as Windows CP-1252 instead. Since there's no clean
-way to autodetect the different encoding, this switch manually
-selects Windows CP-1252.
-.TP 4
-.B --nwnpremium
+.It Fl Fl cp1252
+Read GFF4 strings as Windows CP-1252.
+Usually, strings in version 4 of the GFF format are encoded in
+little-endian UTF-16.
+But some files store them as Windows CP-1252 instead.
+Since there's no clean way to autodetect the different encoding,
+this switch manually selects Windows CP-1252.
+.It Fl Fl nwnpremium
 The GFF files found in the encrypted HAK files of
-.I "Neverwinter Nights"
-premium modules are deliberately broken. This options tells
-.B gff2xml
+.Em Neverwinter Nights
+premium modules are deliberately broken.
+This options tells
+.Nm
 to work around the brokenness.
-.TP 4
-<input file>
+.El
+.Bl -tag -width xxxx -compact
+.It Ar input_file
 The GFF file to convert.
-.TP 4
-[<output file>]
-The XML file will be written there. If no output file is specified,
-the XML data is written to stdout. The encoding of the XML stream
-is always UTF-8.
-.SH EXAMPLES
-.ad l
-.B Convert the GFF file1.utc into an XML file:
-.nf
-.ad l
-gff2xml file1.utc file2.xml
-.PP
-.fi
-.ad l
-.B Convert the GFF file1.utc into an XML file on stdout:
-.nf
-.ad l
-gff2xml file1.utc
-.PP
-.fi
-.ad l
-.B Convert the GFF file1.utc, which uses Windows CP-1252 strings:
-.nf
-.ad l
-gff2xml --cp1252 file1.utc file2.xml
-.PP
-.fi
-.ad b
-.SH "SEE ALSO"
-.BR convert2da (1),
-.BR tlk2xml (1),
-.BR fixpremiumgff (1)
-.PP
+.It Op Ar output_file
+The XML file will be written there.
+If no output file is specified, the XML data is written to
+.Dv stdout .
+The encoding of the XML stream is always UTF-8.
+.El
+.Sh EXAMPLES
+Convert the GFF
+.Pa file1.utc
+into an XML file:
+.Pp
+.Dl $ gff2xml file1.utc file2.xml
+.Pp
+Convert the GFF
+.Pa file1.utc
+into an XML file on
+.Dv stdout :
+.Pp
+.Dl $ gff2xml file1.utc
+.Pp
+Convert the GFF
+.Pa file1.utc ,
+which uses Windows CP-1252 strings:
+.Pp
+.Dl $ gff2xml --cp1252 file1.utc file2.xml
+.Sh SEE ALSO
+.Xr convert2da 1 ,
+.Xr fixpremiumgff 1 ,
+.Xr tlk2xml 1
+.Pp
 More information about the xoreos project can be found on
-.URL "https://xoreos.org/" "its website" .
-.SH AUTHORS
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
 This program is part of the xoreos-tools package, which in turn is
 part of the xoreos project, and was written by the xoreos team.
-Please see the AUTHORS file for details.
+Please see the
+.Pa AUTHORS
+file for details.
