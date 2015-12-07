@@ -51,7 +51,7 @@ enum Opcode {
 	kOpcodeCPTOPSP       = 0x03, ///< CPTOPSP. Push a copy of a stack element on top of the stack.
 	kOpcodeCONST         = 0x04, ///< CONST. Push a predetermined value onto the stack.
 	kOpcodeACTION        = 0x05, ///< ACTION. Call a game-specific engine function.
-	kOpcodeLOGAND        = 0x06, ///< LOGAND. Perform a logical boolean AND (&&)
+	kOpcodeLOGAND        = 0x06, ///< LOGAND. Perform a logical boolean AND (&&).
 	kOpcodeLOGOR         = 0x07, ///< LOGOR. Perform a logical boolean OR (||).
 	kOpcodeINCOR         = 0x08, ///< INCOR. Perform a bit-wise inclusive OR (|).
 	kOpcodeEXCOR         = 0x09, ///< EXCOR. Perform a bit-wise exclusive OR (^).
