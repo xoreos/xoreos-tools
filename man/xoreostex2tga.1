@@ -1,114 +1,102 @@
-.de URL
-\\$2 \(laURL: \\$1 \(ra\\$3
-..
-.if \n[.g] .mso www.tmac
-
-.TH xoreostex2tga 1 2015-07-23 "xoreos-tools"
-.SH NAME
-xoreostex2tga - BioWare textures to TGA converter
-.SH SYNOPSIS
-xoreostex2tga [<options>] <input file> <output file>
-.SH DESCRIPTION
-.PP
-.B xoreostex2tga
+.Dd July 23, 2015
+.Dt XOREOSTEX2TGA 1
+.Os
+.Sh NAME
+.Nm xoreostex2tga
+.Nd BioWare textures to TGA converter
+.Sh SYNOPSIS
+.Nm xoreostex2tga
+.Op Ar options
+.Ar input_file output_file
+.Sh DESCRIPTION
+.Nm
 converts textures of various formats found in BioWare games into
 plain TGA images.
-.PP
-.B Supported formats:
-.PD 0
-.IP "- DDS" 7
+.Pp
+Supported formats:
+.Bl -tag -compact -width Ds
+.It DDS
 Both the common DirectDraw Surface format and BioWare's own,
 completely different DDS format are supported, each with a variety
 of pixel formats
-.IP "- SBM" 7
+.It SBM
 Found in
-.IR "Jade Empire" ,
+.Em Jade Empire ,
 holding font glyphs
-.IP "- TXB" 7
+.It TXB
 Textures in
-.IR "Jade Empire"
+.Em Jade Empire
 and the Xbox version of
-.IR "Knights of the Old Republic"
-.IP "- TPC" 7
+.Em Knights of the Old Republic
+.It TPC
 Textures in other versions of
-.IR "Knights of the Old Republic" .
-.IP "- TGA" 7
+.Em Knights of the Old Republic .
+.It TGA
 Textures in various games, in many different pixels formats
-.PD
-.PP
+.El
+.Pp
 The output format is always either 24-bit or 32-bit BGR(A) TGA,
 depending on whether the input file has an alpha channel or not.
 Only the highest resolution mip map will be used.
-.SH OPTIONS
-.TP 4
-.B -h
-.PD 0
-.TP 4
-.B --help
-.PD
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
 Show a help text and exit.
-.TP 4
-.B --version
+.It Fl Fl version
 Show version information and exit.
-.TP 4
-.B -f
-.PD 0
-.TP 4
-.B --flip
-.PD
+.It Fl f
+.It Fl Fl flip
 Flip the image vertically while converting.
-.TP 4
-.B --auto
-Try to autodetect the format of the input file. This is the default
-mode of operation.
-.TP 4
-.B --dds
+.It Fl Fl auto
+Try to autodetect the format of the input file.
+This is the default mode of operation.
+.It Fl Fl dds
 Explicitly mark the input file as DDS.
-.TP 4
-.B --sbm
+.It Fl Fl sbm
 Explicitly mark the input file as SBM.
-.TP 4
-.B --tpc
+.It Fl Fl tpc
 Explicitly mark the input file as TPC.
-.TP 4
-.B --txb
+.It Fl Fl txb
 Explicitly mark the input file as TXB.
-.TP 4
-.B --tga
+.It Fl Fl tga
 Explicitly mark the input file as TGA.
-.TP 4
-<input file>
+.El
+.Bl -tag -width xxxx -compact
+.It Ar input_file
 The name of the texture file to read.
-.TP 4
-<output file>
+.It Ar output_file
 The resulting TGA file will be written there.
-.SH EXAMPLES
-.ad l
-.B Convert texture.dds into image.tga:
-.nf
-.ad l
-xoreostex2tga texture.dds image.tga
-.PP
-.fi
-.ad l
-.B Convert texture.dds into image.tga and flip the image:
-.nf
-.ad l
-xoreostex2tga --flip texture.dds image.tga
-.PP
-.fi
-.ad l
-.B Convert the TPC texture.txb into image.tga and flip the image:
-.nf
-.ad l
-xoreostex2tga --flip --tpc texture.txb image.tga
-.PP
-.fi
-.ad b
-.SH "SEE ALSO"
+.El
+.Sh EXAMPLES
+Convert
+.Pa texture.dds
+into
+.Pa image.tga :
+.Pp
+.Dl $ xoreostex2tga texture.dds image.tga
+.Pp
+Convert
+.Pa texture.dds
+into
+.Pa image.tga
+and flip the image:
+.Pp
+.Dl $ xoreostex2tga --flip texture.dds image.tga
+.Pp
+Convert the TPC
+.Pa texture.txb
+into
+.Pa image.tga
+and flip the image:
+.Pp
+.Dl $ xoreostex2tga --flip --tpc texture.txb image.tga
+.Sh SEE ALSO
 More information about the xoreos project can be found on
-.URL "https://xoreos.org/" "its website" .
-.SH AUTHORS
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
 This program is part of the xoreos-tools package, which in turn is
 part of the xoreos project, and was written by the xoreos team.
-Please see the AUTHORS file for details.
+Please see the
+.Pa AUTHORS
+file for details.
