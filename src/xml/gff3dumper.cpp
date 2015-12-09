@@ -94,7 +94,7 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 	}
 }
 
-static const char *kGFF3FieldTypeNames[] = {
+static const char * const kGFF3FieldTypeNames[] = {
 	"byte",
 	"char",
 	"uint16",

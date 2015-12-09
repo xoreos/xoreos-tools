@@ -141,7 +141,7 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 	_xml->breakLine();
 }
 
-static const char *kGFF4IFieldTypeNames[] = {
+static const char * const kGFF4IFieldTypeNames[] = {
 	"uint8",
 	"sint8",
 	"uint16",
