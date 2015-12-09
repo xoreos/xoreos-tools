@@ -17,6 +17,7 @@ Someday, ????-??-?? (Version 0.0.4)
 		- Added dynamic supported warning flag detection to CMake
 	- DOCS:
 		- Improved documentation in various files
+		- Rewrote manpages to use semantic -mdoc macros
 	- MISC:
 		- Changed C-style casts to static_cast and reinterpret_cast
 		  in various places
