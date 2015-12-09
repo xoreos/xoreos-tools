@@ -77,7 +77,7 @@ std::FILE *Platform::openFile(const UString &fileName, FileMode mode) {
 	std::FILE *file = 0;
 
 #if defined(WIN32)
-	static const wchar_t *modeStrings[kFileModeMAX] = { L"rb", L"wb" };
+	static const wchar_t * const modeStrings[kFileModeMAX] = { L"rb", L"wb" };
 
 	MemoryReadStream *utf16Name = convertString(fileName, kEncodingUTF16LE);
 
@@ -85,7 +85,7 @@ std::FILE *Platform::openFile(const UString &fileName, FileMode mode) {
 
 	delete utf16Name;
 #else
-	static const char *modeStrings[kFileModeMAX] = { "rb", "wb" };
+	static const char * const modeStrings[kFileModeMAX] = { "rb", "wb" };
 
 	file = std::fopen(fileName.c_str(), modeStrings[(uint) mode]);
 #endif
