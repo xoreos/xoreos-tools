@@ -66,7 +66,7 @@ enum Opcode {
 	kOpcodeSHRIGHT       = 0x12, ///< SHRIGHT. Signed-shift the top-most stack element to the right (>>>).
 	kOpcodeUSHRIGHT      = 0x13, ///< USHRIGHT. Shift the top-most stack element to the right (>>).
 	kOpcodeADD           = 0x14, ///< ADD. Add the top-most stack elements (+).
-	kOpcodeSUB           = 0x15, ///< SUB. Substract the top-most stack elements (-).
+	kOpcodeSUB           = 0x15, ///< SUB. Subtract the top-most stack elements (-).
 	kOpcodeMUL           = 0x16, ///< MUL. Multiply the top-most stack elements (*).
 	kOpcodeDIV           = 0x17, ///< DIV. Divide the top-most stack elements (/).
 	kOpcodeMOD           = 0x18, ///< MOD. Calculate the remainder of an integer division (%).

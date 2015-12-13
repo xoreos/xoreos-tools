@@ -165,7 +165,7 @@ void NCSFile::analyzeBlocks() {
 
 	// Link branching instructions to their destination instructions
 	linkInstructionBranches(_instructions);
-	// Contruct a block graph by following the code flow
+	// Construct a block graph by following the code flow
 	constructBlocks(_blocks, _instructions);
 	// Mark logically dead block edges
 	findDeadBlockEdges(_blocks);
