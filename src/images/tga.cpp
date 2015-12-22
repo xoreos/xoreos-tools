@@ -80,6 +80,10 @@ void TGA::readHeader(Common::SeekableReadStream &tga, ImageType &imageType, byte
 	_mipMaps[0]->width  = tga.readUint16LE();
 	_mipMaps[0]->height = tga.readUint16LE();
 
+	if ((_mipMaps[0]->width >= 0x8000) || (_mipMaps[0]->height >= 0x8000))
+		throw Common::Exception("Unsupported image dimensions (%dx%d)",
+		                        _mipMaps[0]->width, _mipMaps[0]->height);
+
 	// Bits per pixel
 	pixelDepth = tga.readByte();
 
