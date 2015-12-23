@@ -31,6 +31,7 @@
 #include "src/common/types.h"
 #include "src/common/util.h"
 #include "src/common/maths.h"
+#include "src/common/error.h"
 
 #include "src/images/types.h"
 
@@ -55,6 +56,40 @@ static inline int getBPP(PixelFormat format) {
 		default:
 			return 0;
 	}
+}
+
+/** Return the number of bytes necessary to hold an image of these dimensions
+  * and in this format. */
+static inline uint32 getDataSize(PixelFormat format, int32 width, int32 height) {
+	if ((width < 0) || (width >= 0x8000) || (height < 0) || (height >= 0x8000))
+		throw Common::Exception("Invalid dimensions %dx%d", width, height);
+
+	switch (format) {
+		case kPixelFormatR8G8B8:
+		case kPixelFormatB8G8R8:
+			return width * height * 3;
+
+		case kPixelFormatR8G8B8A8:
+		case kPixelFormatB8G8R8A8:
+			return width * height * 4;
+
+		case kPixelFormatA1R5G5B5:
+		case kPixelFormatR5G6B5:
+		case kPixelFormatDepth16:
+			return width * height * 2;
+
+		case kPixelFormatDXT1:
+			return MAX<uint32>( 8, ((width + 3) / 4) * ((height + 3) / 4) *  8);
+
+		case kPixelFormatDXT3:
+		case kPixelFormatDXT5:
+			return MAX<uint32>(16, ((width + 3) / 4) * ((height + 3) / 4) * 16);
+
+		default:
+			break;
+	}
+
+	throw Common::Exception("Invalid pixel format %u", (uint) format);
 }
 
 /** Flip an image horizontally. */
