@@ -130,6 +130,9 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds, DataType &dataType
 	// Detect which specific format it describes
 	detectFormat(format, dataType);
 
+	if (!hasValidDimensions(_format, width, height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
+
 	dds.skip(16 + 4); // DDCAPS2 + Reserved
 
 	_mipMaps.reserve(mipMapCount);
@@ -182,6 +185,9 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds, DataType &dataType)
 	if (((bpp == 3) && (dataSize != ((width * height) / 2))) ||
 		  ((bpp == 4) && (dataSize != ((width * height)    ))))
 		throw Common::Exception("Invalid data size (%dx%dx%d %d)", width, height, bpp, dataSize);
+
+	if (!hasValidDimensions(_format, width, height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
 
 	dds.skip(4); // Some float
 
