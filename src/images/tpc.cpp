@@ -163,6 +163,9 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	} else
 		throw Common::Exception("Unknown TPC encoding: %d (%d)", encoding, dataSize);
 
+	if (!hasValidDimensions(_format, width, height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
+
 	const size_t fullImageDataSize = getDataSize(_format, width, height);
 
 	size_t fullDataSize = tpc.size() - 128;
