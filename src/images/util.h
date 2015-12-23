@@ -92,6 +92,35 @@ static inline uint32 getDataSize(PixelFormat format, int32 width, int32 height) 
 	throw Common::Exception("Invalid pixel format %u", (uint) format);
 }
 
+/** Are these image dimensions valid for this format? */
+static inline bool hasValidDimensions(PixelFormat format, int32 width, int32 height) {
+	if ((width < 0) || (height < 0))
+		return false;
+
+	switch (format) {
+		case kPixelFormatR8G8B8:
+		case kPixelFormatB8G8R8:
+		case kPixelFormatR8G8B8A8:
+		case kPixelFormatB8G8R8A8:
+		case kPixelFormatA1R5G5B5:
+		case kPixelFormatR5G6B5:
+		case kPixelFormatDepth16:
+			return true;
+
+		case kPixelFormatDXT1:
+		case kPixelFormatDXT3:
+		case kPixelFormatDXT5:
+			/* The DXT algorithms work on 4x4 pixel blocks. Textures smaller than one
+			 * block will be padded, but larger textures need to be correctly aligned. */
+			return ((width < 4) && (height < 4)) || (((width % 4) == 0) && ((height % 4) == 0));
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
 /** Flip an image horizontally. */
 static inline void flipHorizontally(byte *data, int width, int height, int bpp) {
 	int halfWidth = width / 2;
