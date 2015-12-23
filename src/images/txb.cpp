@@ -134,6 +134,10 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 		throw Common::Exception("Unknown TXB encoding 0x%02X (%dx%d, %d, %d)",
 				encoding, width, height, mipMapCount, dataSize);
 
+	const size_t fullImageDataSize = getDataSize(_format, width, height);
+	if (dataSize < fullImageDataSize)
+		throw Common::Exception("Image wouldn't fit into data");
+
 	_mipMaps.reserve(mipMapCount);
 	for (uint32 i = 0; i < mipMapCount; i++) {
 		MipMap *mipMap = new MipMap;
@@ -151,7 +155,9 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 
 		mipMap->data = 0;
 
-		if (dataSize < mipMap->size) {
+		const size_t mipMapDataSize = getDataSize(_format, mipMap->width, mipMap->height);
+
+		if ((dataSize < mipMap->size) || (mipMap->size < mipMapDataSize)) {
 			// Wouldn't fit
 			delete mipMap;
 			break;
