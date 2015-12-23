@@ -27,6 +27,7 @@
 #include "src/common/readstream.h"
 
 #include "src/images/dds.h"
+#include "src/images/util.h"
 
 static const uint32 kDDSID  = MKTAG('D', 'D', 'S', ' ');
 static const uint32 kDXT1ID = MKTAG('D', 'X', 'T', '1');
@@ -215,22 +216,7 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds, DataType &dataType)
 void DDS::setSize(MipMap &mipMap) {
 	// Depending on the pixel format, set the image data size in bytes
 
-	if (_format == kPixelFormatDXT1) {
-		mipMap.size = ((mipMap.width + 3) / 4) * ((mipMap.height + 3) / 4) *  8;
-	} else if (_format == kPixelFormatDXT3) {
-		mipMap.size = ((mipMap.width + 3) / 4) * ((mipMap.height + 3) / 4) * 16;
-	} else if (_format == kPixelFormatDXT5) {
-		mipMap.size = ((mipMap.width + 3) / 4) * ((mipMap.height + 3) / 4) * 16;
-	} else if (_format == kPixelFormatB8G8R8A8) {
-		mipMap.size = mipMap.width * mipMap.height * 4;
-	} else if (_format == kPixelFormatB8G8R8) {
-		mipMap.size = mipMap.width * mipMap.height * 3;
-	} else if (_format == kPixelFormatA1R5G5B5) {
-		mipMap.size = mipMap.width * mipMap.height * 2;
-	} else if (_format == kPixelFormatR5G6B5) {
-		mipMap.size = mipMap.width * mipMap.height * 2;
-	} else
-		mipMap.size = 0;
+	mipMap.size = getDataSize(_format, mipMap.width, mipMap.height);
 }
 
 void DDS::readData(Common::SeekableReadStream &dds, DataType dataType) {
