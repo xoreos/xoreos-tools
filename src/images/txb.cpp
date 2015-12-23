@@ -134,6 +134,9 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 		throw Common::Exception("Unknown TXB encoding 0x%02X (%dx%d, %d, %d)",
 				encoding, width, height, mipMapCount, dataSize);
 
+	if (!hasValidDimensions(_format, width, height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
+
 	const size_t fullImageDataSize = getDataSize(_format, width, height);
 	if (dataSize < fullImageDataSize)
 		throw Common::Exception("Image wouldn't fit into data");
