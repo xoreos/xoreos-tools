@@ -121,6 +121,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			} else if (argv[i] == "--txb") {
 				isOption = true;
 				type     = Aurora::kFileTypeTXB;
+			} else if (argv[i] == "--tga") {
+				isOption = true;
+				type     = Aurora::kFileTypeTGA;
 			} else if ((argv[i] == "-f") || (argv[i] == "--flip")) {
 				isOption = true;
 				flip     = true;
