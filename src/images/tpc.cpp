@@ -163,7 +163,11 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	} else
 		throw Common::Exception("Unknown TPC encoding: %d (%d)", encoding, dataSize);
 
+	const size_t fullImageDataSize = getDataSize(_format, width, height);
+
 	size_t fullDataSize = tpc.size() - 128;
+	if (fullDataSize < (_layerCount * fullImageDataSize))
+		throw Common::Exception("Image wouldn't fit into data");
 
 	_mipMaps.reserve(mipMapCount * _layerCount);
 
@@ -183,7 +187,9 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 
 			mipMap->data = 0;
 
-			if (fullDataSize < mipMap->size) {
+			const size_t mipMapDataSize = getDataSize(_format, mipMap->width, mipMap->height);
+
+			if ((fullDataSize < mipMap->size) || (mipMap->size < mipMapDataSize)) {
 				// Wouldn't fit
 				delete mipMap;
 				break;
