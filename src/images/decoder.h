@@ -81,7 +81,7 @@ public:
 	virtual Common::SeekableReadStream *getTXI() const;
 
 	/** Dump the image into a TGA. */
-	bool dumpTGA(const Common::UString &fileName) const;
+	void dumpTGA(const Common::UString &fileName) const;
 
 	/** Flip the whole image horizontally. */
 	void flipHorizontally();

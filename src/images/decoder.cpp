@@ -176,20 +176,19 @@ void Decoder::decompress() {
 	_format = kPixelFormatR8G8B8A8;
 }
 
-bool Decoder::dumpTGA(const Common::UString &fileName) const {
+void Decoder::dumpTGA(const Common::UString &fileName) const {
 	if (_mipMaps.size() < 1)
-		return false;
+		throw Common::Exception("Image contains no mip maps");
 
 	if (!isCompressed()) {
 		Images::dumpTGA(fileName, *this);
-		return true;
+		return;
 	}
 
 	Decoder decoder(*this);
 	decoder.decompress();
 
 	Images::dumpTGA(fileName, decoder);
-	return true;
 }
 
 void Decoder::flipHorizontally() {
