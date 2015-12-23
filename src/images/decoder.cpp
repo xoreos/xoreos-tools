@@ -144,6 +144,11 @@ void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
 	    (format != kPixelFormatDXT5))
 		throw Common::Exception("Unknown compressed format %d", format);
 
+	/* The DXT algorithms work on 4x4 pixel blocks. Textures smaller than one
+	 * block will be padded, but larger textures need to be correctly aligned. */
+	if (!hasValidDimensions(format, in.width, in.height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", in.width, in.height, format);
+
 	out.width  = in.width;
 	out.height = in.height;
 	out.size   = MAX(out.width * out.height * 4, 64);
