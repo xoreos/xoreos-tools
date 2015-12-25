@@ -109,6 +109,17 @@ void GFF3File::load(uint32 id) {
 
 void GFF3File::loadHeader(uint32 id) {
 	if (_repairNWNPremium) {
+		/* The GFF files in the encrypted premium module archive for Neverwinter
+		 * nights are deliberately broken: the file type and version have been
+		 * removed, and the offsets to the individual sections are increased
+		 * by a certain amount.
+		 *
+		 * This offset difference is calculated from the MD5 checksum of the
+		 * NWM file of the premium module. But since the first offset is a
+		 * known value, we can calculate the difference from there and don't
+		 * need to know the MD5 of the NWM file.
+		 */
+
 		uint32 firstOffset  = _stream->readUint32LE();
 		uint32 maybeVersion = _stream->readUint32BE();
 
@@ -143,7 +154,7 @@ void GFF3File::loadHeader(uint32 id) {
 
 	_header.read(*_stream);
 
-		// Fix offsets in the header, and check for consistency
+	// Fix offsets in the header, and check for consistency
 
 	if ((_header.structOffset       < _offsetCorrection) ||
 	    (_header.fieldOffset        < _offsetCorrection) ||
@@ -178,6 +189,21 @@ void GFF3File::loadStructs() {
 }
 
 void GFF3File::loadLists() {
+	/* Read in the lists section of the GFF.
+	 *
+	 * GFF3s store lists in a linear fashion, with the indices prefixes by
+	 * the number of indices to follow. For example, with the indices counts
+	 * highlighted for better readability:
+	 * [3] 0 1 2 [5] 3 4 5 6 7 [1] 8 [2] 9 10
+	 * This specifies 4 lists, with 3, 5, 1 and 2 entries, respectively.
+	 * The first list contains struct indices 0 to 2, the second 3 to 7, the
+	 * third 8 and the fourth 9 and 10.
+	 *
+	 * For easy handling, we convert this list into an array of struct
+	 * pointer arrays, and a small array to convert from an index into this
+	 * list of lists into a list index.
+	 */
+
 	_stream->seek(_header.listIndicesOffset);
 
 	// Read list array
@@ -432,6 +458,8 @@ uint64 GFF3Struct::getUint(const Common::UString &field, uint64 def) const {
 		return (uint64) getData(*f).readUint64LE();
 	if (f->type == kFieldTypeSint64)
 		return ( int64) getData(*f).readUint64LE();
+
+	// StrRef, a numerical reference to a string in a talk table
 	if (f->type == kFieldTypeStrRef) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -467,6 +495,8 @@ int64 GFF3Struct::getSint(const Common::UString &field, int64 def) const {
 		return (int64) getData(*f).readUint64LE();
 	if (f->type == kFieldTypeSint64)
 		return (int64) getData(*f).readUint64LE();
+
+	// StrRef, a numerical reference to a string in a talk table
 	if (f->type == kFieldTypeStrRef) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -504,6 +534,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 	if (!f)
 		return def;
 
+	// Direct string
 	if (f->type == kFieldTypeExoString) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -511,6 +542,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		return Common::readStringFixed(data, Common::kEncodingASCII, length);
 	}
 
+	// ResRef, resource reference, a shorter string
 	if (f->type == kFieldTypeResRef) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -518,6 +550,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		return Common::readStringFixed(data, Common::kEncodingASCII, length);
 	}
 
+	// LocString, a localized string
 	if (f->type == kFieldTypeLocString) {
 		LocString locString;
 		getLocString(field, locString);
@@ -525,6 +558,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		return locString.getString();
 	}
 
+	// Unsigned integer type, compose a string representation
 	if ((f->type == kFieldTypeByte  ) ||
 	    (f->type == kFieldTypeUint16) ||
 	    (f->type == kFieldTypeUint32) ||
@@ -534,6 +568,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		return Common::composeString(getUint(field));
 	}
 
+	// Signed integer type, compose a string representation
 	if ((f->type == kFieldTypeChar  ) ||
 	    (f->type == kFieldTypeSint16) ||
 	    (f->type == kFieldTypeSint32) ||
@@ -542,12 +577,14 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		return Common::composeString(getSint(field));
 	}
 
+	// Floating point type, compose a string representation
 	if ((f->type == kFieldTypeFloat) ||
 	    (f->type == kFieldTypeDouble)) {
 
 		return Common::composeString(getDouble(field));
 	}
 
+	// Vector, consisting of 3 floats
 	if (f->type == kFieldTypeVector) {
 		float x = 0.0, y = 0.0, z = 0.0;
 
@@ -557,6 +594,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		       Common::composeString(z);
 	}
 
+	// Orientation, consisting of 4 floats
 	if (f->type == kFieldTypeOrientation) {
 		float a = 0.0, b = 0.0, c = 0.0, d = 0.0;
 
