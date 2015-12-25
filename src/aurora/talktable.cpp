@@ -53,27 +53,20 @@ TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding enc
 	if (!tlk)
 		return 0;
 
-	try {
+	size_t pos = tlk->pos();
 
-		size_t pos = tlk->pos();
+	uint32 id, version;
+	bool utf16le;
 
-		uint32 id, version;
-		bool utf16le;
+	AuroraBase::readHeader(*tlk, id, version, utf16le);
 
-		AuroraBase::readHeader(*tlk, id, version, utf16le);
+	tlk->seek(pos);
 
-		tlk->seek(pos);
+	if (id == kTLKID)
+		return new TalkTable_TLK(tlk, encoding);
 
-		if (id == kTLKID)
-			return new TalkTable_TLK(tlk, encoding);
-
-		if (id == kGFFID)
-			return new TalkTable_GFF(tlk, encoding);
-
-	} catch (...) {
-		delete tlk;
-		throw;
-	}
+	if (id == kGFFID)
+		return new TalkTable_GFF(tlk, encoding);
 
 	delete tlk;
 	return 0;
