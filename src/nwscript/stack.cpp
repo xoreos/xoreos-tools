@@ -1246,7 +1246,7 @@ static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset >= ctx.getSubStackSize())
+	if ((offset <= 0) || ((size_t)offset >= ctx.getSubStackSize()))
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.modifiesVariable(0);
