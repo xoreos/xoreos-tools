@@ -74,6 +74,13 @@ struct AnalyzeStackContext {
 
 	}
 
+	size_t getSubStackSize() const {
+		if (!stack)
+			return 0;
+
+		return MIN(stack->size(), subStack);
+	};
+
 	Variable &addVariable(VariableType type, VariableUse use = kVariableUseUnknown) {
 		assert(variables);
 
@@ -367,6 +374,9 @@ static void analyzeStackSubRoutine(AnalyzeStackContext &ctx, bool ignoreRecursio
 		 *
 		 * Instead, we make sure the types of the parameters and return values
 		 * are congruent between each other. */
+
+		if (ctx.getSubStackSize() < ctx.sub->params.size())
+			throw Common::Exception("analyzeStackSubRoutine(): @%08X: Stack underrun", ctx.instruction->address);
 
 		for (size_t i = 0; i < ctx.sub->params.size(); i++) {
 			Variable *var1 = const_cast<Variable *>(ctx.sub->params[i]);
@@ -885,7 +895,7 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 static void analyzeStackBool(AnalyzeStackContext &ctx) {
 	/* A simple binary boolean instruction, like a LOGAND, LOGOR or BOOLAND. */
 
-	if (ctx.stack->size() < 2)
+	if (ctx.getSubStackSize() < 2)
 		throw Common::Exception("analyzeStackBool(): @%08X: Stack underrun", ctx.instruction->address);
 
 	if (!ctx.checkVariableType(0, kTypeInt) || !ctx.checkVariableType(1, kTypeInt))
@@ -910,7 +920,7 @@ static void analyzeStackEq(AnalyzeStackContext &ctx) {
 
 	// If we have an argument, it specifies the number of variables to compare
 	const size_t size = (ctx.instruction->argCount == 1) ? (ctx.instruction->args[0] / 4) : 1;
-	if (ctx.stack->size() < size)
+	if (ctx.getSubStackSize() < (2 * size))
 		throw Common::Exception("analyzeStackEq(): @%08X: Stack underrun", ctx.instruction->address);
 
 	std::vector<Variable *> vars1, vars2;
@@ -949,7 +959,7 @@ static void analyzeStackEq(AnalyzeStackContext &ctx) {
 static void analyzeStackShift(AnalyzeStackContext &ctx) {
 	/* A shift instruction. SHLEFT, SHRIGHT, USHRIGHT. */
 
-	if (ctx.stack->size() < 2)
+	if (ctx.getSubStackSize() < 2)
 		throw Common::Exception("analyzeStackShift(): @%08X: Stack underrun", ctx.instruction->address);
 
 	if (!ctx.checkVariableType(0, kTypeInt) || !ctx.checkVariableType(1, kTypeInt))
@@ -967,7 +977,7 @@ static void analyzeStackShift(AnalyzeStackContext &ctx) {
 static void analyzeStackUnArithm(AnalyzeStackContext &ctx) {
 	/* A simple unary arithmetic instruction. NEG, NOT and COMP. */
 
-	if (ctx.stack->size() < 1)
+	if (ctx.getSubStackSize() < 1)
 		throw Common::Exception("analyzeStackUnArithm(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = instructionTypeToVariableType(ctx.instruction->type);
@@ -987,7 +997,7 @@ static void analyzeStackUnArithm(AnalyzeStackContext &ctx) {
 static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 	/* A simple binary arithmetic instruction, like ADD or SUB. */
 
-	if (ctx.stack->size() < 2)
+	if (ctx.getSubStackSize() < 2)
 		throw Common::Exception("analyzeStackArithm(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = instructionTypeToVariableType(ctx.instruction->type);
@@ -1086,7 +1096,7 @@ static void analyzeStackBinArithm(AnalyzeStackContext &ctx) {
 static void analyzeStackCond(AnalyzeStackContext &ctx) {
 	/* A conditional jump. JZ or JNZ. */
 
-	if (ctx.stack->size() < 1)
+	if (ctx.getSubStackSize() < 1)
 		throw Common::Exception("analyzeStackJump(): @%08X: Stack underrun", ctx.instruction->address);
 
 	if (!ctx.checkVariableType(0, kTypeInt))
@@ -1108,7 +1118,7 @@ static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackDestruct(): @%08X: Invalid arguments %d, %d, %d",
 		                        ctx.instruction->address, stackSize, dontRemoveOffset, dontRemoveSize);
 
-	if ((size_t)stackSize >= ctx.stack->size())
+	if (ctx.getSubStackSize() < (size_t)stackSize)
 		throw Common::Exception("analyzeStackDestruct(): @%08X: Stack underrun", ctx.instruction->address);
 
 	Stack tmp;
@@ -1168,7 +1178,7 @@ static void analyzeStackSAVEBP(AnalyzeStackContext &ctx) {
 static void analyzeStackRESTOREBP(AnalyzeStackContext &ctx) {
 	/* A RESTOREBP instruction, restoring an old value of BP. */
 
-	if (ctx.stack->size() < 1)
+	if (ctx.getSubStackSize() < 1)
 		throw Common::Exception("analyzeStackRESTOREBP(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.modifiesVariable(ctx.popVariable());
@@ -1236,7 +1246,7 @@ static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset >= ctx.stack->size())
+	if ((size_t)offset >= ctx.getSubStackSize())
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.modifiesVariable(0);
@@ -1266,7 +1276,7 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset >= ctx.stack->size())
+	if ((size_t)offset >= ctx.getSubStackSize())
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.setVariableType(0, kTypeInt);
@@ -1305,7 +1315,7 @@ static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset >= ctx.stack->size())
+	if ((size_t)offset >= ctx.getSubStackSize())
 		throw Common::Exception("analyzeStackGETREF(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = typeToRefType(ctx.readVariable(offset));
@@ -1330,7 +1340,7 @@ static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset >= ctx.stack->size())
+	if ((size_t)offset >= ctx.getSubStackSize())
 		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = typeToRefType(arrayTypeToType(ctx.readVariable(offset)));
