@@ -568,6 +568,9 @@ static void analyzeStackPop(AnalyzeStackContext &ctx) {
 	size_t size = ctx.instruction->args[0] / -4;
 
 	while (size-- > 0) {
+		if (ctx.stack->empty())
+			throw Common::Exception("analyzeStackPop(): @%08X: Stack underrun", ctx.instruction->address);
+
 		if (ctx.subStack == 0) {
 			/* If we see an underrun during a MOVSP instruction, this means the subroutine is
 			 * clearing its parameters from the stack. So we can now connect the parameter
@@ -612,6 +615,9 @@ static void analyzeStackJSR(AnalyzeStackContext &ctx) {
 
 	analyzeStackSubRoutine(ctx, isStoreStateTail);
 
+	if ((sub->params.size() + sub->returns.size()) > oldCtx.stack->size())
+		throw Common::Exception("analyzeStackJSR(): @%08X: Stack underrun", ctx.instruction->address);
+
 	for (size_t i = 0; i < (sub->params.size() + sub->returns.size()); i++)
 		oldCtx.modifiesVariable(i);
 
@@ -637,6 +643,10 @@ static void analyzeStackRETN(AnalyzeStackContext &ctx) {
 		ctx.sub->returns.clear();
 
 		ctx.returnStack = *ctx.stack;
+
+		if (ctx.subStack > ctx.returnStack.size())
+			throw Common::Exception("analyzeStackRETN(): @%08X: Stack underrun", ctx.instruction->address);
+
 		ctx.returnStack.erase(ctx.returnStack.begin(), ctx.returnStack.begin() + ctx.subStack);
 
 	} else {
@@ -701,7 +711,7 @@ static void analyzeStackCPDOWNSP(AnalyzeStackContext &ctx) {
 	offset = (offset / -4) - 1;
 	size  /= 4;
 
-	if (((size_t)size > ctx.stack->size()) || ((size_t)offset >= ctx.stack->size()))
+	if (((size_t)size > ctx.stack->size()) || ((size_t)offset >= ctx.stack->size()) || (size > offset))
 		throw Common::Exception("analyzeStackCPDOWNSP(): @%08X: Stack underrun", ctx.instruction->address);
 
 	while (size > 0) {
@@ -839,7 +849,7 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 			continue;
 
 		while (n-- > 0) {
-			if (ctx.stack->empty())
+			if (ctx.stack->empty() || !ctx.subStack)
 				throw Common::Exception("analyzeStackACTION(): @%08X: Stack underrun", ctx.instruction->address);
 
 			if (!ctx.checkVariableType(0, type))
@@ -1091,6 +1101,9 @@ static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 	     (stackSize < 0)       ||  (dontRemoveOffset < 0)       ||  (dontRemoveSize < 0))
 		throw Common::Exception("analyzeStackDestruct(): @%08X: Invalid arguments %d, %d, %d",
 		                        ctx.instruction->address, stackSize, dontRemoveOffset, dontRemoveSize);
+
+	if ((size_t)stackSize >= ctx.stack->size())
+		throw Common::Exception("analyzeStackDestruct(): @%08X: Stack underrun", ctx.instruction->address);
 
 	Stack tmp;
 
