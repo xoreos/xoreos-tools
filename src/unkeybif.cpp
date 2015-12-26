@@ -309,7 +309,7 @@ void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
 		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
 
 		std::printf("%32s%s | %s\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
-		                             bifs[r->bifIndex].c_str());
+		                             (r->bifIndex < bifs.size()) ? bifs[r->bifIndex].c_str() : "");
 	}
 }
 
