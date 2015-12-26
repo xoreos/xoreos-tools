@@ -1166,7 +1166,7 @@ static void analyzeStackModifySP(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset > ctx.stack->size())
+	if ((size_t)offset >= ctx.stack->size())
 		throw Common::Exception("analyzeStackModifySP(): @%08X: Stack underrun", ctx.instruction->address);
 
 	if (!ctx.checkVariableType(offset, kTypeInt))
@@ -1193,7 +1193,7 @@ static void analyzeStackModifyBP(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset > ctx.globals->size())
+	if ((size_t)offset >= ctx.globals->size())
 		throw Common::Exception("analyzeStackModifyBP(): @%08X: Globals underrun", ctx.instruction->address);
 
 	(*ctx.globals)[offset].variable->readers.push_back(ctx.instruction);
@@ -1217,7 +1217,7 @@ static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset > ctx.stack->size())
+	if ((size_t)offset >= ctx.stack->size())
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.modifiesVariable(0);
@@ -1247,7 +1247,7 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset > ctx.stack->size())
+	if ((size_t)offset >= ctx.stack->size())
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	ctx.setVariableType(0, kTypeInt);
@@ -1286,7 +1286,7 @@ static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset > ctx.stack->size())
+	if ((size_t)offset >= ctx.stack->size())
 		throw Common::Exception("analyzeStackGETREF(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = typeToRefType(ctx.readVariable(offset));
@@ -1311,7 +1311,7 @@ static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset > ctx.stack->size())
+	if ((size_t)offset >= ctx.stack->size())
 		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = typeToRefType(arrayTypeToType(ctx.readVariable(offset)));
