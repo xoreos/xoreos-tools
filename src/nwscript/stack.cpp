@@ -1340,7 +1340,7 @@ static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
 
 	offset = (offset / -4) - 1;
 
-	if ((size_t)offset >= ctx.getSubStackSize())
+	if ((offset <= 0) || ((size_t)offset >= ctx.getSubStackSize()))
 		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Stack underrun", ctx.instruction->address);
 
 	const VariableType type = typeToRefType(arrayTypeToType(ctx.readVariable(offset)));
