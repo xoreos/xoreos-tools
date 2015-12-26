@@ -89,6 +89,8 @@ struct AnalyzeStackContext {
 	}
 
 	VariableType readVariable(size_t offset) {
+		assert(stack && (offset < stack->size()));
+
 		(*stack)[offset].variable->readers.push_back(instruction);
 
 		return (*stack)[offset].variable->type;
@@ -103,10 +105,14 @@ struct AnalyzeStackContext {
 	}
 
 	void setVariableType(size_t offset, VariableType type) {
+		assert(stack && (offset < stack->size()));
+
 		setVariableType(*(*stack)[offset].variable, type);
 	}
 
 	void writeVariable(size_t offset) {
+		assert(stack && (offset < stack->size()));
+
 		(*stack)[offset].variable->writers.push_back(instruction);
 	}
 
@@ -116,6 +122,8 @@ struct AnalyzeStackContext {
 	}
 
 	Variable &pushVariable(VariableType type, VariableUse use = kVariableUseUnknown) {
+		assert(stack);
+
 		subStack++;
 		stack->push_front(StackVariable(addVariable(type, use)));
 
@@ -123,6 +131,8 @@ struct AnalyzeStackContext {
 	}
 
 	Variable &popVariable(bool reading = true) {
+		assert(stack && !stack->empty() && (subStack > 0));
+
 		if (reading)
 			readVariable(0);
 
@@ -148,6 +158,8 @@ struct AnalyzeStackContext {
 	}
 
 	void duplicateVariable(size_t offset, VariableUse use = kVariableUseUnknown) {
+		assert(stack && (offset < stack->size()));
+
 		Variable *var1 = (*stack)[offset].variable;
 
 		(*stack)[offset].variable->readers.push_back(instruction);
@@ -161,6 +173,8 @@ struct AnalyzeStackContext {
 	}
 
 	bool checkVariableType(size_t offset, VariableType type) {
+		assert(stack && (offset < stack->size()));
+
 		if ((type == kTypeAny) || ((*stack)[offset].variable->type == kTypeAny))
 			return true;
 
@@ -187,6 +201,8 @@ struct AnalyzeStackContext {
 	}
 
 	void sameVariableType(size_t offset1, size_t offset2) {
+		assert(stack && (offset1 < stack->size()) && (offset2 < stack->size()));
+
 		sameVariableType((*stack)[offset1].variable, (*stack)[offset2].variable);
 	}
 
@@ -204,8 +220,7 @@ struct AnalyzeStackContext {
 	}
 
 	void modifiesVariable(size_t offset) {
-		if (!stack)
-			return;
+		assert(stack && (offset < stack->size()));
 
 		modifiesVariable(*(*stack)[offset].variable);
 	}
@@ -1086,6 +1101,8 @@ static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 			tmp.push_back(ctx.stack->front());
 
 		ctx.modifiesVariable(*ctx.stack->front().variable);
+
+		assert(ctx.subStack > 0);
 
 		ctx.subStack--;
 		ctx.stack->pop_front();
