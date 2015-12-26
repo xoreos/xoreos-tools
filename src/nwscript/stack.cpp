@@ -668,8 +668,14 @@ static void analyzeStackRETN(AnalyzeStackContext &ctx) {
 			const_cast<Variable *>(*p)->use = kVariableUseParameter;
 
 		for (std::vector<const Variable *>::iterator r = ctx.sub->returns.begin();
-		     r != ctx.sub->returns.end(); ++r)
+		     r != ctx.sub->returns.end(); ++r) {
+
+			if (!*r)
+				throw Common::Exception("analyzeStackRETN(): @%08X: Missing return variable at positon %u",
+				                        ctx.instruction->address, (uint) (r - ctx.sub->returns.begin()));
+
 			const_cast<Variable *>(*r)->use = kVariableUseReturn;
+		}
 	}
 
 	ctx.subRETN = true;
