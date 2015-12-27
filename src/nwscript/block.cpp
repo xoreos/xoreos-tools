@@ -24,6 +24,8 @@
 
 #include <cassert>
 
+#include <set>
+
 #include "src/common/error.h"
 
 #include "src/nwscript/block.h"
@@ -209,11 +211,14 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 	return true;
 }
 
-static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
+static bool hasLinearPathInternal(std::set<uint32> &visited, const Block &block1, const Block &block2) {
 	/* Checks that a linear path exists between two blocks, by recursively
 	 * descending into the children of the earlier block, until we either
 	 * reached the later block (which means there is a path), or moved
 	 * past the later block (which means there is no path). */
+
+	// Remember which blocks we already visited, so we don't process them twice
+	visited.insert(block1.address);
 
 	// The two blocks are the same => we found a path
 	if (block1.address == block2.address)
@@ -230,10 +235,11 @@ static bool hasLinearPathInternal(const Block &block1, const Block &block2) {
 		const Block        &child = *block1.children[i];
 		const BlockEdgeType type  =  block1.childrenTypes[i];
 
-		// Don't follow subroutine calls, and don't jump backwards
+		// Don't follow subroutine calls, don't jump backwards and don't visit blocks twice
 		if (!isSubRoutineCall(type) && (child.address > block1.address))
-			if (hasLinearPathInternal(child, block2))
-				return true;
+			if (visited.find(child.address) == visited.end())
+				if (hasLinearPathInternal(visited, child, block2))
+					return true;
 	}
 
 	return false;
@@ -345,11 +351,13 @@ bool isSubRoutineCall(BlockEdgeType type) {
 }
 
 bool hasLinearPath(const Block &block1, const Block &block2) {
+	std::set<uint32> visited;
+
 	// Correctly order the two blocks we want to check
 	if (block1.address < block2.address)
-		return hasLinearPathInternal(block1, block2);
+		return hasLinearPathInternal(visited, block1, block2);
 	else
-		return hasLinearPathInternal(block2, block1);
+		return hasLinearPathInternal(visited, block2, block1);
 }
 
 const Block *getNextBlock(const Blocks &blocks, const Block &block) {
