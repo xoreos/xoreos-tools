@@ -192,9 +192,6 @@ static void findPathMergeRec(std::vector<const Block *> &merges, std::set<uint32
 	 * have found a merge point. */
 
 	// Remember which blocks we already visited, so we don't process them twice
-	if (visited.find(block2.address) != visited.end())
-		return;
-
 	visited.insert(block2.address);
 
 	// We moved past the destination => no merge here
@@ -214,9 +211,10 @@ static void findPathMergeRec(std::vector<const Block *> &merges, std::set<uint32
 		const Block        &child = *block2.children[i];
 		const BlockEdgeType type  =  block2.childrenTypes[i];
 
-		// Don't follow subroutine calls, and don't jump backwards
+		// Don't follow subroutine calls, don't jump backwards and don't visit blocks twice
 		if (!isSubRoutineCall(type) && (child.address > block2.address))
-			findPathMergeRec(merges, visited, block1, child);
+			if (visited.find(child.address) == visited.end())
+				findPathMergeRec(merges, visited, block1, child);
 	}
 }
 
