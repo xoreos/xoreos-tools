@@ -1118,7 +1118,7 @@ static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackDestruct(): @%08X: Invalid arguments %d, %d, %d",
 		                        ctx.instruction->address, stackSize, dontRemoveOffset, dontRemoveSize);
 
-	if (ctx.getSubStackSize() < (size_t)stackSize)
+	if (ctx.getSubStackSize() < (((size_t)stackSize) / 4))
 		throw Common::Exception("analyzeStackDestruct(): @%08X: Stack underrun", ctx.instruction->address);
 
 	Stack tmp;
