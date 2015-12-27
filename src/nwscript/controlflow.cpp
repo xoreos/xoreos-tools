@@ -765,12 +765,17 @@ static void verifyBlocks(const Blocks &blocks) {
 	}
 }
 
-static void verifyLoopBlocks(const Block &block, const Block &head, const Block &tail, const Block &next) {
+static void verifyLoopBlocks(std::set<uint32> &visited, const Block &block,
+                             const Block &head, const Block &tail, const Block &next) {
+
 	/* Recursively verify that all blocks inside a jump control structure don't
 	 * jump to random script locations. The only valid jump destinations for
 	 * a block of a loop is to another block of the loop, the block directly
 	 * following the loop (thus ending the loop), or a return block (thus
 	 * returning from the subroutine entirely). */
+
+	// Remember which blocks we already visited, so we don't process them twice
+	visited.insert(block.address);
 
 	if ((block.address > tail.address) || (block.address < head.address))
 		return;
@@ -790,7 +795,8 @@ static void verifyLoopBlocks(const Block &block, const Block &head, const Block 
 		}
 
 		if (child.address > block.address)
-			verifyLoopBlocks(child, head, tail, next);
+			if (visited.find(child.address) == visited.end())
+				verifyLoopBlocks(visited, child, head, tail, next);
 	}
 }
 
@@ -807,7 +813,8 @@ static void verifyLoop(const Block &head, const Block &tail, const Block &next) 
 	   throw Common::Exception("Loop blocks have no linear path: %08X, %08X, %08X",
 	                           head.address, tail.address, next.address);
 
-	verifyLoopBlocks(head, head, tail, next);
+	std::set<uint32> visited;
+	verifyLoopBlocks(visited, head, head, tail, next);
 }
 
 static void verifyLoops(const std::vector<const ControlStructure *> &loops) {
