@@ -141,7 +141,7 @@ TwoDAFile::~TwoDAFile() {
 }
 
 void TwoDAFile::clear() {
-	AuroraBase::clear();
+	AuroraFile::clear();
 
 	_headers.clear();
 

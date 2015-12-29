@@ -208,7 +208,7 @@ Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
 	uint32 id = 0;
 
 	try {
-		id = Aurora::AuroraBase::readHeaderID(*stream);
+		id = Aurora::AuroraFile::readHeaderID(*stream);
 		stream->seek(0);
 	} catch (...) {
 		delete stream;

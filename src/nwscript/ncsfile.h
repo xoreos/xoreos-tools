@@ -58,7 +58,7 @@ namespace NWScript {
  *  Likewise, a deeper analysis of the control flow can be performed by calling
  *  the analyzeControlFlow() method. This also requires a GameID.
  */
-class NCSFile : public Aurora::AuroraBase {
+class NCSFile : public Aurora::AuroraFile {
 public:
 	NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game = Aurora::kGameIDUnknown);
 	~NCSFile();
