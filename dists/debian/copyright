@@ -3,12 +3,12 @@ Upstream-Name: xoreos-tools
 Source: https://xoreos.org/
 
 Files: *
-Copyright: 2012-2015 Sven Hesse (DrMcCoy) <drmccoy@drmccoy.de>
-           2012-2015 Matthew Hoops (clone2727) <clone2727@gmail.com>
+Copyright: 2012-2016 Sven Hesse (DrMcCoy) <drmccoy@drmccoy.de>
+           2012-2016 Matthew Hoops (clone2727) <clone2727@gmail.com>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2015 Sven Hesse <drmccoy@drmccoy.de>
+Copyright: 2015-2016 Sven Hesse <drmccoy@drmccoy.de>
 License: GPL-3.0+
 
 License: GPL-3.0+
