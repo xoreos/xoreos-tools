@@ -52,4 +52,5 @@ ScummVM code
 ************
    xoreos-tools uses some ScummVM (<http://scummvm.org/>) code, most prominently
    the endian, singleton and stream code. ScummVM is licensed under version 2 or
-   later of the GNU General Public License.
+   later of the GNU General Public License. For the full license text, see
+   COPYING.GPLv2 or <https://gnu.org/licenses/gpl-2.0.html>.

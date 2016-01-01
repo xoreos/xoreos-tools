@@ -45,6 +45,7 @@ EXTRA_DIST = \
 
 dist_doc_DATA = \
                 COPYING \
+                COPYING.GPLv2 \
                 AUTHORS \
                 ChangeLog \
                 NEWS.md \
