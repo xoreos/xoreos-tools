@@ -120,7 +120,7 @@ Files: src/images/tga.h
        src/images/tga.cpp
 Copyright: 2010-2015 The xoreos Team
            2012 The ScummVM Project
-License: GPL-2, GPL-3.0+
+License: GPL-2.0+, GPL-3.0+
 
 Files: src/common/md5.cpp
 Copyright: 2001 Alexander Peslyak
