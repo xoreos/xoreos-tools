@@ -75,6 +75,7 @@ class GFF4Struct;
  */
 class GFF4File : public AuroraFile {
 public:
+	/** Take over this stream and read a GFF4 file out of it. */
 	GFF4File(Common::SeekableReadStream *gff4, uint32 type = 0xFFFFFFFF);
 	~GFF4File();
 

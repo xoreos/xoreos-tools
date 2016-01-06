@@ -67,6 +67,7 @@ public:
 	                      uint32 volumeVariance, uint32 pitchVariance, float soundLength,
 	                      uint32 soundID) = 0;
 
+	/** Take over this stream and read a talk table (of either format) out of it. */
 	static TalkTable *load(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 
 

@@ -51,6 +51,7 @@ namespace Aurora {
 class TalkTable_TLK : public AuroraFile, public TalkTable {
 public:
 	TalkTable_TLK(Common::Encoding encoding, uint32 languageID);
+	/** Take over this stream and read a TLK out of it. */
 	TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_TLK();
 
