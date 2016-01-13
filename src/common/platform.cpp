@@ -50,6 +50,9 @@ void Platform::getParameters(int UNUSED(argc), char **UNUSED(argv), std::vector<
 	wchar_t **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
 	args.clear();
+	if (argc <= 0)
+		return;
+
 	args.reserve(argc);
 
 	for (int i = 0; i < argc; i++)
@@ -61,6 +64,9 @@ void Platform::getParameters(int UNUSED(argc), char **UNUSED(argv), std::vector<
 /* On non-Windows system, we assume the parameters are already in UTF-8. */
 void Platform::getParameters(int argc, char **argv, std::vector<UString> &args) {
 	args.clear();
+	if (argc <= 0)
+		return;
+
 	args.reserve(argc);
 
 	for (int i = 0; i < argc; i++)
