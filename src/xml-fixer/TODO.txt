@@ -1,13 +1,8 @@
 handle parameters (h, --help, at leat)
 
-Also restyle to fit xoreos standard.
-
-Also clean up commented code, etc.
-(working effort, should be mostly better).
 
 Remove unused functions.
 (should be mostly gone?)
-
 
 see if can replace countoccurances with std::count
 
@@ -15,21 +10,21 @@ Maybe we can leverage inparen with the comma thing? Are those even in the same m
 I think inparen is presently only in the, uh, innerquote file, but let's see if we can't reimplement it
 or if that would even help? I think the DMC issue is also in a paren. Hmmm.
 
+Copyright doesn't need to run on every line.
 
+We need to convert everything to use UString.
+Need to change code to use iterators instead of loops
 
-We need to convert everything to be using UString.
-I believe, if I remember correctly, that we were having trouble getting it to run from within the Aurora namespace.
-
-There's a whole list of dependencies, and frankly, I'm not sure which version is more up-to-date--The xoreos version, or the xoreos-tools version.
-
-Whichever version it is, I recommend we adapt the code to work with Ustring, THEN worry about adapting to the namespace.
-
-
-
-Edit: it looks like the xoreos/src/aurora version is the most current.
+It looks like the xoreos-tools/src/aurora version is the most current.
 
 Wouldn't hurt to compare our code to Charlie's to see what she did. It soudned like she just fixed the node issue,
+but there may be more too it.
 
 
-Next time we have internet, we can commit with the comment of cleaning up documentation, as we mostly just updated comments.
-Also updated brackets to conform to xoreos standards.
+
+TODO: Need Common::UString.at, Common::UString.insert //IGNORE
+
+No we have an insert.	void insert(iterator pos, uint32 c);
+Use getposition(size_t) to get the iterator pos.
+
+We should be able to use getPosition(size_t) and then dereference the result to simulate AT
