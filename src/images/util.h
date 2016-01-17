@@ -123,6 +123,9 @@ static inline bool hasValidDimensions(PixelFormat format, int32 width, int32 hei
 
 /** Flip an image horizontally. */
 static inline void flipHorizontally(byte *data, int width, int height, int bpp) {
+	if ((width <= 0) || (height <= 0) || (bpp <= 0))
+		return;
+
 	int halfWidth = width / 2;
 	int pitch     = bpp * width;
 
@@ -149,6 +152,9 @@ static inline void flipHorizontally(byte *data, int width, int height, int bpp) 
 
 /** Flip an image vertically. */
 static inline void flipVertically(byte *data, int width, int height, int bpp) {
+	if ((width <= 0) || (height <= 0) || (bpp <= 0))
+		return;
+
 	int halfHeight = height / 2;
 	int pitch      = bpp * width;
 
@@ -171,6 +177,9 @@ static inline void flipVertically(byte *data, int width, int height, int bpp) {
 
 /** Rotate a square image in 90° steps. */
 static inline void rotate90(byte *data, int width, int height, int bpp, int steps) {
+	if ((width <= 0) || (height <= 0) || (bpp <= 0))
+		return;
+
 	assert(width == height);
 
 	while (steps-- > 0) {
