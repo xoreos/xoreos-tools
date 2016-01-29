@@ -31,7 +31,7 @@
 
 namespace Common {
 
-/** A simple stream to write to stdout. */
+/** A simple stream to read from stdin. */
 class StdInStream : public ReadStream, public NonCopyable {
 public:
 	StdInStream();
