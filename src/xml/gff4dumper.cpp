@@ -106,7 +106,10 @@ bool GFF4Dumper::insertID(uint64 id) {
 }
 
 void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label,
-                            bool hasIndex, uint32 index, bool isGeneric) {
+                            bool hasIndex, size_t index, bool isGeneric) {
+
+	if (index >= 0xFFFFFFFF)
+		throw Common::Exception("GFF4 struct index overflow");
 
 	_xml->openTag("struct");
 	_xml->addProperty("name", strct ? Common::tagToString(strct->getLabel()) : "");
@@ -179,7 +182,10 @@ Common::UString GFF4Dumper::getIFieldTypeName(uint32 type, bool isList) const {
 }
 
 void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label,
-                              bool hasIndex, uint32 index) {
+                              bool hasIndex, size_t index) {
+
+	if (index >= 0xFFFFFFFF)
+		throw Common::Exception("GFF4 field index overflow");
 
 	_xml->openTag(getIFieldTypeName(type, typeList));
 

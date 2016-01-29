@@ -79,7 +79,7 @@ private:
 
 	Common::UString getIFieldTypeName(uint32 type, bool isList) const;
 
-	void openFieldTag (uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
+	void openFieldTag (uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, size_t index);
 	void closeFieldTag(bool doBreak = true);
 
 	void dumpFieldUint  (const GFF4Field &field);
@@ -95,7 +95,7 @@ private:
 	void dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool isGeneric);
 
 	void dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label,
-	                bool hasIndex, uint32 index, bool isGeneric);
+	                bool hasIndex, size_t index, bool isGeneric);
 
 	Common::UString findFieldName(uint32 label) const;
 
