@@ -79,11 +79,7 @@ private:
 
 	Common::UString getIFieldTypeName(uint32 type, bool isList) const;
 
-	void openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
-
-	void openFieldTag(uint32 type, bool isList);
-	void openFieldTagLabel(uint32 type, bool isList, uint32 label);
-	void openFieldTagIndex(uint32 type, bool isList, uint32 index);
+	void openFieldTag (uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
 	void closeFieldTag(bool doBreak = true);
 
 	void dumpFieldUint  (const GFF4Field &field);
