@@ -22,9 +22,6 @@
  *  Higher-level control flow analysis on NWScript bytecode.
  */
 
-#ifndef NWSCRIPT_CONTROLFLOW_H
-#define NWSCRIPT_CONTROLFLOW_H
-
 #include <cassert>
 
 #include <algorithm>
@@ -879,5 +876,3 @@ void analyzeControlFlow(Blocks &blocks) {
 }
 
 } // End of namespace NWScript
-
-#endif // NWSCRIPT_CONTROLFLOW_H
