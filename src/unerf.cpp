@@ -351,7 +351,7 @@ struct FileEntry {
 	Common::UString file;
 	uint32 size;
 
-	FileEntry(const Common::UString &f = "", uint32 s = -1) : file(f), size(s) { }
+	FileEntry(const Common::UString &f = "", uint32 s = 0xFFFFFFFF) : file(f), size(s) { }
 };
 
 void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
