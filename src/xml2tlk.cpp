@@ -275,7 +275,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "One of --version* to specify the version of TLK to write is mandatory,\n");
 	std::fprintf(stream, "as is one of the flags for the encoding. If the XML file provides a\n");
 	std::fprintf(stream, "language ID, the --language flag is optional.\n\n");
-	std::fprintf(stream, "There is no way to autodected the encoding of strings in TLK files,\n");
+	std::fprintf(stream, "There is no way to autodetect the encoding of strings in TLK files,\n");
 	std::fprintf(stream, "so an encoding must be specified. Alternatively, the game this TLK\n");
 	std::fprintf(stream, "is from can be given, and an appropriate encoding according to that\n");
 	std::fprintf(stream, "game and the language ID is used.\n");
