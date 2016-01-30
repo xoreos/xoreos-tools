@@ -236,7 +236,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "          --dragonage         Use Dragon Age encodings\n");
 	std::fprintf(stream, "          --dragonage2        Use Dragon Age II encodings\n\n");
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n\n");
-	std::fprintf(stream, "There is no way to autodected the encoding of strings in TLK files,\n");
+	std::fprintf(stream, "There is no way to autodetect the encoding of strings in TLK files,\n");
 	std::fprintf(stream, "so an encoding must be specified. Alternatively, the game this TLK\n");
 	std::fprintf(stream, "is from can be given, and an appropriate encoding according to that\n");
 	std::fprintf(stream, "game and the language ID found in the TLK is used.\n");
