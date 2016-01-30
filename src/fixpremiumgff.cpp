@@ -23,7 +23,6 @@
  *  Neverwinter Nights premium modules.
  */
 
-#include <cassert>
 #include <cstring>
 #include <cstdio>
 
