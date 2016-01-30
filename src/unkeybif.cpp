@@ -296,11 +296,11 @@ void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
 
 	const Aurora::KEYFile::BIFList &bifs = key.getBIFs();
 
-	uint maxBIFLength = 0;
+	size_t maxBIFLength = 0;
 	for (Aurora::KEYFile::BIFList::const_iterator b = bifs.begin(); b != bifs.end(); ++b)
-		maxBIFLength = MAX<uint>(maxBIFLength, b->size());
+		maxBIFLength = MAX<size_t>(maxBIFLength, b->size());
 
-	for (uint i = 4; i < maxBIFLength; i++)
+	for (size_t i = 4; i < maxBIFLength; i++)
 		std::printf("=");
 
 	std::printf("\n");
