@@ -2,7 +2,7 @@
 
 pkgname=xoreos-tools-git
 _gitname=xoreos-tools
-pkgver=0.0.3.r0.g06f686c
+pkgver=0.0.4.r0.g06f686c
 pkgrel=1
 pkgdesc="Tools to help with xoreos development"
 arch=('i686' 'x86_64')

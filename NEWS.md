@@ -1,3 +1,24 @@
+Changes in xoreos-tools version 0.0.4
+=====================================
+
+This release of the xoreos-tools package features two new tools:
+fixpremiumgff and ncsdis.
+
+The first tool, fixpremiumgff, can restore the deliberately broken GFF files
+found in the BioWare premium modules for Neverwinter Nights. The resulting
+GFF files can then be edited as normal.
+
+The second tool, ncsdis, is a disassembler for the stack-based bytecode of
+BioWare's NWScript scripting language. It supports the scripts of all games
+targeted by xoreos and can disassemble them into a full assembly listing.
+It can also produce a control flow graph in the DOT description language,
+which can then be plotted into an image by using the dot tools from the
+GraphViz suite (<http://graphviz.org/>).
+
+Moreover, this release includes a lot of user-invisible code documentation
+and quality fixes.
+
+
 Changes in xoreos-tools version 0.0.3
 =====================================
 
