@@ -270,7 +270,9 @@ void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UStri
 	if (strct.getFieldCount() > 0)
 		_xml->breakLine();
 
-	for (Aurora::GFF3Struct::iterator f = strct.begin(); f != strct.end(); ++f)
+	const std::vector<Common::UString> &fields = strct.getFieldNames();
+
+	for (std::vector<Common::UString>::const_iterator f = fields.begin(); f != fields.end(); ++f)
 		dumpField(strct, *f);
 
 	_xml->closeTag();

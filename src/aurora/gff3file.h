@@ -26,7 +26,6 @@
 #define AURORA_GFF3FILE_H
 
 #include <vector>
-#include <list>
 #include <map>
 
 #include "src/common/types.h"
@@ -154,14 +153,6 @@ private:
 /** A struct within a GFF. */
 class GFF3Struct {
 public:
-	// .--- Public types and methods for the GFF3Dumper tool
-	typedef std::list<Common::UString> FieldNameList;
-	typedef FieldNameList::const_iterator iterator;
-
-	iterator begin() const;
-	iterator end() const;
-	// '---
-
 	/** The type of a GFF field. */
 	enum FieldType {
 		kFieldTypeNone        = - 1, ///< Invalid type.
@@ -193,6 +184,9 @@ public:
 	size_t getFieldCount() const;
 	/** Does this specific field exist? */
 	bool hasField(const Common::UString &field) const;
+
+	/** Return a list of all field names in this struct. */
+	const std::vector<Common::UString> &getFieldNames() const;
 
 	/** Return the type of this field, or kFieldTypeNone if such a field doesn't exist. */
 	FieldType getType(const Common::UString &field) const;
@@ -248,8 +242,10 @@ private:
 	uint32 _fieldIndex; ///< Field / Field indices index.
 	uint32 _fieldCount; ///< Field count.
 
-	FieldMap      _fields;     ///< The fields, indexed by their label.
-	FieldNameList _fieldNames;
+	FieldMap _fields; ///< The fields, indexed by their label.
+
+	/** The names of all fields in this struct. */
+	std::vector<Common::UString> _fieldNames;
 
 
 	// .--- Loader
