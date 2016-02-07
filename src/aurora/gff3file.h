@@ -158,6 +158,10 @@ public:
 	typedef std::list<Common::UString> FieldNameList;
 	typedef FieldNameList::const_iterator iterator;
 
+	iterator begin() const;
+	iterator end() const;
+	// '---
+
 	/** The type of a GFF field. */
 	enum FieldType {
 		kFieldTypeNone        = - 1, ///< Invalid type.
@@ -182,12 +186,6 @@ public:
 		kFieldTypeStrRef      =  18  ///< String reference, index into a talk table.
 	};
 
-	iterator begin() const;
-	iterator end() const;
-
-	FieldType getType(const Common::UString &field) const;
-	// '---
-
 	/** Return the struct's ID. */
 	uint32 getID() const;
 
@@ -195,6 +193,9 @@ public:
 	size_t getFieldCount() const;
 	/** Does this specific field exist? */
 	bool hasField(const Common::UString &field) const;
+
+	/** Return the type of this field, or kFieldTypeNone if such a field doesn't exist. */
+	FieldType getType(const Common::UString &field) const;
 
 	// .--- Read field values
 	char   getChar(const Common::UString &field, char   def = '\0' ) const;
