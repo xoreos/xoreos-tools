@@ -117,7 +117,7 @@ static const char * const kGFF3FieldTypeNames[] = {
 };
 
 void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UString &field) {
-	Aurora::GFF3Struct::FieldType type = strct.getType(field);
+	Aurora::GFF3Struct::FieldType type = strct.getFieldType(field);
 
 	Common::UString typeName;
 	if (((size_t) type) < ARRAYSIZE(kGFF3FieldTypeNames))
