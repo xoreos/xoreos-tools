@@ -144,7 +144,7 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 	_xml->breakLine();
 }
 
-static const char * const kGFF4IFieldTypeNames[] = {
+static const char * const kGFF4FieldTypeNames[] = {
 	"uint8",
 	"sint8",
 	"uint16",
@@ -168,15 +168,15 @@ static const char * const kGFF4IFieldTypeNames[] = {
 	"ascii"
 };
 
-Common::UString GFF4Dumper::getIFieldTypeName(uint32 type, bool isList) const {
+Common::UString GFF4Dumper::getFieldTypeName(uint32 type, bool isList) const {
 	const char *listString = isList ? "_list" : "";
 	const char *typeString = "invalid";
-	if      (type == Aurora::GFF4Struct::kIFieldTypeStruct)
+	if      (type == Aurora::GFF4Struct::kFieldTypeStruct)
 		typeString = "struct";
-	else if (type == Aurora::GFF4Struct::kIFieldTypeGeneric)
+	else if (type == Aurora::GFF4Struct::kFieldTypeGeneric)
 		typeString = "generic";
-	else if (type < ARRAYSIZE(kGFF4IFieldTypeNames))
-		typeString = kGFF4IFieldTypeNames[type];
+	else if (type < ARRAYSIZE(kGFF4FieldTypeNames))
+		typeString = kGFF4FieldTypeNames[type];
 
 	return Common::UString::format("%s%s", typeString, listString);
 }
@@ -187,7 +187,7 @@ void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 
 	if (index >= 0xFFFFFFFF)
 		throw Common::Exception("GFF4 field index overflow");
 
-	_xml->openTag(getIFieldTypeName(type, typeList));
+	_xml->openTag(getFieldTypeName(type, typeList));
 
 	if (hasLabel) {
 		_xml->addProperty("label", Common::composeString(label));
@@ -280,11 +280,11 @@ void GFF4Dumper::dumpFieldTlk(const GFF4Field &field) {
 	for (size_t i = 0; i < strRefs.size(); i++) {
 		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
 
-		openFieldTag(Aurora::GFF4Struct::kIFieldTypeUint32, false, false, 0, false, 0);
+		openFieldTag(Aurora::GFF4Struct::kFieldTypeUint32, false, false, 0, false, 0);
 		_xml->setContents(Common::composeString(strRefs[i]));
 		closeFieldTag(false);
 
-		openFieldTag(Aurora::GFF4Struct::kIFieldTypeString, false, false, 0, false, 0);
+		openFieldTag(Aurora::GFF4Struct::kFieldTypeString, false, false, 0, false, 0);
 		_xml->setContents(strs[i]);
 		closeFieldTag(false);
 
@@ -306,7 +306,7 @@ void GFF4Dumper::dumpFieldVector(const GFF4Field &field) {
 
 		for (size_t j = 0; j < values[i].size(); j++) {
 
-			openFieldTag(Aurora::GFF4Struct::kIFieldTypeFloat32, false, false, 0, false, 0);
+			openFieldTag(Aurora::GFF4Struct::kFieldTypeFloat32, false, false, 0, false, 0);
 			_xml->setContents(Common::UString::format("%.6f", values[i][j]));
 			closeFieldTag(false);
 
@@ -348,48 +348,48 @@ void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool i
 		openFieldTag(f.type, true, true, f.label, false, 0);
 
 	switch (f.type) {
-		case Aurora::GFF4Struct::kIFieldTypeUint8:
-		case Aurora::GFF4Struct::kIFieldTypeUint16:
-		case Aurora::GFF4Struct::kIFieldTypeUint32:
-		case Aurora::GFF4Struct::kIFieldTypeUint64:
+		case Aurora::GFF4Struct::kFieldTypeUint8:
+		case Aurora::GFF4Struct::kFieldTypeUint16:
+		case Aurora::GFF4Struct::kFieldTypeUint32:
+		case Aurora::GFF4Struct::kFieldTypeUint64:
 			dumpFieldUint(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeSint8:
-		case Aurora::GFF4Struct::kIFieldTypeSint16:
-		case Aurora::GFF4Struct::kIFieldTypeSint32:
-		case Aurora::GFF4Struct::kIFieldTypeSint64:
+		case Aurora::GFF4Struct::kFieldTypeSint8:
+		case Aurora::GFF4Struct::kFieldTypeSint16:
+		case Aurora::GFF4Struct::kFieldTypeSint32:
+		case Aurora::GFF4Struct::kFieldTypeSint64:
 			dumpFieldSint(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeFloat32:
-		case Aurora::GFF4Struct::kIFieldTypeFloat64:
-		case Aurora::GFF4Struct::kIFieldTypeNDSFixed:
+		case Aurora::GFF4Struct::kFieldTypeFloat32:
+		case Aurora::GFF4Struct::kFieldTypeFloat64:
+		case Aurora::GFF4Struct::kFieldTypeNDSFixed:
 			dumpFieldDouble(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeString:
-		case Aurora::GFF4Struct::kIFieldTypeASCIIString:
+		case Aurora::GFF4Struct::kFieldTypeString:
+		case Aurora::GFF4Struct::kFieldTypeASCIIString:
 			dumpFieldString(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeTlkString:
+		case Aurora::GFF4Struct::kFieldTypeTlkString:
 			dumpFieldTlk(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeVector3f:
-		case Aurora::GFF4Struct::kIFieldTypeVector4f:
-		case Aurora::GFF4Struct::kIFieldTypeQuaternionf:
-		case Aurora::GFF4Struct::kIFieldTypeColor4f:
-		case Aurora::GFF4Struct::kIFieldTypeMatrix4x4f:
+		case Aurora::GFF4Struct::kFieldTypeVector3f:
+		case Aurora::GFF4Struct::kFieldTypeVector4f:
+		case Aurora::GFF4Struct::kFieldTypeQuaternionf:
+		case Aurora::GFF4Struct::kFieldTypeColor4f:
+		case Aurora::GFF4Struct::kFieldTypeMatrix4x4f:
 			dumpFieldVector(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeStruct:
+		case Aurora::GFF4Struct::kFieldTypeStruct:
 			dumpFieldList(f);
 			break;
 
-		case Aurora::GFF4Struct::kIFieldTypeGeneric:
+		case Aurora::GFF4Struct::kFieldTypeGeneric:
 			if (!f.isList)
 				openFieldTag(f.type, false, true, f.label, false, 0);
 

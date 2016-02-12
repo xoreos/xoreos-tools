@@ -54,7 +54,7 @@ private:
 		uint32 field;
 
 		uint32 label;
-		Aurora::GFF4Struct::IFieldType type;
+		Aurora::GFF4Struct::FieldType type;
 		bool isList;
 		bool isGeneric;
 
@@ -77,7 +77,7 @@ private:
 
 	bool insertID(uint64 id);
 
-	Common::UString getIFieldTypeName(uint32 type, bool isList) const;
+	Common::UString getFieldTypeName(uint32 type, bool isList) const;
 
 	void openFieldTag (uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, size_t index);
 	void closeFieldTag(bool doBreak = true);
