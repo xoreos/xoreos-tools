@@ -435,18 +435,6 @@ GFF4Struct::iterator GFF4Struct::end() const {
 	return _fieldLabels.end();
 }
 
-bool GFF4Struct::getProperties(uint32 field, FieldType &type, uint32 &label, bool &isList) const {
-	const Field *f = getField(field);
-	if (!f)
-		return false;
-
-	type   = f->type;
-	label  = f->label;
-	isList = f->isList;
-
-	return true;
-}
-
 size_t GFF4Struct::getFieldCount() const {
 	return _fieldCount;
 }
@@ -468,6 +456,18 @@ GFF4Struct::FieldType GFF4Struct::getFieldType(uint32 field, bool &isList) const
 	isList = f->isList;
 
 	return f->type;
+}
+
+bool GFF4Struct::getFieldProperties(uint32 field, FieldType &type, uint32 &label, bool &isList) const {
+	const Field *f = getField(field);
+	if (!f)
+		return false;
+
+	type   = f->type;
+	label  = f->label;
+	isList = f->isList;
+
+	return true;
 }
 
 // --- Field value reader helpers ---

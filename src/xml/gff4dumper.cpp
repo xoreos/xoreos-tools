@@ -37,7 +37,7 @@ namespace XML {
 GFF4Dumper::GFF4Field::GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g) :
 	strct(&s), field(f), isGeneric(g) {
 
-	if (!strct->getProperties(field, type, label, isList))
+	if (!strct->getFieldProperties(field, type, label, isList))
 		throw Common::Exception(Common::kReadError);
 }
 

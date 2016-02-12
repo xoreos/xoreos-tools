@@ -203,8 +203,6 @@ public:
 
 	iterator begin() const;
 	iterator end() const;
-
-	bool getProperties(uint32 field, FieldType &type, uint32 &label, bool &isList) const;
 	// '---
 
 	/** Return the struct's unique ID within the GFF4. */
@@ -224,6 +222,12 @@ public:
 	FieldType getFieldType(uint32 field) const;
 	/** Return the type of this field and whether it's list, or kFieldTypeNone if it doesn't exist. */
 	FieldType getFieldType(uint32 field, bool &isList) const;
+
+	/** Collectively return all field properties in one go.
+	 *
+	 *  @return true if the field exists, false otherwise.
+	 */
+	bool getFieldProperties(uint32 field, FieldType &type, uint32 &label, bool &isList) const;
 
 
 	// .--- Single values
