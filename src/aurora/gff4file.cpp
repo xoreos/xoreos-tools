@@ -427,20 +427,16 @@ uint64 GFF4Struct::generateID(uint32 offset, const GFF4File::StructTemplate *tmp
 
 // --- Field properties ---
 
-GFF4Struct::iterator GFF4Struct::begin() const {
-	return _fieldLabels.begin();
-}
-
-GFF4Struct::iterator GFF4Struct::end() const {
-	return _fieldLabels.end();
-}
-
 size_t GFF4Struct::getFieldCount() const {
 	return _fieldCount;
 }
 
 bool GFF4Struct::hasField(uint32 field) const {
 	return getField(field) != 0;
+}
+
+const std::vector<uint32> &GFF4Struct::getFieldLabels() const {
+	return _fieldLabels;
 }
 
 GFF4Struct::FieldType GFF4Struct::getFieldType(uint32 field) const {

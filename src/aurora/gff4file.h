@@ -26,7 +26,6 @@
 #define AURORA_GFF4FILE_H
 
 #include <vector>
-#include <list>
 #include <map>
 
 #include "src/common/types.h"
@@ -197,14 +196,6 @@ public:
 		kFieldTypeGeneric     =  65535  ///< A "generic" field, able to hold any other type.
 	};
 
-	// .--- Public types and methods for the GFF4Dumper tool
-	typedef std::list<uint32> FieldLabelList;
-	typedef FieldLabelList::const_iterator iterator;
-
-	iterator begin() const;
-	iterator end() const;
-	// '---
-
 	/** Return the struct's unique ID within the GFF4. */
 	uint64 getID() const;
 	/** Return the number of structs that refer to this struct. */
@@ -217,6 +208,9 @@ public:
 	size_t getFieldCount() const;
 	/** Does this specific field exist? */
 	bool hasField(uint32 field) const;
+
+	/** Return a list of all field labels in this struct. */
+	const std::vector<uint32> &getFieldLabels() const;
 
 	/** Return the type of this field, or kFieldTypeNone if it doesn't exist. */
 	FieldType getFieldType(uint32 field) const;
@@ -336,8 +330,10 @@ private:
 
 	size_t _fieldCount;
 
-	FieldMap       _fields;
-	FieldLabelList _fieldLabels;
+	FieldMap _fields;
+
+	/** The labels of all fields in this struct. */
+	std::vector<uint32> _fieldLabels;
 
 
 	// .--- Loader

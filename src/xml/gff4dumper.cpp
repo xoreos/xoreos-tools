@@ -134,7 +134,9 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 
 			_xml->breakLine();
 
-			for (Aurora::GFF4Struct::iterator f = strct->begin(); f != strct->end(); ++f)
+			const std::vector<uint32> &fields = strct->getFieldLabels();
+
+			for (std::vector<uint32>::const_iterator f = fields.begin(); f != fields.end(); ++f)
 				dumpField(*strct, *f, false);
 		} else
 			_xml->addProperty("ref_id", Common::composeString(strct->getID()));
@@ -333,8 +335,10 @@ void GFF4Dumper::dumpFieldGeneric(const GFF4Field &field) {
 	if (!generic)
 		return;
 
-	for (Aurora::GFF4Struct::iterator f = generic->begin(); f != generic->end(); ++f) {
-		if (f == generic->begin())
+	const std::vector<uint32> &fields = generic->getFieldLabels();
+
+	for (std::vector<uint32>::const_iterator f = fields.begin(); f != fields.end(); ++f) {
+		if (f == fields.begin())
 			_xml->breakLine();
 
 		dumpField(*generic, *f, true);
