@@ -313,6 +313,14 @@ GFF4Struct::GFF4Struct(GFF4File &parent, const Field &genericParent) :
 GFF4Struct::~GFF4Struct() {
 }
 
+uint64 GFF4Struct::getID() const {
+	return _id;
+}
+
+uint32 GFF4Struct::getRefCount() const {
+	return _refCount;
+}
+
 uint32 GFF4Struct::getLabel() const {
 	return _label;
 }
@@ -437,14 +445,6 @@ bool GFF4Struct::getProperties(uint32 field, FieldType &type, uint32 &label, boo
 	isList = f->isList;
 
 	return true;
-}
-
-uint64 GFF4Struct::getID() const {
-	return _id;
-}
-
-uint32 GFF4Struct::getRefCount() const {
-	return _refCount;
 }
 
 size_t GFF4Struct::getFieldCount() const {

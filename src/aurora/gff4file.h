@@ -205,10 +205,12 @@ public:
 	iterator end() const;
 
 	bool getProperties(uint32 field, FieldType &type, uint32 &label, bool &isList) const;
-
-	uint64 getID() const;
-	uint32 getRefCount() const;
 	// '---
+
+	/** Return the struct's unique ID within the GFF4. */
+	uint64 getID() const;
+	/** Return the number of structs that refer to this struct. */
+	uint32 getRefCount() const;
 
 	/** Return the struct's label. */
 	uint32 getLabel() const;
