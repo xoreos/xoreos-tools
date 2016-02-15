@@ -90,6 +90,17 @@ const GFF3Struct &GFF3File::getTopLevel() const {
 	return getStruct(0);
 }
 
+GFF3Struct &GFF3File::getMutableStruct(const GFF3Struct &strct) {
+	if (strct._parent != this)
+		throw Common::Exception("GFF3: That struct does not belong to this GFF3");
+
+	StructMap::iterator s = _structs.find(strct.getUID());
+	if ((s == _structs.end()) || !s->second)
+		throw Common::Exception("GFF3: This GFF3 does not know about that struct?!?");
+
+	return *s->second;
+}
+
 // --- Loader ---
 
 void GFF3File::load(uint32 id) {

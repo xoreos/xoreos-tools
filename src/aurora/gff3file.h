@@ -84,6 +84,14 @@ public:
 	/** Returns the top-level struct. */
 	const GFF3Struct &getTopLevel() const;
 
+	/** Return a mutable struct.
+	 *
+	 *  Given a read-only struct, this returns a reference to a mutable version
+	 *  of the same struct within the GFF3. This means, values in this mutable
+	 *  version can be changed.
+	 */
+	GFF3Struct &getMutableStruct(const GFF3Struct &strct);
+
 
 private:
 	/** A GFF3 header. */
