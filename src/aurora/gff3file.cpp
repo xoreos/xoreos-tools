@@ -63,7 +63,7 @@ void GFF3File::Header::read(Common::SeekableReadStream &gff3) {
 
 
 GFF3File::GFF3File(Common::SeekableReadStream *gff3, uint32 id, bool repairNWNPremium) :
-	_stream(gff3), _repairNWNPremium(repairNWNPremium), _offsetCorrection(0) {
+	_stream(gff3), _repairNWNPremium(repairNWNPremium), _offsetCorrection(0), _nextStructUID(0) {
 
 	load(id);
 }
@@ -76,8 +76,8 @@ void GFF3File::clear() {
 	delete _stream;
 	_stream = 0;
 
-	for (StructArray::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
-		delete *strct;
+	for (StructMap::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
+		delete strct->second;
 
 	_structs.clear();
 }
@@ -183,9 +183,11 @@ void GFF3File::loadHeader(uint32 id) {
 void GFF3File::loadStructs() {
 	static const uint32 kStructSize = 12;
 
-	_structs.reserve(_header.structCount);
-	for (uint32 i = 0; i < _header.structCount; i++)
-		_structs.push_back(new GFF3Struct(*this, _header.structOffset + i * kStructSize));
+	for (uint32 i = 0; i < _header.structCount; i++) {
+		const uint32 uid = _nextStructUID++;
+
+		_structs[uid] = new GFF3Struct(*this, uid, _header.structOffset + i * kStructSize);
+	}
 }
 
 void GFF3File::loadLists() {
@@ -238,23 +240,26 @@ void GFF3File::loadLists() {
 
 		_lists[listIndex].resize(n);
 		for (uint32 j = 0; j < n; j++, i++) {
-			const size_t structIndex = rawLists[i];
-			if (structIndex >= _structs.size())
-				throw Common::Exception("GFF3: List struct index out of range (%u >= %u)",
-				                        (uint) structIndex, (uint) _structs.size());
+			const uint32 structUID = rawLists[i];
 
-			_lists[listIndex][j] = _structs[structIndex];
+			StructMap::const_iterator strct = _structs.find(structUID);
+			if (strct == _structs.end())
+				throw Common::Exception("GFF3: List struct UID doesn't exist (%u, %u)",
+				                        structUID, _nextStructUID);
+
+			_lists[listIndex][j] = strct->second;
 		}
 	}
 }
 
 // --- Helpers for GFF3Struct ---
 
-const GFF3Struct &GFF3File::getStruct(uint32 i) const {
-	if (i >= _structs.size())
-		throw Common::Exception("GFF3: Struct index out of range (%u >= %u)", i, (uint) _structs.size());
+const GFF3Struct &GFF3File::getStruct(uint32 uid) const {
+	StructMap::const_iterator strct = _structs.find(uid);
+	if ((strct == _structs.end()) || !strct->second)
+		throw Common::Exception("GFF3: Struct UID doesn't exist (%u)", uid);
 
-	return *_structs[i];
+	return *strct->second;
 }
 
 const GFF3List &GFF3File::getList(uint32 i) const {
@@ -301,11 +306,15 @@ GFF3Struct::Field::Field(FieldType t, uint32 d) : type(t), data(d) {
 }
 
 
-GFF3Struct::GFF3Struct(const GFF3File &parent, uint32 offset) : _parent(&parent) {
+GFF3Struct::GFF3Struct(const GFF3File &parent, uint32 uid, uint32 offset) : _parent(&parent), _uid(uid) {
 	load(offset);
 }
 
 GFF3Struct::~GFF3Struct() {
+}
+
+uint32 GFF3Struct::getUID() const {
+	return _uid;
 }
 
 uint32 GFF3Struct::getID() const {

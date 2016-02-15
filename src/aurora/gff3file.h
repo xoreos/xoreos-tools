@@ -106,7 +106,7 @@ private:
 		void read(Common::SeekableReadStream &gff3);
 	};
 
-	typedef std::vector<GFF3Struct *> StructArray;
+	typedef std::map<uint32, GFF3Struct *> StructMap;
 	typedef std::vector<GFF3List> ListArray;
 
 
@@ -119,11 +119,14 @@ private:
 	/** The correctional value for offsets to repair Neverwinter Nights premium modules. */
 	uint32 _offsetCorrection;
 
-	StructArray _structs; ///< Our structs.
-	ListArray   _lists;   ///< Our lists.
+	StructMap _structs; ///< Our structs.
+	ListArray _lists;   ///< Our lists.
 
 	/** To convert list offsets found in GFF3 to real indices. */
 	std::vector<uint32> _listOffsetToIndex;
+
+	/** The unique ID to give the next struct. */
+	uint32 _nextStructUID;
 
 
 	// .--- Loading helpers
@@ -142,7 +145,7 @@ private:
 	Common::SeekableReadStream &getFieldData() const;
 
 	/** Return a struct within the GFF3. */
-	const GFF3Struct &getStruct(uint32 i) const;
+	const GFF3Struct &getStruct(uint32 uid) const;
 	/** Return a list within the GFF3. */
 	const GFF3List   &getList  (uint32 i) const;
 	// '---
@@ -176,6 +179,14 @@ public:
 		kFieldTypeVector      =  17, ///< A vector of 3 floats.
 		kFieldTypeStrRef      =  18  ///< String reference, index into a talk table.
 	};
+
+	/** Return the struct's unique ID within the GFF3.
+	 *
+	 *  As opposed to the ID, this number is unique within the GFF3. It is
+	 *  also not saved within the GFF3 and might change between subsequent
+	 *  loads of the same GFF3 file.
+	 */
+	uint32 getUID() const;
 
 	/** Return the struct's ID.
 	 *
@@ -247,6 +258,8 @@ private:
 
 	const GFF3File *_parent; ///< The parent GFF3.
 
+	uint32 _uid; ///< The struct's unique ID within the GFF3.
+
 	uint32 _id;         ///< The struct's ID.
 	uint32 _fieldIndex; ///< Field / Field indices index.
 	uint32 _fieldCount; ///< Field count.
@@ -258,7 +271,7 @@ private:
 
 
 	// .--- Loader
-	GFF3Struct(const GFF3File &parent, uint32 offset);
+	GFF3Struct(const GFF3File &parent, uint32 uid, uint32 offset);
 	~GFF3Struct();
 
 	void load(uint32 offset);
