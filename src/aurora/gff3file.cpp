@@ -969,4 +969,45 @@ void GFF3Struct::setLocString(const Common::UString &field, const LocString &val
 	}
 }
 
+void GFF3Struct::setVector(const Common::UString &field,
+                           float x, float y, float z) {
+
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if (f->type != kFieldTypeVector)
+		throw Common::Exception("GFF3: Field is not a vector type");
+
+	f->prepareSet();
+
+	byte *extended = new byte[12];
+
+	WRITE_LE_UINT32(extended + 0, convertIEEEFloat(x));
+	WRITE_LE_UINT32(extended + 4, convertIEEEFloat(y));
+	WRITE_LE_UINT32(extended + 8, convertIEEEFloat(z));
+
+	f->ownData = new Common::MemoryReadStream(extended, 12, true);
+}
+
+void GFF3Struct::setOrientation(const Common::UString &field,
+                                float a, float b, float c, float d) {
+
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if (f->type != kFieldTypeOrientation)
+		throw Common::Exception("GFF3: Field is not an orientation type");
+
+	f->prepareSet();
+
+	byte *extended = new byte[16];
+
+	WRITE_LE_UINT32(extended +  0, convertIEEEFloat(a));
+	WRITE_LE_UINT32(extended +  4, convertIEEEFloat(b));
+	WRITE_LE_UINT32(extended +  8, convertIEEEFloat(c));
+	WRITE_LE_UINT32(extended + 12, convertIEEEFloat(d));
+
+	f->ownData = new Common::MemoryReadStream(extended, 16, true);
+}
+
 } // End of namespace Aurora

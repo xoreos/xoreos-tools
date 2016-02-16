@@ -264,6 +264,11 @@ public:
 	void setString(const Common::UString &field, const Common::UString &value);
 
 	void setLocString(const Common::UString &field, const LocString &value);
+
+	void setVector     (const Common::UString &field,
+	                    float x, float y, float z         );
+	void setOrientation(const Common::UString &field,
+	                    float a, float b, float c, float d);
 	// '---
 
 private:
