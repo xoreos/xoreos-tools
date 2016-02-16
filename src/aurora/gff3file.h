@@ -272,6 +272,13 @@ public:
 
 	/** Set the data field and copy the stream. */
 	void setData(const Common::UString &field, Common::SeekableReadStream &value);
+
+	/** Copy this data stream into a string field.
+	 *
+	 *  This exists as a compatibility option to replicate GFF3s with strings in
+	 *  a broken encoding.
+	 */
+	void setString(const Common::UString &field, Common::SeekableReadStream &value);
 	// '---
 
 private:

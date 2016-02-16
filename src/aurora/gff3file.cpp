@@ -1038,4 +1038,43 @@ void GFF3Struct::setData(const Common::UString &field, Common::SeekableReadStrea
 	}
 }
 
+void GFF3Struct::setString(const Common::UString &field, Common::SeekableReadStream &value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if ((f->type != kFieldTypeExoString) && (f->type != kFieldTypeResRef))
+		throw Common::Exception("GFF3: Field is not a string type");
+
+	Common::MemoryWriteStreamDynamic writeStream(false);
+
+	try {
+		size_t maxLength = 0;
+
+		if        (f->type == kFieldTypeResRef)
+			maxLength = 255;
+		else if (f->type == kFieldTypeExoString)
+			maxLength = 0xFFFFFFFB;
+
+		if (value.size() > maxLength)
+			throw Common::Exception("GFF3: Value too long for a string field");
+
+		writeStream.reserve(value.size() + 4);
+
+		if        (f->type == kFieldTypeResRef)
+			writeStream.writeByte((uint8) value.size());
+		else if (f->type == kFieldTypeExoString)
+			writeStream.writeUint32LE((uint32) value.size());
+
+		writeStream.writeStream(value);
+
+		f->prepareSet();
+
+		f->ownData = new Common::MemoryReadStream(writeStream.getData(), writeStream.size(), true);
+
+	} catch (...) {
+		writeStream.dispose();
+		throw;
+	}
+}
+
 } // End of namespace Aurora
