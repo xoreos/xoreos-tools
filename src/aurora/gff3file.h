@@ -262,6 +262,11 @@ public:
 	 *  Structs and lists cannot be added/created with this method.
 	 */
 	void addField(const Common::UString &field, FieldType type);
+	/** Remove a field with this name.
+	 *
+	 *  Structs and lists cannot be removed with this method.
+	 */
+	void removeField(const Common::UString &field);
 	// '---
 
 	// .--- Write field values

@@ -28,6 +28,8 @@
 
 #include <cassert>
 
+#include <algorithm>
+
 #include "src/common/error.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
@@ -805,6 +807,23 @@ void GFF3Struct::addField(const Common::UString &field, FieldType type) {
 		throw Common::Exception("GFF3: Field \"%s\" already exists", field.c_str());
 
 	_fieldNames.push_back(field);
+}
+
+void GFF3Struct::removeField(const Common::UString &field) {
+	FieldMap::iterator f = _fields.find(field);
+	if (f == _fields.end())
+		throw Common::Exception("GFF3: No such field \"%s\"", field.c_str());
+
+	if (f->second.type == kFieldTypeStruct)
+		throw Common::Exception("GFF3: Can't remove a struct with removeField()");
+	if (f->second.type == kFieldTypeList)
+		throw Common::Exception("GFF3: Can't remove a list with removeField()");
+
+	_fields.erase(f);
+
+	std::vector<Common::UString>::iterator n = std::find(_fieldNames.begin(), _fieldNames.end(), field);
+	if (n != _fieldNames.end())
+		_fieldNames.erase(n);
 }
 
 // --- Field value write helpers ---
