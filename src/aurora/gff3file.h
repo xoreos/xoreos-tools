@@ -262,6 +262,8 @@ public:
 	void setDouble(const Common::UString &field, double value);
 
 	void setString(const Common::UString &field, const Common::UString &value);
+
+	void setLocString(const Common::UString &field, const LocString &value);
 	// '---
 
 private:

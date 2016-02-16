@@ -943,4 +943,30 @@ void GFF3Struct::setString(const Common::UString &field, const Common::UString &
 	}
 }
 
+void GFF3Struct::setLocString(const Common::UString &field, const LocString &value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if (f->type != kFieldTypeLocString)
+		throw Common::Exception("GFF3: Field is not a localized string type");
+
+	Common::MemoryWriteStreamDynamic writeStream(false);
+
+	try {
+
+		writeStream.writeUint32LE(0);
+		value.writeLocString(writeStream);
+
+		WRITE_LE_UINT32(writeStream.getData(), writeStream.size() - 4);
+
+		f->prepareSet();
+
+		f->ownData = new Common::MemoryReadStream(writeStream.getData(), writeStream.size(), true);
+
+	} catch (...) {
+		writeStream.dispose();
+		throw;
+	}
+}
+
 } // End of namespace Aurora
