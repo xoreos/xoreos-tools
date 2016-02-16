@@ -269,6 +269,9 @@ public:
 	                    float x, float y, float z         );
 	void setOrientation(const Common::UString &field,
 	                    float a, float b, float c, float d);
+
+	/** Set the data field and copy the stream. */
+	void setData(const Common::UString &field, Common::SeekableReadStream &value);
 	// '---
 
 private:

@@ -1010,4 +1010,32 @@ void GFF3Struct::setOrientation(const Common::UString &field,
 	f->ownData = new Common::MemoryReadStream(extended, 16, true);
 }
 
+void GFF3Struct::setData(const Common::UString &field, Common::SeekableReadStream &value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if (f->type != kFieldTypeVoid)
+		throw Common::Exception("GFF3: Field is not a data type");
+
+	const size_t length = value.size() - value.pos();
+
+	if (length > 0xFFFFFFFB)
+		throw Common::Exception("GFF3: Value too long for a data field");
+
+	Common::MemoryWriteStreamDynamic writeStream(false, length + 4);
+
+	try {
+		writeStream.writeUint32LE((uint32) length);
+		writeStream.writeStream(value);
+
+		f->prepareSet();
+
+		f->ownData = new Common::MemoryReadStream(writeStream.getData(), writeStream.size(), true);
+
+	} catch (...) {
+		writeStream.dispose();
+		throw;
+	}
+}
+
 } // End of namespace Aurora
