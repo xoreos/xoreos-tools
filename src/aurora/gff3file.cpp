@@ -30,6 +30,7 @@
 
 #include "src/common/error.h"
 #include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 #include "src/common/encoding.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
@@ -299,10 +300,10 @@ Common::SeekableReadStream &GFF3File::getFieldData() const {
 }
 
 
-GFF3Struct::Field::Field() : type(kFieldTypeNone), data(0), extended(false) {
+GFF3Struct::Field::Field() : type(kFieldTypeNone), data(0), extended(false), ownData(0) {
 }
 
-GFF3Struct::Field::Field(FieldType t, uint32 d) : type(t), data(d) {
+GFF3Struct::Field::Field(FieldType t, uint32 d) : type(t), data(d), ownData(0) {
 	// These field types need extended field data
 	extended = (type == kFieldTypeUint64     ) ||
 	           (type == kFieldTypeSint64     ) ||
@@ -314,6 +315,17 @@ GFF3Struct::Field::Field(FieldType t, uint32 d) : type(t), data(d) {
 	           (type == kFieldTypeOrientation) ||
 	           (type == kFieldTypeVector     ) ||
 	           (type == kFieldTypeStrRef     );
+}
+
+GFF3Struct::Field::~Field() {
+	delete ownData;
+}
+
+void GFF3Struct::Field::prepareSet() {
+	data = 0;
+
+	delete ownData;
+	ownData = 0;
 }
 
 
@@ -409,6 +421,9 @@ Common::UString GFF3Struct::readLabel(Common::SeekableReadStream &data, uint32 i
 
 Common::SeekableReadStream &GFF3Struct::getData(const Field &field) const {
 	assert(field.extended);
+
+	if (field.ownData)
+		return *field.ownData;
 
 	Common::SeekableReadStream &data = _parent->getFieldData();
 	data.skip(field.data);
@@ -768,6 +783,104 @@ const GFF3List &GFF3Struct::getList(const Common::UString &field) const {
 
 	// Byte offset into the list area, all 32bit values.
 	return _parent->getList(f->data / 4);
+}
+
+// --- Field value write helpers ---
+
+GFF3Struct::Field *GFF3Struct::getField(const Common::UString &name) {
+	FieldMap::iterator field = _fields.find(name);
+	if (field == _fields.end())
+		return 0;
+
+	return &field->second;
+}
+
+void GFF3Struct::setUint(const Common::UString &field, uint64 value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+
+	f->prepareSet();
+
+	if      (f->type == kFieldTypeByte)
+		f->data = (uint32) ((uint8 ) value);
+	else if (f->type == kFieldTypeUint16)
+		f->data = (uint32) ((uint16) value);
+	else if (f->type == kFieldTypeUint32)
+		f->data = (uint32) ((uint32) value);
+	else if (f->type == kFieldTypeChar)
+		f->data = ((uint32) ((int32) ((int8 ) ((uint8 ) value))));
+	else if (f->type == kFieldTypeSint16)
+		f->data = ((uint32) ((int32) ((int16) ((uint16) value))));
+	else if (f->type == kFieldTypeSint32)
+		f->data = ((uint32) ((int32) ((int32) ((uint32) value))));
+	else if ((f->type == kFieldTypeUint64) || (f->type == kFieldTypeSint64)) {
+		byte *extended = new byte[8];
+
+		WRITE_LE_UINT64(extended, value);
+
+		f->ownData = new Common::MemoryReadStream(extended, 8, true);
+	} else if (f->type == kFieldTypeStrRef) {
+		byte *extended = new byte[8];
+
+		WRITE_LE_UINT32(extended + 0, (uint32) 4);
+		WRITE_LE_UINT32(extended + 4, (uint32) value);
+
+		f->ownData = new Common::MemoryReadStream(extended, 8, true);
+	} else
+		throw Common::Exception("GFF3: Field is not an int type");
+}
+
+void GFF3Struct::setSint(const Common::UString &field, int64 value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+
+	f->prepareSet();
+
+	if      (f->type == kFieldTypeByte)
+		f->data = (uint32) ((uint8 ) ((int8 ) value));
+	else if (f->type == kFieldTypeUint16)
+		f->data = (uint32) ((uint16) ((int16) value));
+	else if (f->type == kFieldTypeUint32)
+		f->data = (uint32) ((uint32) ((int32) value));
+	else if (f->type == kFieldTypeChar)
+		f->data = (uint32) ((uint8 ) ((int8 ) value));
+	else if (f->type == kFieldTypeSint16)
+		f->data = (uint32) ((uint16) ((int16) value));
+	else if (f->type == kFieldTypeSint32)
+		f->data = (uint32) ((uint32) ((int32) value));
+	else if ((f->type == kFieldTypeUint64) || (f->type == kFieldTypeSint64)) {
+		byte *extended = new byte[8];
+
+		WRITE_LE_UINT64(extended, (uint64) value);
+
+		f->ownData = new Common::MemoryReadStream(extended, 8, true);
+	} else if (f->type == kFieldTypeStrRef) {
+		byte *extended = new byte[8];
+
+		WRITE_LE_UINT32(extended + 0, (uint32) 4);
+		WRITE_LE_UINT32(extended + 4, (uint32) ((uint64) value));
+
+		f->ownData = new Common::MemoryReadStream(extended, 8, true);
+	} else
+		throw Common::Exception("GFF3: Field is not an int type");
+}
+
+void GFF3Struct::setChar(const Common::UString &field, char value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if (f->type != kFieldTypeChar)
+		throw Common::Exception("GFF3: Field is not a char type");
+
+	f->prepareSet();
+
+	f->data = (uint32) ((uint8) value);
+}
+
+void GFF3Struct::setBool(const Common::UString &field, bool value) {
+	setUint(field, (uint64) value);
 }
 
 } // End of namespace Aurora

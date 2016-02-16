@@ -253,6 +253,13 @@ public:
 	const GFF3List   &getList  (const Common::UString &field) const;
 	// '---
 
+	// .--- Write field values
+	void setChar(const Common::UString &field, char   value);
+	void setUint(const Common::UString &field, uint64 value);
+	void setSint(const Common::UString &field,  int64 value);
+	void setBool(const Common::UString &field, bool   value);
+	// '---
+
 private:
 	/** A field in the GFF3 struct. */
 	struct Field {
@@ -260,8 +267,14 @@ private:
 		uint32    data;     ///< Data of the field.
 		bool      extended; ///< Does this field need extended data?
 
+		/** The field's own extended data, if present. */
+		Common::SeekableReadStream *ownData;
+
 		Field();
-		Field(FieldType t, uint32 d);
+		Field(FieldType t, uint32 d = 0);
+		~Field();
+
+		void prepareSet();
 	};
 
 	typedef std::map<Common::UString, Field> FieldMap;
@@ -295,6 +308,8 @@ private:
 	// .--- Field and field data accessors
 	/** Returns the field with this tag. */
 	const Field *getField(const Common::UString &name) const;
+	/** Returns the field with this tag. */
+	Field *getField(const Common::UString &name);
 	/** Returns the extended field data for this field. */
 	Common::SeekableReadStream &getData(const Field &field) const;
 	// '---
