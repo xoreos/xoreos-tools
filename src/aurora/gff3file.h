@@ -185,7 +185,9 @@ public:
 		kFieldTypeList        =  15, ///< List containing a number of structs.
 		kFieldTypeOrientation =  16, ///< An object orientation.
 		kFieldTypeVector      =  17, ///< A vector of 3 floats.
-		kFieldTypeStrRef      =  18  ///< String reference, index into a talk table.
+		kFieldTypeStrRef      =  18, ///< String reference, index into a talk table.
+
+		kFieldTypeMAX
 	};
 
 	/** Return the struct's unique ID within the GFF3.
@@ -251,6 +253,15 @@ public:
 	// .--- Structs and lists of structs
 	const GFF3Struct &getStruct(const Common::UString &field) const;
 	const GFF3List   &getList  (const Common::UString &field) const;
+	// '---
+
+	// .--- Field adder/deleter
+	/** Create an empty field with this name and type.
+	 *
+	 *  The field in question must not already exists.
+	 *  Structs and lists cannot be added/created with this method.
+	 */
+	void addField(const Common::UString &field, FieldType type);
 	// '---
 
 	// .--- Write field values

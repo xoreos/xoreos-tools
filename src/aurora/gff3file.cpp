@@ -785,6 +785,28 @@ const GFF3List &GFF3Struct::getList(const Common::UString &field) const {
 	return _parent->getList(f->data / 4);
 }
 
+// --- Field adding and deleting ---
+
+void GFF3Struct::addField(const Common::UString &field, FieldType type) {
+	if ((type <= kFieldTypeNone) || (type >= kFieldTypeMAX))
+		throw Common::Exception("GFF3: Invalid field type");
+
+	if (type == kFieldTypeStruct)
+		throw Common::Exception("GFF3: Can't create a struct with addField()");
+	if (type == kFieldTypeList)
+		throw Common::Exception("GFF3: Can't create a list with addField()");
+
+	Field f(type);
+
+	std::pair<FieldMap::iterator, bool> result;
+
+	result = _fields.insert(std::make_pair(field, f));
+	if (!result.second)
+		throw Common::Exception("GFF3: Field \"%s\" already exists", field.c_str());
+
+	_fieldNames.push_back(field);
+}
+
 // --- Field value write helpers ---
 
 GFF3Struct::Field *GFF3Struct::getField(const Common::UString &name) {
