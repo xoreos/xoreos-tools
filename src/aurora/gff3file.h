@@ -260,6 +260,8 @@ public:
 	void setBool(const Common::UString &field, bool   value);
 
 	void setDouble(const Common::UString &field, double value);
+
+	void setString(const Common::UString &field, const Common::UString &value);
 	// '---
 
 private:

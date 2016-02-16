@@ -903,4 +903,44 @@ void GFF3Struct::setDouble(const Common::UString &field, double value) {
 	}
 }
 
+void GFF3Struct::setString(const Common::UString &field, const Common::UString &value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if ((f->type != kFieldTypeExoString) && (f->type != kFieldTypeResRef))
+		throw Common::Exception("GFF3: Field is not a string type");
+
+	Common::MemoryWriteStreamDynamic writeStream(false, value.size() + 5);
+
+	try {
+		size_t maxLength = 0;
+
+		if        (f->type == kFieldTypeResRef) {
+			writeStream.writeByte(0);
+			maxLength = 255;
+		} else if (f->type == kFieldTypeExoString) {
+			writeStream.writeUint32LE(0);
+			maxLength = 0xFFFFFFFB;
+		}
+
+		const size_t length = Common::writeString(writeStream, value, Common::kEncodingASCII, false);
+
+		if (length > maxLength)
+			throw Common::Exception("GFF3: Value too long for a string field");
+
+		if      (f->type == kFieldTypeResRef)
+			writeStream.getData()[0] = (uint8) length;
+		else if (f->type == kFieldTypeExoString)
+			WRITE_LE_UINT32(writeStream.getData(), (uint32) length);
+
+		f->prepareSet();
+
+		f->ownData = new Common::MemoryReadStream(writeStream.getData(), writeStream.size(), true);
+
+	} catch (...) {
+		writeStream.dispose();
+		throw;
+	}
+}
+
 } // End of namespace Aurora
