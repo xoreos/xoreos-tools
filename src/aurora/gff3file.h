@@ -258,6 +258,8 @@ public:
 	void setUint(const Common::UString &field, uint64 value);
 	void setSint(const Common::UString &field,  int64 value);
 	void setBool(const Common::UString &field, bool   value);
+
+	void setDouble(const Common::UString &field, double value);
 	// '---
 
 private:

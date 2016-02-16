@@ -883,4 +883,24 @@ void GFF3Struct::setBool(const Common::UString &field, bool value) {
 	setUint(field, (uint64) value);
 }
 
+void GFF3Struct::setDouble(const Common::UString &field, double value) {
+	Field *f = getField(field);
+	if (!f)
+		throw Common::Exception("GFF3: No such field");
+	if ((f->type != kFieldTypeFloat) && (f->type != kFieldTypeDouble))
+		throw Common::Exception("GFF3: Field is not a double type");
+
+	f->prepareSet();
+
+	if      (f->type == kFieldTypeFloat)
+		f->data = convertIEEEDouble(value);
+	else if (f->type == kFieldTypeDouble) {
+		byte *extended = new byte[8];
+
+		WRITE_LE_UINT64(extended, convertIEEEDouble(value));
+
+		f->ownData = new Common::MemoryReadStream(extended, 8, true);
+	}
+}
+
 } // End of namespace Aurora
