@@ -427,7 +427,7 @@ class TwoDAFile;
 class TwoDARow;
 
 class GFF3Struct;
-typedef std::vector<const GFF3Struct *> GFF3List;
+class GFF3List;
 class GFF3File;
 
 class GFF4Struct;

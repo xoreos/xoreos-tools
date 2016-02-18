@@ -42,6 +42,7 @@ namespace Aurora {
 
 class LocString;
 class GFF3Struct;
+class GFF3List;
 
 /** A GFF (generic file format) V3.2/V3.3 file, found in all Aurora games
  *  except Sonic Chronicles: The Dark Brotherhood. Even games that have
@@ -115,7 +116,7 @@ private:
 	};
 
 	typedef std::map<uint32, GFF3Struct *> StructMap;
-	typedef std::vector<GFF3List> ListArray;
+	typedef std::map<uint32, GFF3List    > ListMap;
 
 
 	Common::SeekableReadStream *_stream;
@@ -128,13 +129,15 @@ private:
 	uint32 _offsetCorrection;
 
 	StructMap _structs; ///< Our structs.
-	ListArray _lists;   ///< Our lists.
+	ListMap   _lists;   ///< Our lists.
 
-	/** To convert list offsets found in GFF3 to real indices. */
-	std::vector<uint32> _listOffsetToIndex;
+	/** To convert list offsets found in GFF3 to list UIDs. */
+	std::vector<uint32> _listOffsetToUID;
 
 	/** The unique ID to give the next struct. */
 	uint32 _nextStructUID;
+	/** The unique ID to give the next list. */
+	uint32 _nextListUID;
 
 
 	// .--- Loading helpers
@@ -152,10 +155,13 @@ private:
 	/** Return the GFF3 stream seeked to the start of the field data. */
 	Common::SeekableReadStream &getFieldData() const;
 
+	/** Return the list UID from a list offset found in a GFF3 field. */
+	uint32 getListUID(uint32 offset) const;
+
 	/** Return a struct within the GFF3. */
 	const GFF3Struct &getStruct(uint32 uid) const;
 	/** Return a list within the GFF3. */
-	const GFF3List   &getList  (uint32 i) const;
+	const GFF3List   &getList  (uint32 uid) const;
 	// '---
 
 	friend class GFF3Struct;
@@ -350,6 +356,42 @@ private:
 	/** Returns the extended field data for this field. */
 	Common::SeekableReadStream &getData(const Field &field) const;
 	// '---
+
+	friend class GFF3File;
+};
+
+class GFF3List {
+public:
+	typedef std::vector<const GFF3Struct *>::const_iterator const_iterator;
+	typedef std::vector<const GFF3Struct *>::const_reverse_iterator const_reverse_iterator;
+
+	~GFF3List();
+
+	/** Return the list's unique ID within the GFF3. */
+	uint32 getUID() const;
+
+	bool   empty() const;
+	size_t size()  const;
+
+	const_iterator begin() const;
+	const_iterator end() const;
+
+	const_reverse_iterator rbegin() const;
+	const_reverse_iterator rend() const;
+
+	const GFF3Struct *operator[](size_t i) const;
+
+
+private:
+	const GFF3File *_parent; ///< The parent GFF3.
+
+	uint32 _uid; ///< The lists's unique ID within the GFF3.
+
+	/** The actual list of GFF3Structs. */
+	std::vector<const GFF3Struct *> _list;
+
+
+	GFF3List(const GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list);
 
 	friend class GFF3File;
 };

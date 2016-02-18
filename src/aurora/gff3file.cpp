@@ -66,7 +66,8 @@ void GFF3File::Header::read(Common::SeekableReadStream &gff3) {
 
 
 GFF3File::GFF3File(Common::SeekableReadStream *gff3, uint32 id, bool repairNWNPremium) :
-	_stream(gff3), _repairNWNPremium(repairNWNPremium), _offsetCorrection(0), _nextStructUID(0) {
+	_stream(gff3), _repairNWNPremium(repairNWNPremium), _offsetCorrection(0),
+	_nextStructUID(0), _nextListUID(0) {
 
 	load(id);
 }
@@ -240,19 +241,20 @@ void GFF3File::loadLists() {
 		listCount++;
 	}
 
-	_lists.resize(listCount);
-	_listOffsetToIndex.resize(rawLists.size(), 0xFFFFFFFF);
+	_listOffsetToUID.resize(rawLists.size(), 0xFFFFFFFF);
 
 	// Converting the raw list array into real, usable lists
-	uint32 listIndex = 0;
-	for (size_t i = 0; i < rawLists.size(); listIndex++) {
-		_listOffsetToIndex[i] = listIndex;
+	for (size_t i = 0; i < rawLists.size(); ) {
+		const uint32 listUID = _nextListUID++;
+
+		_listOffsetToUID[i] = listUID;
 
 		const uint32 n = rawLists[i++];
 		if ((i + n) > rawLists.size())
 			throw Common::Exception("GFF3: List indices broken during conversion");
 
-		_lists[listIndex].resize(n);
+		std::vector<const GFF3Struct *> list(n);
+
 		for (uint32 j = 0; j < n; j++, i++) {
 			const uint32 structUID = rawLists[i];
 
@@ -261,12 +263,32 @@ void GFF3File::loadLists() {
 				throw Common::Exception("GFF3: List struct UID doesn't exist (%u, %u)",
 				                        structUID, _nextStructUID);
 
-			_lists[listIndex][j] = strct->second;
+			list[j] = strct->second;
 		}
+
+		_lists.insert(std::make_pair(listUID, GFF3List(*this, listUID, list)));
 	}
 }
 
 // --- Helpers for GFF3Struct ---
+
+uint32 GFF3File::getListUID(uint32 offset) const {
+	if ((offset % 4) != 0)
+		throw Common::Exception("GFF3: Invalid list offset");
+
+	offset /= 4;
+
+	if (offset >= _listOffsetToUID.size())
+		throw Common::Exception("GFF3: List offset out of range (%u >= %u)",
+		                        offset, (uint) _listOffsetToUID.size());
+
+	const uint32 listUID = _listOffsetToUID[offset];
+
+	if (listUID == 0xFFFFFFFF)
+		throw Common::Exception("GFF3: Empty list at %u", offset);
+
+	return listUID;
+}
 
 const GFF3Struct &GFF3File::getStruct(uint32 uid) const {
 	StructMap::const_iterator strct = _structs.find(uid);
@@ -276,19 +298,12 @@ const GFF3Struct &GFF3File::getStruct(uint32 uid) const {
 	return *strct->second;
 }
 
-const GFF3List &GFF3File::getList(uint32 i) const {
-	if (i >= _listOffsetToIndex.size())
-		throw Common::Exception("GFF3: List offset index out of range (%u >= %u)",
-		                        i, (uint) _listOffsetToIndex.size());
+const GFF3List &GFF3File::getList(uint32 uid) const {
+	ListMap::const_iterator list = _lists.find(uid);
+	if (list == _lists.end())
+		throw Common::Exception("GFF3: List UID doesn't exist (%u)", uid);
 
-	const uint32 listIndex = _listOffsetToIndex[i];
-
-	if (listIndex == 0xFFFFFFFF)
-		throw Common::Exception("GFF3: Empty list index at %u", i);
-
-	assert(listIndex < _lists.size());
-
-	return _lists[listIndex];
+	return list->second;
 }
 
 Common::SeekableReadStream &GFF3File::getStream(uint32 offset) const {
@@ -783,8 +798,9 @@ const GFF3List &GFF3Struct::getList(const Common::UString &field) const {
 	if (f->type != kFieldTypeList)
 		throw Common::Exception("GFF3: Field is not a list type");
 
-	// Byte offset into the list area, all 32bit values.
-	return _parent->getList(f->data / 4);
+	const uint32 uid = f->ownData ? f->data : _parent->getListUID(f->data);
+
+	return _parent->getList(uid);
 }
 
 // --- Field adding and deleting ---
@@ -1116,6 +1132,47 @@ void GFF3Struct::setString(const Common::UString &field, Common::SeekableReadStr
 		writeStream.dispose();
 		throw;
 	}
+}
+
+
+GFF3List::GFF3List(const GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list) :
+	_parent(&parent), _uid(uid), _list(list) {
+
+}
+
+GFF3List::~GFF3List() {
+}
+
+uint32 GFF3List::getUID() const {
+	return _uid;
+}
+
+bool GFF3List::empty() const {
+	return _list.empty();
+}
+
+size_t GFF3List::size() const {
+	return _list.size();
+}
+
+GFF3List::const_iterator GFF3List::begin() const {
+	return _list.begin();
+}
+
+GFF3List::const_iterator GFF3List::end() const {
+	return _list.end();
+}
+
+GFF3List::const_reverse_iterator GFF3List::rbegin() const {
+	return _list.rbegin();
+}
+
+GFF3List::const_reverse_iterator GFF3List::rend() const {
+	return _list.rend();
+}
+
+const GFF3Struct *GFF3List::operator[](size_t i) const {
+	return _list[i];
 }
 
 } // End of namespace Aurora
