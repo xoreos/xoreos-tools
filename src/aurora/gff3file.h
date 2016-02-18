@@ -162,6 +162,8 @@ private:
 	const GFF3Struct &getStruct(uint32 uid) const;
 	/** Return a list within the GFF3. */
 	const GFF3List   &getList  (uint32 uid) const;
+
+	GFF3Struct &createStruct(uint32 id);
 	// '---
 
 	friend class GFF3Struct;
@@ -265,7 +267,7 @@ public:
 	/** Create an empty field with this name and type.
 	 *
 	 *  The field in question must not already exists.
-	 *  Structs and lists cannot be added/created with this method.
+	 *  Lists cannot be added/created with this method.
 	 */
 	void addField(const Common::UString &field, FieldType type);
 	/** Remove a field with this name.
@@ -273,6 +275,9 @@ public:
 	 *  Structs and lists cannot be removed with this method.
 	 */
 	void removeField(const Common::UString &field);
+
+	/** Create an empty struct field with this name and return it. */
+	GFF3Struct &addStruct(const Common::UString &field, uint32 id = 0);
 	// '---
 
 	// .--- Write field values
@@ -323,7 +328,7 @@ private:
 	typedef std::map<Common::UString, Field> FieldMap;
 
 
-	const GFF3File *_parent; ///< The parent GFF3.
+	GFF3File *_parent; ///< The parent GFF3.
 
 	uint32 _uid; ///< The struct's unique ID within the GFF3.
 	uint32 _id;  ///< The struct's ID.
@@ -335,7 +340,8 @@ private:
 
 
 	// .--- Loader
-	GFF3Struct(const GFF3File &parent, uint32 uid, uint32 offset);
+	GFF3Struct(GFF3File &parent, uint32 uid, uint32 offset);
+	GFF3Struct(GFF3File &parent, uint32 uid);
 	~GFF3Struct();
 
 	void load(uint32 offset);

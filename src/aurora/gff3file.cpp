@@ -306,6 +306,18 @@ const GFF3List &GFF3File::getList(uint32 uid) const {
 	return list->second;
 }
 
+GFF3Struct &GFF3File::createStruct(uint32 id) {
+	const uint32 uid = _nextStructUID++;
+
+	GFF3Struct *strct = new GFF3Struct(*this, uid);
+
+	_structs[uid] = strct;
+
+	strct->setID(id);
+
+	return *strct;
+}
+
 Common::SeekableReadStream &GFF3File::getStream(uint32 offset) const {
 	_stream->seek(offset);
 
@@ -346,8 +358,11 @@ void GFF3Struct::Field::prepareSet() {
 }
 
 
-GFF3Struct::GFF3Struct(const GFF3File &parent, uint32 uid, uint32 offset) : _parent(&parent), _uid(uid) {
+GFF3Struct::GFF3Struct(GFF3File &parent, uint32 uid, uint32 offset) : _parent(&parent), _uid(uid) {
 	load(offset);
+}
+
+GFF3Struct::GFF3Struct(GFF3File &parent, uint32 uid) : _parent(&parent), _uid(uid), _id(0) {
 }
 
 GFF3Struct::~GFF3Struct() {
@@ -809,8 +824,11 @@ void GFF3Struct::addField(const Common::UString &field, FieldType type) {
 	if ((type <= kFieldTypeNone) || (type >= kFieldTypeMAX))
 		throw Common::Exception("GFF3: Invalid field type");
 
-	if (type == kFieldTypeStruct)
-		throw Common::Exception("GFF3: Can't create a struct with addField()");
+	if (type == kFieldTypeStruct) {
+		addStruct(field);
+		return;
+	}
+
 	if (type == kFieldTypeList)
 		throw Common::Exception("GFF3: Can't create a list with addField()");
 
@@ -840,6 +858,24 @@ void GFF3Struct::removeField(const Common::UString &field) {
 	std::vector<Common::UString>::iterator n = std::find(_fieldNames.begin(), _fieldNames.end(), field);
 	if (n != _fieldNames.end())
 		_fieldNames.erase(n);
+}
+
+GFF3Struct &GFF3Struct::addStruct(const Common::UString &field, uint32 id) {
+	Field f(kFieldTypeStruct);
+
+	std::pair<FieldMap::iterator, bool> result;
+
+	result = _fields.insert(std::make_pair(field, f));
+	if (!result.second)
+		throw Common::Exception("GFF3: Field \"%s\" already exists", field.c_str());
+
+	_fieldNames.push_back(field);
+
+	GFF3Struct &strct = _parent->createStruct(id);
+
+	result.first->second.data = strct.getUID();
+
+	return strct;
 }
 
 // --- Field value write helpers ---
