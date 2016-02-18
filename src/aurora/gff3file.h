@@ -259,10 +259,7 @@ private:
 	const GFF3File *_parent; ///< The parent GFF3.
 
 	uint32 _uid; ///< The struct's unique ID within the GFF3.
-
-	uint32 _id;         ///< The struct's ID.
-	uint32 _fieldIndex; ///< Field / Field indices index.
-	uint32 _fieldCount; ///< Field count.
+	uint32 _id;  ///< The struct's ID.
 
 	FieldMap _fields; ///< The fields, indexed by their label.
 

@@ -326,15 +326,16 @@ uint32 GFF3Struct::getID() const {
 void GFF3Struct::load(uint32 offset) {
 	Common::SeekableReadStream &data = _parent->getStream(offset);
 
-	_id         = data.readUint32LE();
-	_fieldIndex = data.readUint32LE();
-	_fieldCount = data.readUint32LE();
+	_id = data.readUint32LE();
+
+	const uint32 fieldIndex = data.readUint32LE();
+	const uint32 fieldCount = data.readUint32LE();
 
 	// Read the field(s)
-	if      (_fieldCount == 1)
-		readField (data, _fieldIndex);
-	else if (_fieldCount > 1)
-		readFields(data, _fieldIndex, _fieldCount);
+	if      (fieldCount == 1)
+		readField (data, fieldIndex);
+	else if (fieldCount > 1)
+		readFields(data, fieldIndex, fieldCount);
 }
 
 void GFF3Struct::readField(Common::SeekableReadStream &data, uint32 index) {
