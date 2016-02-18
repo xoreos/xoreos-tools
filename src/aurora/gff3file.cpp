@@ -954,8 +954,7 @@ void GFF3Struct::removeStruct(const Common::UString &field) {
 
 	GFF3Struct &strct = _parent->getStruct(f->second.data);
 
-	// TODO: Recursively remove all structs and lists in this struct
-
+	strct.destroy();
 	_parent->destroyStruct(strct);
 
 	_fields.erase(f);
@@ -995,8 +994,7 @@ void GFF3Struct::removeList(const Common::UString &field) {
 
 	GFF3List &list = _parent->getList(uid);
 
-	// TODO: Recursively remove all structs in this list
-
+	list.destroy();
 	_parent->destroyList(list);
 
 	_fields.erase(f);
@@ -1298,6 +1296,33 @@ void GFF3Struct::setString(const Common::UString &field, Common::SeekableReadStr
 	}
 }
 
+void GFF3Struct::destroy() {
+	for (FieldMap::iterator i = _fields.begin(); i != _fields.end(); ++i) {
+		if        (i->second.type == kFieldTypeStruct) {
+
+			const uint32 uid = i->second.data;
+
+			GFF3Struct &strct = _parent->getStruct(uid);
+
+			strct.destroy();
+
+			_parent->destroyStruct(strct);
+
+		} else if (i->second.type == kFieldTypeList) {
+
+			const uint32 uid = i->second.ownData ? i->second.data : _parent->getListUID(i->second.data);
+
+			GFF3List &list = _parent->getList(uid);
+
+			list.destroy();
+
+			_parent->destroyList(list);
+		}
+	}
+
+	_fields.clear();
+}
+
 
 GFF3List::GFF3List(GFF3File &parent, uint32 uid) : _parent(&parent), _uid(uid) {
 }
@@ -1358,11 +1383,26 @@ void GFF3List::removeStruct(const GFF3Struct &strct) {
 	if (it == _list.end())
 		throw Common::Exception("GFF3: That struct does not belong to this list");
 
-	// TODO: Recursively remove all structs and lists in this struct
+	GFF3Struct &s = _parent->getStruct((*it)->getUID());
 
-	_parent->destroyStruct(_parent->getStruct((*it)->getUID()));
+	s.destroy();
+	_parent->destroyStruct(s);
 
 	_list.erase(it);
+}
+
+void GFF3List::destroy() {
+	for (const_iterator i = begin(); i != end(); ++i) {
+		if (!*i)
+			continue;
+
+		GFF3Struct &strct = _parent->getStruct((*i)->getUID());
+
+		strct.destroy();
+		_parent->destroyStruct(strct);
+	}
+
+	_list.clear();
 }
 
 } // End of namespace Aurora

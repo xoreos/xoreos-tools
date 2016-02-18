@@ -384,6 +384,9 @@ private:
 	Common::SeekableReadStream &getData(const Field &field) const;
 	// '---
 
+	/** Recursively destroy all fields, including structs and lists, in this struct. */
+	void destroy();
+
 	friend class GFF3File;
 	friend class GFF3List;
 };
@@ -429,6 +432,9 @@ private:
 
 	GFF3List(GFF3File &parent, uint32 uid);
 	GFF3List(GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list);
+
+	/** Recursively destroy all structs in this list. */
+	void destroy();
 
 	friend class GFF3File;
 	friend class GFF3Struct;
