@@ -105,6 +105,17 @@ GFF3Struct &GFF3File::getMutableStruct(const GFF3Struct &strct) {
 	return *s->second;
 }
 
+GFF3List &GFF3File::getMutableList(const GFF3List &list) {
+	if (list._parent != this)
+		throw Common::Exception("GFF3: That list does not belong to this GFF3");
+
+	ListMap::iterator l = _lists.find(list.getUID());
+	if (l == _lists.end())
+		throw Common::Exception("GFF3: This GFF3 does not know about that list?!?");
+
+	return l->second;
+}
+
 // --- Loader ---
 
 void GFF3File::load(uint32 id) {

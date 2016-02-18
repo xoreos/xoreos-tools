@@ -93,6 +93,14 @@ public:
 	 */
 	GFF3Struct &getMutableStruct(const GFF3Struct &strct);
 
+	/** Return a mutable struct.
+	 *
+	 *  Given a read-only list, this returns a reference to a mutable version
+	 *  of the same struct within the GFF3. This means, structs in this mutable
+	 *  version can be removed and now structs added.
+	 */
+	GFF3List &getMutableList(const GFF3List &list);
+
 
 private:
 	/** A GFF3 header. */
