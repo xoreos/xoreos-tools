@@ -321,6 +321,10 @@ uint32 GFF3Struct::getID() const {
 	return _id;
 }
 
+void GFF3Struct::setID(uint32 id) {
+	_id = id;
+}
+
 // --- Loader ---
 
 void GFF3Struct::load(uint32 offset) {

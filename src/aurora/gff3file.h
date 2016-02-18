@@ -199,6 +199,9 @@ public:
 	 */
 	uint32 getID() const;
 
+	/** Set the struct's ID. */
+	void setID(uint32 id);
+
 	/** Return the number of fields in this struct. */
 	size_t getFieldCount() const;
 	/** Does this specific field exist? */
