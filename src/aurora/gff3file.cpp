@@ -306,6 +306,14 @@ const GFF3List &GFF3File::getList(uint32 uid) const {
 	return list->second;
 }
 
+GFF3Struct &GFF3File::getStruct(uint32 uid) {
+	StructMap::iterator strct = _structs.find(uid);
+	if ((strct == _structs.end()) || !strct->second)
+		throw Common::Exception("GFF3: Struct UID doesn't exist (%u)", uid);
+
+	return *strct->second;
+}
+
 GFF3Struct &GFF3File::createStruct(uint32 id) {
 	const uint32 uid = _nextStructUID++;
 
@@ -316,6 +324,19 @@ GFF3Struct &GFF3File::createStruct(uint32 id) {
 	strct->setID(id);
 
 	return *strct;
+}
+
+void GFF3File::destroyStruct(GFF3Struct &strct) {
+	if (strct._parent != this)
+		throw Common::Exception("GFF3: That struct does not belong to this GFF3");
+
+	StructMap::iterator s = _structs.find(strct.getUID());
+	if ((s == _structs.end()) || !s->second)
+		throw Common::Exception("GFF3: This GFF3 does not know about that struct?!?");
+
+	_structs.erase(s);
+
+	delete &strct;
 }
 
 Common::SeekableReadStream &GFF3File::getStream(uint32 offset) const {
@@ -848,8 +869,11 @@ void GFF3Struct::removeField(const Common::UString &field) {
 	if (f == _fields.end())
 		throw Common::Exception("GFF3: No such field \"%s\"", field.c_str());
 
-	if (f->second.type == kFieldTypeStruct)
-		throw Common::Exception("GFF3: Can't remove a struct with removeField()");
+	if (f->second.type == kFieldTypeStruct) {
+		removeStruct(field);
+		return;
+	}
+
 	if (f->second.type == kFieldTypeList)
 		throw Common::Exception("GFF3: Can't remove a list with removeField()");
 
@@ -876,6 +900,27 @@ GFF3Struct &GFF3Struct::addStruct(const Common::UString &field, uint32 id) {
 	result.first->second.data = strct.getUID();
 
 	return strct;
+}
+
+void GFF3Struct::removeStruct(const Common::UString &field) {
+	FieldMap::iterator f = _fields.find(field);
+	if (f == _fields.end())
+		throw Common::Exception("GFF3: No such field \"%s\"", field.c_str());
+
+	if (f->second.type != kFieldTypeStruct)
+		throw Common::Exception("GFF3: Field is not a struct type");
+
+	GFF3Struct &strct = _parent->getStruct(f->second.data);
+
+	// TODO: Recursively remove all structs and lists in this struct
+
+	_parent->destroyStruct(strct);
+
+	_fields.erase(f);
+
+	std::vector<Common::UString>::iterator n = std::find(_fieldNames.begin(), _fieldNames.end(), field);
+	if (n != _fieldNames.end())
+		_fieldNames.erase(n);
 }
 
 // --- Field value write helpers ---

@@ -163,7 +163,10 @@ private:
 	/** Return a list within the GFF3. */
 	const GFF3List   &getList  (uint32 uid) const;
 
+	GFF3Struct &getStruct(uint32 uid);
+
 	GFF3Struct &createStruct(uint32 id);
+	void destroyStruct(GFF3Struct &strct);
 	// '---
 
 	friend class GFF3Struct;
@@ -272,12 +275,15 @@ public:
 	void addField(const Common::UString &field, FieldType type);
 	/** Remove a field with this name.
 	 *
-	 *  Structs and lists cannot be removed with this method.
+	 *  Lists cannot be removed with this method.
 	 */
 	void removeField(const Common::UString &field);
 
 	/** Create an empty struct field with this name and return it. */
 	GFF3Struct &addStruct(const Common::UString &field, uint32 id = 0);
+
+	/** Remove a struct field completely. */
+	void removeStruct(const Common::UString &field);
 	// '---
 
 	// .--- Write field values
