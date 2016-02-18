@@ -325,6 +325,14 @@ GFF3Struct &GFF3File::getStruct(uint32 uid) {
 	return *strct->second;
 }
 
+GFF3List &GFF3File::getList(uint32 uid) {
+	ListMap::iterator list = _lists.find(uid);
+	if (list == _lists.end())
+		throw Common::Exception("GFF3: List UID doesn't exist (%u)", uid);
+
+	return list->second;
+}
+
 GFF3Struct &GFF3File::createStruct(uint32 id) {
 	const uint32 uid = _nextStructUID++;
 
@@ -356,6 +364,17 @@ GFF3List &GFF3File::createList() {
 	std::pair<ListMap::iterator, bool> result = _lists.insert(std::make_pair(uid, GFF3List(*this, uid)));
 
 	return result.first->second;
+}
+
+void GFF3File::destroyList(GFF3List &list) {
+	if (list._parent != this)
+		throw Common::Exception("GFF3: That list does not belong to this GFF3");
+
+	ListMap::iterator l = _lists.find(list.getUID());
+	if (l == _lists.end())
+		throw Common::Exception("GFF3: This GFF3 does not know about that list?!?");
+
+	_lists.erase(l);
 }
 
 Common::SeekableReadStream &GFF3File::getStream(uint32 offset) const {
@@ -895,8 +914,10 @@ void GFF3Struct::removeField(const Common::UString &field) {
 		return;
 	}
 
-	if (f->second.type == kFieldTypeList)
-		throw Common::Exception("GFF3: Can't remove a list with removeField()");
+	if (f->second.type == kFieldTypeList) {
+		removeList(field);
+		return;
+	}
 
 	_fields.erase(f);
 
@@ -960,6 +981,29 @@ GFF3List &GFF3Struct::addList(const Common::UString &field) {
 	result.first->second.data = list.getUID();
 
 	return list;
+}
+
+void GFF3Struct::removeList(const Common::UString &field) {
+	FieldMap::iterator f = _fields.find(field);
+	if (f == _fields.end())
+		throw Common::Exception("GFF3: No such field \"%s\"", field.c_str());
+
+	if (f->second.type != kFieldTypeList)
+		throw Common::Exception("GFF3: Field is not a list type");
+
+	const uint32 uid = f->second.ownData ? f->second.data : _parent->getListUID(f->second.data);
+
+	GFF3List &list = _parent->getList(uid);
+
+	// TODO: Recursively remove all structs in this list
+
+	_parent->destroyList(list);
+
+	_fields.erase(f);
+
+	std::vector<Common::UString>::iterator n = std::find(_fieldNames.begin(), _fieldNames.end(), field);
+	if (n != _fieldNames.end())
+		_fieldNames.erase(n);
 }
 
 // --- Field value write helpers ---

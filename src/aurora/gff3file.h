@@ -172,11 +172,13 @@ private:
 	const GFF3List   &getList  (uint32 uid) const;
 
 	GFF3Struct &getStruct(uint32 uid);
+	GFF3List   &getList  (uint32 uid);
 
 	GFF3Struct &createStruct(uint32 id);
 	void destroyStruct(GFF3Struct &strct);
 
 	GFF3List &createList();
+	void destroyList(GFF3List &list);
 	// '---
 
 	friend class GFF3Struct;
@@ -283,10 +285,7 @@ public:
 	 *  The field in question must not already exists.
 	 */
 	void addField(const Common::UString &field, FieldType type);
-	/** Remove a field with this name.
-	 *
-	 *  Lists cannot be removed with this method.
-	 */
+	/** Remove a field with this name. */
 	void removeField(const Common::UString &field);
 
 	/** Create an empty struct field with this name and return it. */
@@ -297,6 +296,9 @@ public:
 
 	/** Create an empty list field with this name and return it. */
 	GFF3List &addList(const Common::UString &field);
+
+	/** Remove a list field completely. */
+	void removeList(const Common::UString &field);
 	// '---
 
 	// .--- Write field values
