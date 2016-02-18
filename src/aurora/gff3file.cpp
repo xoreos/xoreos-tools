@@ -350,6 +350,14 @@ void GFF3File::destroyStruct(GFF3Struct &strct) {
 	delete &strct;
 }
 
+GFF3List &GFF3File::createList() {
+	const uint32 uid = _nextListUID++;
+
+	std::pair<ListMap::iterator, bool> result = _lists.insert(std::make_pair(uid, GFF3List(*this, uid)));
+
+	return result.first->second;
+}
+
 Common::SeekableReadStream &GFF3File::getStream(uint32 offset) const {
 	_stream->seek(offset);
 
@@ -861,8 +869,10 @@ void GFF3Struct::addField(const Common::UString &field, FieldType type) {
 		return;
 	}
 
-	if (type == kFieldTypeList)
-		throw Common::Exception("GFF3: Can't create a list with addField()");
+	if (type == kFieldTypeList) {
+		addList(field);
+		return;
+	}
 
 	Field f(type);
 
@@ -932,6 +942,24 @@ void GFF3Struct::removeStruct(const Common::UString &field) {
 	std::vector<Common::UString>::iterator n = std::find(_fieldNames.begin(), _fieldNames.end(), field);
 	if (n != _fieldNames.end())
 		_fieldNames.erase(n);
+}
+
+GFF3List &GFF3Struct::addList(const Common::UString &field) {
+	Field f(kFieldTypeList);
+
+	std::pair<FieldMap::iterator, bool> result;
+
+	result = _fields.insert(std::make_pair(field, f));
+	if (!result.second)
+		throw Common::Exception("GFF3: Field \"%s\" already exists", field.c_str());
+
+	_fieldNames.push_back(field);
+
+	GFF3List &list = _parent->createList();
+
+	result.first->second.data = list.getUID();
+
+	return list;
 }
 
 // --- Field value write helpers ---
@@ -1226,6 +1254,9 @@ void GFF3Struct::setString(const Common::UString &field, Common::SeekableReadStr
 	}
 }
 
+
+GFF3List::GFF3List(GFF3File &parent, uint32 uid) : _parent(&parent), _uid(uid) {
+}
 
 GFF3List::GFF3List(GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list) :
 	_parent(&parent), _uid(uid), _list(list) {

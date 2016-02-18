@@ -175,6 +175,8 @@ private:
 
 	GFF3Struct &createStruct(uint32 id);
 	void destroyStruct(GFF3Struct &strct);
+
+	GFF3List &createList();
 	// '---
 
 	friend class GFF3Struct;
@@ -279,7 +281,6 @@ public:
 	/** Create an empty field with this name and type.
 	 *
 	 *  The field in question must not already exists.
-	 *  Lists cannot be added/created with this method.
 	 */
 	void addField(const Common::UString &field, FieldType type);
 	/** Remove a field with this name.
@@ -293,6 +294,9 @@ public:
 
 	/** Remove a struct field completely. */
 	void removeStruct(const Common::UString &field);
+
+	/** Create an empty list field with this name and return it. */
+	GFF3List &addList(const Common::UString &field);
 	// '---
 
 	// .--- Write field values
@@ -421,6 +425,7 @@ private:
 	std::vector<const GFF3Struct *> _list;
 
 
+	GFF3List(GFF3File &parent, uint32 uid);
 	GFF3List(GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list);
 
 	friend class GFF3File;
