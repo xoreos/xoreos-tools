@@ -1275,4 +1275,19 @@ GFF3Struct &GFF3List::addStruct(uint32 id) {
 	return strct;
 }
 
+void GFF3List::removeStruct(const GFF3Struct &strct) {
+	if (strct._parent != _parent)
+		throw Common::Exception("GFF3: That struct and this list do not belong to the same GFF3");
+
+	std::vector<const GFF3Struct *>::iterator it = std::find(_list.begin(), _list.end(), &strct);
+	if (it == _list.end())
+		throw Common::Exception("GFF3: That struct does not belong to this list");
+
+	// TODO: Recursively remove all structs and lists in this struct
+
+	_parent->destroyStruct(_parent->getStruct((*it)->getUID()));
+
+	_list.erase(it);
+}
+
 } // End of namespace Aurora

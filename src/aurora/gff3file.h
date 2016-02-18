@@ -379,6 +379,7 @@ private:
 	// '---
 
 	friend class GFF3File;
+	friend class GFF3List;
 };
 
 class GFF3List {
@@ -407,6 +408,8 @@ public:
 	// .--- Adding/Removing structs
 	/** Add a new, empty struct to the end of the list. */
 	GFF3Struct &addStruct(uint32 id = 0);
+	/** Remove that struct from this list. */
+	void removeStruct(const GFF3Struct &strct);
 	// '---
 
 private:
@@ -421,6 +424,7 @@ private:
 	GFF3List(GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list);
 
 	friend class GFF3File;
+	friend class GFF3Struct;
 };
 
 } // End of namespace Aurora
