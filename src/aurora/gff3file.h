@@ -178,6 +178,7 @@ private:
 	// '---
 
 	friend class GFF3Struct;
+	friend class GFF3List;
 };
 
 /** A struct within a GFF3. */
@@ -393,6 +394,7 @@ public:
 	bool   empty() const;
 	size_t size()  const;
 
+	// .--- Reading list structs
 	const_iterator begin() const;
 	const_iterator end() const;
 
@@ -400,10 +402,15 @@ public:
 	const_reverse_iterator rend() const;
 
 	const GFF3Struct *operator[](size_t i) const;
+	// '---
 
+	// .--- Adding/Removing structs
+	/** Add a new, empty struct to the end of the list. */
+	GFF3Struct &addStruct(uint32 id = 0);
+	// '---
 
 private:
-	const GFF3File *_parent; ///< The parent GFF3.
+	GFF3File *_parent; ///< The parent GFF3.
 
 	uint32 _uid; ///< The lists's unique ID within the GFF3.
 
@@ -411,7 +418,7 @@ private:
 	std::vector<const GFF3Struct *> _list;
 
 
-	GFF3List(const GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list);
+	GFF3List(GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list);
 
 	friend class GFF3File;
 };

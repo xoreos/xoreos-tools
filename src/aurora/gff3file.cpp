@@ -1227,7 +1227,7 @@ void GFF3Struct::setString(const Common::UString &field, Common::SeekableReadStr
 }
 
 
-GFF3List::GFF3List(const GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list) :
+GFF3List::GFF3List(GFF3File &parent, uint32 uid, const std::vector<const GFF3Struct *> &list) :
 	_parent(&parent), _uid(uid), _list(list) {
 
 }
@@ -1265,6 +1265,14 @@ GFF3List::const_reverse_iterator GFF3List::rend() const {
 
 const GFF3Struct *GFF3List::operator[](size_t i) const {
 	return _list[i];
+}
+
+GFF3Struct &GFF3List::addStruct(uint32 id) {
+	GFF3Struct &strct = _parent->createStruct(id);
+
+	_list.push_back(&strct);
+
+	return strct;
 }
 
 } // End of namespace Aurora
