@@ -1,3 +1,10 @@
+Someday, ????-??-?? (Version 0.0.5)
+	- AURORA:
+		- Unified some code between xoreos and xoreos-tools
+		- Fixed a potential field overflow in the binary 2DA writer
+	- GRAPHICS:
+		- Loosened restrictions on textures, allowing NPOT textures
+
 Monday, 2016-02-01 (Version 0.0.4)
 	- Tools added:
 		- fixpremiumgff
