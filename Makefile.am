@@ -34,6 +34,8 @@ EXTRA_DIST = \
              dists/debian/rules \
              dists/debian/xoreos-tools.lintian-overrides \
              dists/debian/source/format \
+             dists/fedora/build-from-git.sh \
+             dists/fedora/xoreos-tools.spec \
              .uncrustifyrc \
              CMakeLists.txt \
              cmake/CMakeAM.cmake \
