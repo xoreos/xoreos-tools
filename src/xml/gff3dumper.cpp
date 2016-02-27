@@ -185,7 +185,11 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeVoid:
-			_xml->setContents(*strct.getData(field));
+			{
+				Common::SeekableReadStream *data = strct.getData(field);
+				_xml->setContents(*data);
+				delete data;
+			}
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeStruct:
