@@ -41,6 +41,18 @@ V4.1) are less significant.
 V3.3 simply changes which languages are supported,
 and V4.1 adds a common string table at the start of the file.
 Both of these additions are handled transparently.
+.Pp
+LocStrings found in GFF V3.2 and V3.3 contain localized string
+data, which, depending on the game and the language, can be encoded
+in various ways.
+There is no way to autodetect the specific encoding.
+.Nm
+employs a simple heuristic to combat this, but it may fail
+for certain strings and files.
+However, there are options to explicitly specify the game this GFF
+file is from.
+.Nm
+will then use the correct game-specific encoding tables.
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Fl h
@@ -62,6 +74,30 @@ premium modules are deliberately broken.
 This options tells
 .Nm
 to work around the brokenness.
+.It Fl Fl nwn
+Read LocStrings in an encoding appropriate for
+.Em Neverwinter Nights .
+.It Fl Fl nwn2
+Read LocStrings in an encoding appropriate for
+.Em Neverwinter Nights 2 .
+.It Fl Fl kotor
+Read LocStrings in an encoding appropriate for
+.Em Knights of the Old Republic .
+.It Fl Fl kotor2
+Read LocStrings in an encoding appropriate for
+.Em Knights of the Old Republic II .
+.It Fl Fl jade
+Read LocStrings in an encoding appropriate for
+.Em Jade Empire .
+.It Fl Fl witcher
+Read LocStrings in an encoding appropriate for
+.Em The Witcher .
+.It Fl Fl dragonage
+Read LocStrings in an encoding appropriate for
+.Em Dragon Age: Origins .
+.It Fl Fl dragonage2
+Read LocStrings in an encoding appropriate for
+.Em Dragon Age II .
 .El
 .Bl -tag -width xxxx -compact
 .It Ar input_file
