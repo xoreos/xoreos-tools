@@ -35,6 +35,7 @@
 
 namespace Common {
 	class SeekableReadStream;
+	class WriteStream;
 }
 
 namespace Aurora {
@@ -93,6 +94,13 @@ public:
 	void readLocString(Common::SeekableReadStream &stream, uint32 id, uint32 count);
 	/** Read a LocString out of a stream. */
 	void readLocString(Common::SeekableReadStream &stream);
+
+	/** Write a LocSubString (substring of a LocString in game data) into a stream. */
+	void writeLocSubString(Common::WriteStream &stream,
+	                       uint32 languageID, const Common::UString &string) const;
+	/** Write a LocString into a stream. */
+	void writeLocString(Common::WriteStream &stream) const;
+
 
 private:
 	typedef std::map<uint32, Common::UString> StringMap;

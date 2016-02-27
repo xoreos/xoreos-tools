@@ -28,6 +28,7 @@
 
 #include "src/common/util.h"
 #include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 #include "src/common/encoding.h"
 
 #include "src/aurora/locstring.h"
@@ -187,6 +188,46 @@ void LocString::readLocString(Common::SeekableReadStream &stream) {
 	uint32 count = stream.readUint32LE();
 
 	readLocString(stream, id, count);
+}
+
+void LocString::writeLocSubString(Common::WriteStream &stream,
+                                  uint32 languageID, const Common::UString &string) const {
+
+	stream.writeUint32LE(languageID);
+
+	if (string.size() == 0) {
+		stream.writeUint32LE(0);
+		return;
+	}
+
+	Common::Encoding encoding = LangMan.getEncodingLocString(LangMan.getLanguageGendered(languageID));
+	if (encoding == Common::kEncodingInvalid)
+		throw Common::Exception("Unknown language/encoding");
+
+	Common::MemoryWriteStreamDynamic writeStream(true, string.size());
+
+	Common::writeString(writeStream, string, encoding, false);
+
+	Common::MemoryReadStream preparsed(writeStream.getData(), writeStream.size(), false);
+	Common::MemoryReadStream *unparsed = LangMan.unParseColorCodes(preparsed);
+
+	try {
+		stream.writeUint32LE(unparsed->size());
+		stream.writeStream(*unparsed);
+	} catch (...) {
+		delete unparsed;
+		throw;
+	}
+
+	delete unparsed;
+}
+
+void LocString::writeLocString(Common::WriteStream &stream) const {
+	stream.writeUint32LE(_id);
+	stream.writeUint32LE(_strings.size());
+
+	for (StringMap::const_iterator s = _strings.begin(); s != _strings.end(); ++s)
+		writeLocSubString(stream, s->first, s->second);
 }
 
 } // End of namespace Aurora
