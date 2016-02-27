@@ -459,4 +459,87 @@ Common::MemoryReadStream *LanguageManager::preParseColorCodes(Common::SeekableRe
 	return new Common::MemoryReadStream(output.getData(), output.size(), true);
 }
 
+Common::MemoryReadStream *LanguageManager::unParseColorCodes(Common::SeekableReadStream &stream) {
+	Common::MemoryWriteStreamDynamic output;
+
+	output.reserve(stream.size());
+
+	int state = 0;
+
+	std::vector<byte> collect;
+	collect.reserve(11);
+
+	byte color[8];
+
+	byte b;
+	while (stream.read(&b, 1) == 1) {
+		if (state == 0) {
+			if (b == '<') {
+				collect.push_back(b);
+				state = 1;
+			} else
+				output.writeByte(b);
+
+			continue;
+		}
+
+		if (state == 1) {
+			if (b == 'c') {
+				collect.push_back(b);
+				state = 2;
+			} else {
+				output.write(&collect[0], collect.size());
+				output.writeByte(b);
+				collect.clear();
+				state = 0;
+			}
+
+			continue;
+		}
+
+		if ((state >= 2) && (state <= 9)) {
+			collect.push_back(b);
+
+			if        ((b >= '0') && (b <= '9')) {
+				color[state - 2] = b - '0';
+				state++;
+			} else if ((b >= 'a') && (b <= 'f')) {
+				color[state - 2] = (b - 'a') + 10;
+				state++;
+			} else if ((b >= 'A') && (b <= 'F')) {
+				color[state - 2] = (b - 'A') + 10;
+				state++;
+			} else {
+				output.write(&collect[0], collect.size());
+				collect.clear();
+				state = 0;
+			}
+
+			continue;
+		}
+
+		if (state == 10) {
+			if (b == '>') {
+				output.writeString("<c");
+				output.writeByte((color[0] << 4) + color[1]);
+				output.writeByte((color[2] << 4) + color[3]);
+				output.writeByte((color[4] << 4) + color[5]);
+				output.writeString(">");
+				collect.clear();
+				state = 0;
+
+			} else {
+				output.write(&collect[0], collect.size());
+				output.writeByte(b);
+				collect.clear();
+				state = 0;
+			}
+
+			continue;
+		}
+	}
+
+	return new Common::MemoryReadStream(output.getData(), output.size(), true);
+}
+
 } // End of namespace Aurora

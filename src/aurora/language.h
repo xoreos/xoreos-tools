@@ -212,6 +212,14 @@ public:
 	 *  inside multibyte sequences. This is reasonable likely to never happen.
 	 */
 	static Common::MemoryReadStream *preParseColorCodes(Common::SeekableReadStream &stream);
+
+	/** Reverse the pre-parsing and fixing of color codes.
+	 *
+	 *  This turns the data back into the original, broken Aurora format.
+	 *
+	 *  See also preParseColorCodes().
+	 */
+	static Common::MemoryReadStream *unParseColorCodes(Common::SeekableReadStream &stream);
 	// '---
 
 private:
