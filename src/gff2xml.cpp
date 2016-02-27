@@ -36,12 +36,15 @@
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 
+#include "src/aurora/types.h"
+#include "src/aurora/language.h"
+
 #include "src/xml/gffdumper.h"
 
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Common::Encoding &encoding, bool &nwnPremium);
+                      Common::Encoding &encoding, Aurora::GameID &game, bool &nwnPremium);
 
 void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
              Common::Encoding encoding, bool nwnPremium);
@@ -52,13 +55,17 @@ int main(int argc, char **argv) {
 		Common::Platform::getParameters(argc, argv, args);
 
 		Common::Encoding encoding = Common::kEncodingUTF16LE;
+		Aurora::GameID   game     = Aurora::kGameIDUnknown;
+
 		bool nwnPremium = false;
 
 		int returnValue = 1;
 		Common::UString inFile, outFile;
 
-		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, nwnPremium))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, nwnPremium))
 			return returnValue;
+
+		LangMan.declareLanguages(game);
 
 		dumpGFF(inFile, outFile, encoding, nwnPremium);
 	} catch (...) {
@@ -70,7 +77,7 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Common::Encoding &encoding, bool &nwnPremium) {
+                      Common::Encoding &encoding, Aurora::GameID &game, bool &nwnPremium) {
 
 	inFile.clear();
 	outFile.clear();
@@ -114,6 +121,30 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 				isOption   = true;
 				nwnPremium = true;
 
+			} else if (argv[i] == "--nwn") {
+				isOption = true;
+				game     = Aurora::kGameIDNWN;
+			} else if (argv[i] == "--nwn2") {
+				isOption = true;
+				game     = Aurora::kGameIDNWN2;
+			} else if (argv[i] == "--kotor") {
+				isOption = true;
+				game     = Aurora::kGameIDKotOR;
+			} else if (argv[i] == "--kotor2") {
+				isOption = true;
+				game     = Aurora::kGameIDKotOR2;
+			} else if (argv[i] == "--jade") {
+				isOption = true;
+				game     = Aurora::kGameIDJade;
+			} else if (argv[i] == "--witcher") {
+				isOption = true;
+				game     = Aurora::kGameIDWitcher;
+			} else if (argv[i] == "--dragonage") {
+				isOption = true;
+				game     = Aurora::kGameIDDragonAge;
+			} else if (argv[i] == "--dragonage2") {
+				isOption = true;
+				game     = Aurora::kGameIDDragonAge2;
 			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
@@ -155,7 +186,19 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n");
 	std::fprintf(stream, "          --nwnpremium        This is a broken GFF from a Neverwinter\n");
 	std::fprintf(stream, "                              Nights premium module\n\n");
-	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
+	std::fprintf(stream, "          --nwn               Use Neverwinter Nights encodings\n");
+	std::fprintf(stream, "          --nwn2              Use Neverwinter Nights 2 encodings\n");
+	std::fprintf(stream, "          --kotor             Use Knights of the Old Republic encodings\n");
+	std::fprintf(stream, "          --kotor2            Use Knights of the Old Republic II encodings\n");
+	std::fprintf(stream, "          --jade              Use Jade Empire encodings\n");
+	std::fprintf(stream, "          --witcher           Use The Witcher encodings\n");
+	std::fprintf(stream, "          --dragonage         Use Dragon Age encodings\n");
+	std::fprintf(stream, "          --dragonage2        Use Dragon Age II encodings\n\n");
+	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n\n");
+	std::fprintf(stream, "Depending on the game, LocStrings in GFF files might be encoded in various\n");
+	std::fprintf(stream, "ways and there's no way to autodetect how. If a game is specified, the\n");
+	std::fprintf(stream, "encoding tables for this game are used. Otherwise, gff2xml tries some\n");
+	std::fprintf(stream, "heuristics that might fail for certain strings.\n");
 }
 
 void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
