@@ -139,9 +139,6 @@ private:
 	StructMap _structs; ///< Our structs.
 	ListMap   _lists;   ///< Our lists.
 
-	/** To convert list offsets found in GFF3 to list UIDs. */
-	std::vector<uint32> _listOffsetToUID;
-
 	/** The unique ID to give the next struct. */
 	uint32 _nextStructUID;
 	/** The unique ID to give the next list. */
@@ -162,9 +159,6 @@ private:
 	Common::SeekableReadStream &getStream(uint32 offset) const;
 	/** Return the GFF3 stream seeked to the start of the field data. */
 	Common::SeekableReadStream &getFieldData() const;
-
-	/** Return the list UID from a list offset found in a GFF3 field. */
-	uint32 getListUID(uint32 offset) const;
 
 	/** Return a struct within the GFF3. */
 	const GFF3Struct &getStruct(uint32 uid) const;
@@ -373,6 +367,8 @@ private:
 	                 std::vector<uint32> &indices, uint32 count) const;
 
 	Common::UString readLabel(Common::SeekableReadStream &data, uint32 index) const;
+
+	void fixupListUIDs(const std::vector<uint32> &listOffsetToUID);
 	// '---
 
 	// .--- Field and field data accessors

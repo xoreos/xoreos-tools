@@ -252,13 +252,13 @@ void GFF3File::loadLists() {
 		listCount++;
 	}
 
-	_listOffsetToUID.resize(rawLists.size(), 0xFFFFFFFF);
+	std::vector<uint32> listOffsetToUID(rawLists.size(), 0xFFFFFFFF);
 
 	// Converting the raw list array into real, usable lists
 	for (size_t i = 0; i < rawLists.size(); ) {
 		const uint32 listUID = _nextListUID++;
 
-		_listOffsetToUID[i] = listUID;
+		listOffsetToUID[i] = listUID;
 
 		const uint32 n = rawLists[i++];
 		if ((i + n) > rawLists.size())
@@ -279,27 +279,13 @@ void GFF3File::loadLists() {
 
 		_lists.insert(std::make_pair(listUID, GFF3List(*this, listUID, list)));
 	}
+
+	// Structs reference lists by offset, not UID. Let's fix that
+	for (StructMap::iterator s = _structs.begin(); s != _structs.end(); ++s)
+		s->second->fixupListUIDs(listOffsetToUID);
 }
 
 // --- Helpers for GFF3Struct ---
-
-uint32 GFF3File::getListUID(uint32 offset) const {
-	if ((offset % 4) != 0)
-		throw Common::Exception("GFF3: Invalid list offset");
-
-	offset /= 4;
-
-	if (offset >= _listOffsetToUID.size())
-		throw Common::Exception("GFF3: List offset out of range (%u >= %u)",
-		                        offset, (uint) _listOffsetToUID.size());
-
-	const uint32 listUID = _listOffsetToUID[offset];
-
-	if (listUID == 0xFFFFFFFF)
-		throw Common::Exception("GFF3: Empty list at %u", offset);
-
-	return listUID;
-}
 
 const GFF3Struct &GFF3File::getStruct(uint32 uid) const {
 	StructMap::const_iterator strct = _structs.find(uid);
@@ -508,6 +494,25 @@ Common::UString GFF3Struct::readLabel(Common::SeekableReadStream &data, uint32 i
 	data.seek(_parent->_header.labelOffset + index * 16);
 
 	return Common::readStringFixed(data, Common::kEncodingASCII, 16);
+}
+
+void GFF3Struct::fixupListUIDs(const std::vector<uint32> &listOffsetToUID) {
+	for (FieldMap::iterator f = _fields.begin(); f != _fields.end(); ++f) {
+		if (f->second.type != kFieldTypeList)
+			continue;
+
+		if ((f->second.data % 4) != 0)
+			throw Common::Exception("GFF3: Invalid list offset");
+
+		const size_t offset = f->second.data / 4;
+		if (offset >= listOffsetToUID.size())
+			throw Common::Exception("GFF3: List offset out of range (%u >= %u)",
+			                        (uint) offset, (uint) listOffsetToUID.size());
+
+		f->second.data = listOffsetToUID[offset];
+		if (f->second.data == 0xFFFFFFFF)
+			throw Common::Exception("GFF3: Empty list at %u", (uint) offset);
+	}
 }
 
 Common::SeekableReadStream &GFF3Struct::getData(const Field &field) const {
@@ -872,9 +877,7 @@ const GFF3List &GFF3Struct::getList(const Common::UString &field) const {
 	if (f->type != kFieldTypeList)
 		throw Common::Exception("GFF3: Field is not a list type");
 
-	const uint32 uid = f->ownData ? f->data : _parent->getListUID(f->data);
-
-	return _parent->getList(uid);
+	return _parent->getList(f->data);
 }
 
 // --- Field adding and deleting ---
@@ -990,9 +993,7 @@ void GFF3Struct::removeList(const Common::UString &field) {
 	if (f->second.type != kFieldTypeList)
 		throw Common::Exception("GFF3: Field is not a list type");
 
-	const uint32 uid = f->second.ownData ? f->second.data : _parent->getListUID(f->second.data);
-
-	GFF3List &list = _parent->getList(uid);
+	GFF3List &list = _parent->getList(f->second.data);
 
 	list.destroy();
 	_parent->destroyList(list);
@@ -1310,9 +1311,7 @@ void GFF3Struct::destroy() {
 
 		} else if (i->second.type == kFieldTypeList) {
 
-			const uint32 uid = i->second.ownData ? i->second.data : _parent->getListUID(i->second.data);
-
-			GFF3List &list = _parent->getList(uid);
+			GFF3List &list = _parent->getList(i->second.data);
 
 			list.destroy();
 
