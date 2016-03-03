@@ -4,6 +4,8 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Fixed a potential field overflow in the binary 2DA writer
 	- GRAPHICS:
 		- Loosened restrictions on textures, allowing NPOT textures
+	- DIST:
+		- Added Fedora package build files
 
 Monday, 2016-02-01 (Version 0.0.4)
 	- Tools added:
