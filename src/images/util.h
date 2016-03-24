@@ -132,9 +132,9 @@ static inline void flipHorizontally(byte *data, int width, int height, int bpp) 
 		byte *dataEnd   = data + pitch - bpp;
 
 		for (size_t j = 0; j < halfWidth; j++) {
-			memcpy(buffer   , dataStart, bpp);
-			memcpy(dataStart, dataEnd  , bpp);
-			memcpy(dataEnd  , buffer   , bpp);
+			std::memcpy(buffer   , dataStart, bpp);
+			std::memcpy(dataStart, dataEnd  , bpp);
+			std::memcpy(dataEnd  , buffer   , bpp);
 
 			dataStart += bpp;
 			dataEnd   -= bpp;
@@ -160,9 +160,9 @@ static inline void flipVertically(byte *data, int width, int height, int bpp) {
 
 	size_t halfHeight = height / 2;
 	while (halfHeight--) {
-		memcpy(buffer   , dataStart, pitch);
-		memcpy(dataStart, dataEnd  , pitch);
-		memcpy(dataEnd  , buffer   , pitch);
+		std::memcpy(buffer   , dataStart, pitch);
+		std::memcpy(dataStart, dataEnd  , pitch);
+		std::memcpy(dataEnd  , buffer   , pitch);
 
 		dataStart += pitch;
 		dataEnd   -= pitch;

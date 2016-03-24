@@ -57,7 +57,7 @@ Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
 	delete[] data;
 	data = new byte[size];
 
-	memcpy(data, mipMap.data, size);
+	std::memcpy(data, mipMap.data, size);
 
 	return *this;
 }
