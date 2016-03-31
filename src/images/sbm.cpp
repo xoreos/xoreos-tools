@@ -102,7 +102,7 @@ void SBM::readData(Common::SeekableReadStream &sbm) {
 	}
 
 	byte *dataEnd = _mipMaps[0]->data + _mipMaps[0]->size;
-	memset(data, 0, dataEnd - data);
+	std::memset(data, 0, dataEnd - data);
 }
 
 } // End of namespace Images
