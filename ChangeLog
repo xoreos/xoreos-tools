@@ -6,6 +6,8 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Loosened restrictions on textures, allowing NPOT textures
 	- DIST:
 		- Added Fedora package build files
+	- MISC:
+		- Improved code consistency in some places
 
 Monday, 2016-02-01 (Version 0.0.4)
 	- Tools added:
