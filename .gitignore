@@ -70,6 +70,7 @@ Makefile.am.cmake
 # Unix binaries
 /src/gff2xml
 /src/tlk2xml
+/src/ssf2xml
 /src/xml2tlk
 /src/convert2da
 /src/fixpremiumgff
@@ -90,6 +91,7 @@ Makefile.am.cmake
 # Windows binaries
 /src/gff2xml.exe
 /src/tlk2xml.exe
+/src/ssf2xml.exe
 /src/xml2tlk.exe
 /src/convert2da.exe
 /src/fixpremiumgff.exe

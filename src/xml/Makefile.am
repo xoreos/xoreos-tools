@@ -32,6 +32,7 @@ noinst_HEADERS = \
                  gff4fields.h \
                  tlkdumper.h \
                  tlkcreator.h \
+                 ssfdumper.h \
                  $(EMPTY)
 
 libxml_la_SOURCES = \
@@ -42,4 +43,5 @@ libxml_la_SOURCES = \
                     gff4dumper.cpp \
                     tlkdumper.cpp \
                     tlkcreator.cpp \
+                    ssfdumper.cpp \
                     $(EMPTY)

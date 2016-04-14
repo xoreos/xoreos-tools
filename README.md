@@ -15,6 +15,7 @@ Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
 * tlk2xml: Convert BioWare TLK to XML
+* ssf2xml: Convert BioWare SSF to XML
 * xml2tlk: Convert XML back to BioWare TLK
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
 * fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
