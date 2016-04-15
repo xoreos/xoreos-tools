@@ -67,6 +67,7 @@ dist_man1_MANS = \
                  man/nbfs2tga.1 \
                  man/ncgr2tga.1 \
                  man/tlk2xml.1 \
+                 man/ssf2xml.1 \
                  man/xml2tlk.1 \
                  man/unerf.1 \
                  man/unherf.1 \
