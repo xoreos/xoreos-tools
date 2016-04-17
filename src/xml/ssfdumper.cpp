@@ -139,8 +139,6 @@ void SSFDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &in
 	xml.breakLine();
 
 	for (size_t i = 0; i < ssf.getSoundCount(); i++) {
-		const Aurora::SSFFile::Sound &sound = ssf.getSound(i);
-
 		xml.openTag("sound");
 		xml.addProperty("id", Common::composeString(i));
 
@@ -152,10 +150,11 @@ void SSFDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &in
 			if (kLabelsShort[i][0] != '\0')
 				xml.addProperty("label", kLabelsShort[i]);
 
-		if (sound.strRef != Aurora::kStrRefInvalid)
-			xml.addProperty("strref", Common::composeString(sound.strRef));
+		const uint32 strRef = ssf.getStrRef(i);
+		if (strRef != Aurora::kStrRefInvalid)
+			xml.addProperty("strref", Common::composeString(strRef));
 
-		xml.setContents(sound.fileName);
+		xml.setContents(ssf.getSoundFile(i));
 
 		xml.closeTag();
 		xml.breakLine();
