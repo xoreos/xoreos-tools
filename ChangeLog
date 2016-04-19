@@ -1,6 +1,7 @@
 Someday, ????-??-?? (Version 0.0.5)
 	- Tools added:
 		- ssf2xml
+		- xml2ssf
 	- AURORA:
 		- Unified some code between xoreos and xoreos-tools
 		- Fixed a potential field overflow in the binary 2DA writer
