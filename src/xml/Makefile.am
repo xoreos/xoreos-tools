@@ -33,6 +33,7 @@ noinst_HEADERS = \
                  tlkdumper.h \
                  tlkcreator.h \
                  ssfdumper.h \
+                 ssfcreator.h \
                  $(EMPTY)
 
 libxml_la_SOURCES = \
@@ -44,4 +45,5 @@ libxml_la_SOURCES = \
                     tlkdumper.cpp \
                     tlkcreator.cpp \
                     ssfdumper.cpp \
+                    ssfcreator.cpp \
                     $(EMPTY)

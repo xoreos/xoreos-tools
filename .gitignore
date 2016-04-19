@@ -72,6 +72,7 @@ Makefile.am.cmake
 /src/tlk2xml
 /src/ssf2xml
 /src/xml2tlk
+/src/xml2ssf
 /src/convert2da
 /src/fixpremiumgff
 /src/unerf
@@ -93,6 +94,7 @@ Makefile.am.cmake
 /src/tlk2xml.exe
 /src/ssf2xml.exe
 /src/xml2tlk.exe
+/src/xml2ssf.exe
 /src/convert2da.exe
 /src/fixpremiumgff.exe
 /src/unerf.exe

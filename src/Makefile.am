@@ -40,6 +40,7 @@ bin_PROGRAMS = \
                tlk2xml \
                ssf2xml \
                xml2tlk \
+               xml2ssf \
                convert2da \
                fixpremiumgff \
                unerf \
@@ -91,6 +92,16 @@ xml2tlk_SOURCES = \
                   xml2tlk.cpp \
                   $(EMPTY)
 xml2tlk_LDADD   = \
+                  xml/libxml.la \
+                  aurora/libaurora.la \
+                  common/libcommon.la \
+                  $(LDADD) \
+                  $(EMPTY)
+
+xml2ssf_SOURCES = \
+                  xml2ssf.cpp \
+                  $(EMPTY)
+xml2ssf_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
