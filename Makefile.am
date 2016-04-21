@@ -69,6 +69,7 @@ dist_man1_MANS = \
                  man/tlk2xml.1 \
                  man/ssf2xml.1 \
                  man/xml2tlk.1 \
+                 man/xml2ssf.1 \
                  man/unerf.1 \
                  man/unherf.1 \
                  man/unkeybif.1 \
