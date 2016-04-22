@@ -38,6 +38,7 @@ Currently, the following tools are included:
 * tlk2xml: Convert BioWare TLK to XML
 * ssf2xml: Convert BioWare SSF to XML
 * xml2tlk: Convert XML back to BioWare TLK
+* xml2ssf: Convert XML back to BioWare SSF
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
 * fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
 * unerf: Extract BioWare ERF archives
@@ -93,6 +94,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_bindir}/unnsbtx
 %{_bindir}/unrim
 %{_bindir}/xml2tlk
+%{_bindir}/xml2ssf
 %{_bindir}/xoreostex2tga
 
 # man pages.
@@ -114,6 +116,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_mandir}/man1/unnsbtx.1.*
 %{_mandir}/man1/unrim.1.*
 %{_mandir}/man1/xml2tlk.1.*
+%{_mandir}/man1/xml2ssf.1.*
 %{_mandir}/man1/xoreostex2tga.1.*
 
 %doc *.md AUTHORS ChangeLog TODO
