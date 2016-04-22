@@ -36,6 +36,7 @@ Currently, the following tools are included:
 
 * gff2xml: Convert BioWare GFF to XML
 * tlk2xml: Convert BioWare TLK to XML
+* ssf2xml: Convert BioWare SSF to XML
 * xml2tlk: Convert XML back to BioWare TLK
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
 * fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
@@ -84,6 +85,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_bindir}/ncgr2tga
 %{_bindir}/ncsdis
 %{_bindir}/tlk2xml
+%{_bindir}/ssf2xml
 %{_bindir}/unerf
 %{_bindir}/unherf
 %{_bindir}/unkeybif
@@ -104,6 +106,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_mandir}/man1/ncgr2tga.1.*
 %{_mandir}/man1/ncsdis.1.*
 %{_mandir}/man1/tlk2xml.1.*
+%{_mandir}/man1/ssf2xml.1.*
 %{_mandir}/man1/unerf.1.*
 %{_mandir}/man1/unherf.1.*
 %{_mandir}/man1/unkeybif.1.*
