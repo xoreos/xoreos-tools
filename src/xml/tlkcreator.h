@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Creates TLKs out of XML XML files.
+ *  Creates TLKs out of XML files.
  */
 
 #ifndef XML_TLKCREATOR_H
