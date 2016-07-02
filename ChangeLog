@@ -9,6 +9,8 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Loosened restrictions on textures, allowing NPOT textures
 	- DIST:
 		- Added Fedora package build files
+	- DOCS:
+		- Corrected example section of the convert2da manpage
 	- MISC:
 		- Improved code consistency in some places
 
