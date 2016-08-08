@@ -41,10 +41,15 @@
 
 #include "src/xml/gffdumper.h"
 
+typedef std::map<uint32, Common::Encoding> EncodingOverrides;
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Common::Encoding &encoding, Aurora::GameID &game, bool &nwnPremium);
+                      Common::Encoding &encoding, Aurora::GameID &game,
+                      EncodingOverrides &encOverrides, bool &nwnPremium);
+
+bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOverrides);
 
 void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
              Common::Encoding encoding, bool nwnPremium);
@@ -57,15 +62,20 @@ int main(int argc, char **argv) {
 		Common::Encoding encoding = Common::kEncodingUTF16LE;
 		Aurora::GameID   game     = Aurora::kGameIDUnknown;
 
+		EncodingOverrides encOverrides;
+
 		bool nwnPremium = false;
 
 		int returnValue = 1;
 		Common::UString inFile, outFile;
 
-		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, nwnPremium))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, encOverrides, nwnPremium))
 			return returnValue;
 
 		LangMan.declareLanguages(game);
+
+		for (EncodingOverrides::const_iterator e = encOverrides.begin(); e != encOverrides.end(); ++e)
+			LangMan.overrideEncoding(e->first, e->second);
 
 		dumpGFF(inFile, outFile, encoding, nwnPremium);
 	} catch (...) {
@@ -75,9 +85,34 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOverrides) {
+	Common::UString::iterator sep = arg.findFirst('=');
+	if (sep == arg.end())
+		return false;
+
+	uint32 id = 0xFFFFFFFF;
+	try {
+		Common::parseString(arg.substr(arg.begin(), sep), id);
+	} catch (...) {
+	}
+
+	if (id == 0xFFFFFFFF)
+		return false;
+
+	Common::Encoding encoding = Common::parseEncoding(arg.substr(++sep, arg.end()));
+	if (encoding == Common::kEncodingInvalid) {
+		status("Unknown encoding \"%s\"", arg.substr(sep, arg.end()).c_str());
+		return false;
+	}
+
+	encOverrides[id] = encoding;
+	return true;
+}
+
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Common::Encoding &encoding, Aurora::GameID &game, bool &nwnPremium) {
+                      Common::Encoding &encoding, Aurora::GameID &game,
+                      EncodingOverrides &encOverrides, bool &nwnPremium) {
 
 	inFile.clear();
 	outFile.clear();
@@ -145,6 +180,17 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			} else if (argv[i] == "--dragonage2") {
 				isOption = true;
 				game     = Aurora::kGameIDDragonAge2;
+
+			} else if (argv[i] == "--encoding") {
+				isOption = true;
+
+				if ((i++ == (argv.size() - 1)) || !parseEncodingOverride(argv[i], encOverrides)) {
+					printUsage(stdout, argv[0]);
+					returnValue = 1;
+
+					return false;
+				}
+
 			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
 			  // An options, but we already checked for all known ones
 
@@ -194,11 +240,17 @@ void printUsage(FILE *stream, const Common::UString &name) {
 	std::fprintf(stream, "          --witcher           Use The Witcher encodings\n");
 	std::fprintf(stream, "          --dragonage         Use Dragon Age encodings\n");
 	std::fprintf(stream, "          --dragonage2        Use Dragon Age II encodings\n\n");
+	std::fprintf(stream, "          --encoding <str>    Override an encoding\n\n");
 	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n\n");
 	std::fprintf(stream, "Depending on the game, LocStrings in GFF files might be encoded in various\n");
 	std::fprintf(stream, "ways and there's no way to autodetect how. If a game is specified, the\n");
 	std::fprintf(stream, "encoding tables for this game are used. Otherwise, gff2xml tries some\n");
-	std::fprintf(stream, "heuristics that might fail for certain strings.\n");
+	std::fprintf(stream, "heuristics that might fail for certain strings.\n\n");
+	std::fprintf(stream, "Additionally, the --encoding parameter can be used to override the encoding\n");
+	std::fprintf(stream, "for a specific language ID. The string has to be of the form n=encoding,\n");
+	std::fprintf(stream, "for example 0=cp-1252 to override the encoding of the (ungendered) language\n");
+	std::fprintf(stream, "ID 0 to be Windows codepage 1252. To override several encodings, specify\n");
+	std::fprintf(stream, "the --encoding parameter multiple times.\n");
 }
 
 void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
