@@ -37,7 +37,7 @@ namespace Aurora {
 
 LanguageManager::LanguageManager() :
 	_currentLanguageText(kLanguageInvalid), _currentLanguageVoice(kLanguageInvalid),
-	_currentGender(kLanguageGenderMale) {
+	_currentGender(kLanguageGenderMale), _fakeLanguage(1) {
 
 }
 
@@ -52,6 +52,8 @@ void LanguageManager::clear() {
 	_currentLanguageVoice = kLanguageInvalid;
 
 	_currentGender = kLanguageGenderMale;
+
+	_fakeLanguage = 1;
 }
 
 void LanguageManager::addLanguage(Language language, uint32 id, Common::Encoding encoding) {
@@ -212,6 +214,27 @@ void LanguageManager::declareLanguages(GameID game) {
 	const Declaration *langs = kLanguageDeclarations[game];
 	while (langs->language != kLanguageInvalid)
 		addLanguage(*langs++);
+}
+
+void LanguageManager::overrideEncoding(uint32 id, Common::Encoding encoding) {
+	overrideEncoding(id, encoding, encoding);
+}
+
+void LanguageManager::overrideEncoding(uint32 id, Common::Encoding encoding,
+                                       Common::Encoding encodingLocString) {
+
+	Language language = kLanguageInvalid;
+
+	// See if we already know this language ID. If so, override that entry
+	const Declaration *decl = find(id);
+	if (decl)
+		language = decl->language;
+
+	// Otherwise, conjure a fake language
+	if (language == kLanguageInvalid)
+		language = (Language) (((uint32) kLanguageMAX) + _fakeLanguage++);
+
+	addLanguage(language, id, encoding, encodingLocString);
 }
 
 const LanguageManager::Declaration *LanguageManager::find(Language language) const {

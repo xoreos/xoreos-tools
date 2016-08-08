@@ -106,6 +106,19 @@ public:
 	/** Add all supported languages for a specific game to the LanguageManager. */
 	void declareLanguages(GameID game);
 
+	/** Override the encoding of a specific (ungendered) language ID.
+	 *
+	 *  If this language ID has no language declared already, this method adds a
+	 *  fake language entry!
+	 */
+	void overrideEncoding(uint32 id, Common::Encoding encoding);
+	/** Override the encodings of a specific (ungendered) language ID.
+	 *
+	 *  If this language ID has no language declared already, this method adds a
+	 *  fake language entry!
+	 */
+	void overrideEncoding(uint32 id, Common::Encoding encoding, Common::Encoding encodingLocString);
+
 	/** Construct the internal language ID for an ungendered use of a language.
 	 *
 	 *  This is used by Aurora games in contexts where the gender of a player
@@ -224,6 +237,8 @@ private:
 	Language _currentLanguageText;
 	Language _currentLanguageVoice;
 	LanguageGender _currentGender;
+
+	uint32 _fakeLanguage;
 
 	const Declaration *find(Language language) const;
 	const Declaration *find(uint32 id) const;
