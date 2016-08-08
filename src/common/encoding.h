@@ -138,6 +138,9 @@ size_t getBytesPerCodepoint(Encoding encoding);
  */
 bool isValidCodepoint(Encoding encoding, uint32 cp);
 
+/** Parse this string into an encoding. */
+Encoding parseEncoding(Common::UString str);
+
 } // End of namespace Common
 
 #endif // COMMON_ENCODING_H

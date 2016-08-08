@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "src/common/encoding.h"
+#include "src/common/encoding_strings.h"
 #include "src/common/error.h"
 #include "src/common/singleton.h"
 #include "src/common/ustring.h"
@@ -405,6 +406,25 @@ bool isValidCodepoint(Encoding encoding, uint32 cp) {
 	}
 
 	return false;
+}
+
+Encoding parseEncoding(Common::UString str) {
+	if (str.empty())
+		return kEncodingInvalid;
+
+	str.makeLower();
+
+	for (size_t i = 0; i < ARRAYSIZE(kEncodingStrings); i++) {
+		for (size_t j = 0; j < ARRAYSIZE(kEncodingStrings[i].strings); j++) {
+			if (!kEncodingStrings[i].strings[j])
+				break;
+
+			if (str == kEncodingStrings[i].strings[j])
+				return kEncodingStrings[i].encoding;
+		}
+	}
+
+	return kEncodingInvalid;
 }
 
 } // End of namespace Common

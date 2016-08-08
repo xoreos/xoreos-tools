@@ -57,6 +57,7 @@ noinst_HEADERS = \
                  util.h \
                  strutil.h \
                  encoding.h \
+                 encoding_strings.h \
                  platform.h \
                  readstream.h \
                  memreadstream.h \
