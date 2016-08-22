@@ -28,7 +28,7 @@ LIBSF_CXX   =
 
 LIBSL       = $(XOREOSTOOLS_LIBS) $(LTLIBICONV) $(ZLIB_LIBS) $(XML2_LIBS)
 
-FLAGS_C_CXX = -I$(top_srcdir) -ggdb $(LTO) $(WARN_C_CXX) $(WERROR)
+FLAGS_C_CXX = -I$(top_srcdir) -ggdb $(LTO) $(NATIVE) $(WARN_C_CXX) $(WERROR)
 FLAGS_C     = $(STD_C)
 FLAGS_CXX   = $(WARN_CXX) $(STD_CXX)
 
