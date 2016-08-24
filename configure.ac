@@ -192,19 +192,26 @@ BOOST_SCOPE_EXIT
 BOOST_ATOMIC
 BOOST_LOCALE
 
+dnl pthread
+AX_PTHREAD()
+AM_CONDITIONAL([HAVE_PTHREAD], [test x"$ax_pthread_ok" = xyes])
+
 dnl Extra flags
 case "$target" in
 	*darwin*)
 		XOREOSTOOLS_CFLAGS="-DUNIX -DMACOSX"
 		XOREOSTOOLS_LIBS=""
+		AM_CONDITIONAL(WIN32, false)
 		;;
 	*mingw*)
 		XOREOSTOOLS_CFLAGS="-mconsole"
 		XOREOSTOOLS_LIBS=""
+		AM_CONDITIONAL(WIN32, true)
 		;;
 	*)
 		XOREOSTOOLS_CFLAGS="-DUNIX"
 		XOREOSTOOLS_LIBS=""
+		AM_CONDITIONAL(WIN32, false)
 		;;
 esac;
 
