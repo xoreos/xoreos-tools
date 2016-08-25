@@ -35,29 +35,9 @@ noinst_HEADERS = \
                  files_dragonage.h \
                  $(EMPTY)
 
-bin_PROGRAMS = \
-               gff2xml \
-               tlk2xml \
-               ssf2xml \
-               xml2tlk \
-               xml2ssf \
-               convert2da \
-               fixpremiumgff \
-               unerf \
-               unherf \
-               unrim \
-               unkeybif \
-               unnds \
-               unnsbtx \
-               desmall \
-               xoreostex2tga \
-               nbfs2tga \
-               ncgr2tga \
-               cbgt2tga \
-               cdpth2tga \
-               ncsdis \
-               $(EMPTY)
+bin_PROGRAMS =
 
+bin_PROGRAMS   += gff2xml
 gff2xml_SOURCES = \
                   gff2xml.cpp \
                   $(EMPTY)
@@ -68,6 +48,7 @@ gff2xml_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS   += tlk2xml
 tlk2xml_SOURCES = \
                   tlk2xml.cpp \
                   $(EMPTY)
@@ -78,6 +59,7 @@ tlk2xml_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS   += ssf2xml
 ssf2xml_SOURCES = \
                   ssf2xml.cpp \
                   $(EMPTY)
@@ -88,6 +70,7 @@ ssf2xml_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS   += xml2tlk
 xml2tlk_SOURCES = \
                   xml2tlk.cpp \
                   $(EMPTY)
@@ -98,6 +81,7 @@ xml2tlk_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS   += xml2ssf
 xml2ssf_SOURCES = \
                   xml2ssf.cpp \
                   $(EMPTY)
@@ -108,6 +92,7 @@ xml2ssf_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS      += convert2da
 convert2da_SOURCES = \
                      convert2da.cpp \
                      $(EMPTY)
@@ -117,6 +102,7 @@ convert2da_LDADD   = \
                      $(LDADD) \
                      $(EMPTY)
 
+bin_PROGRAMS         += fixpremiumgff
 fixpremiumgff_SOURCES = \
                         fixpremiumgff.cpp \
                         $(EMPTY)
@@ -126,6 +112,7 @@ fixpremiumgff_LDADD   = \
                         $(LDADD) \
                         $(EMPTY)
 
+bin_PROGRAMS += unerf
 unerf_SOURCES = \
                 unerf.cpp \
                 util.cpp \
@@ -137,6 +124,7 @@ unerf_LDADD   = \
                 $(LDADD) \
                 $(EMPTY)
 
+bin_PROGRAMS  += unherf
 unherf_SOURCES = \
                  unherf.cpp \
                  util.cpp \
@@ -148,6 +136,7 @@ unherf_LDADD   = \
                  $(LDADD) \
                  $(EMPTY)
 
+bin_PROGRAMS += unrim
 unrim_SOURCES = \
                 unrim.cpp \
                 util.cpp \
@@ -158,6 +147,7 @@ unrim_LDADD   = \
                 $(LDADD) \
                 $(EMPTY)
 
+bin_PROGRAMS    += unkeybif
 unkeybif_SOURCES = \
                    unkeybif.cpp \
                    util.cpp \
@@ -168,6 +158,7 @@ unkeybif_LDADD   = \
                    $(LDADD) \
                    $(EMPTY)
 
+bin_PROGRAMS += unnds
 unnds_SOURCES = \
                 unnds.cpp \
                 util.cpp \
@@ -178,6 +169,7 @@ unnds_LDADD   = \
                 $(LDADD) \
                 $(EMPTY)
 
+bin_PROGRAMS   += unnsbtx
 unnsbtx_SOURCES = \
                   unnsbtx.cpp \
                   util.cpp \
@@ -189,6 +181,7 @@ unnsbtx_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS   += desmall
 desmall_SOURCES = \
                   desmall.cpp \
                   $(EMPTY)
@@ -198,6 +191,7 @@ desmall_LDADD   = \
                   $(LDADD) \
                   $(EMPTY)
 
+bin_PROGRAMS         += xoreostex2tga
 xoreostex2tga_SOURCES = \
                         xoreostex2tga.cpp \
                         $(EMPTY)
@@ -208,6 +202,7 @@ xoreostex2tga_LDADD   = \
                         $(LDADD) \
                         $(EMPTY)
 
+bin_PROGRAMS    += nbfs2tga
 nbfs2tga_SOURCES = \
                    nbfs2tga.cpp \
                    $(EMPTY)
@@ -218,6 +213,7 @@ nbfs2tga_LDADD   = \
                    $(LDADD) \
                    $(EMPTY)
 
+bin_PROGRAMS    += ncgr2tga
 ncgr2tga_SOURCES = \
                    ncgr2tga.cpp \
                    $(EMPTY)
@@ -228,6 +224,7 @@ ncgr2tga_LDADD   = \
                    $(LDADD) \
                    $(EMPTY)
 
+bin_PROGRAMS    += cbgt2tga
 cbgt2tga_SOURCES = \
                    cbgt2tga.cpp \
                    $(EMPTY)
@@ -238,6 +235,7 @@ cbgt2tga_LDADD   = \
                    $(LDADD) \
                    $(EMPTY)
 
+bin_PROGRAMS     += cdpth2tga
 cdpth2tga_SOURCES = \
                     cdpth2tga.cpp \
                     $(EMPTY)
@@ -248,6 +246,7 @@ cdpth2tga_LDADD   = \
                     $(LDADD) \
                     $(EMPTY)
 
+bin_PROGRAMS  += ncsdis
 ncsdis_SOURCES = \
                  ncsdis.cpp \
                  $(EMPTY)
