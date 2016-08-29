@@ -29,4 +29,5 @@ noinst_HEADERS = utf8.h \
 
 EXTRA_DIST = \
              README.xoreos \
+             utf8cpp.patch \
              $(EMPTY)
