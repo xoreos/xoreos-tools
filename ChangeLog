@@ -7,6 +7,9 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Fixed a potential field overflow in the binary 2DA writer
 	- GRAPHICS:
 		- Loosened restrictions on textures, allowing NPOT textures
+	- GFF2XML:
+		- Added an --encoding parameter to overwrite the encoding
+		  used in GFF3 LocStrings
 	- DIST:
 		- Added Fedora package build files
 	- DOCS:
