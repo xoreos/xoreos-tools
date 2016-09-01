@@ -1,4 +1,4 @@
-.Dd April 15, 2016
+.Dd September 1, 2016
 .Dt GFF2XML 1
 .Os
 .Sh NAME
@@ -53,6 +53,18 @@ However, there are options to explicitly specify the game this GFF
 file is from.
 .Nm
 will then use the correct game-specific encoding tables.
+.Pp
+Unfortunately, even these tables might not be completely correct
+in all cases.
+.Em Neverwinter Nights ,
+for example, treated many strings as being encoded in the native
+encoding used for the language of the game installation.
+This lead to many people putting non-English strings into fields
+tagged as language ID 0, nominally reserved for English.
+To read these files correctly,
+.Nm
+provides an --encoding parameter to override the encoding used
+for a specific language ID.
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Fl h
@@ -67,6 +79,8 @@ little-endian UTF-16.
 But some files store them as Windows CP-1252 instead.
 Since there's no clean way to autodetect the different encoding,
 this switch manually selects Windows CP-1252.
+This option only concerns strings embedded in GFF4 files, not
+GFF3 LocStrings.
 .It Fl Fl nwnpremium
 The GFF files found in the encrypted HAK files of
 .Em Neverwinter Nights
@@ -98,6 +112,13 @@ Read LocStrings in an encoding appropriate for
 .It Fl Fl dragonage2
 Read LocStrings in an encoding appropriate for
 .Em Dragon Age II .
+.It Fl Fl encoding Ar str
+Override an encoding.
+The string has to be of the form n=encoding, for example 0=cp-1252
+to override the encoding of the (ungendered) language ID 0 to be
+Windows codepage 1252.
+To override several encodings, specify the --encoding parameter
+multiple times.
 .El
 .Bl -tag -width xxxx -compact
 .It Ar input_file
@@ -127,6 +148,11 @@ Convert the GFF
 which uses Windows CP-1252 strings:
 .Pp
 .Dl $ gff2xml --cp1252 file1.utc file2.xml
+.Pp
+Convert the GFF
+.Pa file1.utc ,
+which encodes language ID 0 in LocStrings as Windows CP-1250:
+.Dl $ gff2xml --encoding 0=cp1250 file1.utc file2.xml
 .Sh SEE ALSO
 .Xr convert2da 1 ,
 .Xr fixpremiumgff 1 ,
