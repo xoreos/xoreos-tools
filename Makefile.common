@@ -23,18 +23,34 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 EMPTY =
 
-LIBSF_C_CXX = $(XOREOSTOOLS_CFLAGS) $(ZLIB_CFLAGS) $(XML2_CFLAGS)
-LIBSF_CXX   =
+# Library compile flags
 
-LIBSL       = $(XOREOSTOOLS_LIBS) $(LTLIBICONV) $(ZLIB_LIBS) $(XML2_LIBS)
+LIBSF_XOREOS  = $(XOREOSTOOLS_CFLAGS)
+LIBSF_GENERAL = $(ZLIB_CFLAGS) $(XML2_CFLAGS)
 
-FLAGS_C_CXX = -I$(top_srcdir) -ggdb $(LTO) $(NATIVE) $(WARN_C_CXX) $(WERROR)
-FLAGS_C     = $(STD_C)
-FLAGS_CXX   = $(WARN_CXX) $(STD_CXX)
+LIBSF         = $(LIBSF_XOREOS) $(LIBSF_GENERAL)
 
-AM_CFLAGS   = $(FLAGS_C_CXX) $(FLAGS_C)   $(LIBSF_C_CXX) $(LIBSF_C)
-AM_CXXFLAGS = $(FLAGS_C_CXX) $(FLAGS_CXX) $(LIBSF_C_CXX) $(LIBSF_CXX)
-AM_LDFLAGS  = $(LTO)
-LDADD       = $(LIBSL)
+# Library linking flags
 
-LIBS =
+LIBSL_XOREOS  = $(XOREOSTOOLS_LIBS)
+LIBSL_GENERAL = $(LTLIBICONV) $(ZLIB_LIBS) $(XML2_LIBS)
+
+LIBSL         = $(LIBSL_XOREOS) $(LIBSL_GENERAL)
+
+# Other compiler flags
+
+FLAGS_DIR     = -I$(top_srcdir)
+FLAGS_DEBUG   = -ggdb
+FLAGS_STD     = $(STD)
+FLAGS_OPT     = $(LTO) $(NATIVE)
+FLAGS_WARN    = $(WARN) $(WERROR)
+
+FLAGS         = $(FLAGS_DIR) $(FLAGS_DEBUG) $(FLAGS_STD) \
+                $(FLAGS_OPT) $(FLAGS_WARN)
+
+# Putting it all together...
+
+AM_CXXFLAGS   = $(FLAGS) $(LIBSF)
+AM_LDFLAGS    = $(FLAGS_OPT)
+LDADD         = $(LIBSL)
+LIBS          =
