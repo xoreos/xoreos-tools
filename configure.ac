@@ -46,15 +46,46 @@ AM_PROG_CC_C_O
 dnl We want a make install
 AC_PROG_INSTALL
 
+dnl Standard C++
+AC_C_CONST
+AC_HEADER_STDC
+
+dnl Endianness
+AC_C_BIGENDIAN
+
+dnl Special variables of the size of pointers
+AC_TYPE_INTPTR_T
+AC_TYPE_UINTPTR_T
+
+dnl Check the sizes of integer types
+AC_CHECK_SIZEOF([char])
+AC_CHECK_SIZEOF([short])
+AC_CHECK_SIZEOF([int])
+AC_CHECK_SIZEOF([long])
+AC_CHECK_SIZEOF([long long])
+AC_CHECK_SIZEOF([void *])
+
+dnl math library and special float functions
+AC_CHECK_LIB([m], [cos])
+AC_CHECK_FUNCS([fabs])
+AC_CHECK_FUNCS([fmin])
+AC_CHECK_FUNCS([fmax])
+AC_CHECK_FUNCS([fabsf])
+AC_CHECK_FUNCS([fminf])
+AC_CHECK_FUNCS([fmaxf])
+
+dnl String to integer/float conversion functions
+AC_CHECK_FUNCS([strtoll])
+AC_CHECK_FUNCS([strtoull])
+AC_CHECK_FUNCS([strtof])
+
 dnl --with-werror
 AC_ARG_WITH([werror], [AS_HELP_STRING([--with-werror], [Compile with -Werror @<:@default=no@:>@])], [], [with_werror=no])
 if test "x$with_werror" = "xyes"; then
 	WERROR="-Werror -Werror=unused-but-set-variable"
 fi
 
-dnl Standard C++
-AC_C_CONST
-AC_HEADER_STDC
+AC_SUBST(WERROR)
 
 dnl Compiler warning flags
 AC_ARG_WITH([warnings], [AS_HELP_STRING([--without-warnings], [Compile without extra warnings @<:@default=no@:>@])], [], [with_warnings=yes])
@@ -80,9 +111,9 @@ fi
 
 AC_SUBST(WARN)
 
+dnl C++ dialect
 AC_ARG_WITH([std], [AS_HELP_STRING([--without-std], [Compile without specifying the C++ standard to follow @<:@default=no@:>@])], [], [with_std=yes])
 
-dnl C++ dialect
 if test "x$with_std" = "xno"; then
 	STD=""
 else
@@ -122,35 +153,6 @@ if test "x$with_release" != "xno"; then
 	fi
 fi
 
-dnl Endianness
-AC_C_BIGENDIAN()
-
-dnl Special variables of the size of pointers
-AC_TYPE_INTPTR_T
-AC_TYPE_UINTPTR_T
-
-dnl Check the sizes of integer types
-AC_CHECK_SIZEOF([char])
-AC_CHECK_SIZEOF([short])
-AC_CHECK_SIZEOF([int])
-AC_CHECK_SIZEOF([long])
-AC_CHECK_SIZEOF([long long])
-AC_CHECK_SIZEOF([void *])
-
-dnl math library and special float functions
-AC_CHECK_LIB([m], [cos])
-AC_CHECK_FUNCS([fabs])
-AC_CHECK_FUNCS([fmin])
-AC_CHECK_FUNCS([fmax])
-AC_CHECK_FUNCS([fabsf])
-AC_CHECK_FUNCS([fminf])
-AC_CHECK_FUNCS([fmaxf])
-
-dnl String to integer/float conversion functions
-AC_CHECK_FUNCS([strtoll])
-AC_CHECK_FUNCS([strtoull])
-AC_CHECK_FUNCS([strtof])
-
 dnl General purpose libraries
 AX_CHECK_ICONV( , AC_MSG_ERROR([No useable iconv() function found!]))
 AX_CHECK_ZLIB(1, 2, 3, 0, , AC_MSG_ERROR([zlib(>= 1.2.3) is required and could not be found!]))
@@ -174,8 +176,6 @@ esac;
 
 AC_SUBST(XOREOSTOOLS_CFLAGS)
 AC_SUBST(XOREOSTOOLS_LIBS)
-
-AC_SUBST(WERROR)
 
 AC_CONFIG_FILES([utf8cpp/Makefile])
 AC_CONFIG_FILES([gitstamp/Makefile])
