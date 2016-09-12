@@ -351,6 +351,7 @@ size_t getBytesPerCodepoint(Encoding encoding) {
 		case kEncodingASCII:
 		case kEncodingLatin9:
 		case kEncodingCP1250:
+		case kEncodingCP1251:
 		case kEncodingCP1252:
 			return 1;
 
