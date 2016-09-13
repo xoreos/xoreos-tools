@@ -159,3 +159,8 @@ check_PROGRAMS                     += tests/common/test_filepath
 tests_common_test_filepath_SOURCES  = tests/common/filepath.cpp
 tests_common_test_filepath_LDADD    = $(common_LIBS)
 tests_common_test_filepath_CXXFLAGS = $(test_CXXFLAGS)
+
+check_PROGRAMS                 += tests/common/test_hash
+tests_common_test_hash_SOURCES  = tests/common/hash.cpp
+tests_common_test_hash_LDADD    = $(common_LIBS)
+tests_common_test_hash_CXXFLAGS = $(test_CXXFLAGS)
