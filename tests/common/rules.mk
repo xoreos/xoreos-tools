@@ -174,3 +174,8 @@ check_PROGRAMS                    += tests/common/test_deflate
 tests_common_test_deflate_SOURCES  = tests/common/deflate.cpp
 tests_common_test_deflate_LDADD    = $(common_LIBS)
 tests_common_test_deflate_CXXFLAGS = $(test_CXXFLAGS)
+
+check_PROGRAMS                            += tests/common/test_streamtokenizer
+tests_common_test_streamtokenizer_SOURCES  = tests/common/streamtokenizer.cpp
+tests_common_test_streamtokenizer_LDADD    = $(common_LIBS)
+tests_common_test_streamtokenizer_CXXFLAGS = $(test_CXXFLAGS)
