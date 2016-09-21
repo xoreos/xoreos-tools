@@ -25,7 +25,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "src/common/version.h"
+#include "src/version/version.h"
+
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"

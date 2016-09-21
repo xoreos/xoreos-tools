@@ -22,6 +22,7 @@
 include $(top_srcdir)/Makefile.common
 
 SUBDIRS = \
+          version \
           common \
           aurora \
           nwscript \
@@ -45,6 +46,7 @@ gff2xml_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -56,6 +58,7 @@ tlk2xml_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -67,6 +70,7 @@ ssf2xml_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -78,6 +82,7 @@ xml2tlk_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -89,6 +94,7 @@ xml2ssf_LDADD   = \
                   xml/libxml.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -99,6 +105,7 @@ convert2da_SOURCES = \
 convert2da_LDADD   = \
                      aurora/libaurora.la \
                      common/libcommon.la \
+                     version/libversion.la \
                      $(LDADD) \
                      $(EMPTY)
 
@@ -109,6 +116,7 @@ fixpremiumgff_SOURCES = \
 fixpremiumgff_LDADD   = \
                         aurora/libaurora.la \
                         common/libcommon.la \
+                        version/libversion.la \
                         $(LDADD) \
                         $(EMPTY)
 
@@ -121,6 +129,7 @@ unerf_SOURCES = \
 unerf_LDADD   = \
                 aurora/libaurora.la \
                 common/libcommon.la \
+                version/libversion.la \
                 $(LDADD) \
                 $(EMPTY)
 
@@ -133,6 +142,7 @@ unherf_SOURCES = \
 unherf_LDADD   = \
                  aurora/libaurora.la \
                  common/libcommon.la \
+                 version/libversion.la \
                  $(LDADD) \
                  $(EMPTY)
 
@@ -144,6 +154,7 @@ unrim_SOURCES = \
 unrim_LDADD   = \
                 aurora/libaurora.la \
                 common/libcommon.la \
+                version/libversion.la \
                 $(LDADD) \
                 $(EMPTY)
 
@@ -155,6 +166,7 @@ unkeybif_SOURCES = \
 unkeybif_LDADD   = \
                    aurora/libaurora.la \
                    common/libcommon.la \
+                   version/libversion.la \
                    $(LDADD) \
                    $(EMPTY)
 
@@ -166,6 +178,7 @@ unnds_SOURCES = \
 unnds_LDADD   = \
                 aurora/libaurora.la \
                 common/libcommon.la \
+                version/libversion.la \
                 $(LDADD) \
                 $(EMPTY)
 
@@ -178,6 +191,7 @@ unnsbtx_LDADD   = \
                   images/libimages.la \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -188,6 +202,7 @@ desmall_SOURCES = \
 desmall_LDADD   = \
                   aurora/libaurora.la \
                   common/libcommon.la \
+                  version/libversion.la \
                   $(LDADD) \
                   $(EMPTY)
 
@@ -199,6 +214,7 @@ xoreostex2tga_LDADD   = \
                         images/libimages.la \
                         aurora/libaurora.la \
                         common/libcommon.la \
+                        version/libversion.la \
                         $(LDADD) \
                         $(EMPTY)
 
@@ -210,6 +226,7 @@ nbfs2tga_LDADD   = \
                    images/libimages.la \
                    aurora/libaurora.la \
                    common/libcommon.la \
+                   version/libversion.la \
                    $(LDADD) \
                    $(EMPTY)
 
@@ -221,6 +238,7 @@ ncgr2tga_LDADD   = \
                    images/libimages.la \
                    aurora/libaurora.la \
                    common/libcommon.la \
+                   version/libversion.la \
                    $(LDADD) \
                    $(EMPTY)
 
@@ -232,6 +250,7 @@ cbgt2tga_LDADD   = \
                    images/libimages.la \
                    aurora/libaurora.la \
                    common/libcommon.la \
+                   version/libversion.la \
                    $(LDADD) \
                    $(EMPTY)
 
@@ -243,6 +262,7 @@ cdpth2tga_LDADD   = \
                     images/libimages.la \
                     aurora/libaurora.la \
                     common/libcommon.la \
+                    version/libversion.la \
                     $(LDADD) \
                     $(EMPTY)
 
@@ -254,5 +274,6 @@ ncsdis_LDADD   = \
                  nwscript/libnwscript.la \
                  aurora/libaurora.la \
                  common/libcommon.la \
+                 version/libversion.la \
                  $(LDADD) \
                  $(EMPTY)

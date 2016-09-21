@@ -19,12 +19,12 @@
  */
 
 /** @file
- *  Basic xoreos-tools version information
+ *  Basic xoreos-tools version information.
  */
 
 #include <cstdio>
 
-#include "src/common/version.h"
+#include "src/version/version.h"
 
 #if defined(HAVE_CONFIG_H)
 	#include "config.h"

@@ -19,11 +19,11 @@
  */
 
 /** @file
- *  Basic xoreos-tools version information
+ *  Basic xoreos-tools version information.
  */
 
-#ifndef COMMON_VERSION_H
-#define COMMON_VERSION_H
+#ifndef VERSION_VERSION_H
+#define VERSION_VERSION_H
 
 // "xoreos-tools"
 extern const char *XOREOS_NAME;
@@ -46,4 +46,4 @@ extern const char *XOREOS_AUTHORS;
 /** Print the full version information to stdout. */
 void printVersion();
 
-#endif // COMMON_VERSION_H
+#endif // VERSION_VERSION_H
