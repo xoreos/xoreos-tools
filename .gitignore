@@ -65,7 +65,7 @@ Makefile.am.cmake
 /dists/debian/xoreos-tools/
 
 # git versioning stamp
-/gitstamp/gitstamp
+/src/version/gitstamp
 
 # Unix binaries
 /src/gff2xml

@@ -19,31 +19,30 @@
 
 # XML readers and writers.
 
-include $(top_srcdir)/Makefile.common
+noinst_LTLIBRARIES += src/xml/libxml.la
+src_xml_libxml_la_SOURCES =
 
-noinst_LTLIBRARIES = libxml.la
+src_xml_libxml_la_SOURCES += \
+    src/xml/xmlwriter.h \
+    src/xml/xmlparser.h \
+    src/xml/gffdumper.h \
+    src/xml/gff3dumper.h \
+    src/xml/gff4dumper.h \
+    src/xml/gff4fields.h \
+    src/xml/tlkdumper.h \
+    src/xml/tlkcreator.h \
+    src/xml/ssfdumper.h \
+    src/xml/ssfcreator.h \
+    $(EMPTY)
 
-noinst_HEADERS = \
-                 xmlwriter.h \
-                 xmlparser.h \
-                 gffdumper.h \
-                 gff3dumper.h \
-                 gff4dumper.h \
-                 gff4fields.h \
-                 tlkdumper.h \
-                 tlkcreator.h \
-                 ssfdumper.h \
-                 ssfcreator.h \
-                 $(EMPTY)
-
-libxml_la_SOURCES = \
-                    xmlwriter.cpp \
-                    xmlparser.cpp \
-                    gffdumper.cpp \
-                    gff3dumper.cpp \
-                    gff4dumper.cpp \
-                    tlkdumper.cpp \
-                    tlkcreator.cpp \
-                    ssfdumper.cpp \
-                    ssfcreator.cpp \
-                    $(EMPTY)
+src_xml_libxml_la_SOURCES += \
+    src/xml/xmlwriter.cpp \
+    src/xml/xmlparser.cpp \
+    src/xml/gffdumper.cpp \
+    src/xml/gff3dumper.cpp \
+    src/xml/gff4dumper.cpp \
+    src/xml/tlkdumper.cpp \
+    src/xml/tlkcreator.cpp \
+    src/xml/ssfdumper.cpp \
+    src/xml/ssfcreator.cpp \
+    $(EMPTY)
