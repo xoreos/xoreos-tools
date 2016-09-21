@@ -17,71 +17,64 @@
 # You should have received a copy of the GNU General Public License
 # along with xoreos. If not, see <http://www.gnu.org/licenses/>.
 
-# Top-level automake build recipe.
+# The main "controller" automake recipe. We're setting up all our
+# global build variables here, then recursively include all other
+# build recipe, creating a flat non-recursive automake setup.
 
-include $(top_srcdir)/Makefile.common
-
+# Use the m4 directory for extra m4 autoconf scripts.
 ACLOCAL_AMFLAGS = -I m4 --install
+# Build objects in the same directory as their source files.
+AUTOMAKE_OPTIONS = subdir-objects
 
-EXTRA_DIST = \
-             autogen.sh \
-             BUILDDEP.md \
-             dists/arch/PKGBUILD \
-             dists/debian/changelog \
-             dists/debian/compat \
-             dists/debian/control \
-             dists/debian/copyright \
-             dists/debian/rules \
-             dists/debian/xoreos-tools.lintian-overrides \
-             dists/debian/source/format \
-             dists/fedora/build-from-git.sh \
-             dists/fedora/xoreos-tools.spec \
-             .uncrustifyrc \
-             CMakeLists.txt \
-             cmake/CMakeAM.cmake \
-             cmake/FindIconv.cmake \
-             cmake/SetCheckCompilerFlag.cmake \
-             cmake/toolchain/i686-windows-mingw.cmake \
-             cmake/toolchain/x86_64-windows-mingw.cmake \
-             $(EMPTY)
+# Empty element to make the source lists easier editable.
+EMPTY =
 
-dist_doc_DATA = \
-                COPYING \
-                COPYING.GPLv2 \
-                AUTHORS \
-                ChangeLog \
-                NEWS.md \
-                TODO \
-                README.md \
-                CONTRIBUTING.md \
-                CODE_OF_CONDUCT.md \
-                $(EMPTY)
+# Initialize the global lists.
 
-dist_man1_MANS = \
-                 man/cbgt2tga.1 \
-                 man/cdpth2tga.1 \
-                 man/convert2da.1 \
-                 man/fixpremiumgff.1 \
-                 man/desmall.1 \
-                 man/gff2xml.1 \
-                 man/nbfs2tga.1 \
-                 man/ncgr2tga.1 \
-                 man/tlk2xml.1 \
-                 man/ssf2xml.1 \
-                 man/xml2tlk.1 \
-                 man/xml2ssf.1 \
-                 man/unerf.1 \
-                 man/unherf.1 \
-                 man/unkeybif.1 \
-                 man/unnds.1 \
-                 man/unnsbtx.1 \
-                 man/unrim.1 \
-                 man/xoreostex2tga.1 \
-                 man/ncsdis.1 \
-                 $(EMPTY)
+noinst_HEADERS     =
+noinst_LTLIBRARIES =
 
-SUBDIRS = \
-          utf8cpp \
-          gitstamp \
-          src \
-          $(EMPTY)
+bin_PROGRAMS =
+
+CLEANFILES =
+
+EXTRA_DIST     =
+dist_doc_DATA  =
+dist_man1_MANS =
+
+# Library compile flags
+
+LIBSF_XOREOS  = $(XOREOSTOOLS_CFLAGS)
+LIBSF_GENERAL = $(ZLIB_CFLAGS) $(XML2_CFLAGS)
+
+LIBSF         = $(LIBSF_XOREOS) $(LIBSF_GENERAL)
+
+# Library linking flags
+
+LIBSL_XOREOS  = $(XOREOSTOOLS_LIBS)
+LIBSL_GENERAL = $(LTLIBICONV) $(ZLIB_LIBS) $(XML2_LIBS)
+
+LIBSL         = $(LIBSL_XOREOS) $(LIBSL_GENERAL)
+
+# Other compiler flags
+
+FLAGS_DIR     = -I$(srcdir)
+FLAGS_DEBUG   = $(GGDB)
+FLAGS_STD     = $(STD)
+FLAGS_OPT     = $(LTO) $(NATIVE)
+FLAGS_WARN    = $(WARN) $(WERROR)
+
+FLAGS         = $(FLAGS_DIR) $(FLAGS_DEBUG) $(FLAGS_STD) \
+                $(FLAGS_OPT) $(FLAGS_WARN)
+
+# Putting it all together...
+
+AM_CXXFLAGS   = $(FLAGS) $(LIBSF)
+AM_LDFLAGS    = $(FLAGS_OPT)
+LDADD         = $(LIBSL)
+LIBS          =
+
+# Now include the top-level recipe file and through it, all the
+# other build recipes.
+
+include rules.mk

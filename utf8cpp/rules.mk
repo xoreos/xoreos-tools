@@ -19,15 +19,14 @@
 
 # UTF8-CPP (<http://utfcpp.sourceforge.net/>).
 
-include $(top_srcdir)/Makefile.common
+noinst_HEADERS += \
+    utf8cpp/utf8.h \
+    utf8cpp/utf8/checked.h \
+    utf8cpp/utf8/core.h \
+    utf8cpp/utf8/unchecked.h \
+    $(EMPTY)
 
-noinst_HEADERS = utf8.h \
-                 utf8/checked.h \
-                 utf8/core.h \
-                 utf8/unchecked.h \
-                 $(EMPTY)
-
-EXTRA_DIST = \
-             README.xoreos \
-             utf8cpp.patch \
-             $(EMPTY)
+EXTRA_DIST += \
+    utf8cpp/README.xoreos \
+    utf8cpp/utf8cpp.patch \
+    $(EMPTY)
