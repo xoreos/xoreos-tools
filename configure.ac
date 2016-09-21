@@ -197,6 +197,7 @@ AC_SUBST(XOREOSTOOLS_LIBS)
 
 AC_CONFIG_FILES([utf8cpp/Makefile])
 AC_CONFIG_FILES([gitstamp/Makefile])
+AC_CONFIG_FILES([src/version/Makefile])
 AC_CONFIG_FILES([src/common/Makefile])
 AC_CONFIG_FILES([src/aurora/Makefile])
 AC_CONFIG_FILES([src/nwscript/Makefile])

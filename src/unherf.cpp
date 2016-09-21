@@ -27,7 +27,8 @@
 
 #include <map>
 
-#include "src/common/version.h"
+#include "src/version/version.h"
+
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
