@@ -107,7 +107,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 			}
 
 			if (argv[i] == "--version") {
-				printVersion();
+				Version::printVersion();
 				returnValue = 0;
 
 				return false;
