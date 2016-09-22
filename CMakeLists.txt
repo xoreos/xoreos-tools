@@ -240,10 +240,10 @@ endif(ICONV_SECOND_ARGUMENT_IS_CONST)
 
 
 # -------------------------------------------------------------------------
-# xoreos-tools main targets, parsed from configure.ac and */Makefile.am
-include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/src)
+# xoreos-tools main targets, parsed from the Automake rules.mk files
+include_directories(${PROJECT_SOURCE_DIR})
 add_definitions(-DPACKAGE_STRING="xoreos-tools ${xoreos-tools_VERSION}")
-parse_configure(configure.ac src)
+parse_automake(src/rules.mk)
 target_link_libraries(gff2xml ${XOREOSTOOLS_LIBRARIES})
 target_link_libraries(tlk2xml ${XOREOSTOOLS_LIBRARIES})
 target_link_libraries(ssf2xml ${XOREOSTOOLS_LIBRARIES})
