@@ -151,18 +151,29 @@ void LocString::readString(uint32 languageID, Common::SeekableReadStream &stream
 	if (length == 0)
 		return;
 
-	Common::MemoryReadStream *data   = stream.readStream(length);
-	Common::MemoryReadStream *parsed = LangMan.preParseColorCodes(*data);
+	s.first->second = "[???]";
 
-	Common::Encoding encoding = LangMan.getEncodingLocString(LangMan.getLanguageGendered(languageID));
-	if (encoding == Common::kEncodingInvalid)
-		encoding = Common::kEncodingUTF8;
+	Common::MemoryReadStream *data = 0, *parsed = 0;
 
 	try {
-		s.first->second = Common::readString(*parsed, encoding);
+		data   = stream.readStream(length);
+		parsed = LangMan.preParseColorCodes(*data);
+
+		Common::Encoding encoding = LangMan.getEncodingLocString(LangMan.getLanguageGendered(languageID));
+		if (encoding == Common::kEncodingInvalid)
+			encoding = Common::kEncodingUTF8;
+
+		try {
+			s.first->second = Common::readString(*parsed, encoding);
+		} catch (...) {
+			parsed->seek(0);
+			s.first->second = Common::readString(*parsed, Common::kEncodingCP1252);
+		}
+
 	} catch (...) {
-		parsed->seek(0);
-		s.first->second = Common::readString(*parsed, Common::kEncodingCP1252);
+		delete parsed;
+		delete data;
+		throw;
 	}
 
 	delete parsed;
