@@ -37,6 +37,7 @@
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/language.h"

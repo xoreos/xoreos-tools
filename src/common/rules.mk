@@ -58,6 +58,7 @@ src_common_libcommon_la_SOURCES += \
     src/common/writefile.h \
     src/common/filepath.h \
     src/common/binsearch.h \
+    src/common/cli.h \
     $(EMPTY)
 
 src_common_libcommon_la_SOURCES += \
@@ -82,4 +83,5 @@ src_common_libcommon_la_SOURCES += \
     src/common/readfile.cpp \
     src/common/writefile.cpp \
     src/common/filepath.cpp \
+    src/common/cli.cpp \
     $(EMPTY)
