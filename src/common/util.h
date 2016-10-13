@@ -147,6 +147,14 @@ void status(const char *s, ...) GCC_PRINTF(1, 2);
 */
 void info(const char *s, ...) GCC_PRINTF(1, 2);
 
+/** Print an error message to the text console (stderr).
+ *
+ *  Automatically prepends the text "ERROR: " and appends
+ *  an exclamation mark and a newline.
+ *
+ *  Additionally, the program will immediately quit with
+ *  return code 1.
+ */
 void NORETURN_PRE error(const char *s, ...) GCC_PRINTF(1, 2) NORETURN_POST;
 
 float  convertIEEEFloat(uint32 data);
