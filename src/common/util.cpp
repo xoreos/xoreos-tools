@@ -58,6 +58,20 @@ void status(const char *s, ...) {
 #endif
 }
 
+void info(const char *s, ...) {
+	char buf[STRINGBUFLEN];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
+	va_end(va);
+
+#ifndef DISABLE_TEXT_CONSOLE
+	std::fputs(buf, stdout);
+	std::fputs("\n", stdout);
+#endif
+}
+
 void NORETURN_PRE error(const char *s, ...) {
 	char buf[STRINGBUFLEN];
 	va_list va;
