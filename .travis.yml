@@ -8,15 +8,27 @@ compiler:
 
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "PY2nEbgPiLlKzs5bojGmDE1KFjTQws504ZoEBh3O9AAJWfkEMQvhwfkO6wfp3hYXsQ4fZUfJM03CsJFxXiGk1oxXqBQ/lB1eKhf7GN8AY2giD+Ei6dD3hKbUwlmsbCk1YXryWsffrGwY/++0sRkgcYqAKHvQ1Z5POTNHNGMcg9M="
-   - coverity_scan_run_condition='"$CC" = gcc'
-   - coverity_scan_script_test_mode=false
+    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+    #   via the "travis encrypt" command using the project repo's public key
+    - secure: "PY2nEbgPiLlKzs5bojGmDE1KFjTQws504ZoEBh3O9AAJWfkEMQvhwfkO6wfp3hYXsQ4fZUfJM03CsJFxXiGk1oxXqBQ/lB1eKhf7GN8AY2giD+Ei6dD3hKbUwlmsbCk1YXryWsffrGwY/++0sRkgcYqAKHvQ1Z5POTNHNGMcg9M="
+    - coverity_scan_run_condition='\( "$CC" = gcc \) -a \( $USECMAKE -eq 0 \)'
+    - coverity_scan_script_test_mode=false
+  matrix:
+    # Let's test both our autoconf and CMake build system
+    - USECMAKE=0
+    - USECMAKE=1
+
+# Only test clang with autotools, not CMake.
+# We now have three builds: autoconf+gcc, autoconf+clang, CMake+gcc
+matrix:
+  exclude:
+    - compiler: clang
+      env: USECMAKE=1
 
 script:
-  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then ./autogen.sh; fi
-  - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then ./configure || cat config.log; fi
+  - if [ \( "$COVERITY_SCAN_BRANCH" != 1 \) -a \( $USECMAKE -eq 0 \) ]; then ./autogen.sh; fi
+  - if [ \( "$COVERITY_SCAN_BRANCH" != 1 \) -a \( $USECMAKE -eq 0 \) ]; then ./configure || cat config.log; fi
+  - if [ \( "$COVERITY_SCAN_BRANCH" != 1 \) -a \( $USECMAKE -eq 1 \) ]; then cmake .; fi
   - if [ "$COVERITY_SCAN_BRANCH" != 1 ]; then make -j4; fi
 
 addons:
