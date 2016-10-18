@@ -28,6 +28,7 @@
 #include "src/common/error.h"
 #include "src/common/ustring.h"
 #include "src/common/platform.h"
+#include "src/common/filepath.h"
 
 namespace Common {
 
@@ -49,10 +50,17 @@ WriteFile::~WriteFile() {
 bool WriteFile::open(const UString &fileName) {
 	close();
 
-	if (fileName.empty())
+	UString path = FilePath::normalize(fileName);
+	if (path.empty())
 		return false;
 
-	if (!(_handle = Platform::openFile(fileName, Platform::kFileModeWrite)))
+	try {
+		FilePath::createDirectories(FilePath::getDirectory(path));
+	} catch (...) {
+		return false;
+	}
+
+	if (!(_handle = Platform::openFile(path, Platform::kFileModeWrite)))
 		return false;
 
 	return true;
