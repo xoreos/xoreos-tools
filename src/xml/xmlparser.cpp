@@ -28,6 +28,8 @@
 #include <libxml/parser.h>
 #include <libxml/xmlerror.h>
 
+#include <boost/scope_exit.hpp>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -71,39 +73,30 @@ static void deinitXML() {
 }
 
 
-XMLParser::XMLParser(Common::ReadStream &stream, bool makeLower) : _rootNode(0) {
+XMLParser::XMLParser(Common::ReadStream &stream, bool makeLower) {
 	initXML();
-	xmlDocPtr xml = 0;
 
-	try {
+	const int options = XML_PARSE_NOWARNING | XML_PARSE_NOBLANKS | XML_PARSE_NONET |
+	                    XML_PARSE_NSCLEAN   | XML_PARSE_NOCDATA;
 
-		const int options = XML_PARSE_NOWARNING | XML_PARSE_NOBLANKS | XML_PARSE_NONET |
-		                    XML_PARSE_NSCLEAN   | XML_PARSE_NOCDATA;
+	xmlDocPtr xml = xmlReadIO(readStream, closeStream, static_cast<void *>(&stream), "stream.xml", 0, options);
+	if (!xml)
+		throw Common::Exception("XML document failed to parse");
 
-		xml = xmlReadIO(readStream, closeStream, static_cast<void *>(&stream), "stream.xml", 0, options);
-		if (!xml)
-			throw Common::Exception("XML document failed to parse");
-
-		xmlNodePtr root = xmlDocGetRootElement(xml);
-		if (!root)
-			throw Common::Exception("XML document has no root node");
-
-		_rootNode = new XMLNode(*root, makeLower);
-
-	} catch (...) {
-		delete _rootNode;
-
+	BOOST_SCOPE_EXIT( (&xml) ) {
 		xmlFreeDoc(xml);
-		deinitXML();
-		throw;
-	}
+	} BOOST_SCOPE_EXIT_END
 
-	xmlFreeDoc(xml);
+	xmlNodePtr root = xmlDocGetRootElement(xml);
+	if (!root)
+		throw Common::Exception("XML document has no root node");
+
+	_rootNode.reset(new XMLNode(*root, makeLower));
+
 	deinitXML();
 }
 
 XMLParser::~XMLParser() {
-	delete _rootNode;
 }
 
 const XMLNode &XMLParser::getRoot() const {

@@ -30,6 +30,7 @@
 
 #include <boost/noncopyable.hpp>
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 struct _xmlNode;
@@ -52,7 +53,7 @@ public:
 	const XMLNode &getRoot() const;
 
 private:
-	XMLNode *_rootNode;
+	Common::ScopedPtr<XMLNode> _rootNode;
 };
 
 class XMLNode : boost::noncopyable {
@@ -99,6 +100,9 @@ private:
 	void clean();
 
 	friend class XMLParser;
+
+	template<typename T>
+	friend void Common::DeallocatorDefault::destroy(T *);
 };
 
 } // End of namespace XML
