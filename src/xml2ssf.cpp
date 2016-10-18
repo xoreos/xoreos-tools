@@ -41,6 +41,8 @@
 
 #include "src/xml/ssfcreator.h"
 
+#include "src/util.h"
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile, Aurora::GameID &game);
@@ -48,6 +50,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void createSSF(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID game);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

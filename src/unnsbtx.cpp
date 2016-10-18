@@ -57,6 +57,8 @@ void listFiles(Aurora::NSBTXFile &nsbtx);
 void extractFiles(Aurora::NSBTXFile &nsbtx);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

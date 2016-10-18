@@ -72,6 +72,8 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
 void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	std::vector<Aurora::KEYFile *> keys;
 	std::vector<Aurora::BIFFile *> bifs;
 

@@ -62,6 +62,8 @@ void listFiles(Aurora::HERFFile &rim);
 void extractFiles(Aurora::HERFFile &rim);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

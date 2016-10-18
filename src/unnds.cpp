@@ -57,6 +57,8 @@ void listFiles(Aurora::NDSFile &nds);
 void extractFiles(Aurora::NDSFile &nds);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

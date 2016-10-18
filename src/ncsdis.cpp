@@ -42,6 +42,8 @@
 
 #include "src/nwscript/disassembler.h"
 
+#include "src/util.h"
+
 enum Command {
 	kCommandNone     = -1,
 	kCommandListing  =  0,
@@ -60,6 +62,8 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

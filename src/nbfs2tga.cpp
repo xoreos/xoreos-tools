@@ -40,6 +40,8 @@
 
 #include "src/images/nbfs.h"
 
+#include "src/util.h"
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &nbfsFile, Common::UString &nbfpFile,
@@ -49,6 +51,8 @@ void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,
              const Common::UString &outFile, uint32 width, uint32 height);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

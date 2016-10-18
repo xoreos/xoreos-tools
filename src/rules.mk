@@ -32,6 +32,7 @@ noinst_HEADERS += \
 bin_PROGRAMS += src/gff2xml
 src_gff2xml_SOURCES = \
     src/gff2xml.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_gff2xml_LDADD = \
     src/xml/libxml.la \
@@ -44,6 +45,7 @@ src_gff2xml_LDADD = \
 bin_PROGRAMS += src/tlk2xml
 src_tlk2xml_SOURCES = \
     src/tlk2xml.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_tlk2xml_LDADD = \
     src/xml/libxml.la \
@@ -56,6 +58,7 @@ src_tlk2xml_LDADD = \
 bin_PROGRAMS += src/ssf2xml
 src_ssf2xml_SOURCES = \
     src/ssf2xml.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_ssf2xml_LDADD = \
     src/xml/libxml.la \
@@ -68,6 +71,7 @@ src_ssf2xml_LDADD = \
 bin_PROGRAMS += src/xml2tlk
 src_xml2tlk_SOURCES = \
     src/xml2tlk.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_xml2tlk_LDADD = \
     src/xml/libxml.la \
@@ -80,6 +84,7 @@ src_xml2tlk_LDADD = \
 bin_PROGRAMS += src/xml2ssf
 src_xml2ssf_SOURCES = \
     src/xml2ssf.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_xml2ssf_LDADD = \
     src/xml/libxml.la \
@@ -92,6 +97,7 @@ src_xml2ssf_LDADD = \
 bin_PROGRAMS += src/convert2da
 src_convert2da_SOURCES = \
     src/convert2da.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_convert2da_LDADD = \
     src/aurora/libaurora.la \
@@ -103,6 +109,7 @@ src_convert2da_LDADD = \
 bin_PROGRAMS += src/fixpremiumgff
 src_fixpremiumgff_SOURCES = \
     src/fixpremiumgff.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_fixpremiumgff_LDADD = \
     src/aurora/libaurora.la \
@@ -189,6 +196,7 @@ src_unnsbtx_LDADD = \
 bin_PROGRAMS += src/desmall
 src_desmall_SOURCES = \
     src/desmall.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_desmall_LDADD = \
     src/aurora/libaurora.la \
@@ -200,6 +208,7 @@ src_desmall_LDADD = \
 bin_PROGRAMS += src/xoreostex2tga
 src_xoreostex2tga_SOURCES = \
     src/xoreostex2tga.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_xoreostex2tga_LDADD = \
     src/images/libimages.la \
@@ -212,6 +221,7 @@ src_xoreostex2tga_LDADD = \
 bin_PROGRAMS += src/nbfs2tga
 src_nbfs2tga_SOURCES = \
     src/nbfs2tga.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_nbfs2tga_LDADD = \
     src/images/libimages.la \
@@ -224,6 +234,7 @@ src_nbfs2tga_LDADD = \
 bin_PROGRAMS += src/ncgr2tga
 src_ncgr2tga_SOURCES = \
     src/ncgr2tga.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_ncgr2tga_LDADD = \
     src/images/libimages.la \
@@ -236,6 +247,7 @@ src_ncgr2tga_LDADD = \
 bin_PROGRAMS += src/cbgt2tga
 src_cbgt2tga_SOURCES = \
     src/cbgt2tga.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_cbgt2tga_LDADD = \
     src/images/libimages.la \
@@ -248,6 +260,7 @@ src_cbgt2tga_LDADD = \
 bin_PROGRAMS += src/cdpth2tga
 src_cdpth2tga_SOURCES = \
     src/cdpth2tga.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_cdpth2tga_LDADD = \
     src/images/libimages.la \
@@ -260,6 +273,7 @@ src_cdpth2tga_LDADD = \
 bin_PROGRAMS += src/ncsdis
 src_ncsdis_SOURCES = \
     src/ncsdis.cpp \
+    src/util.cpp \
     $(EMPTY)
 src_ncsdis_LDADD = \
     src/nwscript/libnwscript.la \

@@ -41,6 +41,8 @@
 #include "src/aurora/2dafile.h"
 #include "src/aurora/gdafile.h"
 
+#include "src/util.h"
+
 enum Format {
 	kFormat2DA,
 	kFormat2DAb,
@@ -58,6 +60,8 @@ void convert2DA(const Common::UString &file, const Common::UString &outFile, For
 void convert2DA(const std::vector<Common::UString> &files, const Common::UString &outFile, Format format);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

@@ -42,6 +42,8 @@
 
 #include "src/xml/gffdumper.h"
 
+#include "src/util.h"
+
 typedef std::map<uint32, Common::Encoding> EncodingOverrides;
 
 void printUsage(FILE *stream, const Common::UString &name);
@@ -56,6 +58,8 @@ void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
              Common::Encoding encoding, bool nwnPremium);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

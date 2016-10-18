@@ -41,6 +41,8 @@
 
 #include "src/images/ncgr.h"
 
+#include "src/util.h"
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       uint32 &width, uint32 &height, std::vector<Common::UString> &ncgrFiles,
@@ -50,6 +52,8 @@ void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
              Common::UString &outFile, uint32 width, uint32 height);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

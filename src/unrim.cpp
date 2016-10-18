@@ -55,6 +55,8 @@ void listFiles(Aurora::RIMFile &rim, Aurora::GameID game);
 void extractFiles(Aurora::RIMFile &rim, Aurora::GameID);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

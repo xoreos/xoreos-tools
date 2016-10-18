@@ -37,6 +37,8 @@
 
 #include "src/aurora/smallfile.h"
 
+#include "src/util.h"
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile);
@@ -44,6 +46,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void desmall(const Common::UString &inFile, const Common::UString &outFile);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);

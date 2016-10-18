@@ -45,6 +45,8 @@
 #include "src/images/tpc.h"
 #include "src/images/txb.h"
 
+#include "src/util.h"
+
 void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
@@ -54,6 +56,8 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
              Aurora::FileType type, bool flip);
 
 int main(int argc, char **argv) {
+	initPlatform();
+
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);
