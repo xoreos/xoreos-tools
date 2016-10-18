@@ -42,11 +42,21 @@ public:
 		kFileModeMAX
 	};
 
+	/** Initialize platform-dependant things. */
+	static void init();
+
 	/** Read the command line parameters into UTF-8 strings. */
 	static void getParameters(int argc, char **argv, std::vector<UString> &args);
 
 	/** Open a file with an UTF-8 encoded name. */
 	static std::FILE *openFile(const UString &fileName, FileMode mode);
+
+	/** Return the OS-specific path of the user's home directory. */
+	static UString getHomeDirectory();
+	/** Return the OS-specific path of the config directory. */
+	static UString getConfigDirectory();
+	/** Return the OS-specific path of the user data directory. */
+	static UString getUserDataDirectory();
 };
 
 } // End of namespace Common
