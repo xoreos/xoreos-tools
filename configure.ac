@@ -176,6 +176,21 @@ AX_CHECK_ICONV( , AC_MSG_ERROR([No useable iconv() function found!]))
 AX_CHECK_ZLIB(1, 2, 3, 0, , AC_MSG_ERROR([zlib(>= 1.2.3) is required and could not be found!]))
 AX_CHECK_XML2(2, 8, 0, , AC_MSG_ERROR([libxml2(>= 2.8.0) is required and could not be found!]))
 
+dnl Boost
+BOOST_REQUIRE(1.53.0)
+BOOST_UTILITY
+BOOST_STRING_ALGO
+BOOST_SYSTEM
+BOOST_FILESYSTEM
+BOOST_REGEX
+BOOST_HASH
+BOOST_FUNCTION
+BOOST_BIND
+BOOST_UUID
+BOOST_SMART_PTR
+BOOST_ATOMIC
+BOOST_LOCALE
+
 dnl Extra flags
 case "$target" in
 	*darwin*)

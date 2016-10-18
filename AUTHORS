@@ -43,6 +43,14 @@ registered trademark of CD Projekt S.A. Dragon Age is a registered trademark
 of Electronic Arts, Inc. All rights reserved.
 
 
+boost.m4
+********
+   xoreos uses Benoit Sigoure's boost.m4 autoconf macros
+   (<http://github.com/tsuna/boost.m4>) to check for the needed Boost
+   libraries. boost.m4 is licensed under version 3 or later of the GNU General
+   Public License. For the full license text, see COPYING or
+   <https://gnu.org/licenses/gpl-3.0.html>.
+
 UTF-8 CPP
 *********
    xoreos-tools uses the lightweight header-only UTF-8 CPP library

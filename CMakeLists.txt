@@ -224,6 +224,14 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 list(APPEND XOREOSTOOLS_LIBRARIES ${ZLIB_LIBRARIES})
 
+option(Boost_USE_STATIC_LIBS "Use Boost static libraries" OFF)
+
+find_package(Boost COMPONENTS system filesystem regex atomic locale REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+list(APPEND XOREOSTOOLS_LIBRARIES ${Boost_LIBRARIES})
+
 find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND XOREOSTOOLS_LIBRARIES ${LIBXML2_LIBRARIES})

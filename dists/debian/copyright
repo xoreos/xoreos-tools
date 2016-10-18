@@ -27,6 +27,10 @@ Files: CODE_OF_CONDUCT
 Copyright: 2014-2016 Coraline Ada Ehmke
 License: Expat
 
+Files: m4/boost.m4
+Copyright: 2007-2011, 2014 Benoit Sigoure <tsuna@lrde.epita.fr>
+License: GPL-3.0+
+
 Files: m4/ax_check_compiler_flags.m4
 Copyright: 2005 Steven G. Johnson <stevenj@alum.mit.edu>
            2005 Matteo Frigo

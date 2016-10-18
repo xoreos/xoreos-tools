@@ -24,6 +24,10 @@ Source0:        https://github.com/xoreos/xoreos-tools/releases/download/%{versi
 BuildRequires:  zlib-devel, libxml2-devel
 BuildRequires:  libtool, gettext
 
+# Boost dependencies.
+BuildRequires:  boost-devel, boost-system, boost-filesystem, boost-atomic,
+BuildRequires:  boost-regex, boost-locale
+
 #Requires:
 
 %description
