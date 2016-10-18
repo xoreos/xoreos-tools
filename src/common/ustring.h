@@ -29,6 +29,8 @@
 #include <sstream>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+
 #include "src/common/types.h"
 #include "src/common/system.h"
 
@@ -212,6 +214,31 @@ static inline UString operator+(const std::string &left, const UString &right) {
 static inline UString operator+(const char *left, const UString &right) {
 	return UString(left) + right;
 }
+
+
+// Hash functions
+
+struct hashUStringCaseSensitive {
+	size_t operator()(const UString &str) const {
+		size_t seed = 0;
+
+		for (UString::iterator it = str.begin(); it != str.end(); ++it)
+			boost::hash_combine<uint32>(seed, *it);
+
+		return seed;
+	}
+};
+
+struct hashUStringCaseInsensitive {
+	size_t operator()(const UString &str) const {
+		size_t seed = 0;
+
+		for (UString::iterator it = str.begin(); it != str.end(); ++it)
+			boost::hash_combine<uint32>(seed, UString::toLower(*it));
+
+		return seed;
+	}
+};
 
 } // End of namespace Common
 
