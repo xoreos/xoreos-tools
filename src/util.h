@@ -30,6 +30,8 @@ namespace Common {
 	class SeekableReadStream;
 }
 
+void initPlatform();
+
 void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName);
 
 #endif // UTIL_H
