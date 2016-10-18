@@ -116,19 +116,28 @@ void printException(Exception &e, const UString &prefix) {
 	}
 }
 
-void exceptionDispatcherError() {
+void exceptionDispatcherError(const UString &reason) {
 	try {
 		try {
 			throw;
 		} catch (Exception &e) {
+			if (!reason.empty())
+				e.add("%s", reason.c_str());
+
 			printException(e);
 			std::exit(1);
 		} catch (std::exception &e) {
 			Exception se(e);
+			if (!reason.empty())
+				se.add("%s", reason.c_str());
+
 			printException(se);
 			std::exit(1);
 		} catch (...) {
 			Exception se("Unknown exception caught");
+			if (!reason.empty())
+				se.add("%s", reason.c_str());
+
 			printException(se);
 			std::exit(1);
 		}
