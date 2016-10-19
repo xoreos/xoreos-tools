@@ -31,6 +31,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "src/common/types.h"
+#include "src/common/deallocator.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/aurorafile.h"
@@ -90,6 +91,9 @@ private:
 	const Common::UString &getCell(size_t n) const;
 
 	friend class TwoDAFile;
+
+	template<typename T>
+	friend void Common::DeallocatorDefault::destroy(T *);
 };
 
 /** Class to hold the two-dimensional array of a 2DA file.
