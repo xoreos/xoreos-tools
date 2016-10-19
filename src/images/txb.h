@@ -25,6 +25,8 @@
 #ifndef IMAGES_TXB_H
 #define IMAGES_TXB_H
 
+#include "src/common/scopedptr.h"
+
 #include "src/images/decoder.h"
 
 namespace Common {
@@ -45,7 +47,7 @@ public:
 private:
 	size_t _dataSize;
 
-	byte  *_txiData;
+	Common::ScopedArray<byte> _txiData;
 	size_t _txiDataSize;
 
 	// Loading helpers

@@ -35,7 +35,7 @@ static const byte kEncodingDXT5 = 0x0C;
 
 namespace Images {
 
-TXB::TXB(Common::SeekableReadStream &txb) : _dataSize(0), _txiData(0), _txiDataSize(0) {
+TXB::TXB(Common::SeekableReadStream &txb) : _dataSize(0), _txiDataSize(0) {
 	load(txb);
 
 	// In xoreos-tools, we always want decompressed images
@@ -43,7 +43,6 @@ TXB::TXB(Common::SeekableReadStream &txb) : _dataSize(0), _txiData(0), _txiDataS
 }
 
 TXB::~TXB() {
-	delete[] _txiData;
 }
 
 void TXB::load(Common::SeekableReadStream &txb) {
@@ -68,7 +67,7 @@ Common::SeekableReadStream *TXB::getTXI() const {
 	if (!_txiData || (_txiDataSize == 0))
 		return 0;
 
-	return new Common::MemoryReadStream(_txiData, _txiDataSize);
+	return new Common::MemoryReadStream(_txiData.get(), _txiDataSize);
 }
 
 void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
@@ -143,16 +142,14 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 
 	_mipMaps.reserve(mipMapCount);
 	for (uint32 i = 0; i < mipMapCount; i++) {
-		MipMap *mipMap = new MipMap;
+		Common::ScopedPtr<MipMap> mipMap(new MipMap);
 
 		mipMap->width  = MAX<uint32>(width,  1);
 		mipMap->height = MAX<uint32>(height, 1);
 
-		if (((mipMap->width < 4) || (mipMap->height < 4)) && (mipMap->width != mipMap->height)) {
-			// Invalid mipmap dimensions
-			delete mipMap;
+		// Invalid mipmap dimensions
+		if (((mipMap->width < 4) || (mipMap->height < 4)) && (mipMap->width != mipMap->height))
 			break;
-		}
 
 		mipMap->size = MAX<uint32>(mipMapSize, minDataSize);
 
@@ -160,15 +157,13 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 
 		const size_t mipMapDataSize = getDataSize(_format, mipMap->width, mipMap->height);
 
-		if ((dataSize < mipMap->size) || (mipMap->size < mipMapDataSize)) {
-			// Wouldn't fit
-			delete mipMap;
+		// Wouldn't fit
+		if ((dataSize < mipMap->size) || (mipMap->size < mipMapDataSize))
 			break;
-		}
 
 		dataSize -= mipMap->size;
 
-		_mipMaps.push_back(mipMap);
+		_mipMaps.push_back(mipMap.release());
 
 		width      >>= 1;
 		height     >>= 1;
@@ -227,9 +222,9 @@ void TXB::readTXIData(Common::SeekableReadStream &txb) {
 	if (_txiDataSize == 0)
 		return;
 
-	_txiData = new byte[_txiDataSize];
+	_txiData.reset(new byte[_txiDataSize]);
 
-	if (txb.read(_txiData, _txiDataSize) != _txiDataSize)
+	if (txb.read(_txiData.get(), _txiDataSize) != _txiDataSize)
 		throw Common::Exception(Common::kReadError);
 }
 
