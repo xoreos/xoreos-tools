@@ -25,14 +25,15 @@
 #ifndef COMMON_STDINSTREAM_H
 #define COMMON_STDINSTREAM_H
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
-#include "src/common/noncopyable.h"
 #include "src/common/readstream.h"
 
 namespace Common {
 
 /** A simple stream to read from stdin. */
-class StdInStream : NonCopyable, public ReadStream {
+class StdInStream : boost::noncopyable, public ReadStream {
 public:
 	StdInStream();
 	~StdInStream();

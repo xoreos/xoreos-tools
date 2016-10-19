@@ -28,7 +28,6 @@ src_common_libcommon_la_SOURCES += \
     src/common/types.h \
     src/common/endianness.h \
     src/common/maths.h \
-    src/common/noncopyable.h \
     src/common/singleton.h \
     src/common/ustring.h \
     src/common/hash.h \

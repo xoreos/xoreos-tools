@@ -25,14 +25,15 @@
 #ifndef COMMON_STDOUTSTREAM_H
 #define COMMON_STDOUTSTREAM_H
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
-#include "src/common/noncopyable.h"
 #include "src/common/writestream.h"
 
 namespace Common {
 
 /** A simple stream to write to stdout. */
-class StdOutStream : NonCopyable, public WriteStream {
+class StdOutStream : boost::noncopyable, public WriteStream {
 public:
 	StdOutStream();
 	~StdOutStream();

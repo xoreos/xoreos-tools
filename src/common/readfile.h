@@ -27,9 +27,10 @@
 
 #include <cstdio>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/readstream.h"
-#include "src/common/noncopyable.h"
 
 namespace Common {
 
@@ -37,7 +38,7 @@ class UString;
 class MemoryReadStream;
 
 /** A simple streaming file reading class. */
-class ReadFile : NonCopyable, public SeekableReadStream {
+class ReadFile : boost::noncopyable, public SeekableReadStream {
 public:
 	ReadFile();
 	ReadFile(const UString &fileName);
