@@ -26,6 +26,7 @@
  * (<https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware>)
  */
 
+#include "src/common/scopedptr.h"
 #include "src/common/readstream.h"
 #include "src/common/writestream.h"
 #include "src/common/writefile.h"
