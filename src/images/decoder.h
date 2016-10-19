@@ -30,6 +30,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 
 #include "src/images/types.h"
 
@@ -48,7 +49,8 @@ public:
 		int    width;  ///< The mip map's width.
 		int    height; ///< The mip map's height.
 		uint32 size;   ///< The mip map's size in bytes.
-		byte  *data;   ///< The mip map's data.
+
+		Common::ScopedArray<byte> data; ///< The mip map's data.
 
 		MipMap();
 		MipMap(const MipMap &mipMap);

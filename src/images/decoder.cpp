@@ -36,15 +36,14 @@
 
 namespace Images {
 
-Decoder::MipMap::MipMap() : width(0), height(0), size(0), data(0) {
+Decoder::MipMap::MipMap() : width(0), height(0), size(0) {
 }
 
-Decoder::MipMap::MipMap(const MipMap &mipMap) : width(0), height(0), size(0), data(0) {
+Decoder::MipMap::MipMap(const MipMap &mipMap) : width(0), height(0), size(0) {
 	*this = mipMap;
 }
 
 Decoder::MipMap::~MipMap() {
-	delete[] data;
 }
 
 Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
@@ -55,10 +54,9 @@ Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
 	height = mipMap.height;
 	size   = mipMap.size;
 
-	delete[] data;
-	data = new byte[size];
+	data.reset(new byte[size]);
 
-	std::memcpy(data, mipMap.data, size);
+	std::memcpy(data.get(), mipMap.data.get(), size);
 
 	return *this;
 }
@@ -67,7 +65,8 @@ void Decoder::MipMap::swap(MipMap &right) {
 	SWAP(width , right.width );
 	SWAP(height, right.height);
 	SWAP(size  , right.size  );
-	SWAP(data  , right.data  );
+
+	data.swap(right.data);
 }
 
 
@@ -153,16 +152,17 @@ void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
 	out.width  = in.width;
 	out.height = in.height;
 	out.size   = MAX(out.width * out.height * 4, 64);
-	out.data   = new byte[out.size];
 
-	Common::ScopedPtr<Common::MemoryReadStream> stream(new Common::MemoryReadStream(in.data, in.size));
+	out.data.reset(new byte[out.size]);
+
+	Common::ScopedPtr<Common::MemoryReadStream> stream(new Common::MemoryReadStream(in.data.get(), in.size));
 
 	if      (format == kPixelFormatDXT1)
-		decompressDXT1(out.data, *stream, out.width, out.height, out.width * 4);
+		decompressDXT1(out.data.get(), *stream, out.width, out.height, out.width * 4);
 	else if (format == kPixelFormatDXT3)
-		decompressDXT3(out.data, *stream, out.width, out.height, out.width * 4);
+		decompressDXT3(out.data.get(), *stream, out.width, out.height, out.width * 4);
 	else if (format == kPixelFormatDXT5)
-		decompressDXT5(out.data, *stream, out.width, out.height, out.width * 4);
+		decompressDXT5(out.data.get(), *stream, out.width, out.height, out.width * 4);
 }
 
 void Decoder::decompress() {
@@ -199,14 +199,14 @@ void Decoder::flipHorizontally() {
 	decompress();
 
 	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
-		::Images::flipHorizontally((*m)->data, (*m)->width, (*m)->height, getBPP(_format));
+		::Images::flipHorizontally((*m)->data.get(), (*m)->width, (*m)->height, getBPP(_format));
 }
 
 void Decoder::flipVertically() {
 	decompress();
 
 	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
-		::Images::flipVertically((*m)->data, (*m)->width, (*m)->height, getBPP(_format));
+		::Images::flipVertically((*m)->data.get(), (*m)->width, (*m)->height, getBPP(_format));
 }
 
 } // End of namespace Images
