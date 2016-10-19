@@ -24,6 +24,7 @@
 
 #include <cassert>
 
+#include "src/common/scopedptr.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/memreadstream.h"
@@ -154,7 +155,7 @@ void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
 	out.size   = MAX(out.width * out.height * 4, 64);
 	out.data   = new byte[out.size];
 
-	Common::MemoryReadStream *stream = new Common::MemoryReadStream(in.data, in.size);
+	Common::ScopedPtr<Common::MemoryReadStream> stream(new Common::MemoryReadStream(in.data, in.size));
 
 	if      (format == kPixelFormatDXT1)
 		decompressDXT1(out.data, *stream, out.width, out.height, out.width * 4);
@@ -162,8 +163,6 @@ void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
 		decompressDXT3(out.data, *stream, out.width, out.height, out.width * 4);
 	else if (format == kPixelFormatDXT5)
 		decompressDXT5(out.data, *stream, out.width, out.height, out.width * 4);
-
-	delete stream;
 }
 
 void Decoder::decompress() {
