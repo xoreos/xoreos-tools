@@ -59,16 +59,15 @@ TalkTable_TLK::TalkTable_TLK(Common::Encoding encoding, uint32 languageID) :
 TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
 	TalkTable(encoding), _tlk(tlk) {
 
+	assert(_tlk);
+
 	load();
 }
 
 TalkTable_TLK::~TalkTable_TLK() {
-	delete _tlk;
 }
 
 void TalkTable_TLK::load() {
-	assert(_tlk);
-
 	try {
 		readHeader(*_tlk);
 
@@ -105,8 +104,6 @@ void TalkTable_TLK::load() {
 			readEntryTableV4();
 
 	} catch (Common::Exception &e) {
-		delete _tlk;
-
 		e.add("Failed reading TLK file");
 		throw;
 	}
@@ -162,15 +159,10 @@ Common::UString TalkTable_TLK::readString(const Entry &entry) const {
 	if (length == 0)
 		return "";
 
-	Common::MemoryReadStream *data   = _tlk->readStream(length);
-	Common::MemoryReadStream *parsed = LangMan.preParseColorCodes(*data);
+	Common::ScopedPtr<Common::MemoryReadStream> data(_tlk->readStream(length));
+	Common::ScopedPtr<Common::MemoryReadStream> parsed(LangMan.preParseColorCodes(*data));
 
-	Common::UString str = Common::readString(*parsed, _encoding);
-
-	delete parsed;
-	delete data;
-
-	return str;
+	return Common::readString(*parsed, _encoding);
 }
 
 uint32 TalkTable_TLK::getLanguageID() const {
@@ -299,38 +291,28 @@ void TalkTable_TLK::write30(Common::WriteStream &out) const {
 
 	out.writeUint32LE(_languageID);
 
-	Common::SeekableReadStream *data = 0;
-	try {
+	Entries entries;
+	Common::ScopedPtr<Common::SeekableReadStream> data(collectEntries(entries));
 
-		Entries entries;
-		data = collectEntries(entries);
+	const uint32 stringsOffset = 20 + entries.size() * 40;
 
-		const uint32 stringsOffset = 20 + entries.size() * 40;
+	out.writeUint32LE(entries.size());
+	out.writeUint32LE(stringsOffset);
 
-		out.writeUint32LE(entries.size());
-		out.writeUint32LE(stringsOffset);
+	for (Entries::const_iterator e = entries.begin(); e != entries.end(); ++e) {
+		out.writeUint32LE(e->flags);
 
-		for (Entries::const_iterator e = entries.begin(); e != entries.end(); ++e) {
-			out.writeUint32LE(e->flags);
+		Common::writeStringFixed(out, e->soundResRef, Common::kEncodingASCII, 16);
 
-			Common::writeStringFixed(out, e->soundResRef, Common::kEncodingASCII, 16);
+		out.writeUint32LE(e->volumeVariance);
+		out.writeUint32LE(e->pitchVariance);
+		out.writeUint32LE(e->offset);
+		out.writeUint32LE(e->length);
 
-			out.writeUint32LE(e->volumeVariance);
-			out.writeUint32LE(e->pitchVariance);
-			out.writeUint32LE(e->offset);
-			out.writeUint32LE(e->length);
-
-			out.writeIEEEFloatLE(MAX(0.0f, e->soundLength));
-		}
-
-		out.writeStream(*data);
-
-	} catch (...) {
-		delete data;
-		throw;
+		out.writeIEEEFloatLE(MAX(0.0f, e->soundLength));
 	}
 
-	delete data;
+	out.writeStream(*data);
 }
 
 void TalkTable_TLK::write40(Common::WriteStream &out) const {
@@ -339,39 +321,29 @@ void TalkTable_TLK::write40(Common::WriteStream &out) const {
 
 	out.writeUint32LE(_languageID);
 
-	Common::SeekableReadStream *data = 0;
-	try {
+	Entries entries;
+	Common::ScopedPtr<Common::SeekableReadStream> data(collectEntries(entries));
 
-		Entries entries;
-		data = collectEntries(entries);
+	const uint32 stringsOffset = 32 + entries.size() * 10;
 
-		const uint32 stringsOffset = 32 + entries.size() * 10;
+	out.writeUint32LE(entries.size());
 
-		out.writeUint32LE(entries.size());
+	// Offset to the string table. We'll put it right after the header, with some padding
+	out.writeUint32LE(32);
 
-		// Offset to the string table. We'll put it right after the header, with some padding
-		out.writeUint32LE(32);
+	out.writeUint32LE(stringsOffset);
 
-		out.writeUint32LE(stringsOffset);
+	// Padding
+	out.writeUint32LE(0);
+	out.writeUint32LE(0);
 
-		// Padding
-		out.writeUint32LE(0);
-		out.writeUint32LE(0);
-
-		for (Entries::const_iterator e = entries.begin(); e != entries.end(); ++e) {
-			out.writeUint32LE(e->soundID);
-			out.writeUint32LE(e->offset + stringsOffset);
-			out.writeUint16LE(e->length);
-		}
-
-		out.writeStream(*data);
-
-	} catch (...) {
-		delete data;
-		throw;
+	for (Entries::const_iterator e = entries.begin(); e != entries.end(); ++e) {
+		out.writeUint32LE(e->soundID);
+		out.writeUint32LE(e->offset + stringsOffset);
+		out.writeUint16LE(e->length);
 	}
 
-	delete data;
+	out.writeStream(*data);
 }
 
 uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {

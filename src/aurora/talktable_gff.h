@@ -28,6 +28,7 @@
 #include <map>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -75,7 +76,7 @@ private:
 	typedef std::map<uint32, Entry *> Entries;
 
 
-	GFF4File *_gff;
+	Common::ScopedPtr<GFF4File> _gff;
 
 	std::list<uint32> _strRefs;
 
