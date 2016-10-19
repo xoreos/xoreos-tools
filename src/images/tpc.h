@@ -25,6 +25,8 @@
 #ifndef IMAGES_TPC_H
 #define IMAGES_TPC_H
 
+#include "src/common/scopedptr.h"
+
 #include "src/images/decoder.h"
 
 namespace Common {
@@ -43,7 +45,7 @@ public:
 	Common::SeekableReadStream *getTXI() const;
 
 private:
-	byte  *_txiData;
+	Common::ScopedArray<byte> _txiData;
 	size_t _txiDataSize;
 
 	// Loading helpers

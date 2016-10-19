@@ -39,12 +39,11 @@ static const byte kEncodingSwizzledBGRA = 0x0C;
 
 namespace Images {
 
-TPC::TPC(Common::SeekableReadStream &tpc) : _txiData(0), _txiDataSize(0) {
+TPC::TPC(Common::SeekableReadStream &tpc) : _txiDataSize(0) {
 	load(tpc);
 }
 
 TPC::~TPC() {
-	delete[] _txiData;
 }
 
 void TPC::load(Common::SeekableReadStream &tpc) {
@@ -71,7 +70,7 @@ Common::SeekableReadStream *TPC::getTXI() const {
 	if (!_txiData || (_txiDataSize == 0))
 		return 0;
 
-	return new Common::MemoryReadStream(_txiData, _txiDataSize);
+	return new Common::MemoryReadStream(_txiData.get(), _txiDataSize);
 }
 
 void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
@@ -181,7 +180,7 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 		uint32 layerSize   = dataSize;
 
 		for (size_t i = 0; i < mipMapCount; i++) {
-			MipMap *mipMap = new MipMap;
+			Common::ScopedPtr<MipMap> mipMap(new MipMap);
 
 			mipMap->width  = MAX<uint32>(layerWidth,  1);
 			mipMap->height = MAX<uint32>(layerHeight, 1);
@@ -192,15 +191,13 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 
 			const size_t mipMapDataSize = getDataSize(_format, mipMap->width, mipMap->height);
 
-			if ((fullDataSize < mipMap->size) || (mipMap->size < mipMapDataSize)) {
-				// Wouldn't fit
-				delete mipMap;
+			// Wouldn't fit
+			if ((fullDataSize < mipMap->size) || (mipMap->size < mipMapDataSize))
 				break;
-			}
 
 			fullDataSize -= mipMap->size;
 
-			_mipMaps.push_back(mipMap);
+			_mipMaps.push_back(mipMap.release());
 
 			layerWidth  >>= 1;
 			layerHeight >>= 1;
@@ -290,15 +287,13 @@ void TPC::readData(Common::SeekableReadStream &tpc, byte encoding) {
 
 			// Unpacking 8bpp grayscale data into RGB
 			if (encoding == kEncodingGray) {
-				byte *dataGray = (*mipMap)->data;
+				Common::ScopedArray<byte> dataGray((*mipMap)->data);
 
 				(*mipMap)->size = (*mipMap)->width * (*mipMap)->height * 3;
 				(*mipMap)->data = new byte[(*mipMap)->size];
 
 				for (int i = 0; i < ((*mipMap)->width * (*mipMap)->height); i++)
 					std::memset((*mipMap)->data + i * 3, dataGray[i], 3);
-
-				delete[] dataGray;
 			}
 		}
 
@@ -312,9 +307,9 @@ void TPC::readTXIData(Common::SeekableReadStream &tpc) {
 	if (_txiDataSize == 0)
 		return;
 
-	_txiData = new byte[_txiDataSize];
+	_txiData.reset(new byte[_txiDataSize]);
 
-	if (tpc.read(_txiData, _txiDataSize) != _txiDataSize)
+	if (tpc.read(_txiData.get(), _txiDataSize) != _txiDataSize)
 		throw Common::Exception(Common::kReadError);
 }
 
