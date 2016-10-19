@@ -37,7 +37,7 @@ class UString;
 class MemoryReadStream;
 
 /** A simple streaming file reading class. */
-class ReadFile : public SeekableReadStream, public NonCopyable {
+class ReadFile : NonCopyable, public SeekableReadStream {
 public:
 	ReadFile();
 	ReadFile(const UString &fileName);

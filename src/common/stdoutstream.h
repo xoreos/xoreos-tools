@@ -32,7 +32,7 @@
 namespace Common {
 
 /** A simple stream to write to stdout. */
-class StdOutStream : public WriteStream, public NonCopyable {
+class StdOutStream : NonCopyable, public WriteStream {
 public:
 	StdOutStream();
 	~StdOutStream();
