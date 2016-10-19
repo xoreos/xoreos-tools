@@ -73,8 +73,7 @@ GFF4File::~GFF4File() {
 }
 
 void GFF4File::clear() {
-	delete _stream;
-	_stream = 0;
+	_stream.reset();
 
 	for (StructMap::iterator s = _structs.begin(); s != _structs.end(); ++s)
 		delete s->second;

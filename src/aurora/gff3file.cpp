@@ -73,8 +73,7 @@ GFF3File::~GFF3File() {
 }
 
 void GFF3File::clear() {
-	delete _stream;
-	_stream = 0;
+	_stream.reset();
 
 	for (StructArray::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
 		delete *strct;
