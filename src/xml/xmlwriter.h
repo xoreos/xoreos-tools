@@ -27,6 +27,8 @@
 
 #include <list>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/ustring.h"
 
 namespace Common {
@@ -36,7 +38,7 @@ namespace Common {
 
 namespace XML {
 
-class XMLWriter {
+class XMLWriter : boost::noncopyable {
 public:
 	XMLWriter(Common::WriteStream &stream);
 	~XMLWriter();

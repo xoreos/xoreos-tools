@@ -28,6 +28,8 @@
 #include <list>
 #include <map>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/ustring.h"
 
 struct _xmlNode;
@@ -41,7 +43,7 @@ namespace XML {
 class XMLNode;
 
 /** Class to parse a ReadStream into a simple XML tree. */
-class XMLParser {
+class XMLParser : boost::noncopyable {
 public:
 	XMLParser(Common::ReadStream &stream, bool makeLower = false);
 	~XMLParser();
@@ -53,7 +55,7 @@ private:
 	XMLNode *_rootNode;
 };
 
-class XMLNode {
+class XMLNode : boost::noncopyable {
 public:
 	typedef std::map<Common::UString, Common::UString> Properties;
 	typedef std::list<const XMLNode *> Children;
