@@ -25,6 +25,8 @@
 #ifndef NWSCRIPT_NCSFILE_H
 #define NWSCRIPT_NCSFILE_H
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
@@ -58,7 +60,7 @@ namespace NWScript {
  *  Likewise, a deeper analysis of the control flow can be performed by calling
  *  the analyzeControlFlow() method. This also requires a GameID.
  */
-class NCSFile : public Aurora::AuroraFile {
+class NCSFile : boost::noncopyable, public Aurora::AuroraFile {
 public:
 	NCSFile(Common::SeekableReadStream &ncs, Aurora::GameID game = Aurora::kGameIDUnknown);
 	~NCSFile();

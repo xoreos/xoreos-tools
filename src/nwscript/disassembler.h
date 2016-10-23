@@ -27,6 +27,8 @@
 
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
@@ -45,7 +47,7 @@ struct Instruction;
 struct SubRoutine;
 struct Block;
 
-class Disassembler {
+class Disassembler : boost::noncopyable {
 public:
 	Disassembler(Common::SeekableReadStream &ncs, Aurora::GameID game = Aurora::kGameIDUnknown);
 	Disassembler(NCSFile *ncs);
