@@ -25,6 +25,8 @@
 #ifndef XML_GFFDUMPER_H
 #define XML_GFFDUMPER_H
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/encoding.h"
 
 namespace Common {
@@ -34,7 +36,7 @@ namespace Common {
 
 namespace XML {
 
-class GFFDumper {
+class GFFDumper : boost::noncopyable {
 public:
 	GFFDumper();
 	virtual ~GFFDumper();
