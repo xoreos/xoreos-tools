@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -261,37 +262,20 @@ void printUsage(FILE *stream, const Common::UString &name) {
 void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
              Common::Encoding encoding, bool nwnPremium) {
 
-	Common::SeekableReadStream *gff = new Common::ReadFile(inFile);
+	Common::ScopedPtr<Common::SeekableReadStream> gff(new Common::ReadFile(inFile));
 
-	XML::GFFDumper *dumper = 0;
-	try {
-		dumper = XML::GFFDumper::identify(*gff, nwnPremium);
-	} catch (...) {
-		delete gff;
-		throw;
-	}
+	Common::ScopedPtr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium));
 
-	Common::WriteStream *out = 0;
-	try {
+	Common::ScopedPtr<Common::WriteStream> out;
+	if (!outFile.empty())
+		out.reset(new Common::WriteFile(outFile));
+	else
+		out.reset(new Common::StdOutStream);
 
-		if (!outFile.empty())
-			out = new Common::WriteFile(outFile);
-		else
-			out = new Common::StdOutStream;
-
-		dumper->dump(*out, gff, encoding, nwnPremium);
-
-	} catch (...) {
-		delete dumper;
-		delete out;
-		throw;
-	}
+	dumper->dump(*out, gff.release(), encoding, nwnPremium);
 
 	out->flush();
 
 	if (!outFile.empty())
 		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
-
-	delete dumper;
-	delete out;
 }

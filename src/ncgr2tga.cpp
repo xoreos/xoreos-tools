@@ -26,6 +26,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <boost/scope_exit.hpp>
+
 #include "src/version/version.h"
 
 #include "src/common/ustring.h"
@@ -160,24 +162,18 @@ void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
 	std::vector<Common::SeekableReadStream *> ncgrs;
 	ncgrs.resize(ncgrFiles.size(), 0);
 
-	try {
-		for (size_t i = 0; i < ncgrFiles.size(); i++)
-			if (!ncgrFiles[i].empty() && (ncgrFiles[i] != "\"\"") && (ncgrFiles[i] != "\'\'"))
-				ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
-
-		Images::NCGR image(ncgrs, width, height, nclr);
-
-		image.flipVertically();
-
-		image.dumpTGA(outFile);
-
-	} catch (...) {
+	BOOST_SCOPE_EXIT( (&ncgrs) ) {
 		for (size_t i = 0; i < ncgrs.size(); i++)
 			delete ncgrs[i];
+	} BOOST_SCOPE_EXIT_END
 
-		throw;
-	}
+	for (size_t i = 0; i < ncgrFiles.size(); i++)
+		if (!ncgrFiles[i].empty() && (ncgrFiles[i] != "\"\"") && (ncgrFiles[i] != "\'\'"))
+			ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
 
-	for (size_t i = 0; i < ncgrs.size(); i++)
-		delete ncgrs[i];
+	Images::NCGR image(ncgrs, width, height, nclr);
+
+	image.flipVertically();
+
+	image.dumpTGA(outFile);
 }

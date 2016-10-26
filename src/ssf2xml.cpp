@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -139,23 +140,16 @@ void printUsage(FILE *stream, const Common::UString &name) {
 void dumpSSF(const Common::UString &inFile, const Common::UString &outFile) {
 	Common::ReadFile ssf(inFile);
 
-	Common::WriteStream *out = 0;
+	Common::ScopedPtr<Common::WriteStream> out;
 	if (!outFile.empty())
-		out = new Common::WriteFile(outFile);
+		out.reset(new Common::WriteFile(outFile));
 	else
-		out = new Common::StdOutStream;
+		out.reset(new Common::StdOutStream);
 
-	try {
-		XML::SSFDumper::dump(*out, ssf);
-	} catch (...) {
-		delete out;
-		throw;
-	}
+	XML::SSFDumper::dump(*out, ssf);
 
 	out->flush();
 
 	if (!outFile.empty())
 		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
-
-	delete out;
 }

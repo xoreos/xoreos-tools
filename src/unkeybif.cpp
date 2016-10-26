@@ -27,8 +27,11 @@
 #include <list>
 #include <vector>
 
+#include <boost/scope_exit.hpp>
+
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/util.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
@@ -74,9 +77,6 @@ void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<
 int main(int argc, char **argv) {
 	initPlatform();
 
-	std::vector<Aurora::KEYFile *> keys;
-	std::vector<Aurora::BIFFile *> bifs;
-
 	try {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);
@@ -93,8 +93,17 @@ int main(int argc, char **argv) {
 		std::vector<Common::UString> keyFiles, bifFiles;
 		identifyFiles(files, keyFiles, bifFiles);
 
-		openKEYs(keyFiles, keys);
+		std::vector<Aurora::KEYFile *> keys;
+		std::vector<Aurora::BIFFile *> bifs;
 
+		BOOST_SCOPE_EXIT( (&keys) (&bifs) ) {
+			for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
+				delete *k;
+			for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
+				delete *b;
+		} BOOST_SCOPE_EXIT_END
+
+		openKEYs(keyFiles, keys);
 		openBIFs(bifFiles, bifs);
 
 		mergeKEYBIF(keys, bifs, bifFiles);
@@ -105,18 +114,8 @@ int main(int argc, char **argv) {
 			extractFiles(bifs, bifFiles, game);
 
 	} catch (...) {
-		for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
-			delete *k;
-		for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
-			delete *b;
-
 		Common::exceptionDispatcherError();
 	}
-
-	for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
-		delete *k;
-	for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
-		delete *b;
 
 	return 0;
 }
@@ -336,9 +335,8 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
 
 		std::printf("Extracting %u/%u: %s ... ", i, (uint) resources.size(), fileName.c_str());
 
-		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = bif.getResource(r->index);
+			Common::ScopedPtr<Common::SeekableReadStream> stream(bif.getResource(r->index));
 
 			dumpStream(*stream, fileName);
 
@@ -346,8 +344,6 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
 		} catch (Common::Exception &e) {
 			Common::printException(e, "");
 		}
-
-		delete stream;
 	}
 
 }

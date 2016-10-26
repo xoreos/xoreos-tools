@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -185,69 +186,44 @@ static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
 void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
-	Common::WriteStream *out = 0;
+	Common::ScopedPtr<Common::WriteStream> out;
 	if (!outFile.empty())
-		out = new Common::WriteFile(outFile);
+		out.reset(new Common::WriteFile(outFile));
 	else
-		out = new Common::StdOutStream;
+		out.reset(new Common::StdOutStream);
 
-	try {
-		if      (format == kFormat2DA)
-			twoDA.writeASCII(*out);
-		else if (format == kFormat2DAb)
-			twoDA.writeBinary(*out);
-		else
-			twoDA.writeCSV(*out);
-
-	} catch (...) {
-		delete out;
-		throw;
-	}
+	if      (format == kFormat2DA)
+		twoDA.writeASCII(*out);
+	else if (format == kFormat2DAb)
+		twoDA.writeBinary(*out);
+	else
+		twoDA.writeCSV(*out);
 
 	out->flush();
-
-	delete out;
 }
 
 Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
-	uint32 id = 0;
+	Common::ScopedPtr<Common::SeekableReadStream> fStream(stream);
 
-	try {
-		id = Aurora::AuroraFile::readHeaderID(*stream);
-		stream->seek(0);
-	} catch (...) {
-		delete stream;
-		throw;
-	}
+	const uint32 id = Aurora::AuroraFile::readHeaderID(*fStream);
+	fStream->seek(0);
 
-	if ((id == k2DAID) || (id == k2DAIDTab)) {
-		Aurora::TwoDAFile *twoDA = new Aurora::TwoDAFile(*stream);
-
-		delete stream;
-		return twoDA;
-	}
+	if ((id == k2DAID) || (id == k2DAIDTab))
+		return new Aurora::TwoDAFile(*fStream);
 
 	if (id == kGFFID) {
-		Aurora::GDAFile gda(stream);
+		Aurora::GDAFile gda(fStream.release());
 
 		return new Aurora::TwoDAFile(gda);
 	}
 
-	delete stream;
 	throw Common::Exception("Not a 2DA or GDA file");
 }
 
 void convert2DA(const Common::UString &file, const Common::UString &outFile, Format format) {
-	Aurora::TwoDAFile *twoDA = get2DAGDA(new Common::ReadFile(file));
+	Common::ScopedPtr<Aurora::TwoDAFile> twoDA(get2DAGDA(new Common::ReadFile(file)));
 
-	try {
-		write2DA(*twoDA, outFile, format);
-	} catch (...) {
-		delete twoDA;
-		throw;
-	}
-
-	delete twoDA;
+	write2DA(*twoDA, outFile, format);
 }
 
 void convert2DA(const std::vector<Common::UString> &files, const Common::UString &outFile, Format format) {

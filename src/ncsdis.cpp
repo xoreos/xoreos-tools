@@ -30,6 +30,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
@@ -225,62 +226,52 @@ void printUsage(FILE *stream, const Common::UString &name) {
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes) {
 
-	Common::SeekableReadStream *ncs = new Common::ReadFile(inFile);
+	Common::ScopedPtr<Common::SeekableReadStream> ncs(new Common::ReadFile(inFile));
 
-	Common::WriteStream *out = 0;
-	try {
-		if (!outFile.empty())
-			out = new Common::WriteFile(outFile);
-		else
-			out = new Common::StdOutStream;
+	Common::ScopedPtr<Common::WriteStream> out;
+	if (!outFile.empty())
+		out.reset(new Common::WriteFile(outFile));
+	else
+		out.reset(new Common::StdOutStream);
 
-		status("Disassembling script...");
-		NWScript::Disassembler disassembler(*ncs, game);
+	status("Disassembling script...");
+	NWScript::Disassembler disassembler(*ncs, game);
 
-		if (game != Aurora::kGameIDUnknown) {
-			try {
-				status("Analyzing script stack...");
-				disassembler.analyzeStack();
-			} catch (...) {
-				Common::exceptionDispatcherWarnAndIgnore("Script analysis failed");
-			}
-
-			try {
-				status("Analyzing control flow...");
-				disassembler.analyzeControlFlow();
-			} catch (...) {
-				Common::exceptionDispatcherWarnAndIgnore("Control flow analysis failed");
-			}
+	if (game != Aurora::kGameIDUnknown) {
+		try {
+			status("Analyzing script stack...");
+			disassembler.analyzeStack();
+		} catch (...) {
+			Common::exceptionDispatcherWarnAndIgnore("Script analysis failed");
 		}
 
-		switch (command) {
-			case kCommandListing:
-				disassembler.createListing(*out, printStack);
-				break;
-
-			case kCommandAssembly:
-				disassembler.createAssembly(*out, printStack);
-				break;
-
-			case kCommandDot:
-				disassembler.createDot(*out, printControlTypes);
-				break;
-
-			default:
-				throw Common::Exception("Invalid command %u", (uint)command);
+		try {
+			status("Analyzing control flow...");
+			disassembler.analyzeControlFlow();
+		} catch (...) {
+			Common::exceptionDispatcherWarnAndIgnore("Control flow analysis failed");
 		}
+	}
 
-	} catch (...) {
-		delete ncs;
-		delete out;
-		throw;
+	switch (command) {
+		case kCommandListing:
+			disassembler.createListing(*out, printStack);
+			break;
+
+		case kCommandAssembly:
+			disassembler.createAssembly(*out, printStack);
+			break;
+
+		case kCommandDot:
+			disassembler.createDot(*out, printControlTypes);
+			break;
+
+		default:
+			throw Common::Exception("Invalid command %u", (uint)command);
 	}
 
 	out->flush();
 
 	if (!outFile.empty())
 		status("Disassembled \"%s\" into \"%s\"", inFile.c_str(), outFile.c_str());
-
-	delete ncs;
-	delete out;
 }

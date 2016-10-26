@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -172,21 +173,13 @@ void printUsage(FILE *stream, const Common::UString &name) {
 void createSSF(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID game) {
 	Common::WriteFile ssf(outFile);
 
-	Common::ReadStream *xml = 0;
+	Common::ScopedPtr<Common::ReadStream> xml;
 	if (!inFile.empty())
-		xml = new Common::ReadFile(inFile);
+		xml.reset(new Common::ReadFile(inFile));
 	else
-		xml = new Common::StdInStream;
+		xml.reset(new Common::StdInStream);
 
-	try {
-		XML::SSFCreator::create(ssf, *xml, game);
-	} catch (...) {
-		delete xml;
-
-		throw;
-	}
-
-	delete xml;
+	XML::SSFCreator::create(ssf, *xml, game);
 
 	ssf.flush();
 	ssf.close();

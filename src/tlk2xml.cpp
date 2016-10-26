@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -248,31 +249,18 @@ void printUsage(FILE *stream, const Common::UString &name) {
 }
 
 void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {
-	Common::SeekableReadStream *tlk = new Common::ReadFile(inFile);
+	Common::ScopedPtr<Common::SeekableReadStream> tlk(new Common::ReadFile(inFile));
 
-	Common::WriteStream *out = 0;
-	try {
-		if (!outFile.empty())
-			out = new Common::WriteFile(outFile);
-		else
-			out = new Common::StdOutStream;
+	Common::ScopedPtr<Common::WriteStream> out;
+	if (!outFile.empty())
+		out.reset(new Common::WriteFile(outFile));
+	else
+		out.reset(new Common::StdOutStream);
 
-	} catch (...) {
-		delete tlk;
-		throw;
-	}
-
-	try {
-		XML::TLKDumper::dump(*out, tlk, encoding);
-	} catch (...) {
-		delete out;
-		throw;
-	}
+	XML::TLKDumper::dump(*out, tlk.release(), encoding);
 
 	out->flush();
 
 	if (!outFile.empty())
 		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
-
-	delete out;
 }

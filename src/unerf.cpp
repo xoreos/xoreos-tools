@@ -30,6 +30,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
@@ -424,9 +425,8 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
-		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = erf.getResource(r->index);
+			Common::ScopedPtr<Common::SeekableReadStream> stream(erf.getResource(r->index));
 
 			dumpStream(*stream, fileName);
 
@@ -434,8 +434,6 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 		} catch (Common::Exception &e) {
 			Common::printException(e, "");
 		}
-
-		delete stream;
 	}
 
 }

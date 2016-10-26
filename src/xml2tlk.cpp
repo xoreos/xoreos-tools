@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -291,21 +292,13 @@ void createTLK(const Common::UString &inFile, const Common::UString &outFile, Co
 
 	Common::WriteFile tlk(outFile);
 
-	Common::ReadStream *xml = 0;
+	Common::ScopedPtr<Common::ReadStream> xml;
 	if (!inFile.empty())
-		xml = new Common::ReadFile(inFile);
+		xml.reset(new Common::ReadFile(inFile));
 	else
-		xml = new Common::StdInStream;
+		xml.reset(new Common::StdInStream);
 
-	try {
-		XML::TLKCreator::create(tlk, *xml, version, encoding, language);
-	} catch (...) {
-		delete xml;
-
-		throw;
-	}
-
-	delete xml;
+	XML::TLKCreator::create(tlk, *xml, version, encoding, language);
 
 	tlk.flush();
 	tlk.close();

@@ -30,6 +30,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
@@ -170,68 +171,61 @@ void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::US
 	if (id.size() > 4)
 		throw Common::Exception("\"%s\" is not a valid GFF id", id.c_str());
 
-	Common::SeekableReadStream *in = Common::ReadFile::readIntoMemory(inFile);
+	Common::ScopedPtr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
 
-	try {
-		const uint32 inID      = in->readUint32BE();
-		const uint32 inVersion = in->readUint32BE();
+	const uint32 inID      = in->readUint32BE();
+	const uint32 inVersion = in->readUint32BE();
 
-		if ((inVersion == kVersion32) || (inVersion == kVersion33) ||
-		    (inVersion == kVersion40) || (inVersion == kVersion41)) {
+	if ((inVersion == kVersion32) || (inVersion == kVersion33) ||
+	    (inVersion == kVersion40) || (inVersion == kVersion41)) {
 
-			status("\"%s\" is already a standard GFF file", inFile.c_str());
+		status("\"%s\" is already a standard GFF file", inFile.c_str());
 
-			if (inFile == outFile)
-				return;
-
-			Common::WriteFile out(outFile);
-
-			in->seek(0);
-			out.writeStream(*in);
-
-			out.flush();
-			out.close();
+		if (inFile == outFile)
 			return;
-		}
-
-		if ((FROM_BE_32(inID) < 0x30) || (FROM_BE_32(inID) > 0x12F))
-			throw Common::Exception("File \"%s\" is neither a standard, nor a premium GFF file", inFile.c_str());
-
-		const uint32 value = FROM_BE_32(inID) - 0x30;
-
-		status("Repairing \"%s\" to a GFF with an ID of \"%s\" a correction value of %u",
-		       inFile.c_str(), id.c_str(), value);
-
-		in->seek(0);
 
 		Common::WriteFile out(outFile);
 
-		out.writeString(id);
-
-		if (id.size() < 4)
-			out.writeString(Common::UString(' ', 4 - id.size()));
-
-		out.writeUint32BE(kVersion32);
-
-		for (size_t i = 0; i < 6; i++) {
-			const uint32 offset = in->readUint32LE();
-			const uint32 count  = in->readUint32LE();
-
-			if (offset < value)
-				throw Common::Exception("File \"%s\" is neither a standard, nor a premium GFF file", inFile.c_str());
-
-			out.writeUint32LE(offset - value + 0x08);
-			out.writeUint32LE(count);
-		}
-
+		in->seek(0);
 		out.writeStream(*in);
 
 		out.flush();
 		out.close();
 		return;
-
-	} catch (...) {
-		delete in;
-		throw;
 	}
+
+	if ((FROM_BE_32(inID) < 0x30) || (FROM_BE_32(inID) > 0x12F))
+		throw Common::Exception("File \"%s\" is neither a standard, nor a premium GFF file", inFile.c_str());
+
+	const uint32 value = FROM_BE_32(inID) - 0x30;
+
+	status("Repairing \"%s\" to a GFF with an ID of \"%s\" a correction value of %u",
+	       inFile.c_str(), id.c_str(), value);
+
+	in->seek(0);
+
+	Common::WriteFile out(outFile);
+
+	out.writeString(id);
+
+	if (id.size() < 4)
+		out.writeString(Common::UString(' ', 4 - id.size()));
+
+	out.writeUint32BE(kVersion32);
+
+	for (size_t i = 0; i < 6; i++) {
+		const uint32 offset = in->readUint32LE();
+		const uint32 count  = in->readUint32LE();
+
+		if (offset < value)
+			throw Common::Exception("File \"%s\" is neither a standard, nor a premium GFF file", inFile.c_str());
+
+		out.writeUint32LE(offset - value + 0x08);
+		out.writeUint32LE(count);
+	}
+
+	out.writeStream(*in);
+
+	out.flush();
+	out.close();
 }

@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
@@ -198,9 +199,8 @@ void extractFiles(Aurora::NSBTXFile &nsbtx) {
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
-		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = nsbtx.getResource(r->index);
+			Common::ScopedPtr<Common::SeekableReadStream> stream(nsbtx.getResource(r->index));
 
 			dumpImage(*stream, fileName);
 
@@ -209,8 +209,6 @@ void extractFiles(Aurora::NSBTXFile &nsbtx) {
 			std::printf("\n");
 			Common::printException(e, "");
 		}
-
-		delete stream;
 	}
 
 }

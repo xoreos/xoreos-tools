@@ -27,6 +27,7 @@
 
 #include "src/version/version.h"
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -243,16 +244,9 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
 		}
 	}
 
-	Images::Decoder *image = openImage(in, type);
+	Common::ScopedPtr<Images::Decoder> image(openImage(in, type));
 	if (flip)
 		image->flipVertically();
 
-	try {
-		image->dumpTGA(outFile);
-	} catch (...) {
-		delete image;
-		throw;
-	}
-
-	delete image;
+	image->dumpTGA(outFile);
 }
