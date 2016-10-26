@@ -52,15 +52,14 @@ static Common::UString quoteString(const Common::UString &str) {
 }
 
 
-Disassembler::Disassembler(Common::SeekableReadStream &ncs, Aurora::GameID game) : _ncs(0) {
-	_ncs = new NCSFile(ncs, game);
+Disassembler::Disassembler(Common::SeekableReadStream &ncs, Aurora::GameID game) {
+	_ncs.reset(new NCSFile(ncs, game));
 }
 
 Disassembler::Disassembler(NCSFile *ncs) : _ncs(ncs) {
 }
 
 Disassembler::~Disassembler() {
-	delete _ncs;
 }
 
 void Disassembler::analyzeStack() {
