@@ -227,12 +227,7 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes) {
 
 	Common::ScopedPtr<Common::SeekableReadStream> ncs(new Common::ReadFile(inFile));
-
-	Common::ScopedPtr<Common::WriteStream> out;
-	if (!outFile.empty())
-		out.reset(new Common::WriteFile(outFile));
-	else
-		out.reset(new Common::StdOutStream);
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	status("Disassembling script...");
 	NWScript::Disassembler disassembler(*ncs, game);

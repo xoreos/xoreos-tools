@@ -172,12 +172,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 
 void createSSF(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID game) {
 	Common::WriteFile ssf(outFile);
-
-	Common::ScopedPtr<Common::ReadStream> xml;
-	if (!inFile.empty())
-		xml.reset(new Common::ReadFile(inFile));
-	else
-		xml.reset(new Common::StdInStream);
+	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 
 	XML::SSFCreator::create(ssf, *xml, game);
 

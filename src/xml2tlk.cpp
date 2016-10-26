@@ -291,12 +291,7 @@ void createTLK(const Common::UString &inFile, const Common::UString &outFile, Co
                XML::TLKCreator::Version &version, uint32 &language) {
 
 	Common::WriteFile tlk(outFile);
-
-	Common::ScopedPtr<Common::ReadStream> xml;
-	if (!inFile.empty())
-		xml.reset(new Common::ReadFile(inFile));
-	else
-		xml.reset(new Common::StdInStream);
+	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 
 	XML::TLKCreator::create(tlk, *xml, version, encoding, language);
 

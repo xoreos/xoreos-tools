@@ -186,11 +186,7 @@ static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
 void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
-	Common::ScopedPtr<Common::WriteStream> out;
-	if (!outFile.empty())
-		out.reset(new Common::WriteFile(outFile));
-	else
-		out.reset(new Common::StdOutStream);
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	if      (format == kFormat2DA)
 		twoDA.writeASCII(*out);

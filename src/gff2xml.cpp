@@ -266,11 +266,7 @@ void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
 
 	Common::ScopedPtr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium));
 
-	Common::ScopedPtr<Common::WriteStream> out;
-	if (!outFile.empty())
-		out.reset(new Common::WriteFile(outFile));
-	else
-		out.reset(new Common::StdOutStream);
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	dumper->dump(*out, gff.release(), encoding, nwnPremium);
 

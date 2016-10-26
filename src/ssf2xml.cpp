@@ -139,12 +139,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 
 void dumpSSF(const Common::UString &inFile, const Common::UString &outFile) {
 	Common::ReadFile ssf(inFile);
-
-	Common::ScopedPtr<Common::WriteStream> out;
-	if (!outFile.empty())
-		out.reset(new Common::WriteFile(outFile));
-	else
-		out.reset(new Common::StdOutStream);
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	XML::SSFDumper::dump(*out, ssf);
 

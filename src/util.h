@@ -27,11 +27,16 @@
 
 namespace Common {
 	class UString;
+	class ReadStream;
 	class SeekableReadStream;
+	class WriteStream;
 }
 
 void initPlatform();
 
 void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName);
+
+Common::WriteStream *openFileOrStdOut(const Common::UString &file);
+Common::ReadStream  *openFileOrStdIn (const Common::UString &file);
 
 #endif // UTIL_H

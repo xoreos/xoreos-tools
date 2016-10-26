@@ -250,12 +250,7 @@ void printUsage(FILE *stream, const Common::UString &name) {
 
 void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {
 	Common::ScopedPtr<Common::SeekableReadStream> tlk(new Common::ReadFile(inFile));
-
-	Common::ScopedPtr<Common::WriteStream> out;
-	if (!outFile.empty())
-		out.reset(new Common::WriteFile(outFile));
-	else
-		out.reset(new Common::StdOutStream);
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	XML::TLKDumper::dump(*out, tlk.release(), encoding);
 
