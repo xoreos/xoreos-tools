@@ -22,6 +22,7 @@
  *  Dump TLKs into XML files.
  */
 
+#include "src/common/scopedptr.h"
 #include "src/common/strutil.h"
 #include "src/common/readstream.h"
 #include "src/common/writestream.h"
@@ -37,7 +38,7 @@ namespace XML {
 void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                      Common::Encoding encoding) {
 
-	Aurora::TalkTable *tlk = Aurora::TalkTable::load(input, encoding);
+	Common::ScopedPtr<Aurora::TalkTable> tlk(Aurora::TalkTable::load(input, encoding));
 	if (!tlk)
 		return;
 
@@ -90,8 +91,6 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 	xml.breakLine();
 
 	xml.flush();
-
-	delete tlk;
 }
 
 } // End of namespace XML
