@@ -22,6 +22,8 @@
  *  Dump GFF V4.0/V4.1 into XML files.
  */
 
+#include <boost/scope_exit.hpp>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
@@ -42,23 +44,12 @@ GFF4Dumper::GFF4Field::GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g) 
 }
 
 
-GFF4Dumper::GFF4Dumper() : _gff4(0), _xml(0) {
+GFF4Dumper::GFF4Dumper() {
 	for (size_t i = 0; i < ARRAYSIZE(kGFF4FieldName); i++)
 		_fieldNames[kGFF4FieldName[i].label] = kGFF4FieldName[i].name;
 }
 
 GFF4Dumper::~GFF4Dumper() {
-	clear();
-}
-
-void GFF4Dumper::clear() {
-	delete _gff4;
-	delete _xml;
-
-	_gff4 = 0;
-	_xml  = 0;
-
-	_structIDs.clear();
 }
 
 Common::UString GFF4Dumper::findFieldName(uint32 label) const {
@@ -74,29 +65,26 @@ void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *i
 
 	_encoding = encoding;
 
-	try {
-		_gff4 = new Aurora::GFF4File(input);
-		_xml  = new XMLWriter(output);
+	BOOST_SCOPE_EXIT( (&_gff4) (&_xml) ) {
+		_gff4.reset();
+		_xml.reset();
+	} BOOST_SCOPE_EXIT_END
 
-		_xml->openTag("gff4");
-		_xml->addProperty("type"    , Common::tagToString(_gff4->getType()       , true));
-		_xml->addProperty("version" , Common::tagToString(_gff4->getTypeVersion(), true));
-		_xml->addProperty("platform", Common::tagToString(_gff4->getPlatform()   , true));
-		_xml->breakLine();
+	_gff4.reset(new Aurora::GFF4File(input));
+	_xml.reset(new XMLWriter(output));
 
-		dumpStruct(&_gff4->getTopLevel(), false, 0, false, 0, false);
+	_xml->openTag("gff4");
+	_xml->addProperty("type"    , Common::tagToString(_gff4->getType()       , true));
+	_xml->addProperty("version" , Common::tagToString(_gff4->getTypeVersion(), true));
+	_xml->addProperty("platform", Common::tagToString(_gff4->getPlatform()   , true));
+	_xml->breakLine();
 
-		_xml->closeTag();
-		_xml->breakLine();
+	dumpStruct(&_gff4->getTopLevel(), false, 0, false, 0, false);
 
-		_xml->flush();
+	_xml->closeTag();
+	_xml->breakLine();
 
-	} catch (...) {
-		clear();
-		throw;
-	}
-
-	clear();
+	_xml->flush();
 }
 
 bool GFF4Dumper::insertID(uint64 id) {

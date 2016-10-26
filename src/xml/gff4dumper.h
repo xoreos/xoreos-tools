@@ -28,6 +28,7 @@
 #include <set>
 #include <map>
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/gff4file.h"
@@ -67,8 +68,8 @@ private:
 
 	FieldNames _fieldNames;
 
-	Aurora::GFF4File *_gff4;
-	XMLWriter *_xml;
+	Common::ScopedPtr<Aurora::GFF4File> _gff4;
+	Common::ScopedPtr<XMLWriter> _xml;
 
 	Common::Encoding _encoding;
 
@@ -98,8 +99,6 @@ private:
 	                bool hasIndex, size_t index, bool isGeneric);
 
 	Common::UString findFieldName(uint32 label) const;
-
-	void clear();
 };
 
 } // End of namespace XML

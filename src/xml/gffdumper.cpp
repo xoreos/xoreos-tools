@@ -118,17 +118,12 @@ GFFDumper::~GFFDumper() {
 static GFFVersion identifyGFF(Common::SeekableReadStream &input, bool allowNWNPremium) {
 	uint32 id = 0xFFFFFFFF, version = 0xFFFFFFFF;
 
-	try {
-		size_t pos = input.pos();
+	size_t pos = input.pos();
 
-		id      = input.readUint32BE();
-		version = input.readUint32BE();
+	id      = input.readUint32BE();
+	version = input.readUint32BE();
 
-		input.seek(pos);
-
-	} catch (...) {
-		throw;
-	}
+	input.seek(pos);
 
 	GFFVersion gffVersion;
 	if        ((version == kVersion32) || (version == kVersion33)) {

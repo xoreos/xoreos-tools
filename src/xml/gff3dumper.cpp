@@ -22,6 +22,8 @@
  *  Dump GFF V3.2/V3.3 into XML files.
  */
 
+#include <boost/scope_exit.hpp>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
@@ -36,45 +38,33 @@
 
 namespace XML {
 
-GFF3Dumper::GFF3Dumper() : _gff3(0), _xml(0) {
+GFF3Dumper::GFF3Dumper() {
 }
 
 GFF3Dumper::~GFF3Dumper() {
-	clear();
-}
-
-void GFF3Dumper::clear() {
-	delete _gff3;
-	delete _xml;
-
-	_gff3 = 0;
-	_xml  = 0;
 }
 
 void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                       Common::Encoding UNUSED(encoding), bool allowNWNPremium) {
 
-	try {
-		_gff3 = new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium);
-		_xml  = new XMLWriter(output);
+	BOOST_SCOPE_EXIT( (&_gff3) (&_xml) ) {
+		_gff3.reset();
+		_xml.reset();
+	} BOOST_SCOPE_EXIT_END
 
-		_xml->openTag("gff3");
-		_xml->addProperty("type", Common::tagToString(_gff3->getType(), true));
-		_xml->breakLine();
+	_gff3.reset(new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium));
+	_xml.reset(new XMLWriter(output));
 
-		dumpStruct(_gff3->getTopLevel());
+	_xml->openTag("gff3");
+	_xml->addProperty("type", Common::tagToString(_gff3->getType(), true));
+	_xml->breakLine();
 
-		_xml->closeTag();
-		_xml->breakLine();
+	dumpStruct(_gff3->getTopLevel());
 
-		_xml->flush();
+	_xml->closeTag();
+	_xml->breakLine();
 
-	} catch (...) {
-		clear();
-		throw;
-	}
-
-	clear();
+	_xml->flush();
 }
 
 void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
@@ -167,9 +157,8 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			} catch (...) {
 				_xml->addProperty("base64", "true");
 
-				Common::SeekableReadStream *data = strct.getData(field);
+				Common::ScopedPtr<Common::SeekableReadStream> data(strct.getData(field));
 				_xml->setContents(*data);
-				delete data;
 			}
 			break;
 
@@ -186,9 +175,8 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 		case Aurora::GFF3Struct::kFieldTypeVoid:
 			{
-				Common::SeekableReadStream *data = strct.getData(field);
+				Common::ScopedPtr<Common::SeekableReadStream> data(strct.getData(field));
 				_xml->setContents(*data);
-				delete data;
 			}
 			break;
 
