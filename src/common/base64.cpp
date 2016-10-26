@@ -25,6 +25,7 @@
 #include <cassert>
 
 #include "src/common/base64.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -205,41 +206,28 @@ void encodeBase64(ReadStream &data, std::list<UString> &base64, size_t lineLengt
 
 SeekableReadStream *decodeBase64(const UString &base64) {
 	const size_t dataLength = (countLength(base64) / 4) * 3;
-	byte *data = new byte[dataLength];
+	Common::ScopedArray<byte> data(new byte[dataLength]);
 
-	MemoryWriteStream output(data, dataLength);
+	MemoryWriteStream output(data.get(), dataLength);
 
-	try {
-		UString overhang;
+	UString overhang;
+	decodeBase64(output, base64, overhang);
 
-		decodeBase64(output, base64, overhang);
-
-	} catch (...) {
-		delete[] data;
-		throw;
-	}
-
-	return new MemoryReadStream(data, output.pos(), true);
+	return new MemoryReadStream(data.release(), output.pos(), true);
 }
 
 SeekableReadStream *decodeBase64(const std::list<UString> &base64) {
 	const size_t dataLength = (countLength(base64) / 4) * 3;
-	byte *data = new byte[dataLength];
+	Common::ScopedArray<byte> data(new byte[dataLength]);
 
-	MemoryWriteStream output(data, dataLength);
+	MemoryWriteStream output(data.get(), dataLength);
 
-	try {
-		UString overhang;
+	UString overhang;
 
-		for (std::list<UString>::const_iterator b = base64.begin(); b != base64.end(); ++b)
-			decodeBase64(output, *b, overhang);
+	for (std::list<UString>::const_iterator b = base64.begin(); b != base64.end(); ++b)
+		decodeBase64(output, *b, overhang);
 
-	} catch (...) {
-		delete[] data;
-		throw;
-	}
-
-	return new MemoryReadStream(data, output.pos(), true);
+	return new MemoryReadStream(data.release(), output.pos(), true);
 }
 
 } // End of namespace Common
