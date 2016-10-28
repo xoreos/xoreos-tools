@@ -31,6 +31,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "src/common/scopedptr.h"
+#include "src/common/ptrlist.h"
 #include "src/common/ustring.h"
 
 struct _xmlNode;
@@ -59,7 +60,7 @@ private:
 class XMLNode : boost::noncopyable {
 public:
 	typedef std::map<Common::UString, Common::UString> Properties;
-	typedef std::list<const XMLNode *> Children;
+	typedef Common::PtrList<const XMLNode> Children;
 
 	const Common::UString &getName() const;
 	const Common::UString &getContent() const;
@@ -97,7 +98,7 @@ private:
 	~XMLNode();
 
 	void load(_xmlNode &node, bool makeLower);
-	void clean();
+
 
 	friend class XMLParser;
 

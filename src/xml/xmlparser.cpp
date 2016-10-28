@@ -105,24 +105,10 @@ const XMLNode &XMLParser::getRoot() const {
 
 
 XMLNode::XMLNode(_xmlNode &node, bool makeLower, XMLNode *parent) : _parent(parent) {
-	try {
-
-		load(node, makeLower);
-
-	} catch (...) {
-		clean();
-
-		throw;
-	}
+	load(node, makeLower);
 }
 
 XMLNode::~XMLNode() {
-	clean();
-}
-
-void XMLNode::clean() {
-	for (Children::iterator c = _children.begin(); c != _children.end(); ++c)
-		delete *c;
 }
 
 const Common::UString &XMLNode::getName() const {
