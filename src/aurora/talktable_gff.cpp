@@ -51,12 +51,6 @@ TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding e
 }
 
 TalkTable_GFF::~TalkTable_GFF() {
-	clean();
-}
-
-void TalkTable_GFF::clean() {
-	for (Entries::iterator e = _entries.begin(); e != _entries.end(); ++e)
-		delete e->second;
 }
 
 const std::list<uint32> &TalkTable_GFF::getStrRefs() const {
@@ -128,8 +122,6 @@ void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
 		_strRefs.sort();
 
 	} catch (Common::Exception &e) {
-		clean();
-
 		e.add("Unable to load GFF TLK");
 		throw;
 	}

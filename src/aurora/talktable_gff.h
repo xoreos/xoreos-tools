@@ -29,6 +29,7 @@
 
 #include "src/common/types.h"
 #include "src/common/scopedptr.h"
+#include "src/common/ptrmap.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -73,7 +74,7 @@ private:
 		Entry(const GFF4Struct *s = 0) : strct(s) { }
 	};
 
-	typedef std::map<uint32, Entry *> Entries;
+	typedef Common::PtrMap<uint32, Entry> Entries;
 
 
 	Common::ScopedPtr<GFF4File> _gff;
@@ -93,7 +94,6 @@ private:
 	Common::UString readString05(Common::SeekableReadStream *huffTree,
 	                             Common::SeekableReadStream *bitStream,
 	                             const Entry &entry) const;
-	void clean();
 };
 
 } // End of namespace Aurora
