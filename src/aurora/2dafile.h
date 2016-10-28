@@ -32,6 +32,7 @@
 
 #include "src/common/types.h"
 #include "src/common/deallocator.h"
+#include "src/common/ptrvector.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/aurorafile.h"
@@ -173,13 +174,12 @@ private:
 	HeaderMap _headerMap;
 
 	TwoDARow _emptyRow;
-	std::vector<TwoDARow *> _rows;
+	Common::PtrVector<TwoDARow> _rows;
 
 	// Loading helpers
 	void load(Common::SeekableReadStream &twoda);
 	void read2a(Common::SeekableReadStream &twoda);
 	void read2b(Common::SeekableReadStream &twoda);
-	void clear();
 
 	// ASCII loading helpers
 	void readDefault2a(Common::SeekableReadStream &twoda, Common::StreamTokenizer &tokenize);
