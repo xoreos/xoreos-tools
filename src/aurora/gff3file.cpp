@@ -69,16 +69,6 @@ GFF3File::GFF3File(Common::SeekableReadStream *gff3, uint32 id, bool repairNWNPr
 }
 
 GFF3File::~GFF3File() {
-	clear();
-}
-
-void GFF3File::clear() {
-	_stream.reset();
-
-	for (StructArray::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
-		delete *strct;
-
-	_structs.clear();
 }
 
 uint32 GFF3File::getType() const {
@@ -99,8 +89,6 @@ void GFF3File::load(uint32 id) {
 		loadLists();
 
 	} catch (Common::Exception &e) {
-		clear();
-
 		e.add("Failed reading GFF3 file");
 		throw;
 	}
