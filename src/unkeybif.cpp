@@ -27,11 +27,10 @@
 #include <list>
 #include <vector>
 
-#include <boost/scope_exit.hpp>
-
 #include "src/version/version.h"
 
 #include "src/common/scopedptr.h"
+#include "src/common/ptrvector.h"
 #include "src/common/util.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
@@ -63,16 +62,16 @@ uint32 getFileID(const Common::UString &fileName);
 void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::UString> &keyFiles,
                    std::vector<Common::UString> &bifFiles);
 
-void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile *> &keys);
-void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile *> &bifs);
+void openKEYs(const std::vector<Common::UString> &keyFiles, Common::PtrVector<Aurora::KEYFile> &keys);
+void openBIFs(const std::vector<Common::UString> &bifFiles, Common::PtrVector<Aurora::BIFFile> &bifs);
 
-void mergeKEYBIF(std::vector<Aurora::KEYFile *> &keys, std::vector<Aurora::BIFFile *> &bifs,
+void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aurora::BIFFile> &bifs,
                  const std::vector<Common::UString> &bifFiles);
 
 void listFiles(const Aurora::KEYFile &key, Aurora::GameID game);
-void listFiles(const std::vector<Aurora::KEYFile *> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
+void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
 void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
-void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
+void extractFiles(const Common::PtrVector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -93,15 +92,8 @@ int main(int argc, char **argv) {
 		std::vector<Common::UString> keyFiles, bifFiles;
 		identifyFiles(files, keyFiles, bifFiles);
 
-		std::vector<Aurora::KEYFile *> keys;
-		std::vector<Aurora::BIFFile *> bifs;
-
-		BOOST_SCOPE_EXIT( (&keys) (&bifs) ) {
-			for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k)
-				delete *k;
-			for (std::vector<Aurora::BIFFile *>::iterator b = bifs.begin(); b != bifs.end(); ++b)
-				delete *b;
-		} BOOST_SCOPE_EXIT_END
+		Common::PtrVector<Aurora::KEYFile> keys;
+		Common::PtrVector<Aurora::BIFFile> bifs;
 
 		openKEYs(keyFiles, keys);
 		openBIFs(bifFiles, bifs);
@@ -248,7 +240,7 @@ void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::
 	}
 }
 
-void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::KEYFile *> &keys) {
+void openKEYs(const std::vector<Common::UString> &keyFiles, Common::PtrVector<Aurora::KEYFile> &keys) {
 	keys.reserve(keyFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = keyFiles.begin(); f != keyFiles.end(); ++f) {
@@ -258,18 +250,18 @@ void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<Aurora::
 	}
 }
 
-void openBIFs(const std::vector<Common::UString> &bifFiles, std::vector<Aurora::BIFFile *> &bifs) {
+void openBIFs(const std::vector<Common::UString> &bifFiles, Common::PtrVector<Aurora::BIFFile> &bifs) {
 	bifs.reserve(bifFiles.size());
 
 	for (std::vector<Common::UString>::const_iterator f = bifFiles.begin(); f != bifFiles.end(); ++f)
 		bifs.push_back(new Aurora::BIFFile(new Common::ReadFile(*f)));
 }
 
-void mergeKEYBIF(std::vector<Aurora::KEYFile *> &keys, std::vector<Aurora::BIFFile *> &bifs,
+void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aurora::BIFFile> &bifs,
                  const std::vector<Common::UString> &bifFiles) {
 
 	// Go over all KEYs
-	for (std::vector<Aurora::KEYFile *>::iterator k = keys.begin(); k != keys.end(); ++k) {
+	for (Common::PtrVector<Aurora::KEYFile>::iterator k = keys.begin(); k != keys.end(); ++k) {
 
 		// Go over all BIFs handled by the KEY
 		const Aurora::KEYFile::BIFList &keyBifs = (*k)->getBIFs();
@@ -315,7 +307,7 @@ void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
 	}
 }
 
-void listFiles(const std::vector<Aurora::KEYFile *> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
+void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
 	for (uint i = 0; i < keys.size(); i++) {
 		std::printf("%s: %u files\n\n", keyFiles[i].c_str(), (uint)keys[i]->getResources().size());
 		listFiles(*keys[i], game);
@@ -348,7 +340,7 @@ void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
 
 }
 
-void extractFiles(const std::vector<Aurora::BIFFile *> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
+void extractFiles(const Common::PtrVector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
 	for (uint i = 0; i < bifs.size(); i++) {
 		std::printf("%s: %u indexed files (of %u)\n\n", bifFiles[i].c_str(), (uint)bifs[i]->getResources().size(),
                 bifs[i]->getInternalResourceCount());
