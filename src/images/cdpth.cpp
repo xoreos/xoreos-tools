@@ -39,11 +39,6 @@ CDPTH::ReadContext::ReadContext(Common::SeekableReadStream &c, uint32 w, uint32 
 
 }
 
-CDPTH::ReadContext::~ReadContext() {
-	for (Cells::iterator c = cells.begin(); c != cells.end(); ++c)
-		delete *c;
-}
-
 
 CDPTH::CDPTH(Common::SeekableReadStream &cdpth, uint32 width, uint32 height) {
 	ReadContext ctx(cdpth, width, height);
