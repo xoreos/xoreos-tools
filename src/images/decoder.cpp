@@ -78,8 +78,6 @@ Decoder::Decoder(const Decoder &decoder) {
 }
 
 Decoder::~Decoder() {
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
-		delete *m;
 }
 
 Decoder &Decoder::operator=(const Decoder &decoder) {
@@ -91,7 +89,7 @@ Decoder &Decoder::operator=(const Decoder &decoder) {
 	_mipMaps.clear();
 	_mipMaps.reserve(decoder._mipMaps.size());
 
-	for (std::vector<MipMap *>::const_iterator m = decoder._mipMaps.begin(); m != decoder._mipMaps.end(); ++m)
+	for (MipMaps::const_iterator m = decoder._mipMaps.begin(); m != decoder._mipMaps.end(); ++m)
 		_mipMaps.push_back(new MipMap(**m));
 
 	return *this;
@@ -169,7 +167,7 @@ void Decoder::decompress() {
 	if (!isCompressed())
 		return;
 
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m) {
+	for (MipMaps::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m) {
 		MipMap decompressed;
 
 		decompress(decompressed, **m, _format);
@@ -198,14 +196,14 @@ void Decoder::dumpTGA(const Common::UString &fileName) const {
 void Decoder::flipHorizontally() {
 	decompress();
 
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
+	for (MipMaps::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
 		::Images::flipHorizontally((*m)->data.get(), (*m)->width, (*m)->height, getBPP(_format));
 }
 
 void Decoder::flipVertically() {
 	decompress();
 
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
+	for (MipMaps::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
 		::Images::flipVertically((*m)->data.get(), (*m)->width, (*m)->height, getBPP(_format));
 }
 

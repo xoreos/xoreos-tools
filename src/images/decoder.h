@@ -31,6 +31,7 @@
 
 #include "src/common/types.h"
 #include "src/common/scopedptr.h"
+#include "src/common/ptrvector.h"
 
 #include "src/images/types.h"
 
@@ -93,6 +94,8 @@ public:
 	void flipVertically();
 
 protected:
+	typedef Common::PtrVector<MipMap> MipMaps;
+
 	PixelFormat _format;
 
 	/** Number of layers in this image. For layered 3D images and cubemaps. */
@@ -100,7 +103,7 @@ protected:
 	/** Is this image a cube map? A cube map always needs to have 6 layers! */
 	bool _isCubeMap;
 
-	std::vector<MipMap *> _mipMaps;
+	MipMaps _mipMaps;
 
 	/** Is the image data compressed? */
 	bool isCompressed() const;

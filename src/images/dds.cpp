@@ -223,7 +223,7 @@ void DDS::setSize(MipMap &mipMap) {
 }
 
 void DDS::readData(Common::SeekableReadStream &dds, DataType dataType) {
-	for (std::vector<MipMap *>::iterator mipMap = _mipMaps.begin(); mipMap != _mipMaps.end(); ++mipMap) {
+	for (MipMaps::iterator mipMap = _mipMaps.begin(); mipMap != _mipMaps.end(); ++mipMap) {
 		(*mipMap)->data.reset(new byte[(*mipMap)->size]);
 
 		if (dataType == kDataType4444) {
