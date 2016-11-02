@@ -62,7 +62,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 
 		tlk->getEntry(strRef, str, sound, volumeVariance, pitchVariance, soundLength, soundID);
 
-		if (str.empty() && sound.empty())
+		if (str.empty() && sound.empty() && (soundID == 0xFFFFFFFF))
 			continue;
 
 		xml.openTag("string");

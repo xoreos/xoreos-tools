@@ -124,7 +124,7 @@ void TalkTable_TLK::readEntryTableV3() {
 		if (!(entry.flags & kFlagSoundLengthPresent))
 			entry.soundLength = -1.0f;
 
-		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
+		if (((entry.length > 0) && (entry.flags & kFlagTextPresent)) || (!entry.soundResRef.empty()))
 			_strRefs.push_back(i);
 	}
 }
@@ -138,7 +138,7 @@ void TalkTable_TLK::readEntryTableV4() {
 		entry.length  = _tlk->readUint16LE();
 		entry.flags   = kFlagTextPresent;
 
-		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
+		if (((entry.length > 0) && (entry.flags & kFlagTextPresent)) || (entry.soundID != 0xFFFFFFFF))
 			_strRefs.push_back(i);
 	}
 }
