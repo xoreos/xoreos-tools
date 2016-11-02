@@ -255,8 +255,17 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 }
 
 void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label) {
+	dumpStruct(strct, true, label);
+}
+
+void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct) {
+	dumpStruct(strct, false);
+}
+
+void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, bool hasLabel, const Common::UString &label) {
 	_xml->openTag("struct");
-	_xml->addProperty("label", label);
+	if (hasLabel)
+		_xml->addProperty("label", label);
 	_xml->addProperty("id", Common::composeString(strct.getID()));
 
 	if (strct.getFieldCount() > 0)

@@ -56,8 +56,11 @@ private:
 
 	void dumpLocString(const Aurora::LocString &locString);
 	void dumpField(const Aurora::GFF3Struct &strct, const Common::UString &field);
-	void dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label = "");
+	void dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label);
+	void dumpStruct(const Aurora::GFF3Struct &strct);
 	void dumpList(const Aurora::GFF3List &list);
+
+	void dumpStruct(const Aurora::GFF3Struct &strct, bool hasLabel, const Common::UString &label = "");
 };
 
 } // End of namespace XML
