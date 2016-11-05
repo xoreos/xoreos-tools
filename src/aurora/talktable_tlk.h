@@ -121,7 +121,6 @@ private:
 
 	Common::ScopedPtr<Common::SeekableReadStream> _tlk;
 
-	uint32 _stringsOffset;
 	uint32 _languageID;
 
 	std::list<uint32> _strRefs;
@@ -130,7 +129,7 @@ private:
 
 	void load();
 
-	void readEntryTableV3();
+	void readEntryTableV3(uint32 stringsOffset);
 	void readEntryTableV4();
 
 	Common::UString readString(const Entry &entry) const;
