@@ -172,7 +172,7 @@ Common::UString GFF4Dumper::getFieldTypeName(uint32 type, bool isList) const {
 }
 
 void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label,
-                              bool hasIndex, size_t index) {
+                              bool hasIndex, size_t index, bool isGenericElement) {
 
 	if (index >= 0xFFFFFFFF)
 		throw Common::Exception("GFF4 field index overflow");
@@ -182,9 +182,11 @@ void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 
 	if (hasLabel) {
 		_xml->addProperty("label", Common::composeString(label));
 
-		Common::UString alias = findFieldName(label);
-		if (!alias.empty())
-			_xml->addProperty("alias", alias);
+		if (!isGenericElement) {
+			Common::UString alias = findFieldName(label);
+			if (!alias.empty())
+				_xml->addProperty("alias", alias);
+		}
 	}
 
 	if (hasIndex)
@@ -197,7 +199,7 @@ void GFF4Dumper::closeFieldTag(bool doBreak) {
 		_xml->breakLine();
 }
 
-void GFF4Dumper::dumpFieldUint(const GFF4Field &field) {
+void GFF4Dumper::dumpFieldUint(const GFF4Field &field, bool isGenericElement) {
 	std::vector<uint64> values;
 	if (!field.strct->getUint(field.field, values))
 		throw Common::Exception(Common::kReadError);
@@ -206,13 +208,13 @@ void GFF4Dumper::dumpFieldUint(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (size_t i = 0; i < values.size(); i++) {
-		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
+		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
 		_xml->setContents(Common::composeString(values[i]));
 		closeFieldTag();
 	}
 }
 
-void GFF4Dumper::dumpFieldSint(const GFF4Field &field) {
+void GFF4Dumper::dumpFieldSint(const GFF4Field &field, bool isGenericElement) {
 	std::vector<int64> values;
 	if (!field.strct->getSint(field.field, values))
 		throw Common::Exception(Common::kReadError);
@@ -221,13 +223,13 @@ void GFF4Dumper::dumpFieldSint(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (size_t i = 0; i < values.size(); i++) {
-		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
+		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
 		_xml->setContents(Common::composeString(values[i]));
 		closeFieldTag();
 	}
 }
 
-void GFF4Dumper::dumpFieldDouble(const GFF4Field &field) {
+void GFF4Dumper::dumpFieldDouble(const GFF4Field &field, bool isGenericElement) {
 	std::vector<double> values;
 	if (!field.strct->getDouble(field.field, values))
 		throw Common::Exception(Common::kReadError);
@@ -236,13 +238,13 @@ void GFF4Dumper::dumpFieldDouble(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (size_t i = 0; i < values.size(); i++) {
-		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
+		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
 		_xml->setContents(Common::UString::format("%.6f", values[i]));
 		closeFieldTag();
 	}
 }
 
-void GFF4Dumper::dumpFieldString(const GFF4Field &field) {
+void GFF4Dumper::dumpFieldString(const GFF4Field &field, bool isGenericElement) {
 	std::vector<Common::UString> values;
 	if (!field.strct->getString(field.field, _encoding, values))
 		throw Common::Exception(Common::kReadError);
@@ -251,13 +253,13 @@ void GFF4Dumper::dumpFieldString(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (size_t i = 0; i < values.size(); i++) {
-		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
+		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
 		_xml->setContents(values[i]);
 		closeFieldTag();
 	}
 }
 
-void GFF4Dumper::dumpFieldTlk(const GFF4Field &field) {
+void GFF4Dumper::dumpFieldTlk(const GFF4Field &field, bool isGenericElement) {
 	std::vector<uint32> strRefs;
 	std::vector<Common::UString> strs;
 
@@ -268,7 +270,7 @@ void GFF4Dumper::dumpFieldTlk(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (size_t i = 0; i < strRefs.size(); i++) {
-		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
+		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
 
 		openFieldTag(Aurora::GFF4Struct::kFieldTypeUint32, false, false, 0, false, 0);
 		_xml->setContents(Common::composeString(strRefs[i]));
@@ -282,7 +284,7 @@ void GFF4Dumper::dumpFieldTlk(const GFF4Field &field) {
 	}
 }
 
-void GFF4Dumper::dumpFieldVector(const GFF4Field &field) {
+void GFF4Dumper::dumpFieldVector(const GFF4Field &field, bool isGenericElement) {
 	std::vector< std::vector<double> > values;
 	if (!field.strct->getVectorMatrix(field.field, values))
 		throw Common::Exception(Common::kReadError);
@@ -291,7 +293,7 @@ void GFF4Dumper::dumpFieldVector(const GFF4Field &field) {
 		_xml->breakLine();
 
 	for (size_t i = 0; i < values.size(); i++) {
-		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i);
+		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
 		_xml->breakLine();
 
 		for (size_t j = 0; j < values[i].size(); j++) {
@@ -344,29 +346,29 @@ void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool i
 		case Aurora::GFF4Struct::kFieldTypeUint16:
 		case Aurora::GFF4Struct::kFieldTypeUint32:
 		case Aurora::GFF4Struct::kFieldTypeUint64:
-			dumpFieldUint(f);
+			dumpFieldUint(f, isGeneric);
 			break;
 
 		case Aurora::GFF4Struct::kFieldTypeSint8:
 		case Aurora::GFF4Struct::kFieldTypeSint16:
 		case Aurora::GFF4Struct::kFieldTypeSint32:
 		case Aurora::GFF4Struct::kFieldTypeSint64:
-			dumpFieldSint(f);
+			dumpFieldSint(f, isGeneric);
 			break;
 
 		case Aurora::GFF4Struct::kFieldTypeFloat32:
 		case Aurora::GFF4Struct::kFieldTypeFloat64:
 		case Aurora::GFF4Struct::kFieldTypeNDSFixed:
-			dumpFieldDouble(f);
+			dumpFieldDouble(f, isGeneric);
 			break;
 
 		case Aurora::GFF4Struct::kFieldTypeString:
 		case Aurora::GFF4Struct::kFieldTypeASCIIString:
-			dumpFieldString(f);
+			dumpFieldString(f, isGeneric);
 			break;
 
 		case Aurora::GFF4Struct::kFieldTypeTlkString:
-			dumpFieldTlk(f);
+			dumpFieldTlk(f, isGeneric);
 			break;
 
 		case Aurora::GFF4Struct::kFieldTypeVector3f:
@@ -374,7 +376,7 @@ void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool i
 		case Aurora::GFF4Struct::kFieldTypeQuaternionf:
 		case Aurora::GFF4Struct::kFieldTypeColor4f:
 		case Aurora::GFF4Struct::kFieldTypeMatrix4x4f:
-			dumpFieldVector(f);
+			dumpFieldVector(f, isGeneric);
 			break;
 
 		case Aurora::GFF4Struct::kFieldTypeStruct:
@@ -395,7 +397,7 @@ void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool i
 			if (f.isList)
 				_xml->breakLine();
 
-			openFieldTag(f.type, false, !f.isList, f.label, f.isList, 0);
+			openFieldTag(f.type, false, !f.isList, f.label, f.isList, 0, isGeneric);
 			closeFieldTag();
 			break;
 	}
