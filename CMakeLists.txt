@@ -24,6 +24,11 @@ set(xoreos-tools_VERSION 0.0.4)
 
 
 # -------------------------------------------------------------------------
+# options!
+option(Boost_USE_STATIC_LIBS "Use Boost static libraries" OFF)
+
+
+# -------------------------------------------------------------------------
 # load some cmake modules from cmake/ subfolder
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(GNUInstallDirs)
@@ -223,8 +228,6 @@ set(XOREOSTOOLS_LIBRARIES "")
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 list(APPEND XOREOSTOOLS_LIBRARIES ${ZLIB_LIBRARIES})
-
-option(Boost_USE_STATIC_LIBS "Use Boost static libraries" OFF)
 
 find_package(Boost COMPONENTS system filesystem regex atomic locale REQUIRED)
 
