@@ -72,6 +72,7 @@ Makefile.am.cmake
 /tests/common/testfile_*
 /tests/common/test_*
 /tests/aurora/test_*
+/tests/images/test_*
 
 # Unix binaries
 /src/gff2xml
