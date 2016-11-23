@@ -2,20 +2,42 @@ Someday, ????-??-?? (Version 0.0.5)
 	- Tools added:
 		- ssf2xml
 		- xml2ssf
+	- DOCS:
+		- Corrected example section of the convert2da manpage
+		- Improved documentation in various files
+	- BUILD:
+		- Simplified compilation to only use a C++ compiler
+		- Added more optional compilation warning flags
+		- Pulled in Boost, to ease sync with xoreos
+		- Changed our autotools setup to be non-recursive
+	- COMMON:
+		- Added missing kEncodingCP1251 handling in several functions
+		- Moved DEFLATE decompression into its own files
+		- Corrected the StreamTokenizer behaviour in a corner case
+		- Added checks for nullptr in stream and encoding methods
+		- Fixed composeString() for the INT*_MIN cases
 	- AURORA:
 		- Unified some code between xoreos and xoreos-tools
 		- Fixed a potential field overflow in the binary 2DA writer
+		- Fixed reading of NSBTX with truncated palette
+		- Fixed reading of 2DA with indented rows
+		- Added exceptions for as of yet unknown GFF4 configurations
 	- GRAPHICS:
 		- Loosened restrictions on textures, allowing NPOT textures
 	- GFF2XML:
 		- Added an --encoding parameter to overwrite the encoding
 		  used in GFF3 LocStrings
+		- Removed empty label property on structs with no label
+		- Removed alias on generic lists; their labels are indices
+	- TLK2XML:
+		- Fixed corner case of entries with a sound, but no text
 	- DIST:
 		- Added Fedora package build files
-	- DOCS:
-		- Corrected example section of the convert2da manpage
 	- MISC:
 		- Improved code consistency in some places
+		- Marked several classes correctly as noncopyable
+		- Introduced various smart pointer templates into the codebase,
+		  making it cleaner and more leak-free
 
 Monday, 2016-02-01 (Version 0.0.4)
 	- Tools added:
