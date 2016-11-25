@@ -37,6 +37,7 @@
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
 #include "src/common/platform.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/2dafile.h"
@@ -50,7 +51,6 @@ enum Format {
 	kFormatCSV
 };
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       std::vector<Common::UString> &files, Common::UString &outFile, Format &format);
 
@@ -85,100 +85,40 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      std::vector<Common::UString> &files, Common::UString &outFile, Format &format) {
-	files.clear();
-	outFile.clear();
+                      std::vector<Common::UString> &files, Common::UString &outFile,
+		      Format &format) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::Callback;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
 
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
+	NoOption filesOpt(false,
+			  new ValGetter<std::vector<Common::UString> &>(files, "files[...]"));
+	Parser parser(argv[0], "BioWare 2DA/GDA to 2DA/CSV converter\n",
+		      "If several files are given, they must all be GDA and use the same\n"
+		      "column layout. They will be pasted together and printed as one GDA.\n\n"
+		      "If no output file is given, the output is written to stdout.",
+		      returnValue,
+		      makeEndArgs(&filesOpt));
 
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        ((argv[i] == "--2da") || (argv[i] == "-a")) {
-				isOption = true;
-				format   = kFormat2DA;
-			} else if ((argv[i] == "--2dab") || (argv[i] == "-b")) {
-				isOption = true;
-				format   = kFormat2DAb;
-			} else if ((argv[i] == "--csv") || (argv[i] == "-c")) {
-				isOption = true;
-				format   = kFormatCSV;
-			} else if ((argv[i] == "-o") || (argv[i] == "--output")) {
-				isOption = true;
-
-				// Needs a file name as the next parameter
-				if (i++ == (argv.size() - 1)) {
-					printUsage(stdout, argv[0]);
-					returnValue = 1;
-
-					return false;
-				}
-
-				outFile = argv[i];
-
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// This is a file to use
-		files.push_back(argv[i]);
-	}
-
-	// No files? Error.
-	if (files.empty()) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "BioWare 2DA/GDA to 2DA/CSV converter\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <file> [<file> [...]]\n", name.c_str());
-	std::fprintf(stream, "  -h        --help              This help text\n");
-	std::fprintf(stream, "            --version           Display version information\n");
-	std::fprintf(stream, "  -o <file> --output <file>     Write the output to this file\n");
-	std::fprintf(stream, "  -a        --2da               Convert to ASCII 2DA (default)\n");
-	std::fprintf(stream, "  -b        --2dab              Convert to binary 2DA\n");
-	std::fprintf(stream, "  -c        --csv               Convert to CSV\n\n");
-	std::fprintf(stream, "If several files are given, they must all be GDA and use the same\n");
-	std::fprintf(stream, "column layout. They will be pasted together and printed as one GDA.\n\n");
-	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
+	parser.addOption("output", 'o', "Write the output to this file",
+			 kContinueParsing,
+			 new ValGetter<Common::UString &>(outFile, "file"));
+	parser.addOption("2da", "Convert to ASCII 2DA (default)",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<Format>(kFormat2DA,
+							       format)));
+	parser.addOption("2dab", "Convert to binary 2DA", kContinueParsing,
+			 makeAssigners(new ValAssigner<Format>(kFormat2DAb,
+							       format)));
+	parser.addOption("cvs", "Convert to CSV", kContinueParsing,
+			 makeAssigners(new ValAssigner<Format>(kFormatCSV,
+							       format)));
+	return parser.process(argv);
 }
 
 static const uint32 k2DAID     = MKTAG('2', 'D', 'A', ' ');
