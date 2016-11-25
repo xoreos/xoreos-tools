@@ -33,6 +33,7 @@
 #include "src/common/error.h"
 #include "src/common/platform.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -42,7 +43,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &cdpthFile, Common::UString &twoDAFile,
                       Common::UString &outFile);
@@ -74,59 +74,18 @@ int main(int argc, char **argv) {
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &cdpthFile, Common::UString &twoDAFile,
                       Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	std::vector<Common::CLI::Getter *> getters;
+	NoOption cdpthFileOpt(false, new ValGetter<Common::UString &>(cdpthFile, "cdpth"));
+	NoOption twoDAFileOpt(false, new ValGetter<Common::UString &>(twoDAFile, "2da"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
+	Parser parser(argv[0], "CDPTH depth image to TGA converter","", returnValue,
+		      makeEndArgs(&cdpthFileOpt, &twoDAFileOpt, &outFileOpt));
 
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
-	}
-
-	if (args.size() != 3) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	cdpthFile = args[0];
-	twoDAFile = args[1];
-	outFile   = args[2];
-
-	return true;
+	return parser.process(argv);
 }
 
 void printUsage(FILE *stream, const Common::UString &name) {
