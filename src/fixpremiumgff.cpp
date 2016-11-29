@@ -39,12 +39,12 @@
 #include "src/common/memreadstream.h"
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile, Common::UString &id);
 
@@ -76,82 +76,22 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 	inFile.clear();
 	outFile.clear();
-	std::vector<Common::UString> args;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::kContinueParsing;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "output files"));
+	Parser parser(argv[0], "Repair BioWare GFF files found in encrypted NWN premium module HAKs\n",
+		      "If no ID is given is given, it is guessed from the file name.",
+		      returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
-	bool parseFail  = false;
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
 
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
+	parser.addOption("id", "Write this GFF ID into the output file",
+			 kContinueParsing, new ValGetter<Common::UString &>(id, "id"));
 
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (argv[i] == "--id") {
-				isOption = true;
-
-				// Needs the ID as the next parameter
-				if (i++ == (argv.size() - 1)) {
-					parseFail = true;
-					break;
-				}
-
-				id = argv[i];
-
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-				parseFail = true;
-				break;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// This is a file to use
-		args.push_back(argv[i]);
-	}
-
-	if (parseFail || (args.size() != 2)) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	inFile  = args[0];
-	outFile = args[1];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "Repair BioWare GFF files found in encrypted NWN premium module HAKs\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <input file> <output file>\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n\n");
-	std::fprintf(stream, "          --id <id>           Write this GFF ID into the output file\n\n");
-	std::fprintf(stream, "If no ID is given is given, it is guessed from the file name.\n");
+	return parser.process(argv);
 }
 
 static const uint32 kVersion32 = MKTAG('V', '3', '.', '2');
