@@ -34,12 +34,12 @@
 #include "src/common/platform.h"
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/smallfile.h"
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile);
 
@@ -68,65 +68,16 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "output file"));
+	Parser parser(argv[0], "Nintendo DS LZSS (types 0x00 and 0x10) decompressor\n",
+		      "", returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
-	std::vector<Common::UString> files;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		files.push_back(argv[i]);
-	}
-
-	if (files.size() != 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	inFile  = files[0];
-	outFile = files[1];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "Nintendo DS LZSS (types 0x00 and 0x10) decompressor\n");
-	std::fprintf(stream, "Usage: %s [<options>] <input file> <output file>\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n");
+	return parser.process(argv);
 }
 
 void desmall(const Common::UString &inFile, const Common::UString &outFile) {
