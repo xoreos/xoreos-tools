@@ -30,6 +30,7 @@
 #include "src/images/util.h"
 
 static const byte kEncodingBGRA = 0x04;
+static const byte kEncodingGray = 0x09;
 static const byte kEncodingDXT1 = 0x0A;
 static const byte kEncodingDXT5 = 0x0C;
 
@@ -48,10 +49,10 @@ TXB::~TXB() {
 void TXB::load(Common::SeekableReadStream &txb) {
 	try {
 
-		bool needDeSwizzle = false;
+		byte encoding;
 
-		readHeader(txb, needDeSwizzle);
-		readData  (txb, needDeSwizzle);
+		readHeader(txb, encoding);
+		readData  (txb, encoding);
 
 		txb.seek(_dataSize + 128);
 
@@ -70,7 +71,21 @@ Common::SeekableReadStream *TXB::getTXI() const {
 	return new Common::MemoryReadStream(_txiData.get(), _txiDataSize);
 }
 
-void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
+static uint32 getTXBDataSize(byte encoding, PixelFormat format, int32 width, int32 height) {
+	switch (encoding) {
+		case kEncodingBGRA:
+		case kEncodingDXT1:
+		case kEncodingDXT5:
+			return getDataSize(format, width, height);
+
+		case kEncodingGray:
+			return width * height;
+	}
+
+	return 0;
+}
+
+void TXB::readHeader(Common::SeekableReadStream &txb, byte &encoding) {
 	// Number of bytes for the pixel data in one full image
 	uint32 dataSize = txb.readUint32LE();
 
@@ -86,7 +101,8 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 		throw Common::Exception("Unsupported image dimensions (%ux%u)", width, height);
 
 	// How's the pixel data encoded?
-	byte encoding    = txb.readByte();
+	encoding = txb.readByte();
+
 	// Number of mip maps in the image
 	byte mipMapCount = txb.readByte();
 
@@ -94,18 +110,22 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 	txb.skip(4); // Some float
 	txb.skip(108); // Reserved
 
-	needDeSwizzle = false;
-
 	uint32 minDataSize, mipMapSize;
 	if        (encoding == kEncodingBGRA) {
-		// Raw BGRA
-
-		needDeSwizzle = true;
+		// Raw BGRA, swizzled
 
 		_format = kPixelFormatB8G8R8A8;
 
 		minDataSize = 4;
 		mipMapSize  = width * height * 4;
+
+	} else if (encoding == kEncodingGray) {
+		// Raw Grayscale, swizzled. We map it to BGR
+
+		_format = kPixelFormatB8G8R8;
+
+		minDataSize = 1;
+		mipMapSize  = width * height;
 
 	} else if (encoding == kEncodingDXT1) {
 		// S3TC DXT1
@@ -123,20 +143,14 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 		minDataSize = 16;
 		mipMapSize  = width * height;
 
-	} else if (encoding == 0x09)
-		// TODO: This seems to be some compression with 8bit per pixel. No min
-		//       data size; 2*2 and 1*1 mipmaps seem to be just that big.
-		//       Image data doesn't seem to be simple grayscale, paletted,
-		//       RGB2222 or RGB332 data either.
-		throw Common::Exception("Unsupported TXB encoding 0x09");
-	 else
+	} else
 		throw Common::Exception("Unknown TXB encoding 0x%02X (%dx%d, %d, %d)",
 				encoding, width, height, mipMapCount, dataSize);
 
 	if (!hasValidDimensions(_format, width, height))
 		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
 
-	const size_t fullImageDataSize = getDataSize(_format, width, height);
+	const size_t fullImageDataSize = getTXBDataSize(encoding, _format, width, height);
 	if (dataSize < fullImageDataSize)
 		throw Common::Exception("Image wouldn't fit into data");
 
@@ -153,7 +167,7 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 
 		mipMap->size = MAX<uint32>(mipMapSize, minDataSize);
 
-		const size_t mipMapDataSize = getDataSize(_format, mipMap->width, mipMap->height);
+		const size_t mipMapDataSize = getTXBDataSize(encoding, _format, mipMap->width, mipMap->height);
 
 		// Wouldn't fit
 		if ((dataSize < mipMap->size) || (mipMap->size < mipMapDataSize))
@@ -175,39 +189,54 @@ void TXB::readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle) {
 		throw Common::Exception("Couldn't read any mip maps");
 }
 
-void TXB::deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height) {
+void TXB::deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height, uint8 bpp) {
 	for (uint32 y = 0; y < height; y++) {
 		for (uint32 x = 0; x < width; x++) {
-			const uint32 offset = deSwizzleOffset(x, y, width, height) * 4;
+			const uint32 offset = deSwizzleOffset(x, y, width, height) * bpp;
 
-			*dst++ = src[offset + 0];
-			*dst++ = src[offset + 1];
-			*dst++ = src[offset + 2];
-			*dst++ = src[offset + 3];
+			for (uint8 p = 0; p < bpp; p++)
+				*dst++ = src[offset + p];
 		}
 	}
 }
 
-void TXB::readData(Common::SeekableReadStream &txb, bool needDeSwizzle) {
+void TXB::readData(Common::SeekableReadStream &txb, byte encoding) {
 	for (MipMaps::iterator mipMap = _mipMaps.begin(); mipMap != _mipMaps.end(); ++mipMap) {
+		const bool needDeSwizzle = (encoding == kEncodingBGRA) || (encoding == kEncodingGray);
 
 		// If the texture width is a power of two, the texture memory layout is "swizzled"
 		const bool widthPOT = ((*mipMap)->width & ((*mipMap)->width - 1)) == 0;
 		const bool swizzled = needDeSwizzle && widthPOT;
 
 		(*mipMap)->data.reset(new byte[(*mipMap)->size]);
+		if (txb.read((*mipMap)->data.get(), (*mipMap)->size) != (*mipMap)->size)
+			throw Common::Exception(Common::kReadError);
 
-		if (swizzled) {
-			std::vector<byte> tmp((*mipMap)->size);
+		if (encoding == kEncodingGray) {
+			// Convert grayscale into BGR
 
-			if (txb.read(&tmp[0], (*mipMap)->size) != (*mipMap)->size)
-				throw Common::Exception(Common::kReadError);
+			const uint32 oldSize = (*mipMap)->size;
+			const uint32 newSize = (*mipMap)->size * 3;
 
-			deSwizzle((*mipMap)->data.get(), &tmp[0], (*mipMap)->width, (*mipMap)->height);
+			Common::ScopedArray<byte> tmp1(new byte[newSize]);
+			for (uint32 i = 0; i < oldSize; i++)
+				tmp1[i * 3 + 0] = tmp1[i * 3 + 1] = tmp1[i * 3 + 2] = (*mipMap)->data[i];
 
-		} else {
-			if (txb.read((*mipMap)->data.get(), (*mipMap)->size) != (*mipMap)->size)
-				throw Common::Exception(Common::kReadError);
+			if (swizzled) {
+				Common::ScopedArray<byte> tmp2(new byte[newSize]);
+				deSwizzle(tmp2.get(), tmp1.get(), (*mipMap)->width, (*mipMap)->height, 3);
+
+				tmp1.swap(tmp2);
+			}
+
+			(*mipMap)->data.swap(tmp1);
+
+		} else if (swizzled) {
+			Common::ScopedArray<byte> tmp(new byte[(*mipMap)->size]);
+
+			deSwizzle(tmp.get(), (*mipMap)->data.get(), (*mipMap)->width, (*mipMap)->height, 4);
+
+			(*mipMap)->data.swap(tmp);
 		}
 
 	}
