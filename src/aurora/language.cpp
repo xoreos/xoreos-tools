@@ -266,6 +266,9 @@ uint32 LanguageManager::getLanguageID(Language language, LanguageGender gender) 
 	if (!l)
 		return kLanguageInvalid;
 
+	if (gender == kLanguageGenderCurrent)
+		gender = getCurrentGender();
+
 	return convertLanguageIDToGendered(l->id, gender);
 }
 
