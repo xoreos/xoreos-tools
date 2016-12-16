@@ -38,6 +38,7 @@
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 
@@ -53,7 +54,6 @@ enum Command {
 	kCommandMAX
 };
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Aurora::GameID &game, Command &command,
@@ -92,135 +92,56 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
                       Common::UString &inFile, Common::UString &outFile,
                       Aurora::GameID &game, Command &command,
                       bool &printStack, bool &printControlTypes) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::Callback;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
+	using Aurora::GameID;
 
-	inFile.clear();
-	outFile.clear();
-	std::vector<Common::UString> args;
+	Common::UString encodingStr;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
+	Parser parser(argv[0], "BioWare NWScript bytecode disassembler",
+		      "\nIf no output file is given, the output is written to stdout.",
+		      returnValue,
+		      makeEndArgs(&inFileOpt, &outFileOpt));
 
-	command = kCommandListing;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (argv[i] == "--list") {
-				isOption = true;
-				command  = kCommandListing;
-			} else if (argv[i] == "--assembly") {
-				isOption = true;
-				command  = kCommandAssembly;
-			} else if (argv[i] == "--dot") {
-				isOption = true;
-				command  = kCommandDot;
-			} else if (argv[i] == "--stack") {
-				isOption   = true;
-				printStack = true;
-			} else if (argv[i] == "--control") {
-				isOption          = true;
-				printControlTypes = true;
-			} else if (argv[i] == "--nwn") {
-				isOption = true;
-				game     = Aurora::kGameIDNWN;
-			} else if (argv[i] == "--nwn2") {
-				isOption = true;
-				game     = Aurora::kGameIDNWN2;
-			} else if (argv[i] == "--kotor") {
-				isOption = true;
-				game     = Aurora::kGameIDKotOR;
-			} else if (argv[i] == "--kotor2") {
-				isOption = true;
-				game     = Aurora::kGameIDKotOR2;
-			} else if (argv[i] == "--jade") {
-				isOption = true;
-				game     = Aurora::kGameIDJade;
-			} else if (argv[i] == "--witcher") {
-				isOption = true;
-				game     = Aurora::kGameIDWitcher;
-			} else if (argv[i] == "--dragonage") {
-				isOption = true;
-				game     = Aurora::kGameIDDragonAge;
-			} else if (argv[i] == "--dragonage2") {
-				isOption = true;
-				game     = Aurora::kGameIDDragonAge2;
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// This is a file to use
-		args.push_back(argv[i]);
-	}
-
-	assert(command != kCommandNone);
-
-	if ((args.size() < 1) || (args.size() > 2)) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	inFile = args[0];
-
-	if (args.size() > 1)
-		outFile = args[1];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "BioWare NWScript bytecode disassembler\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <input file> [<output file>]\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n\n");
-	std::fprintf(stream, "          --list              Create full disassembly listing (default)\n");
-	std::fprintf(stream, "          --assembly          Only create disassembly mnemonics\n");
-	std::fprintf(stream, "          --dot               Create a graphviz dot file\n\n");
-	std::fprintf(stream, "          --stack             Print the stack frame for each instruction\n");
-	std::fprintf(stream, "                              (Only available in list or assembly mode)\n");
-	std::fprintf(stream, "          --control           Print the control types for each block\n");
-	std::fprintf(stream, "                              (Only available in dot mode)\n\n");
-	std::fprintf(stream, "          --nwn               This is a Neverwinter Nights script\n");
-	std::fprintf(stream, "          --nwn2              This is a Neverwinter Nights 2 script\n");
-	std::fprintf(stream, "          --kotor             This is a Knights of the Old Republic script\n");
-	std::fprintf(stream, "          --kotor2            This is a Knights of the Old Republic II script\n");
-	std::fprintf(stream, "          --jade              This is a Jade Empire script\n");
-	std::fprintf(stream, "          --witcher           This is a The Witcher script\n");
-	std::fprintf(stream, "          --dragonage         This is a Dragon Age script\n");
-	std::fprintf(stream, "          --dragonage2        This is a Dragon Age II script\n\n");
-	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
+	parser.addOption("nwn", "This is a Neverwinter Nights script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
+	parser.addOption("nwn2", "This is a Neverwinter Nights 2 script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("kotor", "This is a Knights of the Old Republic script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
+	parser.addOption("kotor2", "This is a Knights of the Old Republic II script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
+	parser.addOption("jade", "This is a Jade Empire script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	parser.addOption("witcher", "This is a The Witcher script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
+	parser.addOption("dragonage", "This is a Dragon Age script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
+	parser.addOption("dragonage2", "This is a Dragon Age II script", kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
+	parser.addSpace();
+	parser.addOption("list", "Create full disassembly listing (default)", kContinueParsing,
+			 makeAssigners(new ValAssigner<Command>(kCommandListing, command)));
+	parser.addOption("assembly", "Only create disassembly mnemonics", kContinueParsing,
+			 makeAssigners(new ValAssigner<Command>(kCommandAssembly, command)));
+	parser.addOption("dot", "Create a graphviz dot file", kContinueParsing,
+			 makeAssigners(new ValAssigner<Command>(kCommandDot, command)));
+	parser.addOption("stack", "Print the stack frame for each instruction"
+			 " (Only available in list or assembly mode)",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<bool>(true, printStack)));
+	parser.addOption("control", "Print the control types for each block"
+			 " (Only available in list or assembly mode)",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<bool>(true, printControlTypes)));
+	return parser.process(argv);
 }
 
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
