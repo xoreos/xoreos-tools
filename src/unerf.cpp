@@ -41,6 +41,7 @@
 #include "src/common/filepath.h"
 #include "src/common/hash.h"
 #include "src/common/md5.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/erffile.h"
@@ -65,15 +66,14 @@ enum ExtractMode {
 
 const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "s" };
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password);
 
 bool findHashedName(uint64 hash, Common::UString &name);
 
-void parsePassword(const Common::UString &arg, std::vector<byte> &password);
-void readNWMMD5   (const Common::UString &arg, std::vector<byte> &password);
+bool parsePassword(const Common::UString &arg, std::vector<byte> &password);
+bool readNWMMD5   (const Common::UString &arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &erf, Aurora::GameID game);
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void parsePassword(const Common::UString &arg, std::vector<byte> &password) {
+bool parsePassword(const Common::UString &arg, std::vector<byte> &password) {
 	const size_t length = arg.size();
 
 	password.clear();
@@ -148,149 +148,74 @@ void parsePassword(const Common::UString &arg, std::vector<byte> &password) {
 		} else
 			c |= d << 4;
 	}
+	return true;
 }
 
-void readNWMMD5(const Common::UString &arg, std::vector<byte> &password) {
+bool readNWMMD5(const Common::UString &arg, std::vector<byte> &password) {
 	Common::ReadFile keyFile(arg);
 
 	Common::hashMD5(keyFile, password);
+	return true;
+}
+
+namespace Common {
+namespace CLI {
+template<>
+int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, int) {
+	_val = kCommandNone;
+	for (int j = 0; j < kCommandMAX; j++) {
+		if (!strcmp(args[i].c_str(), kCommandChar[j])) {
+			_val = (Command) j;
+			return 0;
+		}
+	}
+	return -1;
+}
+}
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::Callback;
+	using Common::CLI::ValGetter;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
+	using Aurora::GameID;
 
-	archive.clear();
-	files.clear();
+	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
+	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
+	NoOption filesOpt(true,
+			  new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
+	Parser parser(argv[0], "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor",
+		      "Commands:\n"
+		      "  i          Display meta-information\n"
+		      "  l          List archive\n"
+		      "  v          List archive verbosely (show directory names)\n"
+		      "  e          Extract files to current directory\n"
+		      "  s          Extract files to current directory with full name",
+		      returnValue,
+		      makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
-	std::vector<Common::UString> args;
+	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("jade", "Alias file types according to Jade Empire rules",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	parser.addOption("pass", "Decryption password, if required, in hex notation",
+			 kContinueParsing,
+			 new Callback<std::vector<byte> &>("hex", parsePassword, password));
+	parser.addOption("nwn",
+			 "Neverwinter Nights premium module file(for decrypting their HAK file)",
+			 kContinueParsing,
+			 new Callback<std::vector<byte> &>("file", readNWMMD5, password));
 
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (argv[i] == "--nwn2") {
-				isOption = true;
-				game     = Aurora::kGameIDNWN2;
-			} else if (argv[i] == "--jade") {
-				isOption = true;
-			  game     = Aurora::kGameIDJade;
-			} else if (argv[i] == "--pass") {
-				isOption = true;
-
-				// Needs the password as the next parameter
-				if (i++ == (argv.size() - 1)) {
-					printUsage(stdout, argv[0]);
-					returnValue = 1;
-
-					return false;
-				}
-
-				parsePassword(argv[i], password);
-
-			} else if (argv[i] == "--nwm") {
-				isOption = true;
-
-				// Needs the file as the next parameter
-				if (i++ == (argv.size() - 1)) {
-					printUsage(stdout, argv[0]);
-					returnValue = 1;
-
-					return false;
-				}
-
-				readNWMMD5(argv[i], password);
-
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		args.push_back(argv[i]);
-	}
-
-	if (args.size() < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	std::vector<Common::UString>::iterator arg = args.begin();
-
-	// Find out what we should do
-	command = kCommandNone;
-	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(arg->c_str(), kCommandChar[i]))
-			command = (Command) i;
-
-	// Unknown command
-	if (command == kCommandNone) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	++arg;
-	archive = *arg;
-	++arg;
-
-	files.insert(arg, args.end());
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <archive> [<file> [...]]\n\n", name.c_str());
-	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  -h    --help        This help text\n");
-	std::fprintf(stream, "        --version     Display version information\n");
-	std::fprintf(stream, "        --nwn2        Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "        --jade        Alias file types according to Jade Empire rules\n");
-	std::fprintf(stream, "        --pass <hex>  Decryption password, if required, in hex notation\n");
-	std::fprintf(stream, "                      (e.g. \"4CF223AB\")\n");
-	std::fprintf(stream, "        --nwm <file>  Neverwinter Nights premium module file\n");
-	std::fprintf(stream, "                      (for decrypting their HAK file\n\n");
-	std::fprintf(stream, "Commands:\n");
-	std::fprintf(stream, "  i          Display meta-information\n");
-	std::fprintf(stream, "  l          List archive\n");
-	std::fprintf(stream, "  v          List archive verbosely (show directory names)\n");
-	std::fprintf(stream, "  e          Extract files to current directory\n");
-	std::fprintf(stream, "  s          Extract files to current directory with full name\n");
+	return parser.process(argv);
 }
 
 bool findHashedName(uint64 hash, Common::UString &name) {
