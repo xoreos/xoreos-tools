@@ -33,6 +33,7 @@
 #include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/ndsrom.h"
@@ -49,7 +50,6 @@ enum Command {
 
 const char *kCommandChar[kCommandMAX] = { "i", "l", "e" };
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &file);
 
@@ -87,86 +87,40 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Command &command, Common::UString &file) {
-
-	file.clear();
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
+namespace Common {
+namespace CLI {
+template<>
+int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, int) {
+	_val = kCommandNone;
+	for (int j = 0; j < kCommandMAX; j++) {
+		if (!strcmp(args[i].c_str(), kCommandChar[j])) {
+			_val = (Command) j;
+			return 0;
 		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
 	}
-
-	if (args.size() != 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	// Find out what we should do
-	command = kCommandNone;
-	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(args[0].c_str(), kCommandChar[i]))
-			command = (Command) i;
-
-	// Unknown command
-	if (command == kCommandNone) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	file = args[1];
-
-	return true;
+	return -1;
+}
+}
 }
 
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "Nintendo DS archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <file>\n\n", name.c_str());
-	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n\n");
-	std::fprintf(stream, "Commands:\n");
-	std::fprintf(stream, "  i          Display meta-information\n");
-	std::fprintf(stream, "  l          List archive\n");
-	std::fprintf(stream, "  e          Extract files to current directory\n");
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &file) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::makeEndArgs;
+
+	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
+	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
+	Parser parser(argv[0], "Nintendo DS archive extractor",
+		      "Commands:\n"
+		      "  i          Display meta-information\n"
+		      "  l          List archive\n"
+		      "  e          Extract files to current directory\n",
+		      returnValue, makeEndArgs(&cmdOpt, &fileOpt));
+
+	return parser.process(argv);
 }
 
 void displayInfo(Aurora::NDSFile &nds) {
