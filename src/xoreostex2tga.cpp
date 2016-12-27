@@ -35,6 +35,7 @@
 #include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -48,7 +49,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Aurora::FileType &type, bool &flip);
@@ -83,98 +83,37 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
                       Common::UString &inFile, Common::UString &outFile,
                       Aurora::FileType &type, bool &flip) {
 
-	std::vector<Common::UString> files;
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::Callback;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
 
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
+	Parser parser(argv[0], "BioWare textures to TGA converter",
+		      "",
+		      returnValue,
+		      makeEndArgs(&inFileOpt, &outFileOpt));
 
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (argv[i] == "--auto") {
-				isOption = true;
-				type     = Aurora::kFileTypeNone;
-			} else if (argv[i] == "--dds") {
-				isOption = true;
-				type     = Aurora::kFileTypeDDS;
-			} else if (argv[i] == "--sbm") {
-				isOption = true;
-				type     = Aurora::kFileTypeSBM;
-			} else if (argv[i] == "--tpc") {
-				isOption = true;
-				type     = Aurora::kFileTypeTPC;
-			} else if (argv[i] == "--txb") {
-				isOption = true;
-				type     = Aurora::kFileTypeTXB;
-			} else if (argv[i] == "--tga") {
-				isOption = true;
-				type     = Aurora::kFileTypeTGA;
-			} else if ((argv[i] == "-f") || (argv[i] == "--flip")) {
-				isOption = true;
-				flip     = true;
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		files.push_back(argv[i]);
-	}
-
-	if (files.size() != 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	inFile  = files[0];
-	outFile = files[1];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "BioWare textures to TGA converter\n");
-	std::fprintf(stream, "Usage: %s [<options>] <input file> <output file>\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n");
-	std::fprintf(stream, "  -f      --flip              Flip the image vertically\n");
-	std::fprintf(stream, "          --auto              Autodetect input type (default)\n");
-	std::fprintf(stream, "          --dds               Input file is DDS\n");
-	std::fprintf(stream, "          --sbm               Input file is SBM\n");
-	std::fprintf(stream, "          --tpc               Input file is TPC\n");
-	std::fprintf(stream, "          --txb               Input file is TXB\n");
-	std::fprintf(stream, "          --tga               Input file is TGA\n");
+	parser.addOption("auto", "Autodetect input type (default)", kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeNone, type)));
+	parser.addOption("dds", "Input file is DDS", kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeDDS, type)));
+	parser.addOption("smb", "Input file is SBM", kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeSBM, type)));
+	parser.addOption("tpc", "Input file is TPC", kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTPC, type)));
+	parser.addOption("txb", "Input file is TXB", kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTXB, type)));
+	parser.addOption("tga", "Input file is TGA", kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTGA, type)));
+	parser.addOption("flip", 'f', "Flip the image vertically", kContinueParsing,
+			 makeAssigners(new ValAssigner<bool>(true, flip)));
+	return parser.process(argv);
 }
 
 static bool isValidType(Aurora::FileType type) {
