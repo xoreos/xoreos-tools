@@ -48,6 +48,10 @@ void LocString::clear() {
 	_strings.clear();
 }
 
+bool LocString::empty() const {
+	return (_id == kStrRefInvalid) && (_strings.empty() || getString().empty());
+}
+
 void LocString::swap(LocString &str) {
 	SWAP(_id, str._id);
 

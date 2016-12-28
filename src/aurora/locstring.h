@@ -54,6 +54,9 @@ public:
 
 	void clear();
 
+	/** Is this localized string empty, without any strings whatsoever? */
+	bool empty() const;
+
 	/** Swap the contents of the LocString with this LocString's. */
 	void swap(LocString &str);
 
