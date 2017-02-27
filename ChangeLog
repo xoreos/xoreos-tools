@@ -22,8 +22,9 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Fixed reading of NSBTX with truncated palette
 		- Fixed reading of 2DA with indented rows
 		- Added exceptions for as of yet unknown GFF4 configurations
-	- GRAPHICS:
-		- Loosened restrictions on textures, allowing NPOT textures
+	- IMAGES:
+		- Loosened restrictions on images, allowing NPOT images
+		- Implemented loading of Jade Empire lightmap textures
 	- GFF2XML:
 		- Added an --encoding parameter to overwrite the encoding
 		  used in GFF3 LocStrings
