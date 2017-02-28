@@ -10,6 +10,8 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Added more optional compilation warning flags
 		- Pulled in Boost, to ease sync with xoreos
 		- Changed our autotools setup to be non-recursive
+		- Added support for SOURCE_DATE_EPOCH when building, which
+		  is necessary for reproducible builds
 	- COMMON:
 		- Added missing kEncodingCP1251 handling in several functions
 		- Moved DEFLATE decompression into its own files
