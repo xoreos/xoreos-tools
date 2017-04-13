@@ -36,6 +36,7 @@
 #include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -80,47 +81,24 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
                       Common::UString &nclrFile, Common::UString &outFile) {
 
 	std::vector<Common::UString> args;
+	using Common::CLI::NoOption;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::makeEndArgs;
 
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
+	NoOption argsOpt(false,
+			 new ValGetter<std::vector<Common::UString> &>
+			 (args, "width> <height> <ncgr> [<ngr> [...]] <nclr> <tga"));
 
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
+	Parser parser(argv[0], "Nintendo NCGR image to TGA converter",
+		      "", returnValue,
+		      makeEndArgs(&argsOpt));
 
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
-	}
+	if (!parser.process(argv))
+		return false;
 
 	if (args.size() < 5) {
-		printUsage(stderr, argv[0]);
+		parser.usage();
 		returnValue = 1;
 
 		return false;
@@ -130,7 +108,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	height = (args.size() >= 2) ? atoi(args[1].c_str()) : 0;
 
 	if ((width == 0) || (height == 0) || (args.size() != (width * height + 4))) {
-		printUsage(stderr, argv[0]);
+		parser.usage();
 		returnValue = 1;
 
 		return false;
@@ -144,13 +122,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	outFile  = args[3 + width * height];
 
 	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "Nintendo NCGR image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s [<options>] <width> <height> <ncgr> [<ngr> [...]] <nclr> <tga>\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n");
 }
 
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,

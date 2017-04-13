@@ -33,6 +33,7 @@
 #include "src/common/error.h"
 #include "src/common/platform.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -41,7 +42,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &cbgtFile , Common::UString &palFile,
                       Common::UString &twoDAFile, Common::UString &outFile);
@@ -73,67 +73,19 @@ int main(int argc, char **argv) {
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &cbgtFile , Common::UString &palFile,
                       Common::UString &twoDAFile, Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	std::vector<Common::CLI::Getter *> getters;
+	NoOption cbgtFileOpt(false, new ValGetter<Common::UString &>(cbgtFile, "cbgt"));
+	NoOption palFileOpt(false, new ValGetter<Common::UString &>(palFile, "pal"));
+	NoOption twoDAFileOpt(false, new ValGetter<Common::UString &>(twoDAFile, "2da"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
+	Parser parser(argv[0], "CBGT image to TGA converter","", returnValue,
+		      makeEndArgs(&cbgtFileOpt, &palFileOpt, &twoDAFileOpt, &outFileOpt));
 
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
-	}
-
-	if (args.size() != 4) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	cbgtFile  = args[0];
-	palFile   = args[1];
-	twoDAFile = args[2];
-	outFile   = args[3];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "CBGT image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s [<options>] <cbgt> <pal> <2da> <tga>\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n");
+	return parser.process(argv);
 }
 
 void convert(const Common::UString &cbgtFile , const Common::UString &palFile,

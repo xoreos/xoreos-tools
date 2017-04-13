@@ -38,6 +38,7 @@
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
 #include "src/common/filepath.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/keyfile.h"
@@ -54,7 +55,6 @@ enum Command {
 
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, std::list<Common::UString> &files, Aurora::GameID &game);
 
@@ -112,108 +112,53 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Command &command, std::list<Common::UString> &files, Aurora::GameID &game) {
-
-	files.clear();
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
+namespace Common {
+namespace CLI {
+template<>
+int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, int) {
+	_val = kCommandNone;
+	for (int j = 0; j < kCommandMAX; j++) {
+		if (!strcmp(args[i].c_str(), kCommandChar[j])) {
+			_val = (Command) j;
+			return 0;
 		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (argv[i] == "--nwn2") {
-				isOption = true;
-				game     = Aurora::kGameIDNWN2;
-			} else if (argv[i] == "--jade") {
-				isOption = true;
-			  game     = Aurora::kGameIDJade;
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		args.push_back(argv[i]);
 	}
-
-	if (args.size() < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	std::vector<Common::UString>::iterator arg = args.begin();
-
-	// Find out what we should do
-	command = kCommandNone;
-	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(arg->c_str(), kCommandChar[i]))
-			command = (Command) i;
-
-	// Unknown command
-	if (command == kCommandNone) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	++arg;
-	files.insert(files.end(), arg, args.end());
-
-	return true;
+	return -1;
+}
+}
 }
 
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "BioWare KEY/BIF archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <file> [...]\n\n", name.c_str());
-	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  -h      --help     This help text\n");
-	std::fprintf(stream, "          --version  Display version information\n");
-	std::fprintf(stream, "          --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "          --jade     Alias file types according to Jade Empire rules\n\n");
-	std::fprintf(stream, "Commands:\n");
-	std::fprintf(stream, "  l          List files indexed in KEY archive(s)\n");
-	std::fprintf(stream, "  e          Extract BIF archive(s). Needs KEY file(s) indexing these BIF.\n\n");
-	std::fprintf(stream, "Examples:\n");
-	std::fprintf(stream, "%s l foo.key\n", name.c_str());
-	std::fprintf(stream, "%s l foo.key bar.key\n", name.c_str());
-	std::fprintf(stream, "%s e foo.bif bar.key\n", name.c_str());
-	std::fprintf(stream, "%s e foo.bif quux.bif bar.key\n", name.c_str());
-	std::fprintf(stream, "%s e foo.bif quux.bif bar.key foobar.key\n", name.c_str());
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, std::list<Common::UString> &files, Aurora::GameID &game) {
+	using Common::CLI::NoOption;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeAssigners;
+
+	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
+	NoOption filesOpt(false, new ValGetter<std::list<Common::UString> &>(files, "files[...]"));
+	Parser parser(argv[0], "Ware KEY/BIF archive extractor",
+		      "Commands:\n"
+		      "  l          List files indexed in KEY archive(s)\n"
+		      "  e          Extract BIF archive(s). Needs KEY file(s) indexing these BIF.\n\n"
+		      "Examples:\n"
+		      "unkeybif l foo.key\n"
+		      "unkeybif l foo.key bar.key\n"
+		      "unkeybif e foo.bif bar.key\n"
+		      "unkeybif e foo.bif quux.bif bar.key\n"
+		      "unkeybif e foo.bif quux.bif bar.key foobar.key",
+		      returnValue, makeEndArgs(&cmdOpt, &filesOpt));
+
+	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
+			 Common::CLI::kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("jade", "Alias file types according to Jade Empire rules",
+			 Common::CLI::kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
+
+	return parser.process(argv);
 }
 
 uint32 getFileID(const Common::UString &fileName) {

@@ -37,6 +37,7 @@
 #include "src/common/writefile.h"
 #include "src/common/stdinstream.h"
 #include "src/common/encoding.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 
@@ -44,7 +45,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile, Aurora::GameID &game);
 
@@ -76,72 +76,44 @@ int main(int argc, char **argv) {
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile, Aurora::GameID &game) {
 
-	inFile.clear();
-	outFile.clear();
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
 	std::vector<Common::UString> args;
+	NoOption filesOpt(false, new ValGetter<std::vector<Common::UString> &>(args,
+									       "[input file] <output file>"));
+	Parser parser(argv[0], "XML to BioWare SSF converter",
+		      "If no input file is given, the input is read from stdin.\n\n"
+		      "Since different games use different SSF file version, specifying the\n"
+		      "game for which to create the SSF file is necessary.",
+		      returnValue,
+		      makeEndArgs(&filesOpt));
 
 	game = Aurora::kGameIDUnknown;
+	parser.addSpace();
+	parser.addOption("nwn", "Create an SSF for Neverwinter Nights",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN, game)));
+	parser.addOption("nwn2", "Create an SSF for Neverwinter Nights 2",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("kotor", "Create an SSF for Knights of the Old Republic",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDKotOR, game)));
+	parser.addOption("kotor2", "Create an SSF for Knights of the Old Republic II",
+			 kContinueParsing,
+			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDKotOR2, game)));
 
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		bool isOption = false;
 
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (argv[i] == "--nwn") {
-				isOption = true;
-				game     = Aurora::kGameIDNWN;
-			} else if (argv[i] == "--nwn2") {
-				isOption = true;
-				game     = Aurora::kGameIDNWN2;
-			} else if (argv[i] == "--kotor") {
-				isOption = true;
-				game     = Aurora::kGameIDKotOR;
-			} else if (argv[i] == "--kotor2") {
-				isOption = true;
-				game     = Aurora::kGameIDKotOR2;
-
-			} else if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// This is a file to use
-		args.push_back(argv[i]);
-	}
+	if (!parser.process(argv))
+		return false;
 
 	if ((args.size() < 1) || (args.size() > 2) || (game == Aurora::kGameIDUnknown)) {
-		printUsage(stderr, argv[0]);
+		parser.usage();
 		returnValue = 1;
 
 		return false;
@@ -154,20 +126,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 		outFile = args[0];
 
 	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "XML to BioWare SSF converter\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] [<input file>] <output file>\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n\n");
-	std::fprintf(stream, "          --nwn               Create an SSF for Neverwinter Nights\n");
-	std::fprintf(stream, "          --nwn2              Create an SSF for Neverwinter Nights 2\n");
-	std::fprintf(stream, "          --kotor             Create an SSF for Knights of the Old Republic\n");
-	std::fprintf(stream, "          --kotor2            Create an SSF for Knights of the Old Republic II\n\n");
-	std::fprintf(stream, "If no input file is given, the input is read from stdin.\n\n");
-	std::fprintf(stream, "Since different games use different SSF file version, specifying the\n");
-	std::fprintf(stream, "game for which to create the SSF file is necessary.\n");
 }
 
 void createSSF(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID game) {

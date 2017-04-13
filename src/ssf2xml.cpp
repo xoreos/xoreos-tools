@@ -36,12 +36,12 @@
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
+#include "src/common/cli.h"
 
 #include "src/xml/ssfdumper.h"
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile);
 
@@ -70,71 +70,17 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output file"));
+	Parser parser(argv[0], "BioWare SSF to XML converter",
+		      "\nIf no output file is given, the output is written to stdout.",
+		      returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
-	inFile.clear();
-	outFile.clear();
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (size_t i = 1; i < argv.size(); i++) {
-		// A "--" marks an end to all options
-		if (argv[i] == "--") {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if ((argv[i] == "-h") || (argv[i] == "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i] == "--version") {
-				Version::printVersion();
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (argv[i].beginsWith("-") || argv[i].beginsWith("--")) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = 1;
-
-				return false;
-			}
-		}
-
-		// This is a file to use
-		args.push_back(argv[i]);
-	}
-
-	if ((args.size() < 1) || (args.size() > 2)) {
-		printUsage(stderr, argv[0]);
-		returnValue = 1;
-
-		return false;
-	}
-
-	inFile = args[0];
-
-	if (args.size() > 1)
-		outFile = args[1];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "BioWare SSF to XML converter\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <input file> [<output file>]\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n\n");
-	std::fprintf(stream, "If no output file is given, the output is written to stdout.\n");
+	return parser.process(argv);
 }
 
 void dumpSSF(const Common::UString &inFile, const Common::UString &outFile) {
