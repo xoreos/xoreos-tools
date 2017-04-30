@@ -150,9 +150,11 @@ void Option::free() {
 		break;
 	case kCallback:
 		delete _callback;
+		break;
 	case kAssigner:
 		for (int i = 0, end = _assigners.size(); i < end; ++i)
 			delete _assigners[i];
+		break;
 	default:
 		break;
 	}
