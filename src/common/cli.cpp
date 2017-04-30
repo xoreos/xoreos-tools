@@ -115,25 +115,25 @@ int ValGetter<std::set<Common::UString> &>::get(const std::vector<Common::UStrin
 
 int Option::doOption(const std::vector<Common::UString> &args, int i, int size) {
 	switch (_type) {
-	case kAssigner:
-		assign();
-		break;
-	case kPrinter:
-		if (this->_printer.print()) {
-			_printer.print()(_printer.printerStr());
-		} else {
-			_printer.vPrint()();
-		}
-		break;
-	case kCallback:
-		if (i + 1 < size)
-			_callback->process(args[i + 1]);
-		return 1;
-	case kGetter:
-		if (i + 1 < size)
-			return _getter->get(args, i + 1, size) + 1;
-	default:
-		break;
+		case kAssigner:
+			assign();
+			break;
+		case kPrinter:
+			if (this->_printer.print()) {
+				_printer.print()(_printer.printerStr());
+			} else {
+				_printer.vPrint()();
+			}
+			break;
+		case kCallback:
+			if (i + 1 < size)
+				_callback->process(args[i + 1]);
+			return 1;
+		case kGetter:
+			if (i + 1 < size)
+				return _getter->get(args, i + 1, size) + 1;
+		default:
+			break;
 	}
 	return 0;
 }
@@ -145,18 +145,18 @@ void Option::assign() {
 
 void Option::free() {
 	switch (_type) {
-	case kGetter:
-		delete _getter;
-		break;
-	case kCallback:
-		delete _callback;
-		break;
-	case kAssigner:
-		for (int i = 0, end = _assigners.size(); i < end; ++i)
-			delete _assigners[i];
-		break;
-	default:
-		break;
+		case kGetter:
+			delete _getter;
+			break;
+		case kCallback:
+			delete _callback;
+			break;
+		case kAssigner:
+			for (int i = 0, end = _assigners.size(); i < end; ++i)
+				delete _assigners[i];
+			break;
+		default:
+			break;
 	}
 }
 
