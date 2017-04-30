@@ -45,7 +45,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       uint32 &width, uint32 &height, std::vector<Common::UString> &ncgrFiles,
                       Common::UString &nclrFile, Common::UString &outFile);

@@ -49,7 +49,6 @@ enum Command {
 
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &file, Aurora::GameID &game);
 

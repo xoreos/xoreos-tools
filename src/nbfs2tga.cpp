@@ -43,7 +43,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &nbfsFile, Common::UString &nbfpFile,
                       Common::UString &outFile, uint32 &width, uint32 &height);
@@ -93,13 +92,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              &outFileOpt, &widthOpt, &heightOpt));
 
 	return parser.process(argv);
-}
-
-void printUsage(FILE *stream, const Common::UString &name) {
-	std::fprintf(stream, "Nintendo raw NBFS image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s [<options>] <nbfs> <nbfp> <tga> [<width>] [<height>]\n", name.c_str());
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --version           Display version information\n");
 }
 
 void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,

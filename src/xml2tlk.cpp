@@ -46,7 +46,6 @@
 
 #include "src/util.h"
 
-void printUsage(FILE *stream, const Common::UString &name);
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Common::Encoding &encoding, Aurora::GameID &game,
