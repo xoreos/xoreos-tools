@@ -158,7 +158,7 @@ public:
 	       const char *anHelp, OptionRet ret, void (*aPrinter)(Common::UString &),
 	       Common::UString &printerStr) :
 		_type(kPrinter), _name(aName), _shortName(aShortName),
-		_help(anHelp), _returnVal(ret), _getter(0),
+		_help(anHelp), _returnVal(ret), _getter(0), _callback(0),
 		_printer(aPrinter, printerStr) {}
 
 	Option(const char *aName, char aShortName,
@@ -170,14 +170,14 @@ public:
 
 	Option(const char *aName, char aShortName, const char *anHelp, OptionRet ret, Getter *aGetter) :
 		_type(kGetter), _name(aName), _shortName(aShortName),
-		_help(anHelp), _returnVal(ret), _getter(aGetter) {}
+		_help(anHelp), _returnVal(ret), _getter(aGetter), _callback(0) {}
 
 	Option(const char *aName, char aShortName, const char *anHelp,
 	       OptionRet ret, CallbackBase *aCallback) :
 		_type(kCallback), _name(aName), _shortName(aShortName),
 		_help(anHelp), _returnVal(ret), _getter(0),
 		_callback(aCallback) {}
-	Option() : _type(kSpace) {}
+	Option() : _type(kSpace), _callback(0) {}
 
 	~Option() {}
 
