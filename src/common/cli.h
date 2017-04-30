@@ -177,7 +177,7 @@ public:
 		_type(kCallback), _name(aName), _shortName(aShortName),
 		_help(anHelp), _returnVal(ret), _getter(0),
 		_callback(aCallback) {}
-	Option() : _type(kSpace), _callback(0) {}
+	Option() : _type(kSpace), _shortName(0), _returnVal(kContinueParsing), _getter(0), _callback(0) {}
 
 	~Option() {}
 
