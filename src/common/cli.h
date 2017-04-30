@@ -76,7 +76,7 @@ public:
 	CallbackBase(const char *aName) : _argName(aName) {}
 	virtual ~CallbackBase() {}
 
-	virtual bool process(const UString& str) = 0;
+	virtual bool process(const UString &str) = 0;
 	const char *argName() const {return _argName;}
 private:
 	const char *_argName;
@@ -85,14 +85,14 @@ private:
 template <typename U>
 class Callback : public CallbackBase {
 public:
-	Callback(const char *name, bool (*aCallback)(const UString&, U),
+	Callback(const char *name, bool (*aCallback)(const UString &, U),
 		 U anArg) : CallbackBase(name),
 			    callback(aCallback),
 			    _callbackArg(anArg) {}
 	virtual ~Callback(){}
 
-	bool (*callback)(const UString& str, U arg);
-	bool process(const UString& str) {
+	bool (*callback)(const UString &str, U arg);
+	bool process(const UString &str) {
 		return callback(str, _callbackArg);
 	}
 
