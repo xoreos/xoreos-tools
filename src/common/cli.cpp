@@ -234,7 +234,7 @@ Option *findMatchOptionShortName(std::vector<Option *> options,
 		if ((Common::UString('-') + option->shortName()) == str)
 			return option;
 	}
-	return NULL;
+	return 0;
 }
 
 Option *findMatchOptionName(std::vector<Option *> options,
@@ -245,7 +245,7 @@ Option *findMatchOptionName(std::vector<Option *> options,
 		if ((Common::UString("--") + option->name()) == str)
 			return option;
 	}
-	return NULL;
+	return 0;
 }
 
 bool Parser::process(const std::vector<Common::UString> &argv) {
@@ -294,8 +294,8 @@ bool Parser::process(const std::vector<Common::UString> &argv) {
 	for (size_t nbArgs = argv.size(), i = 1; i < nbArgs; ++i) {
 		Option *option;
 
-		if ((isShorOption(argv[i]) && (option = findMatchOptionShortName(_options, argv[i])) != NULL) ||
-		    (isLongOption(argv[i]) && (option = findMatchOptionName(_options, argv[i])) != NULL)) {
+		if ((isShorOption(argv[i]) && (option = findMatchOptionShortName(_options, argv[i])) != 0) ||
+		    (isLongOption(argv[i]) && (option = findMatchOptionName(_options, argv[i])) != 0)) {
 			int ret = option->doOption(argv, i, nbArgs);
 
 			i += ret;

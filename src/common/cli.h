@@ -158,21 +158,21 @@ public:
 	Option(const char *aName, char aShortName,
 	       const char *anHelp, OptionRet ret, void (*aPrinter)())
 		: _type(kPrinter), _name(aName), _shortName(aShortName),
-		  _help(anHelp), _returnVal(ret), _getter(NULL), _callback(NULL),
+		  _help(anHelp), _returnVal(ret), _getter(0), _callback(0),
 		  _assigners(), _printer(aPrinter) {}
 	Option(const char *aName, char aShortName,
 	       const char *anHelp, OptionRet ret, void (*aPrinter)(Common::UString &),
 	       Common::UString &printerStr)
 		: _type(kPrinter), _name(aName), _shortName(aShortName),
-		  _help(anHelp), _returnVal(ret), _getter(NULL),
+		  _help(anHelp), _returnVal(ret), _getter(0),
 		  _printer(aPrinter, printerStr) {}
 
 	Option(const char *aName, char aShortName,
 	       const char *anHelp, OptionRet ret,
 	       std::vector<Assigner *> &anAssigners)
 		: _type(kAssigner), _name(aName), _shortName(aShortName),
-		  _help(anHelp), _returnVal(ret), _getter(NULL),
-		  _callback(NULL), _assigners(anAssigners) {}
+		  _help(anHelp), _returnVal(ret), _getter(0),
+		  _callback(0), _assigners(anAssigners) {}
 
 	Option(const char *aName, char aShortName, const char *anHelp, OptionRet ret, Getter *aGetter)
 		: _type(kGetter), _name(aName), _shortName(aShortName),
@@ -181,7 +181,7 @@ public:
 	Option(const char *aName, char aShortName, const char *anHelp,
 	       OptionRet ret, CallbackBase *aCallback)
 		: _type(kCallback), _name(aName), _shortName(aShortName),
-		  _help(anHelp), _returnVal(ret), _getter(NULL),
+		  _help(anHelp), _returnVal(ret), _getter(0),
 		  _callback(aCallback) {}
 	Option() : _type(kSpace) {}
 
@@ -263,23 +263,23 @@ public:
 
 	void addOption(char shortName, const char *help, OptionRet ret,
 		       void (*printer)()) {
-		addOption(NULL, shortName, help, ret, printer);
+		addOption(0, shortName, help, ret, printer);
 	}
 	void addOption(char shortName, const char *help, OptionRet ret,
 		       void (*printer)(Common::UString &), Common::UString &str) {
-		addOption(NULL, shortName, help, ret, printer, str);
+		addOption(0, shortName, help, ret, printer, str);
 	}
 	void addOption(char shortName, const char *help, OptionRet ret,
 		       std::vector<Assigner *> assigners) {
-		addOption(NULL, shortName, help, ret, assigners);
+		addOption(0, shortName, help, ret, assigners);
 	}
 	void addOption(char shortName, const char *help,
 		       OptionRet ret, Getter *getter) {
-		addOption(NULL, shortName, help, ret, getter);
+		addOption(0, shortName, help, ret, getter);
 	}
 	void addOption(char shortName, const char *help,
 		       OptionRet ret, CallbackBase *callback) {
-		addOption(NULL, shortName, help, ret, callback);
+		addOption(0, shortName, help, ret, callback);
 	}
 
 	bool process(const std::vector<Common::UString> &argv);
