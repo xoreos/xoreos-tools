@@ -75,7 +75,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
 	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "output file"));
 	Parser parser(argv[0], "Nintendo DS LZSS (types 0x00 and 0x10) decompressor\n",
-		      "", returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
+	              "", returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
 	return parser.process(argv);
 }

@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       std::vector<Common::UString> &files, Common::UString &outFile,
-		      Format &format) {
+                      Format &format) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -96,28 +96,27 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	using Common::CLI::makeEndArgs;
 	using Common::CLI::makeAssigners;
 
-	NoOption filesOpt(false,
-			  new ValGetter<std::vector<Common::UString> &>(files, "files[...]"));
+	NoOption filesOpt(false, new ValGetter<std::vector<Common::UString> &>(files, "files[...]"));
 	Parser parser(argv[0], "BioWare 2DA/GDA to 2DA/CSV converter\n",
-		      "If several files are given, they must all be GDA and use the same\n"
-		      "column layout. They will be pasted together and printed as one GDA.\n\n"
-		      "If no output file is given, the output is written to stdout.",
-		      returnValue,
-		      makeEndArgs(&filesOpt));
+	              "If several files are given, they must all be GDA and use the same\n"
+	              "column layout. They will be pasted together and printed as one GDA.\n\n"
+	              "If no output file is given, the output is written to stdout.",
+	              returnValue,
+	              makeEndArgs(&filesOpt));
 
 	parser.addOption("output", 'o', "Write the output to this file",
-			 kContinueParsing,
-			 new ValGetter<Common::UString &>(outFile, "file"));
+	                 kContinueParsing,
+	                 new ValGetter<Common::UString &>(outFile, "file"));
 	parser.addOption("2da", "Convert to ASCII 2DA (default)",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Format>(kFormat2DA,
-							       format)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Format>(kFormat2DA,
+	                 format)));
 	parser.addOption("2dab", "Convert to binary 2DA", kContinueParsing,
-			 makeAssigners(new ValAssigner<Format>(kFormat2DAb,
-							       format)));
+	                 makeAssigners(new ValAssigner<Format>(kFormat2DAb,
+	                 format)));
 	parser.addOption("cvs", "Convert to CSV", kContinueParsing,
-			 makeAssigners(new ValAssigner<Format>(kFormatCSV,
-							       format)));
+	                 makeAssigners(new ValAssigner<Format>(kFormatCSV,
+	                 format)));
 	return parser.process(argv);
 }
 

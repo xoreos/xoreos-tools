@@ -82,8 +82,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption cdpthFileOpt(false, new ValGetter<Common::UString &>(cdpthFile, "cdpth"));
 	NoOption twoDAFileOpt(false, new ValGetter<Common::UString &>(twoDAFile, "2da"));
 	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
-	Parser parser(argv[0], "CDPTH depth image to TGA converter","", returnValue,
-		      makeEndArgs(&cdpthFileOpt, &twoDAFileOpt, &outFileOpt));
+	Parser parser(argv[0], "CDPTH depth image to TGA converter", "", returnValue,
+	              makeEndArgs(&cdpthFileOpt, &twoDAFileOpt, &outFileOpt));
 
 	return parser.process(argv);
 }

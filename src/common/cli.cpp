@@ -27,8 +27,8 @@ namespace Common {
 namespace CLI {
 
 static void cliSetHelp(Common::UString &helpStr, const char *longName,
-		       char shortName, const char *optionArgs,
-		       uint32_t maxArgLength, const char *help) {
+                       char shortName, const char *optionArgs,
+                       uint32_t maxArgLength, const char *help) {
 	helpStr += "  ";
 	if (shortName) {
 		helpStr += '-';
@@ -85,7 +85,7 @@ int ValGetter<int32_t &>::get(const std::vector<Common::UString> &args, int i, i
 
 template<>
 int ValGetter<std::vector<Common::UString> &>::get(const std::vector<Common::UString> &args,
-						   int i, int size) {
+                                                   int i, int size) {
 	int j = i;
 
 	for (; j < size; ++j)
@@ -95,7 +95,7 @@ int ValGetter<std::vector<Common::UString> &>::get(const std::vector<Common::USt
 
 template<>
 int ValGetter<std::list<Common::UString> &>::get(const std::vector<Common::UString> &args,
-						   int i, int size) {
+                                                 int i, int size) {
 	int j = i;
 
 	for (; j < size; ++j)
@@ -105,7 +105,7 @@ int ValGetter<std::list<Common::UString> &>::get(const std::vector<Common::UStri
 
 template<>
 int ValGetter<std::set<Common::UString> &>::get(const std::vector<Common::UString> &args,
-						   int i, int size) {
+                                                int i, int size) {
 	int j = i;
 
 	for (; j < size; ++j)
@@ -165,9 +165,9 @@ void NoOption::free() {
 }
 
 Parser::Parser(const Common::UString &name, const char *description, const char *bottom,
-	       int &returnVal, std::vector<NoOption> endCli)
-	:  _bottom(bottom), _helpStr(description), _options(),
-	   _noOptions(endCli), _returnVal(returnVal) {
+               int &returnVal, std::vector<NoOption> endCli) :
+	_bottom(bottom), _helpStr(description), _options(), _noOptions(endCli), _returnVal(returnVal) {
+
 	_helpStr += "\n\nUsage: ";
 	_helpStr += name;
 	_helpStr += " [<options>]";
@@ -200,34 +200,34 @@ Parser::~Parser() {
 }
 
 void Parser::addOption(const char *longName, char shortName, const char *help,
-		       OptionRet ret, void (*printer)()) {
+                       OptionRet ret, void (*printer)()) {
 	_options.push_back(new Option(longName, shortName, help, ret, printer));
 }
 
 void Parser::addOption(const char *longName, char shortName, const char *help,
-		       OptionRet ret, void (*printer)(Common::UString &),
-		       Common::UString &str) {
+                       OptionRet ret, void (*printer)(Common::UString &),
+                       Common::UString &str) {
 	_options.push_back(new Option(longName, shortName, help, ret, printer, str));
 }
 
 void Parser::addOption(const char *longName, char shortName, const char *help,
-		       OptionRet ret, std::vector<Assigner *> assigners) {
+                       OptionRet ret, std::vector<Assigner *> assigners) {
 	_options.push_back(new Option(longName, shortName, help, ret, assigners));
 }
 
 void Parser::addOption(const char *longName, char shortName, const char *help,
-		       OptionRet ret, Getter *getter) {
+                       OptionRet ret, Getter *getter) {
 	_options.push_back(new Option(longName, shortName, help, ret, getter));
 }
 
 void Parser::addOption(const char *longName, char shortName, const char *help,
-		       OptionRet ret, CallbackBase *callback) {
+                       OptionRet ret, CallbackBase *callback) {
 	_options.push_back(new Option(longName, shortName, help, ret, callback));
 }
 
 
 Option *findMatchOptionShortName(std::vector<Option *> options,
-				 const Common::UString &str) {
+                                 const Common::UString &str) {
 	for (int i = 0, size = options.size(); i < size; ++i) {
 		Option *option = options[i];
 
@@ -238,7 +238,7 @@ Option *findMatchOptionShortName(std::vector<Option *> options,
 }
 
 Option *findMatchOptionName(std::vector<Option *> options,
-			    const Common::UString &str) {
+                            const Common::UString &str) {
 	for (int i = 0, size = options.size(); i < size; ++i) {
 		Option *option = options[i];
 

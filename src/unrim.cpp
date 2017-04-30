@@ -116,18 +116,18 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
 	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
 	Parser parser(argv[0], "BioWare RIM archive extractor",
-		      "Commands:\n"
-		      "  l          List archive\n"
-		      "  e          Extract files to current directory\n",
-		      returnValue,
-		      makeEndArgs(&cmdOpt, &fileOpt));
+	              "Commands:\n"
+	              "  l          List archive\n"
+	              "  e          Extract files to current directory\n",
+	              returnValue,
+	              makeEndArgs(&cmdOpt, &fileOpt));
 
 	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("jade", "Alias file types according to Jade Empire rules",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
 
 	return parser.process(argv);
 }

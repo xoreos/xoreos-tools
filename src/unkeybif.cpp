@@ -140,23 +140,23 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
 	NoOption filesOpt(false, new ValGetter<std::list<Common::UString> &>(files, "files[...]"));
 	Parser parser(argv[0], "BioWare KEY/BIF archive extractor",
-		      "Commands:\n"
-		      "  l          List files indexed in KEY archive(s)\n"
-		      "  e          Extract BIF archive(s). Needs KEY file(s) indexing these BIF.\n\n"
-		      "Examples:\n"
-		      "unkeybif l foo.key\n"
-		      "unkeybif l foo.key bar.key\n"
-		      "unkeybif e foo.bif bar.key\n"
-		      "unkeybif e foo.bif quux.bif bar.key\n"
-		      "unkeybif e foo.bif quux.bif bar.key foobar.key",
-		      returnValue, makeEndArgs(&cmdOpt, &filesOpt));
+	              "Commands:\n"
+	              "  l          List files indexed in KEY archive(s)\n"
+	              "  e          Extract BIF archive(s). Needs KEY file(s) indexing these BIF.\n\n"
+	              "Examples:\n"
+	              "unkeybif l foo.key\n"
+	              "unkeybif l foo.key bar.key\n"
+	              "unkeybif e foo.bif bar.key\n"
+	              "unkeybif e foo.bif quux.bif bar.key\n"
+	              "unkeybif e foo.bif quux.bif bar.key foobar.key",
+	              returnValue, makeEndArgs(&cmdOpt, &filesOpt));
 
 	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
-			 Common::CLI::kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
+	                 Common::CLI::kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("jade", "Alias file types according to Jade Empire rules",
-			 Common::CLI::kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
+	                 Common::CLI::kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
 
 	return parser.process(argv);
 }

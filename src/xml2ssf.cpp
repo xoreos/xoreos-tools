@@ -85,28 +85,28 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	using Common::CLI::makeAssigners;
 	std::vector<Common::UString> args;
 	NoOption filesOpt(false, new ValGetter<std::vector<Common::UString> &>(args,
-									       "[input file] <output file>"));
+	                  "[input file] <output file>"));
 	Parser parser(argv[0], "XML to BioWare SSF converter",
-		      "If no input file is given, the input is read from stdin.\n\n"
-		      "Since different games use different SSF file version, specifying the\n"
-		      "game for which to create the SSF file is necessary.",
-		      returnValue,
-		      makeEndArgs(&filesOpt));
+	              "If no input file is given, the input is read from stdin.\n\n"
+	              "Since different games use different SSF file version, specifying the\n"
+	              "game for which to create the SSF file is necessary.",
+	              returnValue,
+	              makeEndArgs(&filesOpt));
 
 	game = Aurora::kGameIDUnknown;
 	parser.addSpace();
 	parser.addOption("nwn", "Create an SSF for Neverwinter Nights",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN, game)));
 	parser.addOption("nwn2", "Create an SSF for Neverwinter Nights 2",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("kotor", "Create an SSF for Knights of the Old Republic",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDKotOR, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDKotOR, game)));
 	parser.addOption("kotor2", "Create an SSF for Knights of the Old Republic II",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDKotOR2, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDKotOR2, game)));
 
 
 	if (!parser.process(argv))

@@ -106,41 +106,41 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
 	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
 	Parser parser(argv[0], "BioWare NWScript bytecode disassembler",
-		      "\nIf no output file is given, the output is written to stdout.",
-		      returnValue,
-		      makeEndArgs(&inFileOpt, &outFileOpt));
+	              "\nIf no output file is given, the output is written to stdout.",
+	              returnValue,
+	              makeEndArgs(&inFileOpt, &outFileOpt));
 
 	parser.addOption("nwn", "This is a Neverwinter Nights script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
 	parser.addOption("nwn2", "This is a Neverwinter Nights 2 script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("kotor", "This is a Knights of the Old Republic script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
 	parser.addOption("kotor2", "This is a Knights of the Old Republic II script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
 	parser.addOption("jade", "This is a Jade Empire script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
 	parser.addOption("witcher", "This is a The Witcher script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
 	parser.addOption("dragonage", "This is a Dragon Age script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
 	parser.addOption("dragonage2", "This is a Dragon Age II script", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
 	parser.addSpace();
 	parser.addOption("list", "Create full disassembly listing (default)", kContinueParsing,
-			 makeAssigners(new ValAssigner<Command>(kCommandListing, command)));
+	                 makeAssigners(new ValAssigner<Command>(kCommandListing, command)));
 	parser.addOption("assembly", "Only create disassembly mnemonics", kContinueParsing,
-			 makeAssigners(new ValAssigner<Command>(kCommandAssembly, command)));
+	                 makeAssigners(new ValAssigner<Command>(kCommandAssembly, command)));
 	parser.addOption("dot", "Create a graphviz dot file", kContinueParsing,
-			 makeAssigners(new ValAssigner<Command>(kCommandDot, command)));
+	                 makeAssigners(new ValAssigner<Command>(kCommandDot, command)));
 	parser.addOption("stack", "Print the stack frame for each instruction"
-			 " (Only available in list or assembly mode)",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<bool>(true, printStack)));
+	                 " (Only available in list or assembly mode)",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<bool>(true, printStack)));
 	parser.addOption("control", "Print the control types for each block"
-			 " (Only available in list or assembly mode)",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<bool>(true, printControlTypes)));
+	                 " (Only available in list or assembly mode)",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<bool>(true, printControlTypes)));
 	return parser.process(argv);
 }
 

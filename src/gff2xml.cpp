@@ -132,45 +132,45 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
 	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
 	Parser parser(argv[0], "BioWare GFF to XML converter",
-		      "If no output file is given, the output is written to stdout.\n\n"
-		      "Depending on the game, LocStrings in GFF files might be encoded in various\n"
-		      "ways and there's no way to autodetect how. If a game is specified, the\n"
-		      "encoding tables for this game are used. Otherwise, gff2xml tries some\n"
-		      "heuristics that might fail for certain strings.\n\n"
-		      "Additionally, the --encoding parameter can be used to override the encoding\n"
-		      "for a specific language ID. The string has to be of the form n=encoding,\n"
-		      "for example 0=cp-1252 to override the encoding of the (ungendered) language\n"
-		      "ID 0 to be Windows codepage 1252. To override several encodings, specify\n"
-		      "the --encoding parameter multiple times.\n",
-		      returnValue,
-		      makeEndArgs(&inFileOpt, &outFileOpt));
+	              "If no output file is given, the output is written to stdout.\n\n"
+	              "Depending on the game, LocStrings in GFF files might be encoded in various\n"
+	              "ways and there's no way to autodetect how. If a game is specified, the\n"
+	              "encoding tables for this game are used. Otherwise, gff2xml tries some\n"
+	              "heuristics that might fail for certain strings.\n\n"
+	              "Additionally, the --encoding parameter can be used to override the encoding\n"
+	              "for a specific language ID. The string has to be of the form n=encoding,\n"
+	              "for example 0=cp-1252 to override the encoding of the (ungendered) language\n"
+	              "ID 0 to be Windows codepage 1252. To override several encodings, specify\n"
+	              "the --encoding parameter multiple times.\n",
+	              returnValue,
+	              makeEndArgs(&inFileOpt, &outFileOpt));
 
 
 	parser.addOption("cp1252", "Read GFF4 strings as Windows CP-1252", kContinueParsing,
-			 makeAssigners(new ValAssigner<Common::Encoding>(Common::kEncodingCP1252,
-									 encoding)));
+	                 makeAssigners(new ValAssigner<Common::Encoding>(Common::kEncodingCP1252,
+	                 encoding)));
 	parser.addOption("nwnpremium", "This is a broken GFF from a Neverwinter Nights premium module",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<bool>(true, nwnPremium)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<bool>(true, nwnPremium)));
 	parser.addOption("nwn", "Use Neverwinter Nights encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
 	parser.addOption("nwn2", "Use Neverwinter Nights 2 encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("kotor", "Use Knights of the Old Republic encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
 	parser.addOption("kotor2", "Use Knights of the Old Republic II encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
 	parser.addOption("jade", "Use Jade Empire encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
 	parser.addOption("witcher", "Use The Witcher encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
 	parser.addOption("dragonage", "Use Dragon Age encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
 	parser.addOption("dragonage2", "Use Dragon Age II encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
 	parser.addSpace();
 	parser.addOption("encoding", "Override an encoding", kContinueParsing,
-			 new Callback<EncodingOverrides &>("str", parseEncodingOverride, encOverrides));
+	                 new Callback<EncodingOverrides &>("str", parseEncodingOverride, encOverrides));
 
 	return parser.process(argv);
 }

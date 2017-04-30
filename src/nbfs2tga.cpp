@@ -89,8 +89,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption widthOpt(true, new ValGetter<uint32 &>(width, "width"));
 	NoOption heightOpt(true, new ValGetter<uint32 &>(height, "height"));
 	Parser parser(argv[0], "Nintendo raw NBFS image to TGA converter\n", "",
-		      returnValue, makeEndArgs(&nbfsFileOpt, &nbfpFileOpt,
-					       &outFileOpt, &widthOpt, &heightOpt));
+	              returnValue, makeEndArgs(&nbfsFileOpt, &nbfpFileOpt,
+	              &outFileOpt, &widthOpt, &heightOpt));
 
 	return parser.process(argv);
 }

@@ -84,8 +84,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
 	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "output files"));
 	Parser parser(argv[0], "Repair BioWare GFF files found in encrypted NWN premium module HAKs\n",
-		      "If no ID is given is given, it is guessed from the file name.",
-		      returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
+	              "If no ID is given is given, it is guessed from the file name.",
+	              returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
 
 	parser.addOption("id", "Write this GFF ID into the output file",

@@ -87,12 +87,12 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	using Common::CLI::makeEndArgs;
 
 	NoOption argsOpt(false,
-			 new ValGetter<std::vector<Common::UString> &>
-			 (args, "width> <height> <ncgr> [<ngr> [...]] <nclr> <tga"));
+	                 new ValGetter<std::vector<Common::UString> &>
+	                 (args, "width> <height> <ncgr> [<ngr> [...]] <nclr> <tga"));
 
 	Parser parser(argv[0], "Nintendo NCGR image to TGA converter",
-		      "", returnValue,
-		      makeEndArgs(&argsOpt));
+	              "", returnValue,
+	              makeEndArgs(&argsOpt));
 
 	if (!parser.process(argv))
 		return false;

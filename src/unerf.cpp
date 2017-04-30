@@ -189,31 +189,30 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
 	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
-	NoOption filesOpt(true,
-			  new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
+	NoOption filesOpt(true, new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
 	Parser parser(argv[0], "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor",
-		      "Commands:\n"
-		      "  i          Display meta-information\n"
-		      "  l          List archive\n"
-		      "  v          List archive verbosely (show directory names)\n"
-		      "  e          Extract files to current directory\n"
-		      "  s          Extract files to current directory with full name",
-		      returnValue,
-		      makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
+	              "Commands:\n"
+	              "  i          Display meta-information\n"
+	              "  l          List archive\n"
+	              "  v          List archive verbosely (show directory names)\n"
+	              "  e          Extract files to current directory\n"
+	              "  s          Extract files to current directory with full name",
+	              returnValue,
+	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
 	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("jade", "Alias file types according to Jade Empire rules",
-			 kContinueParsing,
-			 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
 	parser.addOption("pass", "Decryption password, if required, in hex notation",
-			 kContinueParsing,
-			 new Callback<std::vector<byte> &>("hex", parsePassword, password));
+	                 kContinueParsing,
+	                 new Callback<std::vector<byte> &>("hex", parsePassword, password));
 	parser.addOption("nwn",
-			 "Neverwinter Nights premium module file(for decrypting their HAK file)",
-			 kContinueParsing,
-			 new Callback<std::vector<byte> &>("file", readNWMMD5, password));
+	                 "Neverwinter Nights premium module file(for decrypting their HAK file)",
+	                 kContinueParsing,
+	                 new Callback<std::vector<byte> &>("file", readNWMMD5, password));
 
 	return parser.process(argv);
 }

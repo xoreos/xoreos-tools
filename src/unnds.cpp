@@ -114,11 +114,11 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
 	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
 	Parser parser(argv[0], "Nintendo DS archive extractor",
-		      "Commands:\n"
-		      "  i          Display meta-information\n"
-		      "  l          List archive\n"
-		      "  e          Extract files to current directory\n",
-		      returnValue, makeEndArgs(&cmdOpt, &fileOpt));
+	              "Commands:\n"
+	              "  i          Display meta-information\n"
+	              "  l          List archive\n"
+	              "  e          Extract files to current directory\n",
+	              returnValue, makeEndArgs(&cmdOpt, &fileOpt));
 
 	return parser.process(argv);
 }

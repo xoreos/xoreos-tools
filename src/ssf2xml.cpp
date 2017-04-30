@@ -77,8 +77,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
 	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output file"));
 	Parser parser(argv[0], "BioWare SSF to XML converter",
-		      "\nIf no output file is given, the output is written to stdout.",
-		      returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
+	              "\nIf no output file is given, the output is written to stdout.",
+	              returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
 	return parser.process(argv);
 }

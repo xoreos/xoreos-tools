@@ -82,8 +82,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption palFileOpt(false, new ValGetter<Common::UString &>(palFile, "pal"));
 	NoOption twoDAFileOpt(false, new ValGetter<Common::UString &>(twoDAFile, "2da"));
 	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
-	Parser parser(argv[0], "CBGT image to TGA converter","", returnValue,
-		      makeEndArgs(&cbgtFileOpt, &palFileOpt, &twoDAFileOpt, &outFileOpt));
+	Parser parser(argv[0], "CBGT image to TGA converter", "", returnValue,
+	              makeEndArgs(&cbgtFileOpt, &palFileOpt, &twoDAFileOpt, &outFileOpt));
 
 	return parser.process(argv);
 }

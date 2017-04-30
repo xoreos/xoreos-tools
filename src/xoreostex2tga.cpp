@@ -95,24 +95,24 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
 	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
 	Parser parser(argv[0], "BioWare textures to TGA converter",
-		      "",
-		      returnValue,
-		      makeEndArgs(&inFileOpt, &outFileOpt));
+	              "",
+	              returnValue,
+	              makeEndArgs(&inFileOpt, &outFileOpt));
 
 	parser.addOption("auto", "Autodetect input type (default)", kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeNone, type)));
+	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeNone, type)));
 	parser.addOption("dds", "Input file is DDS", kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeDDS, type)));
+	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeDDS, type)));
 	parser.addOption("smb", "Input file is SBM", kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeSBM, type)));
+	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeSBM, type)));
 	parser.addOption("tpc", "Input file is TPC", kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTPC, type)));
+	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTPC, type)));
 	parser.addOption("txb", "Input file is TXB", kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTXB, type)));
+	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTXB, type)));
 	parser.addOption("tga", "Input file is TGA", kContinueParsing,
-			 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTGA, type)));
+	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTGA, type)));
 	parser.addOption("flip", 'f', "Flip the image vertically", kContinueParsing,
-			 makeAssigners(new ValAssigner<bool>(true, flip)));
+	                 makeAssigners(new ValAssigner<bool>(true, flip)));
 	return parser.process(argv);
 }
 

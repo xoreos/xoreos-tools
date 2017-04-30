@@ -94,70 +94,70 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
 	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
 	Parser parser(argv[0], "BioWare TLK to XML converter",
-		      "If no output file is given, the output is written to stdout.\n\n"
-		      "There is no way to autodetect the encoding of strings in TLK files,\n"
-		      "so an encoding must be specified. Alternatively, the game this TLK\n"
-		      "is from can be given, and an appropriate encoding according to that\n"
-		      "game and the language ID found in the TLK is used.\n",
-		      returnValue,
-		      makeEndArgs(&inFileOpt, &outFileOpt));
+	              "If no output file is given, the output is written to stdout.\n\n"
+	              "There is no way to autodetect the encoding of strings in TLK files,\n"
+	              "so an encoding must be specified. Alternatively, the game this TLK\n"
+	              "is from can be given, and an appropriate encoding according to that\n"
+	              "game and the language ID found in the TLK is used.\n",
+	              returnValue,
+	              makeEndArgs(&inFileOpt, &outFileOpt));
 
 
 	parser.addOption("cp1250", "Read TLK strings as Windows CP-1250", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1250, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1250, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("cp1251", "Read TLK strings as Windows CP-1251", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1251, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1251, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("cp1252", "Read TLK strings as Windows CP-1252", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1252, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1252, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("cp932", "Read TLK strings as Windows CP-932", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP932, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP932, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("cp936", "Read TLK strings as Windows CP-936", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP936, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP936, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("cp949", "Read TLK strings as Windows CP-949", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP949, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP949, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("cp950", "Read TLK strings as Windows CP-950", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP950, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP950, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("utf8", "Read TLK strings as UTF-8", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF8, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF8, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("utf16le", "Read TLK strings as little-endian UTF-16", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16LE, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16LE, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addOption("utf16be", "Read TLK strings as big-endian UTF-16", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16BE, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16BE, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addSpace();
 	parser.addOption("nwn", "Use Neverwinter Nights encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
 	parser.addOption("nwn2", "Use Neverwinter Nights 2 encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("kotor", "Use Knights of the Old Republic encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
 	parser.addOption("kotor2", "Use Knights of the Old Republic II encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
 	parser.addOption("jade", "Use Jade Empire encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
 	parser.addOption("witcher", "Use The Witcher encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
 	parser.addOption("dragonage", "Use Dragon Age encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
 	parser.addOption("dragonage2", "Use Dragon Age II encodings", kContinueParsing,
-			 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
-				       new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
 
 	return parser.process(argv);
 }
