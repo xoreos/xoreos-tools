@@ -19,7 +19,9 @@
  */
 
 #include <cstring>
+
 #include "src/version/version.h"
+
 #include "src/common/cli.h"
 
 namespace Common {

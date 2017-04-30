@@ -22,9 +22,8 @@
 #define COMMON_CLI_H
 
 #include <cstdio>
-#include <cstdio>
-#include <stdarg.h>
-#include <stdlib.h>
+#include <cstdarg>
+#include <cstdlib>
 
 #include "src/common/ustring.h"
 
