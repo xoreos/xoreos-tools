@@ -377,10 +377,10 @@ inline std::vector<Assigner *> makeAssigners(Assigner *assigner1, Assigner *assi
 	return ret;
 }
 
-} // end of anonymous namespace
+} // End of anonymous namespace
 
-} // end of namespace Args
+} // End of namespace CLI
 
-} // end of namespace common
+} // End of namespace Common
 
-#endif
+#endif // COMMON_CLI_H

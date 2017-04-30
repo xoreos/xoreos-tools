@@ -329,6 +329,6 @@ fail:
 	return false;
 }
 
-}
+} // End of namespace CLI
 
-}
+} // End of namespace Common
