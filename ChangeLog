@@ -12,6 +12,8 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Changed our autotools setup to be non-recursive
 		- Added support for SOURCE_DATE_EPOCH when building, which
 		  is necessary for reproducible builds
+		- Dropped telling the compiler to build in C++03 mode, many
+		  Linux distros build libraries with C++11 features now
 	- COMMON:
 		- Added missing kEncodingCP1251 handling in several functions
 		- Moved DEFLATE decompression into its own files
