@@ -25,6 +25,8 @@
 #include <cstdarg>
 #include <cstdlib>
 
+#include <vector>
+
 #include "src/common/ustring.h"
 
 namespace Common {

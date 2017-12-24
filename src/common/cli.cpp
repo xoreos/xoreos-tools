@@ -20,6 +20,9 @@
 
 #include <cstring>
 
+#include <list>
+#include <set>
+
 #include "src/version/version.h"
 
 #include "src/common/cli.h"
