@@ -20,6 +20,7 @@ Someday, ????-??-?? (Version 0.0.5)
 		- Corrected the StreamTokenizer behaviour in a corner case
 		- Added checks for nullptr in stream and encoding methods
 		- Fixed composeString() for the INT*_MIN cases
+		- Rewrote and unified the command line parsing
 	- AURORA:
 		- Unified some code between xoreos and xoreos-tools
 		- Fixed a potential field overflow in the binary 2DA writer
