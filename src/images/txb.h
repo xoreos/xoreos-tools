@@ -35,7 +35,14 @@ namespace Common {
 
 namespace Images {
 
-/** Another one of BioWare's own texture formats, TXB. */
+/** Another one of BioWare's own texture formats, TXB.
+ *
+ *  This format is used by Jade Empire.
+ *
+ *  Even though the Xbox versions of the Knights of the Old Republic games
+ *  features textures with a .txb extension, these are actually in the TPC
+ *  format, not this TXB format.
+ */
 class TXB : public Decoder {
 public:
 	TXB(Common::SeekableReadStream &txb);

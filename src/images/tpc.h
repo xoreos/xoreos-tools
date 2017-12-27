@@ -35,7 +35,12 @@ namespace Common {
 
 namespace Images {
 
-/** BioWare's own texture format, TPC. */
+/** BioWare's own texture format, TPC.
+ *
+ *  This format is used by the two Knights of the Old Republic games.
+ *  In the Xbox versions, these files have a .txb extension, but
+ *  are still this format (not the TXB format used in Jade Empire).
+ */
 class TPC : public Decoder {
 public:
 	TPC(Common::SeekableReadStream &tpc);
