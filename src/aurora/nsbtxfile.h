@@ -26,7 +26,10 @@
 #ifndef AURORA_NSBTXFILE_H
 #define AURORA_NSBTXFILE_H
 
+#include <vector>
+
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -41,6 +44,7 @@ namespace Aurora {
 
 class NSBTXFile : public Archive, public NitroFile {
 public:
+	/** Take over this stream and read an NSBTX file out of it. */
 	NSBTXFile(Common::SeekableReadStream *nsbtx);
 	~NSBTXFile();
 
@@ -81,11 +85,11 @@ private:
 		uint16 width;
 		uint16 height;
 
-		bool wrapX; ///< true: wrap, false: clamp
-		bool wrapY; ///< true: wrap, false: clamp
-		bool flipX; ///< true: flip on every 2nd texture wrap
-		bool flipY; ///< true: flip on every 2nd texture wrap
-		bool alpha; ///< true: color index 0 is transparent
+		bool wrapX; ///< true: wrap, false: clamp.
+		bool wrapY; ///< true: wrap, false: clamp.
+		bool flipX; ///< true: flip on every 2nd texture wrap.
+		bool flipY; ///< true: flip on every 2nd texture wrap.
+		bool alpha; ///< true: color index 0 is transparent.
 
 		Transform coordTransform;
 	};
@@ -97,7 +101,8 @@ private:
 
 	struct ReadContext {
 		const Texture *texture;
-		const byte    *palette;
+
+		Common::ScopedArray<const byte> palette;
 
 		Common::SeekableSubReadStreamEndian *nsbtx;
 		Common::WriteStream *stream;
@@ -111,7 +116,7 @@ private:
 
 
 	/** The name of the NSBTX file. */
-	Common::SeekableSubReadStreamEndian *_nsbtx;
+	Common::ScopedPtr<Common::SeekableSubReadStreamEndian> _nsbtx;
 
 	/** External list of resource names and types. */
 	ResourceList _resources;

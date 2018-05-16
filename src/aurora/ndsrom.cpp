@@ -38,35 +38,24 @@
 
 namespace Aurora {
 
-NDSFile::NDSFile(const Common::UString &fileName) : _nds(0) {
-	_nds = new Common::ReadFile(fileName);
+NDSFile::NDSFile(const Common::UString &fileName) {
+	_nds.reset(new Common::ReadFile(fileName));
 
-	try {
-		load(*_nds);
-	} catch (...) {
-		delete _nds;
-		throw;
-	}
+	load(*_nds);
 }
 
 NDSFile::NDSFile(Common::SeekableReadStream *nds) : _nds(nds) {
 	assert(_nds);
 
-	try {
-		load(*_nds);
-	} catch (...) {
-		delete _nds;
-		throw;
-	}
+	load(*_nds);
 }
 
 NDSFile::~NDSFile() {
-	delete _nds;
 }
 
 void NDSFile::load(Common::SeekableReadStream &nds) {
 	if (!isNDS(nds, _title, _code, _maker))
-		throw Common::Exception("Not a support NDS ROM file");
+		throw Common::Exception("Not a supported NDS ROM file");
 
 	nds.seek(0x40);
 
@@ -91,10 +80,12 @@ void NDSFile::readNames(Common::SeekableReadStream &nds, uint32 offset, uint32 l
 	nds.seek(offset + 8);
 
 	uint32 index = 0;
-	while (((size_t)nds.pos()) < (offset + length)) {
+	while (((size_t)nds.pos()) < (size_t)(offset + length)) {
 		Resource res;
 
 		byte nameLength = nds.readByte();
+		if ((nameLength == 0) || ((size_t)nds.pos() >= (size_t)(offset + length)))
+			break;
 
 		Common::UString name = Common::readStringFixed(nds, Common::kEncodingASCII, nameLength).toLower();
 
@@ -163,7 +154,7 @@ const Archive::ResourceList &NDSFile::getResources() const {
 
 const NDSFile::IResource &NDSFile::getIResource(uint32 index) const {
 	if (index >= _iResources.size())
-		throw Common::Exception("Resource index out of range (%d/%d)", index, _iResources.size());
+		throw Common::Exception("Resource index out of range (%u/%u)", index, (uint)_iResources.size());
 
 	return _iResources[index];
 }
@@ -178,7 +169,7 @@ Common::SeekableReadStream *NDSFile::getResource(uint32 index, bool tryNoCopy) c
 	_nds->seek(res.offset);
 
 	if (tryNoCopy)
-		return new Common::SeekableSubReadStream(_nds, res.offset, res.offset + res.size);
+		return new Common::SeekableSubReadStream(_nds.get(), res.offset, res.offset + res.size);
 
 	_nds->seek(res.offset);
 

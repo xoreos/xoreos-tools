@@ -26,23 +26,32 @@
  * (<http://social.bioware.com/wiki/datoolset/index.php/GDA>).
  */
 
+#include <cassert>
+
 #include "src/common/error.h"
 #include "src/common/readstream.h"
 #include "src/common/hash.h"
+#include "src/common/strutil.h"
 
 #include "src/aurora/gdafile.h"
 #include "src/aurora/gff4file.h"
 
-static const uint32 kG2DAID = MKTAG('G', '2', 'D', 'A');
+static const uint32 kG2DAID    = MKTAG('G', '2', 'D', 'A');
+static const uint32 kVersion01 = MKTAG('V', '0', '.', '1');
+static const uint32 kVersion02 = MKTAG('V', '0', '.', '2');
 
 namespace Aurora {
 
-GDAFile::GDAFile(Common::SeekableReadStream &gda) : _gff4(0), _columns(0), _rows(0) {
+const size_t GDAFile::kInvalidColumn;
+const size_t GDAFile::kInvalidRow;
+
+GDAFile::GDAFile(Common::SeekableReadStream *gda) : _columns(0), _rowCount(0) {
+	assert(gda);
+
 	load(gda);
 }
 
 GDAFile::~GDAFile() {
-	clear();
 }
 
 size_t GDAFile::getColumnCount() const {
@@ -50,7 +59,7 @@ size_t GDAFile::getColumnCount() const {
 }
 
 size_t GDAFile::getRowCount() const {
-	return _rows->size();
+	return _rowCount;
 }
 
 const GDAFile::Headers &GDAFile::getHeaders() const {
@@ -62,10 +71,48 @@ bool GDAFile::hasRow(size_t row) const {
 }
 
 const GFF4Struct *GDAFile::getRow(size_t row) const {
-	if (row >= _rows->size())
-		return 0;
+	assert(_rowStarts.size() == _rows.size());
 
-	return (*_rows)[row];
+	/* To find the correct GFF4 for this row, we go through
+	 * the list of row start indices in reverse, until we
+	 * found one that's not bigger than the row we want.
+	 */
+
+	for (ptrdiff_t i = _rowStarts.size() - 1; i >= 0; i--) {
+		if (_rowStarts[i] <= row) {
+			row -= _rowStarts[i];
+
+			if (row >= _rows[i]->size())
+				return 0;
+
+			return (*_rows[i])[row];
+		}
+	}
+
+	return 0;
+}
+
+size_t GDAFile::findRow(uint32 id) const {
+	size_t idColumn = findColumn("ID");
+	if (idColumn == kInvalidColumn)
+		return kInvalidRow;
+
+	// Go through all rows of all GFF4s, and look for the ID
+
+	size_t gff4 = 0;
+	for (size_t i = 0, j = 0; i < _rowCount; i++, j++) {
+		if (j >= _rows[gff4]->size()) {
+			if (++gff4 >= _rows.size())
+				break;
+
+			j = 0;
+		}
+
+		if ((*_rows[gff4])[j] && ((*_rows[gff4])[j]->getUint(idColumn) == id))
+			return i;
+	}
+
+	return kInvalidRow;
 }
 
 size_t GDAFile::findColumn(const Common::UString &name) const {
@@ -170,14 +217,75 @@ float GDAFile::getFloat(size_t row, const Common::UString &columnName, float def
 	return gdaRow->getDouble(gdaColumn, def);
 }
 
-void GDAFile::load(Common::SeekableReadStream &gda) {
-	try {
-		_gff4 = new GFF4File(gda, kG2DAID);
+GDAFile::Type GDAFile::identifyType(const Columns &columns, const Row &rows, size_t column) const {
+	if (!columns || (column >= columns->size()) || !(*columns)[column])
+		return kTypeEmpty;
 
-		const GFF4Struct &top = _gff4->getTopLevel();
+	if ((*columns)[column]->hasField(kGFF4G2DAColumnType)) {
+		const Type type = (Type) (*columns)[column]->getUint(kGFF4G2DAColumnType, -1);
+
+		switch (type) {
+			case kTypeEmpty:
+			case kTypeString:
+			case kTypeInt:
+			case kTypeFloat:
+			case kTypeBool:
+			case kTypeResource:
+				break;
+
+			default:
+				throw Common::Exception("Invalid GDA column type %d", (int) type);
+		}
+
+		return type;
+	}
+
+	if (!rows || rows->empty() || !(*rows)[0])
+		return kTypeEmpty;
+
+	GFF4Struct::FieldType fieldType = (*rows)[0]->getFieldType(kGFF4G2DAColumn1 + column);
+
+	switch (fieldType) {
+		case GFF4Struct::kFieldTypeString:
+		case GFF4Struct::kFieldTypeASCIIString:
+			return kTypeString;
+
+		case GFF4Struct::kFieldTypeUint8:
+		case GFF4Struct::kFieldTypeUint16:
+		case GFF4Struct::kFieldTypeUint32:
+		case GFF4Struct::kFieldTypeUint64:
+		case GFF4Struct::kFieldTypeSint8:
+		case GFF4Struct::kFieldTypeSint16:
+		case GFF4Struct::kFieldTypeSint32:
+		case GFF4Struct::kFieldTypeSint64:
+			return kTypeInt;
+
+		case GFF4Struct::kFieldTypeFloat32:
+		case GFF4Struct::kFieldTypeFloat64:
+			return kTypeFloat;
+
+		default:
+			break;
+	}
+
+	return kTypeEmpty;
+}
+
+void GDAFile::load(Common::SeekableReadStream *gda) {
+	try {
+		_gff4s.push_back(new GFF4File(gda, kG2DAID));
+
+		const uint32 version = _gff4s.back()->getTypeVersion();
+		if ((version != kVersion01) && (version != kVersion02))
+			throw Common::Exception("Unsupported GDA file version %s", Common::debugTag(version).c_str());
+
+		const GFF4Struct &top = _gff4s.back()->getTopLevel();
 
 		_columns = &top.getList(kGFF4G2DAColumnList);
-		_rows    = &top.getList(kGFF4G2DARowList);
+		_rows.push_back(&top.getList(kGFF4G2DARowList));
+
+		_rowStarts.push_back(_rowCount);
+		_rowCount += _rows.back()->size();
 
 		_headers.resize(_columns->size());
 		for (size_t i = 0; i < _columns->size(); i++) {
@@ -185,24 +293,52 @@ void GDAFile::load(Common::SeekableReadStream &gda) {
 				continue;
 
 			_headers[i].hash  = (uint32) (*_columns)[i]->getUint(kGFF4G2DAColumnHash);
-			_headers[i].type  = (Type)   (*_columns)[i]->getUint(kGFF4G2DAColumnType);
+			_headers[i].type  =          identifyType(_columns, _rows.back(), i);
 			_headers[i].field = (uint32) kGFF4G2DAColumn1 + i;
 		}
 
 	} catch (Common::Exception &e) {
-		clear();
-
 		e.add("Failed reading GDA file");
 		throw;
 	}
 }
 
-void GDAFile::clear() {
-	delete _gff4;
-	_gff4 = 0;
+void GDAFile::add(Common::SeekableReadStream *gda) {
+	try {
+		_gff4s.push_back(new GFF4File(gda, kG2DAID));
 
-	_columns = 0;
-	_rows    = 0;
+		const uint32 version = _gff4s.back()->getTypeVersion();
+		if ((version != kVersion01) && (version != kVersion02))
+			throw Common::Exception("Unsupported GDA file version %s", Common::debugTag(version).c_str());
+
+		const GFF4Struct &top = _gff4s.back()->getTopLevel();
+
+		_rows.push_back(&top.getList(kGFF4G2DARowList));
+
+		_rowStarts.push_back(_rowCount);
+		_rowCount += _rows.back()->size();
+
+		Columns columns = &top.getList(kGFF4G2DAColumnList);
+		if (columns->size() != _columns->size())
+			throw Common::Exception("Column counts don't match (%u vs. %u)",
+			                        (uint)columns->size(), (uint)_columns->size());
+
+		for (size_t i = 0; i < columns->size(); i++) {
+			const uint32 hash1 = (uint32) (* columns)[i]->getUint(kGFF4G2DAColumnHash);
+			const uint32 hash2 = (uint32) (*_columns)[i]->getUint(kGFF4G2DAColumnHash);
+
+			const Type type1 = identifyType( columns, _rows.back(), i);
+			const Type type2 = identifyType(_columns, _rows[0]    , i);
+
+			if ((hash1 != hash2) || (type1 != type2))
+				throw Common::Exception("Columns don't match (%u: %u+%d vs. %u+%d)", (uint) i,
+				                        hash1, (int)type1, hash2, (int)type2);
+		}
+
+	} catch (Common::Exception &e) {
+		e.add("Failed adding GDA file");
+		throw;
+	}
 }
 
 } // End of namespace Aurora

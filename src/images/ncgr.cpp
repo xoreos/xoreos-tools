@@ -20,7 +20,7 @@
 
 /** @file
  *  Nitro Character Graphic Resource, a Nintendo DS image format.
- *  Uses NCLR, Nitro CoLouR, palette files.
+ *  Uses NCLR, Nitro CoLoR, palette files.
  */
 
 /* Based heavily on the NCGR reader found in the NDS file viewer
@@ -29,6 +29,23 @@
  *
  * Tinke in turn is based on the NCGR documentation by lowlines
  * (<http://llref.emutalk.net/docs/?file=xml/ncgr.xml>).
+ *
+ * The original copyright note in Tinke reads as follows:
+ *
+ * Copyright (C) 2011  pleoNeX
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "src/common/util.h"
@@ -50,14 +67,6 @@ NCGR::NCGRFile::NCGRFile() : ncgr(0), image(0), width(0), height(0) {
 NCGR::NCGRFile::~NCGRFile() {
 	delete ncgr;
 	delete image;
-}
-
-
-NCGR::ReadContext::ReadContext() : pal(0) {
-}
-
-NCGR::ReadContext::~ReadContext() {
-	delete[] pal;
 }
 
 
@@ -94,7 +103,8 @@ void NCGR::load(const std::vector<Common::SeekableReadStream *> &ncgrs, uint32 w
 
 	ctx.width  = width;
 	ctx.height = height;
-	ctx.pal    = NCLR::load(nclr);
+
+	ctx.pal.reset(NCLR::load(nclr));
 
 	ctx.ncgrs.resize(ncgrs.size());
 
@@ -176,7 +186,7 @@ void NCGR::readChar(NCGRFile &ctx) {
 	 * ''''''
 	 */
 
-	if ((ctx.width >= 0x7FFF8) || (ctx.height >= 0x7FFF8))
+	if ((ctx.width >= 0x8000) || (ctx.height >= 0x8000))
 		throw Common::Exception("Unsupported image dimensions");
 
 	// depthValue == 3 means 4 bit graphics. We don't need to support them.
@@ -193,7 +203,7 @@ void NCGR::readChar(NCGRFile &ctx) {
 	 * are in this format, it seems. */
 	const uint8 tiled = ctx.ncgr->readByte();
 
-	/* part == 0xFF apparently means that the image is partioned somehow?
+	/* part == 0xFF apparently means that the image is portioned somehow?
 	 * None of the Sonic files have this flag set, though. */
 	const uint8 part  = ctx.ncgr->readByte();
 
@@ -204,6 +214,10 @@ void NCGR::readChar(NCGRFile &ctx) {
 
 	const uint32 dataSize   = ctx.ncgr->readUint32();
 	const uint32 dataOffset = ctx.ncgr->readUint32() + 24;
+
+	if ((dataOffset >= ctx.ncgr->size()) || ((ctx.ncgr->size() - dataOffset) < dataSize))
+		throw Common::Exception("Invalid data offset (%u, %u, %u)",
+		                        dataOffset, dataSize, (uint)ctx.ncgr->size());
 
 	ctx.image = new Common::SeekableSubReadStream(ctx.ncgr, dataOffset, dataOffset + dataSize);
 }
@@ -234,6 +248,9 @@ void NCGR::draw(ReadContext &ctx) {
 	uint32 imageWidth, imageHeight;
 	calculateGrid(ctx, imageWidth, imageHeight);
 
+	if ((imageWidth >= 0x8000) || (imageHeight >= 0x8000))
+		throw Common::Exception("Unsupported full image dimensions");
+
 	_format = kPixelFormatB8G8R8A8;
 
 	_mipMaps.push_back(new MipMap);
@@ -242,8 +259,8 @@ void NCGR::draw(ReadContext &ctx) {
 	_mipMaps.back()->height = imageHeight;
 	_mipMaps.back()->size   = imageWidth * imageHeight * 4;
 
-	_mipMaps.back()->data = new byte[_mipMaps.back()->size];
-	byte *data = _mipMaps.back()->data;
+	_mipMaps.back()->data.reset(new byte[_mipMaps.back()->size]);
+	byte *data = _mipMaps.back()->data.get();
 
 	const bool is0Transp = (ctx.pal[0] == 0xF8) && (ctx.pal[1] == 0x00) && (ctx.pal[2] == 0xF8);
 

@@ -25,10 +25,15 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/nsbtxfile.h"
@@ -46,20 +51,26 @@ enum Command {
 
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &file);
 
 void listFiles(Aurora::NSBTXFile &nsbtx);
 void extractFiles(Aurora::NSBTXFile &nsbtx);
 
 int main(int argc, char **argv) {
-	int returnValue;
-	Command command;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, command, file))
-		return returnValue;
+	initPlatform();
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		Common::UString file;
+
+		if (!parseCommandLine(args, returnValue, command, file))
+			return returnValue;
+
 		Aurora::NSBTXFile nsbtx(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
@@ -67,61 +78,46 @@ int main(int argc, char **argv) {
 		else if (command == kCommandExtract)
 			extractFiles(nsbtx);
 
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Command &command, Common::UString &file) {
-	file.clear();
-
-	// No command, just display the help
-	if (argc == 1) {
-		printUsage(stdout, argv[0]);
-		returnValue = 0;
-
-		return false;
+namespace Common {
+namespace CLI {
+template<>
+int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, int) {
+	_val = kCommandNone;
+	for (int j = 0; j < kCommandMAX; j++) {
+		if (!strcmp(args[i].c_str(), kCommandChar[j])) {
+			_val = (Command) j;
+			return 0;
+		}
 	}
-
-	// Wrong number of arguments, display the help
-	if (argc != 3) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	// Find out what we should do
-	command = kCommandNone;
-	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(argv[1], kCommandChar[i]))
-			command = (Command) i;
-
-	// Unknown command
-	if (command == kCommandNone) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	// This is the file to use
-	file = argv[2];
-
-	return true;
+	return -1;
+}
+}
 }
 
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "Nintendo NSBTX texture extractor\n\n");
-	std::fprintf(stream, "Usage: %s <command> <file>\n\n", name);
-	std::fprintf(stream, "Commands:\n");
-	std::fprintf(stream, "  l          List texture\n");
-	std::fprintf(stream, "  e          Extract images to current directory\n");
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &file) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::makeEndArgs;
+
+	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
+	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
+	Parser parser(argv[0], "Nintendo NSBTX texture extractor",
+	              "Commands:\n"
+	              "  l          List archive\n"
+	              "  e          Extract files to current directory\n",
+	              returnValue, makeEndArgs(&cmdOpt, &fileOpt));
+
+	return parser.process(argv);
 }
 
 void listFiles(Aurora::NSBTXFile &nsbtx) {
@@ -157,9 +153,8 @@ void extractFiles(Aurora::NSBTXFile &nsbtx) {
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
-		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = nsbtx.getResource(r->index);
+			Common::ScopedPtr<Common::SeekableReadStream> stream(nsbtx.getResource(r->index));
 
 			dumpImage(*stream, fileName);
 
@@ -168,8 +163,6 @@ void extractFiles(Aurora::NSBTXFile &nsbtx) {
 			std::printf("\n");
 			Common::printException(e, "");
 		}
-
-		delete stream;
 	}
 
 }

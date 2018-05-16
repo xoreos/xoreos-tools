@@ -6,6 +6,14 @@
 #Don't want to accidentally add game files.
 *.xml
 
+# MSVC files
+Debug/
+Release/
+ipch/
+*.suo
+*.sdf
+*.opensdf
+
 # Build files
 *.[oa]
 *.l[oa]
@@ -32,17 +40,58 @@ Makefile.in
 /m4/ltsugar.m4
 /m4/ltversion.m4
 /m4/lt~obsolete.m4
-/m4/iconv.m4
-/m4/lib-ld.m4
-/m4/lib-link.m4
-/m4/lib-prefix.m4
 /m4/pkg.m4
 /stamp-h1
+
+# CMake temp file
+/CMakeCache.txt
+/CMakeFiles/
+/cmake_install.cmake
+/src/rules.mk.cmake
+/bin/
+/tests/rules.mk.cmake
+/CTestTestfile.cmake
+/Testing/
+
+# Eclipse project files
+/.autotools
+/.cproject
+/.project
+/.settings
+
+# Netbeans project files
+/nbproject/
+
+# CLion project files
+/.idea/
+
+# Debian temp files
+/debian
+/dists/debian/autoreconf.after
+/dists/debian/autoreconf.before
+/dists/debian/files
+/dists/debian/xoreos-tools.debhelper.log
+/dists/debian/xoreos-tools.substvars
+/dists/debian/xoreos-tools/
+
+# git versioning stamp
+/src/version/gitstamp
+
+# Unit tests
+/test-suite.log
+/tests/common/testfile_*
+/tests/common/test_*
+/tests/aurora/test_*
+/tests/images/test_*
 
 # Unix binaries
 /src/gff2xml
 /src/tlk2xml
+/src/ssf2xml
+/src/xml2tlk
+/src/xml2ssf
 /src/convert2da
+/src/fixpremiumgff
 /src/unerf
 /src/unherf
 /src/unrim
@@ -50,16 +99,21 @@ Makefile.in
 /src/unnds
 /src/unnsbtx
 /src/desmall
-/src/texture2tga
+/src/xoreostex2tga
 /src/nbfs2tga
 /src/ncgr2tga
 /src/cbgt2tga
 /src/cdpth2tga
+/src/ncsdis
 
 # Windows binaries
 /src/gff2xml.exe
 /src/tlk2xml.exe
+/src/ssf2xml.exe
+/src/xml2tlk.exe
+/src/xml2ssf.exe
 /src/convert2da.exe
+/src/fixpremiumgff.exe
 /src/unerf.exe
 /src/unherf.exe
 /src/unrim.exe
@@ -67,8 +121,9 @@ Makefile.in
 /src/unnds.exe
 /src/unnsbtx.exe
 /src/desmall.exe
-/src/texture2tga.exe
+/src/xoreostex2tga.exe
 /src/nbfs2tga.exe
 /src/ncgr2tga.exe
 /src/cbgt2tga.exe
 /src/cdpth2tga.exe
+/src/ncsdis.exe

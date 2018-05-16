@@ -20,7 +20,7 @@
 
 /** @file
  *  Nitro Character Graphic Resource, a Nintendo DS image format.
- *  Uses NCLR, Nitro CoLouR, palette files.
+ *  Uses NCLR, Nitro CoLoR, palette files.
  */
 
 #ifndef IMAGES_NCGR_H
@@ -28,9 +28,11 @@
 
 #include <vector>
 
-#include "src/images/decoder.h"
+#include "src/common/scopedptr.h"
 
 #include "src/aurora/nitrofile.h"
+
+#include "src/images/decoder.h"
 
 namespace Images {
 
@@ -83,12 +85,9 @@ private:
 		uint32 width;  ///< Width of the NCGR grid, in NCGR.
 		uint32 height; ///< Height of the NCGR grid, in NCGR.
 
-		const byte *pal;
+		Common::ScopedArray<const byte> pal;
 
 		std::vector<NCGRFile> ncgrs;
-
-		ReadContext();
-		~ReadContext();
 	};
 
 

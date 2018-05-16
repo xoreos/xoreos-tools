@@ -1,0 +1,78 @@
+.Dd April 15, 2016
+.Dt SSF2XML 1
+.Os
+.Sh NAME
+.Nm ssf2xml
+.Nd BioWare SSF to XML converter
+.Sh SYNOPSIS
+.Nm ssf2xml
+.Op Ar options
+.Ar input_file
+.Op Ar output_file
+.Sh DESCRIPTION
+.Nm
+converts BioWare's SSF files into human-readable XML.
+SSF are
+.Dq sound sets ,
+a list of voice lines uttered at certain situations, like
+attacking, getting hurt or picking a lock.
+Each line consists of an ID (denoting the position of the line
+within the SSF file), an optional StrRef (refering a textual line
+in a talk table) and an optional filename (which is the sound
+file to play).
+Additionally, each line may have a label attached which shows
+what the purpose of this line is. This label is purely for the
+benefit of the user reading the XML file and is not actually
+stored within the SSF.
+.Pp
+SSF files are used in
+.Em Neverwinter Nights ,
+.Em Neverwinter Nights 2 ,
+.Em Knights of the Old Republic
+and
+.Em Knights of the Old Republic II .
+However, the version of the format used in the latter two do
+not store any sound filenames, only StrRefs.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.El
+.Bl -tag -width xx -compact
+.It Ar input_file
+The SSF file to convert.
+.It Ar output_file
+The XML file will be written there.
+If no output file is specified, the XML data is written to
+.Dv stdout .
+The encoding of the XML stream is always UTF-8.
+.El
+.Sh EXAMPLES
+Convert the SSF
+.Pa file1.ssf
+into an XML file:
+.Pp
+.Dl $ ssf2xml file1.ssf file2.xml
+.Pp
+Convert the SSF
+.Pa file1.ssf
+into an XML file on
+.Dv stdout :
+.Pp
+.Dl $ ssf2xml file1.ssf
+.Sh "SEE ALSO"
+.Xr gff2xml 1 ,
+.Xr tlk2xml 1 ,
+.Xr xml2ssf 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

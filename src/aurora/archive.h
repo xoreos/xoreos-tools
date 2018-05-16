@@ -27,6 +27,8 @@
 
 #include <list>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 #include "src/common/hash.h"
@@ -40,7 +42,7 @@ namespace Common {
 namespace Aurora {
 
 /** An abstract file archive. */
-class Archive {
+class Archive : boost::noncopyable {
 public:
 	/** A resource within the archive. */
 	struct Resource {
@@ -73,6 +75,11 @@ public:
 
 	/** Return with which algorithm the name is hashed. */
 	virtual Common::HashAlgo getNameHashAlgo() const;
+
+	/** Return the index of the resource matching the hash, or 0xFFFFFFFF if not found. */
+	uint32 findResource(uint64 hash) const;
+	/** Return the index of the resource matching the name and type, or 0xFFFFFFFF if not found. */
+	uint32 findResource(const Common::UString &name, FileType type) const;
 };
 
 } // End of namespace Aurora

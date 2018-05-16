@@ -1,0 +1,124 @@
+Someday, ????-??-?? (Version 0.0.5)
+	- Tools added:
+		- ssf2xml
+		- xml2ssf
+	- DOCS:
+		- Corrected example section of the convert2da manpage
+		- Improved documentation in various files
+	- BUILD:
+		- Simplified compilation to only use a C++ compiler
+		- Added more optional compilation warning flags
+		- Pulled in Boost, to ease sync with xoreos
+		- Changed our autotools setup to be non-recursive
+		- Added support for SOURCE_DATE_EPOCH when building, which
+		  is necessary for reproducible builds
+		- Dropped telling the compiler to build in C++03 mode, many
+		  Linux distros build libraries with C++11 features now
+	- COMMON:
+		- Added missing kEncodingCP1251 handling in several functions
+		- Moved DEFLATE decompression into its own files
+		- Corrected the StreamTokenizer behaviour in a corner case
+		- Added checks for nullptr in stream and encoding methods
+		- Fixed composeString() for the INT*_MIN cases
+		- Rewrote and unified the command line parsing
+	- AURORA:
+		- Unified some code between xoreos and xoreos-tools
+		- Fixed a potential field overflow in the binary 2DA writer
+		- Fixed reading of NSBTX with truncated palette
+		- Fixed reading of 2DA with indented rows
+		- Added exceptions for as of yet unknown GFF4 configurations
+	- IMAGES:
+		- Loosened restrictions on images, allowing NPOT images
+		- Implemented loading of Jade Empire lightmap textures
+	- GFF2XML:
+		- Added an --encoding parameter to overwrite the encoding
+		  used in GFF3 LocStrings
+		- Removed empty label property on structs with no label
+		- Removed alias on generic lists; their labels are indices
+	- TLK2XML:
+		- Fixed corner case of entries with a sound, but no text
+	- DIST:
+		- Added Fedora package build files
+	- MISC:
+		- Improved code consistency in some places
+		- Marked several classes correctly as noncopyable
+		- Introduced various smart pointer templates into the codebase,
+		  making it cleaner and more leak-free
+		- Added support for and implemented unit tests for many classes
+		  in the Common and Aurora namespaces
+
+Monday, 2016-02-01 (Version 0.0.4)
+	- Tools added:
+		- fixpremiumgff
+		- ncsdis
+	- GFF2XML:
+		- Improved parameter parsing to not silently ignore extra filenames
+		- Added a status message when converting directly into a file
+		- Added support for GFF3s in Neverwinter Nights premium modules
+	- TLK2XML:
+		- Improved parameter parsing to not silently ignore extra filenames
+		- Added a status message when converting directly into a file
+	- UNERF:
+		- Added support for Neverwinter Nights premium modules
+	- BUILD:
+		- Fixed small bug preventing the CMake build system to be used with
+		  non-MSVC compilers
+		- Added dynamic supported warning flag detection to CMake
+	- DOCS:
+		- Improved documentation in various files
+		- Rewrote manpages to use semantic -mdoc macros
+	- MISC:
+		- Changed C-style casts to static_cast and reinterpret_cast
+		  in various places
+		- Improved const-correctness in various places
+		- Ran many file format loaders through afl and fixed all crashes
+
+Wednesday, 2015-09-30 (Version 0.0.3)
+	- Tools added:
+		- xml2tlk
+	- BUILD:
+		- Fixed CMake compilation on Windows with MSVC
+		- Fixed configure with zlib 1.2.3.4 - 1.2.3.9
+	- GFF2XML:
+		- Fixed various XML formatting issues
+		- Changed GFF detection to accept currently-unknown types
+	- XOREOSTEX2TGA:
+		- Added support for TPC cube maps
+	- CONVERT2DA:
+		- Added support for writing binary 2DA files
+	- TLK2XML:
+		- Added flags to implicitly specify encoding by game
+
+Monday, 2015-07-27 (Version 0.0.2)
+	- Made all tools display version information with --version
+	- Fixed Windows UTF-8 compatibility
+	- Renamed texture2tga to xoreostex2tga, for disambiguation
+	- Added a man page for each tool
+	- Added build files for Arch and Debian packages
+
+Tuesday, 2015-07-14 (Version 0.0.1)
+	- Tools added:
+		- gff2xml
+		- tlk2xml
+		- convert2da
+		- unerf
+		- unherf
+		- unrim
+		- unnds
+		- unnsbtx
+		- unkeybif
+		- desmall
+		- texture2tga
+		- nbfs2tga
+		- ncgr2tga
+		- cbgt2tga
+		- cdpth2tga
+	- Bump version number to be in sync with xoreos
+
+Monday, 2014-10-20 (Version 0.0.0)
+	- Created a dedicated repository for the tools
+
+Sunday, 2012-07-22 (Version 0.0.0-pre)
+	- Initial empty frame
+	- Added the ancient, obsolete libeos
+	- Added file format specs

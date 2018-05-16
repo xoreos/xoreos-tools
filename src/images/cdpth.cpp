@@ -39,16 +39,14 @@ CDPTH::ReadContext::ReadContext(Common::SeekableReadStream &c, uint32 w, uint32 
 
 }
 
-CDPTH::ReadContext::~ReadContext() {
-	for (Cells::iterator c = cells.begin(); c != cells.end(); ++c)
-		delete *c;
-}
-
 
 CDPTH::CDPTH(Common::SeekableReadStream &cdpth, uint32 width, uint32 height) {
 	ReadContext ctx(cdpth, width, height);
 
 	try {
+		if ((ctx.width == 0) || (ctx.width >= 0x8000) || (ctx.height == 0) || (ctx.height >= 0x8000))
+			throw Common::Exception("Invalid dimensions of %ux%u", ctx.width, ctx.height);
+
 		if (((ctx.width % 64) != 0) || ((ctx.height % 64) != 0))
 			throw Common::Exception("Dimensions need to be divisible by 64");
 
@@ -96,7 +94,7 @@ void CDPTH::readCells(ReadContext &ctx) {
 			ctx.cells.back() = Aurora::Small::decompress(cellData);
 
 			if (ctx.cells.back()->size() != 8192)
-				throw Common::Exception("Invalid size for cell %u: %u", i, (uint)ctx.cells.back()->size());
+				throw Common::Exception("Invalid size for cell %u: %u", (uint)i, (uint)ctx.cells.back()->size());
 
 			ctx.cdpth->seek(pos);
 		}
@@ -123,8 +121,8 @@ void CDPTH::createImage(uint32 width, uint32 height) {
 	_mipMaps.back()->height = height;
 	_mipMaps.back()->size   = width * height * 2;
 
-	_mipMaps.back()->data = new byte[_mipMaps.back()->size];
-	memset(_mipMaps.back()->data, 0xFF, _mipMaps.back()->size);
+	_mipMaps.back()->data.reset(new byte[_mipMaps.back()->size]);
+	std::memset(_mipMaps.back()->data.get(), 0xFF, _mipMaps.back()->size);
 }
 
 void CDPTH::drawImage(ReadContext &ctx) {
@@ -136,7 +134,7 @@ void CDPTH::drawImage(ReadContext &ctx) {
 	const uint32 cellHeight = 64;
 	const uint32 cellsX     = ctx.width  / cellWidth;
 
-	uint16 *data = (uint16 *) _mipMaps.back()->data;
+	uint16 *data = reinterpret_cast<uint16 *>(_mipMaps.back()->data.get());
 	for (size_t i = 0; i < ctx.cells.size(); i++) {
 		Common::SeekableReadStream *cell = ctx.cells[i];
 		if (!cell)

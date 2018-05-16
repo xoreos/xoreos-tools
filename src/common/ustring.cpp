@@ -32,6 +32,9 @@
 
 namespace Common {
 
+UString::UString() : _size(0) {
+}
+
 UString::UString(const UString &str) {
 	*this = str;
 }
@@ -153,7 +156,7 @@ UString &UString::operator+=(uint32 c) {
 	try {
 		utf8::append(c, std::back_inserter(_string));
 	} catch (const std::exception &se) {
-		Exception e(se.what());
+		Exception e(se);
 		throw e;
 	}
 
@@ -258,6 +261,16 @@ UString::iterator UString::findFirst(uint32 c) const {
 		if (*it == c)
 			return it;
 
+	return end();
+}
+
+UString::iterator UString::findFirst(const UString &what) const {
+	size_t index = _string.find(what._string);
+	if (index != std::string::npos) {
+		std::string::const_iterator it = _string.begin();
+		std::advance(it, index);
+		return iterator(it, _string.begin(), _string.end());
+	}
 	return end();
 }
 
@@ -446,7 +459,7 @@ void UString::replaceAll(uint32 what, uint32 with) {
 		_string.swap(newString);
 
 	} catch (const std::exception &se) {
-		Exception e(se.what());
+		Exception e(se);
 		throw e;
 	}
 }
@@ -739,7 +752,7 @@ void UString::recalculateSize() {
 		// Calculate the "distance" in characters from the beginning and end
 		_size = utf8::distance(_string.begin(), _string.end());
 	} catch (const std::exception &se) {
-		Exception e(se.what());
+		Exception e(se);
 		throw e;
 	}
 }
@@ -793,7 +806,7 @@ uint32 UString::fromUTF16(uint16 c) {
 	try {
 		utf8::utf16to8(&c, &c + 1, std::back_inserter(utf8result));
 	} catch (const std::exception &se) {
-		Exception e(se.what());
+		Exception e(se);
 		throw e;
 	}
 

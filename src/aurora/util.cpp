@@ -166,10 +166,13 @@ const FileTypeManager::Type FileTypeManager::types[] = {
 	{kFileTypeMAB,            ".mab"},
 	{kFileTypeQST2,           ".qst2"},
 	{kFileTypeSTO,            ".sto"},
+	{kFileTypeHEX,            ".hex"},
 	{kFileTypeMDX2,           ".mdx2"},
 	{kFileTypeTXB2,           ".txb2"},
 	{kFileTypeFSM,            ".fsm"},
 	{kFileTypeART,            ".art"},
+	{kFileTypeAMP,            ".amp"},
+	{kFileTypeCWA,            ".cwa"},
 	{kFileTypeBIP,            ".bip"},
 	{kFileTypeMDB2,           ".mdb2"},
 	{kFileTypeMDA2,           ".mda2"},
@@ -283,6 +286,8 @@ const FileTypeManager::Type FileTypeManager::types[] = {
 	{kFileTypeFXR,            ".fxr"},
 	{kFileTypeFXT,            ".fxt"},
 	{kFileTypeCIF,            ".cif"},
+	{kFileTypeCUB,            ".cub"},
+	{kFileTypeDLB,            ".dlb"},
 
 	{kFileTypeMOV,            ".mov"},
 	{kFileTypeCURS,           ".curs"},
@@ -296,7 +301,6 @@ const FileTypeManager::Type FileTypeManager::types[] = {
 	{kFileTypeABC,            ".abc"},
 	{kFileTypeSBM,            ".sbm"},
 	{kFileTypePVD,            ".pvd"},
-	{kFileTypeAMP,            ".amp"},
 	{kFileTypePLA,            ".pla"},
 	{kFileTypeTRG,            ".trg"},
 	{kFileTypePK,             ".pk" },
@@ -341,6 +345,7 @@ FileTypeManager::~FileTypeManager() {
 }
 
 FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
+	// Disambiguate reused type IDs that describe a different file format in a specific game
 	switch (game) {
 		case kGameIDNWN2:
 			switch ((int) type) {
@@ -409,6 +414,8 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 					return kFileTypePLA;
 				case kFileTypeBTT:
 					return kFileTypeTRG;
+				case kFileTypeGIT:
+					return kFileTypeSAV;
 				default:
 					break;
 			}
@@ -418,6 +425,7 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 			break;
 	}
 
+	// Alias multiple type IDs that describe the same format
 	switch (type) {
 		case kFileTypeQST2:
 			return kFileTypeQST;
@@ -430,9 +438,9 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 		case kFileTypeMDA2:
 			return kFileTypeMDA;
 		case kFileTypeSPT2:
-			return kFileTypeSPT2;
+			return kFileTypeSPT;
 		case kFileTypeJPG2:
-			return kFileTypeJPG2;
+			return kFileTypeJPG;
 		default:
 			break;
 	}
@@ -510,7 +518,7 @@ void FileTypeManager::buildHashLookup(Common::HashAlgo algo) {
 }
 
 Common::UString getPlatformDescription(Platform platform) {
-	static const char *names[] = {
+	static const char * const names[] = {
 		"Windows", "Nintendo DS", "Mac OS X", "Xbox", "PlayStation 3", "Xbox 360", "GNU/Linux", "Unknown"
 	};
 

@@ -1,0 +1,62 @@
+.Dd July 23, 2015
+.Dt UNHERF 1
+.Os
+.Sh NAME
+.Nm unherf
+.Nd BioWare HERF archive extractor
+.Sh SYNOPSIS
+.Nm unherf
+.Op Ar options
+.Ar command file
+.Sh DESCRIPTION
+.Nm
+extract BioWare HERF archives, found in the Nintendo DS game
+.Em Sonic Chronicles: The Dark Brotherhood .
+.Pp
+A HERF, Hashed ERF, is a very simple archive, similar to BioWare's
+ERF and RIM files.
+Unlike those, HERF usually only store djb2 hashes of the contained filenames.
+This tool has a lookup table to convert
+the hashes back into readable filenames.
+Not all names are known yet.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.El
+.Bl -tag -width xx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm l
+List archive contents
+.It Cm e
+Extract files to current directory
+.El
+.It Ar file
+The HERF archive to read.
+.El
+.Sh EXAMPLES
+List all files contained in the archive
+.Pa archive.herf :
+.Pp
+.Dl $ unherf l archive.herf
+.Pp
+Extract all files from the archive
+.Pa archive.herf :
+.Pp
+.Dl $ unherf e archive.herf
+.Sh SEE ALSO
+.Xr unerf 1 ,
+.Xr unrim 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

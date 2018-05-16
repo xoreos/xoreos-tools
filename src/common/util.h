@@ -18,10 +18,33 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Mostly copied verbatim from ScummVM's
-
 /** @file
  *  Utility templates and functions.
+ */
+
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #ifndef COMMON_UTIL_H
@@ -54,6 +77,10 @@ template<typename T> inline T CLIP (T v, T amin, T amax)
  */
 template<typename T> inline void SWAP(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
+/** Is this integer value a power of 2? */
+template<typename T> inline bool ISPOWER2(T x) { return x && !(x & (x - 1)); }
+
+/** Round up to the next power of 2. */
 static inline uint32 NEXTPOWER2(uint32 x) {
 	if (x == 0)
 		return 1;
@@ -65,6 +92,7 @@ static inline uint32 NEXTPOWER2(uint32 x) {
 	return x + 1;
 }
 
+/** Round up to the next power of 2. */
 static inline uint64 NEXTPOWER2(uint64 x) {
 	if (x == 0)
 		return 1;
@@ -113,13 +141,50 @@ void warning(const char *s, ...) GCC_PRINTF(1, 2);
 * Automatically appends a newline.
 */
 void status(const char *s, ...) GCC_PRINTF(1, 2);
+/**
+* Print an info message to the text console (stdout).
+* Automatically appends a newline.
+*/
+void info(const char *s, ...) GCC_PRINTF(1, 2);
 
+/** Print an error message to the text console (stderr).
+ *
+ *  Automatically prepends the text "ERROR: " and appends
+ *  an exclamation mark and a newline.
+ *
+ *  Additionally, the program will immediately quit with
+ *  return code 1.
+ */
 void NORETURN_PRE error(const char *s, ...) GCC_PRINTF(1, 2) NORETURN_POST;
 
-float  convertIEEEFloat(uint32 data);
+/** Convert a uint32 holding the bit pattern of a 32-bit IEEE 754 single
+ *  precision floating point value into a real, native float.
+ *
+ *  NOTE: Currently, this function assumes native floats are 32-bit IEEE
+ *  754 single precision floating point values!
+ */
+float convertIEEEFloat(uint32 data);
+/** Convert a uint64 holding the bit pattern of a 64-bit IEEE 754 double
+ *  precision floating point value into a real, native double.
+ *
+ *  NOTE: Currently, this function assumes native doubles are 64-bit IEEE
+ *  754 double precision floating point values!
+ */
 double convertIEEEDouble(uint64 data);
 
+/** Convert a native float into a uint32 holding the bit pattern a 32-bit
+ *  IEEE 754 single precision floating point value.
+ *
+ *  NOTE: Currently, this function assumes native floats are 32-bit IEEE
+ *  754 single precision floating point values!
+ */
 uint32 convertIEEEFloat(float value);
+/** Convert a native double into a uint64 holding the bit pattern a 64-bit
+ *  IEEE 754 double precision floating point value.
+ *
+ *  NOTE: Currently, this function assumes native doubles are 64-bit IEEE
+ *  754 double precision floating point values!
+ */
 uint64 convertIEEEDouble(double value);
 
 /** Read a fixed-point value, in a format used by the Nintendo DS.

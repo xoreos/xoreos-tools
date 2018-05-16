@@ -19,14 +19,16 @@
  */
 
 /** @file
- *  DDS (DirectDraw Surface) loading.
+ *  DDS texture (DirectDraw Surface or BioWare's own format) loading).
  */
 
+#include "src/common/scopedptr.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
 
 #include "src/images/dds.h"
+#include "src/images/util.h"
 
 static const uint32 kDDSID  = MKTAG('D', 'D', 'S', ' ');
 static const uint32 kDXT1ID = MKTAG('D', 'X', 'T', '1');
@@ -66,28 +68,30 @@ bool DDS::detect(Common::SeekableReadStream &dds) {
 void DDS::load(Common::SeekableReadStream &dds) {
 	try {
 
-		readHeader(dds);
-		readData  (dds);
+		DataType dataType;
+
+		readHeader(dds, dataType);
+		readData  (dds, dataType);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed reading DDS file");
 		throw;
 	}
 
-	// In Phaethon, we always want decompressed images
+	// In xoreos-tools, we always want decompressed images
 	decompress();
 }
 
-void DDS::readHeader(Common::SeekableReadStream &dds) {
+void DDS::readHeader(Common::SeekableReadStream &dds, DataType &dataType) {
 	if (dds.readUint32BE() == kDDSID)
 		// We found the FourCC of a standard DDS
-		readStandardHeader(dds);
+		readStandardHeader(dds, dataType);
 	else
 		// FourCC not found, should be a BioWare DDS then
-		readBioWareHeader(dds);
+		readBioWareHeader(dds, dataType);
 }
 
-void DDS::readStandardHeader(Common::SeekableReadStream &dds) {
+void DDS::readStandardHeader(Common::SeekableReadStream &dds, DataType &dataType) {
 	// All DDS header should be 124 bytes (+ 4 for the FourCC) big
 	if (dds.readUint32LE() != 124)
 		throw Common::Exception("Header size invalid");
@@ -98,6 +102,9 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds) {
 	// Image dimensions
 	uint32 height = dds.readUint32LE();
 	uint32 width  = dds.readUint32LE();
+
+	if ((width >= 0x8000) || (height >= 0x8000))
+		throw Common::Exception("Unsupported image dimensions (%ux%u)", width, height);
 
 	dds.skip(4 + 4); // Pitch + Depth
 	//uint32 pitchOrLineSize = dds.readUint32LE();
@@ -122,7 +129,10 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds) {
 	format.aBitMask = dds.readUint32LE();
 
 	// Detect which specific format it describes
-	detectFormat(format);
+	detectFormat(format, dataType);
+
+	if (!hasValidDimensions(_format, width, height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
 
 	dds.skip(16 + 4); // DDCAPS2 + Reserved
 
@@ -135,8 +145,6 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds) {
 
 		setSize(*mipMap);
 
-		mipMap->data = 0;
-
 		width  >>= 1;
 		height >>= 1;
 
@@ -146,12 +154,17 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds) {
 }
 
 #define IsPower2(x) ((x) && (((x) & ((x) - 1)) == 0))
-void DDS::readBioWareHeader(Common::SeekableReadStream &dds) {
+void DDS::readBioWareHeader(Common::SeekableReadStream &dds, DataType &dataType) {
+	dataType = kDataTypeDirect;
+
 	dds.seek(0);
 
 	// Image dimensions
 	uint32 width  = dds.readUint32LE();
 	uint32 height = dds.readUint32LE();
+
+	if ((width >= 0x8000) || (height >= 0x8000))
+		throw Common::Exception("Unsupported image dimensions (%ux%u)", width, height);
 
 	// Check that the width and height are really powers of 2
 	if (!IsPower2(width) || !IsPower2(height))
@@ -172,6 +185,9 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds) {
 		  ((bpp == 4) && (dataSize != ((width * height)    ))))
 		throw Common::Exception("Invalid data size (%dx%dx%d %d)", width, height, bpp, dataSize);
 
+	if (!hasValidDimensions(_format, width, height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
+
 	dds.skip(4); // Some float
 
 	// Number of bytes left for the image data
@@ -179,22 +195,20 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds) {
 
 	// Detect how many mip maps are in the DDS
 	do {
-		MipMap *mipMap = new MipMap;
+		Common::ScopedPtr<MipMap> mipMap(new MipMap);
 
 		mipMap->width  = MAX<uint32>(width,  1);
 		mipMap->height = MAX<uint32>(height, 1);
 
 		setSize(*mipMap);
 
-		if (fullDataSize < mipMap->size) {
-			// Wouldn't fit
-			delete mipMap;
+		// Wouldn't fit
+		if (fullDataSize < mipMap->size)
 			break;
-		}
 
 		fullDataSize -= mipMap->size;
 
-		_mipMaps.push_back(mipMap);
+		_mipMaps.push_back(mipMap.release());
 
 		width  >>= 1;
 		height >>= 1;
@@ -205,37 +219,36 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds) {
 void DDS::setSize(MipMap &mipMap) {
 	// Depending on the pixel format, set the image data size in bytes
 
-	if (_format == kPixelFormatDXT1) {
-		mipMap.size = ((mipMap.width + 3) / 4) * ((mipMap.height + 3) / 4) *  8;
-	} else if (_format == kPixelFormatDXT3) {
-		mipMap.size = ((mipMap.width + 3) / 4) * ((mipMap.height + 3) / 4) * 16;
-	} else if (_format == kPixelFormatDXT5) {
-		mipMap.size = ((mipMap.width + 3) / 4) * ((mipMap.height + 3) / 4) * 16;
-	} else if (_format == kPixelFormatB8G8R8A8) {
-		mipMap.size = mipMap.width * mipMap.height * 4;
-	} else if (_format == kPixelFormatB8G8R8) {
-		mipMap.size = mipMap.width * mipMap.height * 3;
-	} else if (_format == kPixelFormatA1R5G5B5) {
-		mipMap.size = mipMap.width * mipMap.height * 2;
-	} else if (_format == kPixelFormatR5G6B5) {
-		mipMap.size = mipMap.width * mipMap.height * 2;
-	} else
-		mipMap.size = 0;
+	mipMap.size = getDataSize(_format, mipMap.width, mipMap.height);
 }
 
-void DDS::readData(Common::SeekableReadStream &dds) {
-	// TODO: Do we need to flip the data?
+void DDS::readData(Common::SeekableReadStream &dds, DataType dataType) {
+	for (MipMaps::iterator mipMap = _mipMaps.begin(); mipMap != _mipMaps.end(); ++mipMap) {
+		(*mipMap)->data.reset(new byte[(*mipMap)->size]);
 
-	for (std::vector<MipMap *>::iterator mipMap = _mipMaps.begin(); mipMap != _mipMaps.end(); ++mipMap) {
-		(*mipMap)->data = new byte[(*mipMap)->size];
+		if (dataType == kDataType4444) {
 
-		if (dds.read((*mipMap)->data, (*mipMap)->size) != (*mipMap)->size)
-			throw Common::Exception(Common::kReadError);
+			byte *data = (*mipMap)->data.get();
+			for (uint32 i = 0; i < (uint32)((*mipMap)->width * (*mipMap)->height); i++, data += 4) {
+				const uint16 pixel = dds.readUint16LE();
+
+				data[0] = ( pixel & 0x0000000F       ) << 4;
+				data[1] = ((pixel & 0x000000F0) >>  4) << 4;
+				data[2] = ((pixel & 0x00000F00) >>  8) << 4;
+				data[3] = ((pixel & 0x0000F000) >> 12) << 4;
+			}
+
+		} else if (dataType == kDataTypeDirect)
+			if (dds.read((*mipMap)->data.get(), (*mipMap)->size) != (*mipMap)->size)
+				throw Common::Exception(Common::kReadError);
+
 	}
 }
 
-void DDS::detectFormat(const DDSPixelFormat &format) {
+void DDS::detectFormat(const DDSPixelFormat &format, DataType &dataType) {
 	// Big, ugly big pixel format description => format mapping
+
+	dataType = kDataTypeDirect;
 
 	if        ((format.flags & kPixelFlagsHasFourCC) && (format.fourCC == kDXT1ID)) {
 		_format = kPixelFormatDXT1;
@@ -254,8 +267,6 @@ void DDS::detectFormat(const DDSPixelFormat &format) {
 	           (format.bBitMask == 0x000000FF)) {
 		_format = kPixelFormatB8G8R8;
 
-		warning("Found untested DDS RGB8 data");
-
 	} else if ((format.flags & kPixelFlagsIsRGB) && (format.flags & kPixelFlagsHasAlpha) &&
 	           (format.bitCount == 16) &&
 	           (format.rBitMask == 0x00007C00) && (format.gBitMask == 0x000003E0) &&
@@ -271,6 +282,14 @@ void DDS::detectFormat(const DDSPixelFormat &format) {
 		_format = kPixelFormatR5G6B5;
 
 		warning("Found untested DDS RGB5 data");
+
+	} else if ((format.flags & kPixelFlagsIsRGB) && (format.flags & kPixelFlagsHasAlpha) &&
+	           (format.bitCount == 16) &&
+	           (format.rBitMask == 0x00000F00) && (format.gBitMask == 0x000000F0) &&
+	           (format.bBitMask == 0x0000000F) && (format.aBitMask == 0x0000F000)) {
+		_format = kPixelFormatB8G8R8A8;
+
+		dataType = kDataType4444;
 
 	} else if (format.flags & kPixelFlagsIsIndexed)
 		// Hopefully, we'll never need to support that :P

@@ -1,0 +1,159 @@
+.Dd November 14, 2015
+.Dt UNERF 1
+.Os
+.Sh NAME
+.Nm unerf
+.Nd BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor
+.Sh SYNOPSIS
+.Nm unerf
+.Op Ar options
+.Ar command
+.Ar archive
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+extracts BioWare ERF archives, found in many BioWare games as files
+with the extension .erf, .mod, .nwm or .sav.
+Moreover, in some games, a .rim file might be an ERF instead of a RIM.
+.Pp
+There's several different versions of ERFs.
+This tool supports the version V1.0, V1.1, V2.0, V2.2 and V3.0.
+.Pp
+Supported features:
+.Bl -bullet -compact
+.It
+Archives with stripped filenames. The name hash is searched for in
+a big lookup table.
+If it is not found, the file is listed and
+extracted as a hexadecimal representation of the hash
+.It
+zlib-compressed files are supported and transparently decompressed
+.It
+Blowfish-encrypted archives are supported and are, provided you know
+the password, transparently decrypted
+.It
+Archives that contain full paths are supported.
+You can either strip the directory and extract the plain filenames,
+or substitute the directory separator with a
+.Ql =
+.It
+Archives with numerical extension IDs belonging to different games
+can be aliased accordingly.
+.El
+.Pp
+Unsupported features:
+.Bl -bullet -compact
+.It
+XOR-encrypted archives
+.It
+Creating directories when extracting archives with full paths.
+.Pp
+Please also note that by stripped the directories of files in these
+archives, you might overwrite already extracted files
+.El
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl Fl nwn2
+Alias file types according to
+.Em Neverwinter Nights 2
+rules.
+.Pp
+.Em Neverwinter Nights 2
+reuses a few file extension IDs differently than other BioWare games.
+.It Fl Fl jade
+Alias file types according to
+.Em Jade Empire
+rules.
+.Pp
+.Em Jade Empire
+reuses a few file extension IDs differently than other BioWare games.
+.It Fl Fl pass Ar hex
+Password to decrypt this archive.
+This password needs to be specified in hexadecimal notation,
+even if it's an ASCII string.
+For example,
+.Dq 4CF223AB
+would be a valid password string.
+.Dq Foobar
+would not.
+.It Fl Fl nwm Ar file
+Calculate the MD5 of this NWM file to complement the decryption key
+of a HAK file for a Neverwinter Nights premium module.
+.El
+.Bl -tag -width xxxx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm i
+Display meta-information about the archive
+.It Cm l
+List archive contents
+.It Cm v
+List archive contents with full paths
+.It Cm e
+Extract files to current directory
+.It Cm s
+Extract files to current directory with full name
+.El
+.It Ar archive
+The ERF archive to read.
+.It Ar file
+One or more files to extract.
+If none are given, the whole archive is extracted.
+.El
+.Sh EXAMPLES
+View meta-information of the archive
+.Pa Shadowlords1.mod :
+.Pp
+.Dl $ unerf i Shadowlords1.mod
+.Pp
+List all files contained in the archive
+.Pa Chapter1.nwm :
+.Pp
+.Dl $ unerf l Chapter1.nwm
+.Pp
+List all files, with full path, in the archive
+.Pa areas.erf :
+.Pp
+.Dl $ unerf v areas.erf
+.Pp
+Extract all files from the archive
+.Pa foo.mod :
+.Pp
+.Dl $ unerf e foo.mod
+.Pp
+Extract the file
+.Pa area1.are
+from the archive
+.Pa foo.mod :
+.Pp
+.Dl $ unerf e foo.mod area1.are
+.Pp
+Extract all files, with full path, in the archive
+.Pa areas.erf :
+.Pp
+.Dl $ unerf s areas.erf
+.Pp
+Extract the file
+.Pa areas\earea1.are
+from the archive
+.Pa areas.erf :
+.Pp
+.Dl $ unerf s areas.erf areas\e\earea1.are
+.Sh SEE ALSO
+.Xr fixpremiumgff 1 ,
+.Xr unherf 1 ,
+.Xr unrim 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

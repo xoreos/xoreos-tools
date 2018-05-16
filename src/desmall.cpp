@@ -25,99 +25,59 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readfile.h"
 #include "src/common/writefile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/smallfile.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
-                      Common::UString &outFile);
+#include "src/util.h"
+
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile);
 
 void desmall(const Common::UString &inFile, const Common::UString &outFile);
 
 int main(int argc, char **argv) {
-	int returnValue;
-	Common::UString inFile, outFile;
-	if (!parseCommandLine(argc, argv, returnValue, inFile, outFile))
-		return returnValue;
+	initPlatform();
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, inFile, outFile))
+			return returnValue;
+
 		desmall(inFile, outFile);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &inFile,
-                      Common::UString &outFile) {
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "output file"));
+	Parser parser(argv[0], "Nintendo DS LZSS (types 0x00 and 0x10) decompressor\n",
+	              "", returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
-	if (argc < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	std::vector<Common::UString> files;
-
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		files.push_back(argv[i]);
-	}
-
-	if (files.size() != 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	inFile  = files[0];
-	outFile = files[1];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "Nintendo DS LZSS (types 0x00 and 0x10) decompressor\n");
-	std::fprintf(stream, "Usage: %s <input file> <output file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
+	return parser.process(argv);
 }
 
 void desmall(const Common::UString &inFile, const Common::UString &outFile) {

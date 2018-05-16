@@ -45,16 +45,10 @@ namespace Aurora {
 BIFFile::BIFFile(Common::SeekableReadStream *bif) : _bif(bif) {
 	assert(_bif);
 
-	try {
-		load(*_bif);
-	} catch (...) {
-		delete _bif;
-		throw;
-	}
+	load(*_bif);
 }
 
 BIFFile::~BIFFile() {
-	delete _bif;
 }
 
 void BIFFile::load(Common::SeekableReadStream &bif) {
@@ -139,7 +133,7 @@ const Archive::ResourceList &BIFFile::getResources() const {
 
 const BIFFile::IResource &BIFFile::getIResource(uint32 index) const {
 	if (index >= _iResources.size())
-		throw Common::Exception("Resource index out of range (%d/%d)", index, _iResources.size());
+		throw Common::Exception("Resource index out of range (%u/%u)", index, (uint)_iResources.size());
 
 	return _iResources[index];
 }
@@ -152,7 +146,7 @@ Common::SeekableReadStream *BIFFile::getResource(uint32 index, bool tryNoCopy) c
 	const IResource &res = getIResource(index);
 
 	if (tryNoCopy)
-		return new Common::SeekableSubReadStream(_bif, res.offset, res.offset + res.size);
+		return new Common::SeekableSubReadStream(_bif.get(), res.offset, res.offset + res.size);
 
 	_bif->seek(res.offset);
 

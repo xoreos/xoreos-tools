@@ -26,93 +26,79 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/version/version.h"
+
+#include "src/common/ptrvector.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
 
 #include "src/images/ncgr.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, uint32 &width, uint32 &height,
-                      std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
-                      Common::UString &outFile);
+#include "src/util.h"
+
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      uint32 &width, uint32 &height, std::vector<Common::UString> &ncgrFiles,
+                      Common::UString &nclrFile, Common::UString &outFile);
 
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
              Common::UString &outFile, uint32 width, uint32 height);
 
 int main(int argc, char **argv) {
-	int returnValue;
-	uint32 width, height;
-	std::vector<Common::UString> ncgrFiles;
-	Common::UString nclrFile, outFile;
-	if (!parseCommandLine(argc, argv, returnValue, width, height, ncgrFiles, nclrFile, outFile))
-		return returnValue;
+	initPlatform();
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		uint32 width, height;
+		std::vector<Common::UString> ncgrFiles;
+		Common::UString nclrFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, width, height, ncgrFiles, nclrFile, outFile))
+			return returnValue;
+
 		convert(ncgrFiles, nclrFile, outFile, width, height);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, uint32 &width, uint32 &height,
-                      std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
-                      Common::UString &outFile) {
-
-	if (argc < 4) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      uint32 &width, uint32 &height, std::vector<Common::UString> &ncgrFiles,
+                      Common::UString &nclrFile, Common::UString &outFile) {
 
 	std::vector<Common::UString> args;
+	using Common::CLI::NoOption;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::makeEndArgs;
 
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
+	NoOption argsOpt(false,
+	                 new ValGetter<std::vector<Common::UString> &>
+	                 (args, "width> <height> <ncgr> [<ngr> [...]] <nclr> <tga"));
 
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
+	Parser parser(argv[0], "Nintendo NCGR image to TGA converter",
+	              "", returnValue,
+	              makeEndArgs(&argsOpt));
 
-				return false;
-			}
-
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
-	}
+	if (!parser.process(argv))
+		return false;
 
 	if (args.size() < 5) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+		parser.usage();
+		returnValue = 1;
 
 		return false;
 	}
@@ -121,8 +107,8 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, uint32 &width, ui
 	height = (args.size() >= 2) ? atoi(args[1].c_str()) : 0;
 
 	if ((width == 0) || (height == 0) || (args.size() != (width * height + 4))) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+		parser.usage();
+		returnValue = 1;
 
 		return false;
 	}
@@ -137,38 +123,21 @@ bool parseCommandLine(int argc, char **argv, int &returnValue, uint32 &width, ui
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "Nintendo NCGR image to TGA converter\n");
-	std::fprintf(stream, "Usage: %s <width> <height> <ncgr> [<ngr> [...]] <nclr> <out file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
-}
-
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
              Common::UString &outFile, uint32 width, uint32 height) {
 
 	Common::ReadFile nclr(nclrFile);
 
-	std::vector<Common::SeekableReadStream *> ncgrs;
+	Common::PtrVector<Common::SeekableReadStream> ncgrs;
 	ncgrs.resize(ncgrFiles.size(), 0);
 
-	try {
-		for (size_t i = 0; i < ncgrFiles.size(); i++)
-			if (!ncgrFiles[i].empty())
-				ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
+	for (size_t i = 0; i < ncgrFiles.size(); i++)
+		if (!ncgrFiles[i].empty() && (ncgrFiles[i] != "\"\"") && (ncgrFiles[i] != "\'\'"))
+			ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
 
-		Images::NCGR image(ncgrs, width, height, nclr);
+	Images::NCGR image(ncgrs, width, height, nclr);
 
-		image.flipVertically();
+	image.flipVertically();
 
-		image.dumpTGA(outFile);
-
-	} catch (...) {
-		for (size_t i = 0; i < ncgrs.size(); i++)
-			delete ncgrs[i];
-
-		throw;
-	}
-
-	for (size_t i = 0; i < ncgrs.size(); i++)
-		delete ncgrs[i];
+	image.dumpTGA(outFile);
 }

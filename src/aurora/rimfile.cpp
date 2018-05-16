@@ -40,16 +40,10 @@ namespace Aurora {
 RIMFile::RIMFile(Common::SeekableReadStream *rim) : _rim(rim) {
 	assert(_rim);
 
-	try {
-		load(*_rim);
-	} catch (...) {
-		delete _rim;
-		throw;
-	}
+	load(*_rim);
 }
 
 RIMFile::~RIMFile() {
-	delete _rim;
 }
 
 void RIMFile::load(Common::SeekableReadStream &rim) {
@@ -102,7 +96,7 @@ const Archive::ResourceList &RIMFile::getResources() const {
 
 const RIMFile::IResource &RIMFile::getIResource(uint32 index) const {
 	if (index >= _iResources.size())
-		throw Common::Exception("Resource index out of range (%d/%d)", index, _iResources.size());
+		throw Common::Exception("Resource index out of range (%u/%u)", index, (uint)_iResources.size());
 
 	return _iResources[index];
 }
@@ -115,7 +109,7 @@ Common::SeekableReadStream *RIMFile::getResource(uint32 index, bool tryNoCopy) c
 	const IResource &res = getIResource(index);
 
 	if (tryNoCopy)
-		return new Common::SeekableSubReadStream(_rim, res.offset, res.offset + res.size);
+		return new Common::SeekableSubReadStream(_rim.get(), res.offset, res.offset + res.size);
 
 	_rim->seek(res.offset);
 

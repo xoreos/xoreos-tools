@@ -31,7 +31,30 @@
 
 namespace Aurora {
 
-/** Various file types used by the Aurora engine and found in archives. */
+/** Various file types used by the Aurora engine and found in archives.
+ *
+ *  Many archive formats used by the Aurora engine games do not contain
+ *  full filenames for the files contained within. Instead, they only
+ *  provide the stem of the filename, i.e. the file name without the file
+ *  extension. Additionally, they contain a type ID, which maps to the
+ *  enum values below.
+ *
+ *  Please note, however, that all IDs >= 19000 aren't found in such
+ *  archives. These are arbitrary numbers for files that are only found
+ *  as plain files in the file system, or inside archives that do not
+ *  use numerical type IDs. Should such a file ever be found in an archive
+ *  with a type ID, this dummy entry in the block of IDs >= 19000 needs to
+ *  be deleted, and a real entry with the correct ID should be added
+ *  instead.
+ *
+ *  If there's a collision between types, if one game re-uses a type ID
+ *  for a different file type, the new ID needs to be added to he block
+ *  of IDs >= 19000, and the conflicting file type should be added to the
+ *  method FileTypeManager::aliasFileType(). A tool that needs to be able
+ *  to correctly differentiate between these aliased file types can call
+ *  this method to do so. If necessary, a command line switch to explictly
+ *  select the game can be added to the tool.
+ */
 enum FileType {
 	kFileTypeNone           = -   1,
 	kFileTypeRES            =     0, ///< Generic GFF.
@@ -66,8 +89,8 @@ enum FileType {
 	kFileTypeTLK            =  2018, ///< Talk table.
 	kFileTypeTXI            =  2022, ///< Texture information.
 	kFileTypeGIT            =  2023, ///< Dynamic area data, GFF.
-	kFileTypeBTI            =  2024, ///< Item templace (BioWare), GFF.
-	kFileTypeUTI            =  2025, ///< Item templace (user), GFF.
+	kFileTypeBTI            =  2024, ///< Item template (BioWare), GFF.
+	kFileTypeUTI            =  2025, ///< Item template (user), GFF.
 	kFileTypeBTC            =  2026, ///< Creature template (BioWare), GFF.
 	kFileTypeUTC            =  2027, ///< Creature template (user), GFF.
 	kFileTypeDLG            =  2029, ///< Dialog tree, GFF.
@@ -166,10 +189,13 @@ enum FileType {
 	kFileTypeMAB            =  3011, ///< Material, binary.
 	kFileTypeQST2           =  3012, ///< Quest, GFF.
 	kFileTypeSTO            =  3013, ///< GFF.
+	kFileTypeHEX            =  3015, ///< Hex grid file.
 	kFileTypeMDX2           =  3016, ///< Geometry, model mesh data.
 	kFileTypeTXB2           =  3017, ///< Texture.
 	kFileTypeFSM            =  3022, ///< Finite State Machine data.
-	kFileTypeART            =  3023, ///< Area enviroment settings, INI.
+	kFileTypeART            =  3023, ///< Area environment settings, INI.
+	kFileTypeAMP            =  3024, ///< Brightening control.
+	kFileTypeCWA            =  3025, ///< Crowd attributes, GFF.
 	kFileTypeBIP            =  3028, ///< Lipsync data, binary LIP.
 	kFileTypeMDB2           =  4000,
 	kFileTypeMDA2           =  4001,
@@ -183,6 +209,8 @@ enum FileType {
 	kFileTypeERF            =  9997, ///< Module resources.
 	kFileTypeBIF            =  9998, ///< Game resource data.
 	kFileTypeKEY            =  9999, ///< Game resource index.
+
+	/* --- Entries for files not found in archives with numerical type IDs --- */
 
 	// Found in NWN
 	kFileTypeEXE            = 19000, ///< Windows PE EXE file.
@@ -225,7 +253,7 @@ enum FileType {
 	kFileTypeNDS            = 21000, ///< Archive, Nintendo DS ROM file.
 	kFileTypeHERF           = 21001, ///< Archive, hashed ERF.
 	kFileTypeDICT           = 21002, ///< HERF file name -> hashes dictionary.
-	kFileTypeSMALL          = 21023, ///< Compressed file, Nintendo LZSS.
+	kFileTypeSMALL          = 21003, ///< Compressed file, Nintendo LZSS.
 	kFileTypeCBGT           = 21004,
 	kFileTypeCDPTH          = 21005,
 	kFileTypeEMIT           = 21006,
@@ -235,7 +263,7 @@ enum FileType {
 	kFileTypeNBFS           = 21010, ///< Image, Map, Nitro Basic File Screen.
 	kFileTypeNCER           = 21011, ///< Image, Nitro CEll Resource.
 	kFileTypeNCGR           = 21012, ///< Image, Nitro Character Graphic Resource.
-	kFileTypeNCLR           = 21013, ///< Palette, Nitro CoLouR.
+	kFileTypeNCLR           = 21013, ///< Palette, Nitro CoLoR.
 	kFileTypeNFTR           = 21014, ///< Font.
 	kFileTypeNSBCA          = 21015, ///< Model Animation.
 	kFileTypeNSBMD          = 21016, ///< Model.
@@ -287,6 +315,8 @@ enum FileType {
 	kFileTypeFXR            = 22033, ///< Face metadata, FaceFX.
 	kFileTypeFXT            = 22033, ///< Face metadata, FaceFX.
 	kFileTypeCIF            = 22034, ///< Campaign Information File, GFF4.
+	kFileTypeCUB            = 22035,
+	kFileTypeDLB            = 22036,
 
 	// Found in KotOR Mac
 	kFileTypeMOV            = 23000, ///< Video, QuickTime/MPEG-4.
@@ -302,10 +332,9 @@ enum FileType {
 	kFileTypeABC            = 24003, ///< Font, character descriptions.
 	kFileTypeSBM            = 24004, ///< Font, character bitmap data.
 	kFileTypePVD            = 24005,
-	kFileTypeAMP            = 24006,
-	kFileTypePLA            = 24007, ///< Placeable, GFF.
-	kFileTypeTRG            = 24008, ///< Trigger, GFF.
-	kFileTypePK             = 24009,
+	kFileTypePLA            = 24006, ///< Placeable, GFF.
+	kFileTypeTRG            = 24007, ///< Trigger, GFF.
+	kFileTypePK             = 24008,
 
 	// Found in Dragon Age II
 	kFileTypeALS            = 25000,
@@ -334,7 +363,7 @@ enum FileType {
 	kFileTypeXLS            = 25023,
 
 	// Found in the iOS version of Knights of the Old Republic
-	kFileTypeBZF            = 26000, ///< Game resource data, LZMA-compressed BIF
+	kFileTypeBZF            = 26000, ///< Game resource data, LZMA-compressed BIF.
 
 	// Found in The Witcher
 	kFileTypeADV            = 27000, ///< Extra adventure modules, ERF.
@@ -344,16 +373,17 @@ enum FileType {
 };
 
 enum GameID {
-	kGameIDUnknown    = 0, ///< Unknown game.
-	kGameIDNWN        = 1, ///< Neverwinter Nights.
-	kGameIDNWN2       = 2, ///< Neverwinter Nights 2.
-	kGameIDKotOR      = 3, ///< Star Wars: Knights of the Old Republic.
-	kGameIDKotOR2     = 4, ///< Star Wars: Knights of the Old Republic II - The Sith Lords.
-	kGameIDJade       = 5, ///< Jade Empire.
-	kGameIDWitcher    = 6, ///< The Witcher.
-	kGameIDSonic      = 7, ///< Sonic Chronicles: The Dark Brotherhood.
-	kGameIDDragonAge  = 8, ///< Dragon Age: Origins.
-	kGameIDDragonAge2 = 9  ///< Dragon Age II.
+	kGameIDUnknown    = -1, ///< Unknown game.
+	kGameIDNWN        =  0, ///< Neverwinter Nights.
+	kGameIDNWN2       =  1, ///< Neverwinter Nights 2.
+	kGameIDKotOR      =  2, ///< Star Wars: Knights of the Old Republic.
+	kGameIDKotOR2     =  3, ///< Star Wars: Knights of the Old Republic II - The Sith Lords.
+	kGameIDJade       =  4, ///< Jade Empire.
+	kGameIDWitcher    =  5, ///< The Witcher.
+	kGameIDSonic      =  6, ///< Sonic Chronicles: The Dark Brotherhood.
+	kGameIDDragonAge  =  7, ///< Dragon Age: Origins.
+	kGameIDDragonAge2 =  8, ///< Dragon Age II.
+	kGameIDMAX
 };
 
 enum ResourceType {
@@ -379,14 +409,14 @@ enum ArchiveType {
 };
 
 enum Platform {
-	kPlatformWindows =  0, ///< Microsoft Windows
-	kPlatformNDS,          ///< Nintendo DS
-	kPlatformMacOSX,       ///< Mac OS X
-	kPlatformXbox,         ///< Microsoft Xbox
-	kPlatformPS3,          ///< Sony PlayStation 3
-	kPlatformXbox360,      ///< Microsoft Xbox 360
-	kPlatformLinux,        ///< GNU/Linux
-	kPlatformUnknown       ///< Unknown (must be last)
+	kPlatformWindows =  0, ///< Microsoft Windows.
+	kPlatformNDS,          ///< Nintendo DS.
+	kPlatformMacOSX,       ///< Mac OS X.
+	kPlatformXbox,         ///< Microsoft Xbox.
+	kPlatformPS3,          ///< Sony PlayStation 3.
+	kPlatformXbox360,      ///< Microsoft Xbox 360.
+	kPlatformLinux,        ///< GNU/Linux.
+	kPlatformUnknown       ///< Unknown (must be last).
 };
 
 static const uint32 kObjectIDInvalid = 0xFFFFFFFF;

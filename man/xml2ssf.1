@@ -1,0 +1,113 @@
+.Dd April 21, 2016
+.Dt XML2SSF 1
+.Os
+.Sh NAME
+.Nm xml2ssf
+.Nd XML to BioWare SSF converter
+.Sh SYNOPSIS
+.Nm xml2ssf
+.Op Ar options
+.Op Ar input_file
+.Ar output_file
+.Sh DESCRIPTION
+.Nm
+converts XML files created by the
+.Xr ssf2xml 1
+tool back into the BioWare SSF format.
+For a more in-depth description of SSF files,
+please see the man page for the
+.Xr ssf2xml 1
+tool.
+.Pp
+The format of the input XML is pretty simple and straight-forward.
+.Bd -literal
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ssf>
+  <sound id="0" label="Attack" strref="66299">vs_fkillerf_attk</sound>
+  <sound id="1" label="BattleCry1">vs_fkillerf_bat1</sound>
+  <sound id="2" label="BattleCry2" strref="66301"></sound>
+  <sound id="3" label="BattleCry3"></sound>
+</ssf>
+.Ed
+.Pp
+The root element is
+.Dq ssf ,
+with multiple
+.Dq sound
+elements as children.
+Each
+.Dq sound
+element requires an
+.Dq id
+property, specifying the index of the sound within the SSF file.
+Optionally, there can be a
+.Dq strref
+property, which denotes the string reference (StrRef) of the text
+line associated with the sound.
+The contents of the
+.Dq sound
+element is the filename (ResRef) of the sound file to play.
+.Pp
+Because different BioWare games use slightly different versions of
+the SSF file format, the game for which to create the SSF file has
+to be specifying on the command line.
+Please note that the file versions have different requirements on
+the input data as well. These requirements are noted below.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl Fl nwn
+Create an SSF file fit for use within the game
+.Em Neverwinter Nights .
+Sound filenames have to be 16 characters long or less.
+.It Fl Fl nwn2
+Create an SSF file fit for use within the game
+.Em Neverwinter Nights 2 .
+Sound filenames have to be 32 characters long or less.
+.It Fl Fl kotor
+Create an SSF file fit for use within the game
+.Em Knights of the Old Republic .
+No sound filenames are allowed, only StrRefs.
+.It Fl Fl kotor2
+Create an SSF file fit for use within the game
+.Em Knights of the Old Republic II .
+No sound filenames are allowed, only StrRefs.
+.El
+.Bl -tag -width xxxx -compact
+.It Ar input_file
+The XML file to convert.
+If no input file is specified, the XML data is read from
+.Dv stdin .
+The encoding of the XML stream must always be UTF-8.
+.It Ar output_file
+The SSF file will be written there.
+.El
+.Sh EXAMPLES
+Convert
+.Pa file1.xml
+into an SSF for Neverwinter Nights:
+.Pp
+.Dl $ xml2ssf --nwn file1.xml file2.ssf
+.Pp
+Convert
+.Pa file1.xml
+into an SSF for Knights of the Old Republic:
+.Pp
+.Dl $ xml2ssf --kotor file1.xml file2.ssf
+.Ed
+.Sh SEE ALSO
+.Xr ssf2xml 1 ,
+.Xr xml2tlk 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

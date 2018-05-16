@@ -27,7 +27,7 @@
 
 namespace Aurora {
 
-static const char *kLanguageNames[] = {
+static const char * const kLanguageNames[] = {
 	"English", "French", "German", "Italian", "Spanish", "Polish", "Czech", "Hungarian",
 	"Russian", "Korean", "Traditional Chinese", "Simplified Chinese", "Japanese"
 };
@@ -49,7 +49,7 @@ static const LanguageStrings kLanguageStrings[] = {
 	{ kLanguageFrench,
 		{ "french", "francais", "fran\303\207ais", "franc\314\247ais", "france",
 		  "fr-fr", "fr_fr", "fra-fr", "fra_fr", "fre-fr", "fre_fr",
-		  "f", "fra", "fre", 0
+		  "f", "fr", "fra", "fre", 0
 		}
 	},
 	{ kLanguageGerman,
@@ -78,7 +78,7 @@ static const LanguageStrings kLanguageStrings[] = {
 	},
 	{ kLanguageCzech,
 		{ "czech", "\304\215e\305\241tina", "c\314\214es\314\214tina",
-		  "česká", "\304\215esk\303\201", "c\314\214eska\314\201",
+		  "ceska", "\304\215esk\303\201", "c\314\214eska\314\201",
 		  "cs-cz", "cs_cz", "cz-cz", "cz_cz", "ces-cz", "ces_cz", "cze-cz", "cze_cz",
 		  "cs", "cz", "ces", "cze", 0
 		}

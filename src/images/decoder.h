@@ -27,7 +27,11 @@
 
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
+#include "src/common/ptrvector.h"
 
 #include "src/images/types.h"
 
@@ -39,38 +43,50 @@ namespace Common {
 namespace Images {
 
 /** A generic interface for image decoders. */
-class Decoder {
+class Decoder : boost::noncopyable {
 public:
-	Decoder();
-	virtual ~Decoder();
-
 	/** A mip map. */
 	struct MipMap {
 		int    width;  ///< The mip map's width.
 		int    height; ///< The mip map's height.
 		uint32 size;   ///< The mip map's size in bytes.
-		byte  *data;   ///< The mip map's data.
+
+		Common::ScopedArray<byte> data; ///< The mip map's data.
 
 		MipMap();
+		MipMap(const MipMap &mipMap);
 		~MipMap();
+
+		MipMap &operator=(const MipMap &mipMap);
 
 		void swap(MipMap &right);
 	};
+
+	Decoder();
+	Decoder(const Decoder &decoder);
+	virtual ~Decoder();
+
+	Decoder &operator=(const Decoder &decoder);
 
 	/** Return the image's general format. */
 	PixelFormat getFormat() const;
 
 	/** Return the number of mip maps contained in the image. */
 	size_t getMipMapCount() const;
+	/** Return the number of layers contained in the image. */
+	size_t getLayerCount() const;
+
+	/** Is this image a cube map? */
+	bool isCubeMap() const;
 
 	/** Return a mip map. */
-	const MipMap &getMipMap(size_t mipMap) const;
+	const MipMap &getMipMap(size_t mipMap, size_t layer = 0) const;
 
 	/** Return TXI data, if embedded in the image. */
 	virtual Common::SeekableReadStream *getTXI() const;
 
 	/** Dump the image into a TGA. */
-	bool dumpTGA(const Common::UString &fileName) const;
+	void dumpTGA(const Common::UString &fileName) const;
 
 	/** Flip the whole image horizontally. */
 	void flipHorizontally();
@@ -78,9 +94,16 @@ public:
 	void flipVertically();
 
 protected:
+	typedef Common::PtrVector<MipMap> MipMaps;
+
 	PixelFormat _format;
 
-	std::vector<MipMap *> _mipMaps;
+	/** Number of layers in this image. For layered 3D images and cubemaps. */
+	size_t _layerCount;
+	/** Is this image a cube map? A cube map always needs to have 6 layers! */
+	bool _isCubeMap;
+
+	MipMaps _mipMaps;
 
 	/** Is the image data compressed? */
 	bool isCompressed() const;

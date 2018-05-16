@@ -1,0 +1,168 @@
+.Dd October 28, 2015
+.Dt NCSDIS 1
+.Os
+.Sh NAME
+.Nm ncsdis
+.Nd BioWare NWScript bytecode disassembler
+.Sh SYNOPSIS
+.Nm ncsdis
+.Op Ar options
+.Ar input_file
+.Op Ar output_file
+.Sh DESCRIPTION
+.Nm
+disassembles NCS files, compiled bytecode of the NWScript scripting
+language used by every single Aurora engine game, except for the
+Nintendo DS game
+.Em Sonic Chronicles: The Dark Brotherhood .
+The output, while not as clear as the C-like source code that produced
+the bytecode, is human-readable.
+.Pp
+.Nm
+is meant as a better maintainable and more complete replacement
+of the disassembly mode found in the OpenKnights nwnnsscomp tool.
+As such, it fixes provides these enhancements:
+.Bl -bullet -compact
+.It
+Compilable in 64-bit mode
+.It
+Out of the box support for all Aurora engine games
+.It
+Support for array opcodes added in
+.Em Dragon Age: Origins
+.It
+Support for reference opcodes added in
+.Em Dragon Age II
+.It
+Knowledge of additional variable types
+.It
+No need to provide an external nwscript.nss file
+.El
+.Pp
+Additionally,
+.Nm
+can create a dot file specifying a control flow
+graph of the disassembly.
+It can be plotted into a graph by the
+.Xr dot 1
+tool of the GraphViz suite.
+.Pp
+.Sy WARNING :
+these graphs can get very large very quickly.
+To keep the resulting image small,
+set a small font and font size when calling GraphViz,
+and decrease the nodesep and ranksep values.
+.Pp
+Since there is no way to automatically detect for which game this
+script is, this information must be provided on the command.
+If no game is specified, the ACTION opcode that call an engine function,
+such as
+.Dq GetModule
+or trigonometry functions, will only display a
+number instead of a function name.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl Fl list
+Create a full disassembly listing, including byte addresses and the
+raw bytecode, similar to the disassembly mode of nwnnsscomp.
+This is the default mode.
+.It Fl Fl assembly
+Only create the human-readable mnemonics part of the disassembly
+listing.
+Useful for modifying and extending the script.
+.It Fl Fl dot
+Create a flow control graph in the dot language, to be plotted by
+the GraphViz suite.
+.It Fl Fl stack
+Print the stack frame for each instruction.
+Only available in list or assembly mode, not in dot mode.
+.It Fl Fl control
+Print detected control structures inside block nodes.
+Only available in dot mode.
+.It Fl Fl nwn
+Use engine function tables of the game
+.Em Neverwinter Nights .
+.It Fl Fl nwn2
+Use engine function tables of the game
+.Em Neverwinter Nights 2 .
+.It Fl Fl kotor
+Use engine function tables of the game
+.Em Star Wars: Knights of the Old Republic .
+.It Fl Fl kotor2
+Use engine function tables of the game
+.Em Star Wars: Knights of the Old Republic II \(en The Sith Lords .
+.It Fl Fl jade
+Use engine function tables of the game
+.Em Jade Empire .
+.It Fl Fl witcher
+Use engine function tables of the game
+.Em The Witcher .
+.It Fl Fl dragonage
+Use engine function tables of the game
+.Em Dragon Age: Origins .
+.It Fl Fl dragonage2
+Use engine function tables of the game
+.Em Dragon Age II .
+.El
+.Bl -tag -width xxxx -compact
+.It Ar input_file
+The NCS file to disassemble.
+.It Ar output_file
+The disassembly will be written there.
+If no output file is specified, the disassembly will be written to
+.Dv stdout .
+.El
+.Sh EXAMPLES
+Disassemble the script
+.Pa file.ncs :
+.Pp
+.Dl $ ncsdis file.ncs file.lst
+.Pp
+Disassemble the script
+.Pa file.ncs
+and write the listing to
+.Dv stdout :
+.Pp
+.Dl $ ncsdis file.ncs
+.Pp
+Disassemble the Jade Empire script
+.Pa file.ncs :
+.Pp
+.Dl $ ncsdis --jade file.ncs file.list
+.Pp
+Disassemble the Jade Empire script
+.Pa file.ncs
+in pure disassembly mode:
+.Pp
+.Dl $ ncsdis --assembly --jade file.ncs file.asm
+.Pp
+Create a dot graph file of the Neverwinter Nights script
+.Pa file.ncs :
+.Pp
+.Dl $ ncsdis --dot --nwn file.ncs file.dot
+.Pp
+Create a dot graph file of the Neverwinter Nights script
+.Pa file.ncs
+and plot it:
+.Bd -literal -offset xxxxxx
+$ ncsdis --dot --nwn file.ncs | dot -Gnodesep=0.1 -Granksep=0.1 \e
+  -Gfontname="Courier New" -Nfontname="Courier New" -Gfontsize=10 \e
+  -Nfontsize=8 -Earrowsize=0.5 -Tpng > file.png
+.Ed
+.Sh SEE ALSO
+.Xr dot 1 ,
+.Xr nwnnsscomp 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

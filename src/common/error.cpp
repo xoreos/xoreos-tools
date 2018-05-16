@@ -39,14 +39,17 @@ StackException::StackException(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 	_stack.push(buf);
 }
 
-StackException::StackException(const StackException &e) {
-	_stack = e._stack;
+StackException::StackException(const StackException &e) : _stack(e._stack) {
+}
+
+StackException::StackException(const std::exception &e) {
+	add(e);
 }
 
 StackException::~StackException() throw() {
@@ -57,10 +60,15 @@ void StackException::add(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 	_stack.push(buf);
+}
+
+
+void StackException::add(const std::exception &e) {
+	add("%s", e.what());
 }
 
 const char *StackException::what() const throw() {
@@ -68,6 +76,10 @@ const char *StackException::what() const throw() {
 		return "";
 
 	return _stack.top().c_str();
+}
+
+bool StackException::empty() const {
+	return _stack.empty();
 }
 
 StackException::Stack &StackException::getStack() {
@@ -101,6 +113,61 @@ void printException(Exception &e, const UString &prefix) {
 	} catch (...) {
 		status("FATAL ERROR: Exception while printing exception stack");
 		std::exit(1);
+	}
+}
+
+void exceptionDispatcherError(const UString &reason) {
+	try {
+		try {
+			throw;
+		} catch (Exception &e) {
+			if (!reason.empty())
+				e.add("%s", reason.c_str());
+
+			printException(e);
+			std::exit(1);
+		} catch (std::exception &e) {
+			Exception se(e);
+			if (!reason.empty())
+				se.add("%s", reason.c_str());
+
+			printException(se);
+			std::exit(1);
+		} catch (...) {
+			Exception se("Unknown exception caught");
+			if (!reason.empty())
+				se.add("%s", reason.c_str());
+
+			printException(se);
+			std::exit(1);
+		}
+	} catch (...) {
+		std::exit(2);
+	}
+}
+
+void exceptionDispatcherWarnAndIgnore(const UString &reason) {
+	try {
+		try {
+			throw;
+		} catch (Exception &e) {
+			if (!reason.empty())
+				e.add("%s", reason.c_str());
+
+			printException(e, "WARNING: ");
+		} catch (std::exception &e) {
+			Exception se(e);
+			if (!reason.empty())
+				se.add("%s", reason.c_str());
+
+			printException(se, "WARNING: ");
+		} catch (...) {
+			if (!reason.empty()) {
+				Exception se("%s", reason.c_str());
+				printException(se, "WARNING: ");
+			}
+		}
+	} catch (...) {
 	}
 }
 

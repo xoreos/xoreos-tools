@@ -18,10 +18,33 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Largely based on the stream implementation found in ScummVM.
-
 /** @file
  *  Implementing the reading stream interfaces for plain memory blocks.
+ */
+
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #include <cassert>
@@ -33,18 +56,9 @@
 
 namespace Common {
 
-MemoryReadStream::MemoryReadStream(const byte *dataPtr, size_t dataSize, bool disposeMemory) :
-	_ptrOrig(dataPtr), _ptr(dataPtr), _disposeMemory(disposeMemory),
-	_size(dataSize), _pos(0), _eos(false) {
-
-}
-
-MemoryReadStream::~MemoryReadStream() {
-	if (_disposeMemory)
-		delete[] _ptrOrig;
-}
-
 size_t MemoryReadStream::read(void *dataPtr, size_t dataSize) {
+	assert(dataPtr);
+
 	// Read at most as many bytes as are still available...
 	if (dataSize > _size - _pos) {
 		dataSize = _size - _pos;
@@ -67,7 +81,7 @@ size_t MemoryReadStream::seek(ptrdiff_t offset, Origin whence) {
 		throw Exception(kSeekError);
 
 	_pos = newPos;
-	_ptr = _ptrOrig + newPos;
+	_ptr = _ptrOrig.get() + newPos;
 
 	// Reset end-of-stream flag on a successful seek
 	_eos = false;
@@ -88,12 +102,13 @@ size_t MemoryReadStream::size() const {
 }
 
 const byte *MemoryReadStream::getData() const {
-	return _ptrOrig;
+	return _ptrOrig.get();
 }
 
 
-MemoryReadStreamEndian::MemoryReadStreamEndian(const byte *buf, size_t len, bool bigEndian) :
-	MemoryReadStream(buf, len), _bigEndian(bigEndian) {
+MemoryReadStreamEndian::MemoryReadStreamEndian(const byte *dataPtr, size_t dataSize,
+                                               bool bigEndian, bool disposeMemory) :
+	MemoryReadStream(dataPtr, dataSize, disposeMemory), _bigEndian(bigEndian) {
 
 }
 

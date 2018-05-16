@@ -42,13 +42,6 @@ CBGT::ReadContext::ReadContext(Common::SeekableReadStream &c,
 	cbgt(&c), pal(&p), twoda(&t) {
 }
 
-CBGT::ReadContext::~ReadContext() {
-	for (Palettes::iterator p = palettes.begin(); p != palettes.end(); ++p)
-		delete[] *p;
-	for (Cells::iterator c = cells.begin(); c != cells.end(); ++c)
-		delete *c;
-}
-
 
 CBGT::CBGT(Common::SeekableReadStream &cbgt, Common::SeekableReadStream &pal,
            Common::SeekableReadStream &twoda) {
@@ -138,7 +131,7 @@ void CBGT::readPaletteIndices(ReadContext &ctx) {
 		ctx.width  = twoDA.getColumnCount() * 64;
 		ctx.height = twoDA.getRowCount()    * 64;
 
-		if ((ctx.width == 0) || (ctx.height == 0))
+		if ((ctx.width == 0) || (ctx.width >= 0x8000) || (ctx.height == 0) || (ctx.height >= 0x8000))
 			throw Common::Exception("Dimensions of %ux%u", ctx.width, ctx.height);
 
 		ctx.maxPaletteIndex = 0;
@@ -194,7 +187,7 @@ void CBGT::readCells(ReadContext &ctx) {
 			ctx.cells.back() = Aurora::Small::decompress(cellData);
 
 			if (ctx.cells.back()->size() != 4096)
-				throw Common::Exception("Invalid size for cell %u: %u", i, (uint)ctx.cells.back()->size());
+				throw Common::Exception("Invalid size for cell %u: %u", (uint)i, (uint)ctx.cells.back()->size());
 
 			ctx.cbgt->seek(pos);
 		}
@@ -226,9 +219,8 @@ void CBGT::createImage(uint32 width, uint32 height) {
 	_mipMaps.back()->height = height;
 	_mipMaps.back()->size   = width * height * 4;
 
-	_mipMaps.back()->data = new byte[_mipMaps.back()->size];
-	byte *data = _mipMaps.back()->data;
-	memset(data, 0, _mipMaps.back()->size);
+	_mipMaps.back()->data.reset(new byte[_mipMaps.back()->size]);
+	std::memset(_mipMaps.back()->data.get(), 0, _mipMaps.back()->size);
 }
 
 void CBGT::drawImage(ReadContext &ctx) {
@@ -260,7 +252,7 @@ void CBGT::drawImage(ReadContext &ctx) {
 	const uint32 tilesX     = cellWidth  / tileWidth;
 	const uint32 tilesY     = cellHeight / tileHeight;
 
-	byte *data = _mipMaps.back()->data;
+	byte *data = _mipMaps.back()->data.get();
 	for (size_t i = 0; i < ctx.cells.size(); i++) {
 		Common::SeekableReadStream *cell = ctx.cells[i];
 		if (!cell)

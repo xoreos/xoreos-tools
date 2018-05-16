@@ -25,131 +25,170 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readfile.h"
+#include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
+#include "src/common/cli.h"
+
+#include "src/aurora/types.h"
+#include "src/aurora/language.h"
 
 #include "src/xml/gffdumper.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding);
+#include "src/util.h"
 
-void dumpGFF(const Common::UString &file, Common::Encoding encoding);
+typedef std::map<uint32, Common::Encoding> EncodingOverrides;
+
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, Aurora::GameID &game,
+                      EncodingOverrides &encOverrides, bool &nwnPremium);
+
+bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOverrides);
+
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
+             Common::Encoding encoding, bool nwnPremium);
 
 int main(int argc, char **argv) {
-	Common::Encoding encoding = Common::kEncodingUTF16LE;
-
-	int returnValue;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file, encoding))
-		return returnValue;
+	initPlatform();
 
 	try {
-		dumpGFF(file, encoding);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Common::Encoding encoding = Common::kEncodingUTF16LE;
+		Aurora::GameID   game     = Aurora::kGameIDUnknown;
+
+		EncodingOverrides encOverrides;
+
+		bool nwnPremium = false;
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, encOverrides, nwnPremium))
+			return returnValue;
+
+		LangMan.declareLanguages(game);
+
+		for (EncodingOverrides::const_iterator e = encOverrides.begin(); e != encOverrides.end(); ++e)
+			LangMan.overrideEncoding(e->first, e->second);
+
+		dumpGFF(inFile, outFile, encoding, nwnPremium);
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding) {
+bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOverrides) {
+	Common::UString::iterator sep = arg.findFirst('=');
+	if (sep == arg.end())
+		return false;
 
-	file.clear();
+	uint32 id = 0xFFFFFFFF;
+	try {
+		Common::parseString(arg.substr(arg.begin(), sep), id);
+	} catch (...) {
+	}
 
-	if (argc < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+	if (id == 0xFFFFFFFF)
+		return false;
 
+	Common::Encoding encoding = Common::parseEncoding(arg.substr(++sep, arg.end()));
+	if (encoding == Common::kEncodingInvalid) {
+		status("Unknown encoding \"%s\"", arg.substr(sep, arg.end()).c_str());
 		return false;
 	}
 
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (!strcmp(argv[i], "--cp1252")) {
-				// Set the GFF4 string encoding to CP1252
-
-				isOption = true;
-				encoding = Common::kEncodingCP1252;
-
-			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// We already have a file => error
-		if (!file.empty()) {
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
-		}
-
-		// This is a file to use
-		file = argv[i];
-	}
-
-	// No file? Error.
-	if (file.empty()) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
+	encOverrides[id] = encoding;
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "BioWare GFF to XML converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --cp1252            Read GFF4 strings as Windows CP-1252\n");
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, Aurora::GameID &game,
+                      EncodingOverrides &encOverrides, bool &nwnPremium) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::Callback;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
+	using Aurora::GameID;
+
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
+	Parser parser(argv[0], "BioWare GFF to XML converter",
+	              "If no output file is given, the output is written to stdout.\n\n"
+	              "Depending on the game, LocStrings in GFF files might be encoded in various\n"
+	              "ways and there's no way to autodetect how. If a game is specified, the\n"
+	              "encoding tables for this game are used. Otherwise, gff2xml tries some\n"
+	              "heuristics that might fail for certain strings.\n\n"
+	              "Additionally, the --encoding parameter can be used to override the encoding\n"
+	              "for a specific language ID. The string has to be of the form n=encoding,\n"
+	              "for example 0=cp-1252 to override the encoding of the (ungendered) language\n"
+	              "ID 0 to be Windows codepage 1252. To override several encodings, specify\n"
+	              "the --encoding parameter multiple times.\n",
+	              returnValue,
+	              makeEndArgs(&inFileOpt, &outFileOpt));
+
+
+	parser.addOption("cp1252", "Read GFF4 strings as Windows CP-1252", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Common::Encoding>(Common::kEncodingCP1252,
+	                 encoding)));
+	parser.addOption("nwnpremium", "This is a broken GFF from a Neverwinter Nights premium module",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<bool>(true, nwnPremium)));
+	parser.addOption("nwn", "Use Neverwinter Nights encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
+	parser.addOption("nwn2", "Use Neverwinter Nights 2 encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("kotor", "Use Knights of the Old Republic encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
+	parser.addOption("kotor2", "Use Knights of the Old Republic II encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
+	parser.addOption("jade", "Use Jade Empire encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	parser.addOption("witcher", "Use The Witcher encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
+	parser.addOption("dragonage", "Use Dragon Age encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
+	parser.addOption("dragonage2", "Use Dragon Age II encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
+	parser.addSpace();
+	parser.addOption("encoding", "Override an encoding", kContinueParsing,
+	                 new Callback<EncodingOverrides &>("str", parseEncodingOverride, encOverrides));
+
+	return parser.process(argv);
 }
 
-void dumpGFF(const Common::UString &file, Common::Encoding encoding) {
-	Common::ReadFile gff(file);
 
-	XML::GFFDumper *dumper = XML::GFFDumper::identify(gff);
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
+             Common::Encoding encoding, bool nwnPremium) {
 
-	Common::StdOutStream xml;
-	dumper->dump(xml, gff, encoding);
+	Common::ScopedPtr<Common::SeekableReadStream> gff(new Common::ReadFile(inFile));
 
-	delete dumper;
+	Common::ScopedPtr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium));
+
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
+
+	dumper->dump(*out, gff.release(), encoding, nwnPremium);
+
+	out->flush();
+
+	if (!outFile.empty())
+		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
 }

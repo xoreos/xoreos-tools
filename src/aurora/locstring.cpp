@@ -27,6 +27,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/scopedptr.h"
 #include "src/common/memreadstream.h"
 #include "src/common/encoding.h"
 
@@ -47,6 +48,16 @@ void LocString::clear() {
 	_strings.clear();
 }
 
+bool LocString::empty() const {
+	return (_id == kStrRefInvalid) && (_strings.empty() || getString().empty());
+}
+
+void LocString::swap(LocString &str) {
+	SWAP(_id, str._id);
+
+	_strings.swap(str._strings);
+}
+
 uint32 LocString::getID() const {
 	return _id;
 }
@@ -56,9 +67,6 @@ void LocString::setID(uint32 id) {
 }
 
 bool LocString::hasString(Language language, LanguageGender gender) const {
-	if (gender == kLanguageGenderCurrent)
-		gender = LangMan.getCurrentGender();
-
 	return hasString(LangMan.getLanguageID(language, gender));
 }
 
@@ -67,9 +75,6 @@ bool LocString::hasString(uint32 languageID) const {
 }
 
 const Common::UString &LocString::getString(Language language, LanguageGender gender) const {
-	if (gender == kLanguageGenderCurrent)
-		gender = LangMan.getCurrentGender();
-
 	return getString(LangMan.getLanguageID(language, gender));
 }
 
@@ -83,9 +88,6 @@ const Common::UString &LocString::getString(uint32 languageID) const {
 }
 
 void LocString::setString(Language language, LanguageGender gender, const Common::UString &str) {
-	if (gender == kLanguageGenderCurrent)
-		gender = LangMan.getCurrentGender();
-
 	return setString(LangMan.getLanguageID(language, gender), str);
 }
 
@@ -145,10 +147,12 @@ void LocString::readString(uint32 languageID, Common::SeekableReadStream &stream
 	if (length == 0)
 		return;
 
-	Common::MemoryReadStream *data   = stream.readStream(length);
-	Common::MemoryReadStream *parsed = LangMan.preParseColorCodes(*data);
+	s.first->second = "[???]";
 
-	Common::Encoding encoding = LangMan.getEncoding(LangMan.getLanguageGendered(languageID));
+	Common::ScopedPtr<Common::MemoryReadStream> data(stream.readStream(length));
+	Common::ScopedPtr<Common::MemoryReadStream> parsed(LangMan.preParseColorCodes(*data));
+
+	Common::Encoding encoding = LangMan.getEncodingLocString(LangMan.getLanguageGendered(languageID));
 	if (encoding == Common::kEncodingInvalid)
 		encoding = Common::kEncodingUTF8;
 
@@ -158,9 +162,6 @@ void LocString::readString(uint32 languageID, Common::SeekableReadStream &stream
 		parsed->seek(0);
 		s.first->second = Common::readString(*parsed, Common::kEncodingCP1252);
 	}
-
-	delete parsed;
-	delete data;
 }
 
 void LocString::readLocSubString(Common::SeekableReadStream &stream) {

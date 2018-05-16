@@ -25,11 +25,14 @@
 #ifndef IMAGES_UTIL_H
 #define IMAGES_UTIL_H
 
+#include <cassert>
 #include <cstring>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/util.h"
 #include "src/common/maths.h"
+#include "src/common/error.h"
 
 #include "src/images/types.h"
 
@@ -56,21 +59,83 @@ static inline int getBPP(PixelFormat format) {
 	}
 }
 
+/** Return the number of bytes necessary to hold an image of these dimensions
+  * and in this format. */
+static inline uint32 getDataSize(PixelFormat format, int32 width, int32 height) {
+	if ((width < 0) || (width >= 0x8000) || (height < 0) || (height >= 0x8000))
+		throw Common::Exception("Invalid dimensions %dx%d", width, height);
+
+	switch (format) {
+		case kPixelFormatR8G8B8:
+		case kPixelFormatB8G8R8:
+			return width * height * 3;
+
+		case kPixelFormatR8G8B8A8:
+		case kPixelFormatB8G8R8A8:
+			return width * height * 4;
+
+		case kPixelFormatA1R5G5B5:
+		case kPixelFormatR5G6B5:
+		case kPixelFormatDepth16:
+			return width * height * 2;
+
+		case kPixelFormatDXT1:
+			return MAX<uint32>( 8, ((width + 3) / 4) * ((height + 3) / 4) *  8);
+
+		case kPixelFormatDXT3:
+		case kPixelFormatDXT5:
+			return MAX<uint32>(16, ((width + 3) / 4) * ((height + 3) / 4) * 16);
+
+		default:
+			break;
+	}
+
+	throw Common::Exception("Invalid pixel format %u", (uint) format);
+}
+
+/** Are these image dimensions valid for this format? */
+static inline bool hasValidDimensions(PixelFormat format, int32 width, int32 height) {
+	if ((width < 0) || (width >= 0x8000) || (height < 0) || (height >= 0x8000))
+		return false;
+
+	switch (format) {
+		case kPixelFormatR8G8B8:
+		case kPixelFormatB8G8R8:
+		case kPixelFormatR8G8B8A8:
+		case kPixelFormatB8G8R8A8:
+		case kPixelFormatA1R5G5B5:
+		case kPixelFormatR5G6B5:
+		case kPixelFormatDepth16:
+		case kPixelFormatDXT1:
+		case kPixelFormatDXT3:
+		case kPixelFormatDXT5:
+			return true;
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
 /** Flip an image horizontally. */
 static inline void flipHorizontally(byte *data, int width, int height, int bpp) {
-	int halfWidth = width / 2;
-	int pitch     = bpp * width;
+	if ((width <= 0) || (height <= 0) || (bpp <= 0))
+		return;
 
-	byte *buffer = new byte[bpp];
+	const size_t halfWidth = width / 2;
+	const size_t pitch     = bpp * width;
+
+	Common::ScopedArray<byte> buffer(new byte[bpp]);
 
 	while (height-- > 0) {
 		byte *dataStart = data;
 		byte *dataEnd   = data + pitch - bpp;
 
-		for (int j = 0; j < halfWidth; j++) {
-			memcpy(buffer   , dataStart, bpp);
-			memcpy(dataStart, dataEnd  , bpp);
-			memcpy(dataEnd  , buffer   , bpp);
+		for (size_t j = 0; j < halfWidth; j++) {
+			memcpy(buffer.get(), dataStart   , bpp);
+			memcpy(dataStart   , dataEnd     , bpp);
+			memcpy(dataEnd     , buffer.get(), bpp);
 
 			dataStart += bpp;
 			dataEnd   -= bpp;
@@ -78,30 +143,63 @@ static inline void flipHorizontally(byte *data, int width, int height, int bpp) 
 
 		data += pitch;
 	}
-
-	delete[] buffer;
 }
 
 /** Flip an image vertically. */
 static inline void flipVertically(byte *data, int width, int height, int bpp) {
-	int halfHeight = height / 2;
-	int pitch      = bpp * width;
+	if ((width <= 0) || (height <= 0) || (bpp <= 0))
+		return;
+
+	const size_t pitch = bpp * width;
 
 	byte *dataStart = data;
 	byte *dataEnd   = data + (pitch * height) - pitch;
 
-	byte *buffer = new byte[pitch];
+	Common::ScopedArray<byte> buffer(new byte[pitch]);
 
+	size_t halfHeight = height / 2;
 	while (halfHeight--) {
-		memcpy(buffer   , dataStart, pitch);
-		memcpy(dataStart, dataEnd  , pitch);
-		memcpy(dataEnd  , buffer   , pitch);
+		memcpy(buffer.get(), dataStart   , pitch);
+		memcpy(dataStart   , dataEnd     , pitch);
+		memcpy(dataEnd     , buffer.get(), pitch);
 
 		dataStart += pitch;
 		dataEnd   -= pitch;
 	}
+}
 
-	delete[] buffer;
+/** Rotate a square image in 90° steps, clock-wise. */
+static inline void rotate90(byte *data, int width, int height, int bpp, int steps) {
+	if ((width <= 0) || (height <= 0) || (bpp <= 0))
+		return;
+
+	assert(width == height);
+
+	while (steps-- > 0) {
+		const size_t n = width;
+
+		const size_t w =  n      / 2;
+		const size_t h = (n + 1) / 2;
+
+		for (size_t x = 0; x < w; x++) {
+			for (size_t y = 0; y < h; y++) {
+				const size_t d0 = ( y          * n +  x         ) * bpp;
+				const size_t d1 = ((n - 1 - x) * n +  y         ) * bpp;
+				const size_t d2 = ((n - 1 - y) * n + (n - 1 - x)) * bpp;
+				const size_t d3 = ( x          * n + (n - 1 - y)) * bpp;
+
+				for (size_t p = 0; p < (size_t) bpp; p++) {
+					const byte tmp = data[d0 + p];
+
+					data[d0 + p] = data[d1 + p];
+					data[d1 + p] = data[d2 + p];
+					data[d2 + p] = data[d3 + p];
+					data[d3 + p] = tmp;
+				}
+			}
+		}
+
+	}
 }
 
 /** De-"swizzle" a texture pixel offset. */

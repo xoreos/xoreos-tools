@@ -22,6 +22,8 @@
  *  Dump GFF V3.2/V3.3 into XML files.
  */
 
+#include <boost/scope_exit.hpp>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
@@ -36,45 +38,33 @@
 
 namespace XML {
 
-GFF3Dumper::GFF3Dumper() : _gff3(0), _xml(0) {
+GFF3Dumper::GFF3Dumper() {
 }
 
 GFF3Dumper::~GFF3Dumper() {
-	clear();
 }
 
-void GFF3Dumper::clear() {
-	delete _gff3;
-	delete _xml;
+void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
+                      Common::Encoding UNUSED(encoding), bool allowNWNPremium) {
 
-	_gff3 = 0;
-	_xml  = 0;
-}
+	BOOST_SCOPE_EXIT( (&_gff3) (&_xml) ) {
+		_gff3.reset();
+		_xml.reset();
+	} BOOST_SCOPE_EXIT_END
 
-void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream &input,
-                      Common::Encoding UNUSED(encoding)) {
+	_gff3.reset(new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium));
+	_xml.reset(new XMLWriter(output));
 
-	try {
-		_gff3 = new Aurora::GFF3File(input, 0xFFFFFFFF);
-		_xml  = new XMLWriter(output);
+	_xml->openTag("gff3");
+	_xml->addProperty("type", Common::tagToString(_gff3->getType(), true));
+	_xml->breakLine();
 
-		_xml->openTag("gff3");
-		_xml->addProperty("type", Common::tagToString(_gff3->getType(), true));
-		_xml->breakLine();
+	dumpStruct(_gff3->getTopLevel());
 
-		dumpStruct(_gff3->getTopLevel());
+	_xml->closeTag();
+	_xml->breakLine();
 
-		_xml->closeTag();
-		_xml->breakLine();
-
-		_xml->flush();
-
-	} catch (...) {
-		clear();
-		throw;
-	}
-
-	clear();
+	_xml->flush();
 }
 
 void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
@@ -86,7 +76,7 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 
 	for (std::vector<Aurora::LocString::SubLocString>::iterator s = str.begin(); s != str.end(); ++s) {
 		_xml->openTag("string");
-		_xml->addProperty("language", Common::UString::format("%u", s->language));
+		_xml->addProperty("language", Common::composeString(s->language));
 
 		_xml->setContents(s->str);
 		_xml->closeTag();
@@ -94,7 +84,7 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 	}
 }
 
-static const char *kGFF3FieldTypeNames[] = {
+static const char * const kGFF3FieldTypeNames[] = {
 	"byte",
 	"char",
 	"uint16",
@@ -117,13 +107,13 @@ static const char *kGFF3FieldTypeNames[] = {
 };
 
 void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UString &field) {
-	Aurora::GFF3Struct::FieldType type = strct.getType(field);
+	Aurora::GFF3Struct::FieldType type = strct.getFieldType(field);
 
 	Common::UString typeName;
 	if (((size_t) type) < ARRAYSIZE(kGFF3FieldTypeNames))
 		typeName = kGFF3FieldTypeNames[(int)type];
 	else
-		typeName = Common::UString::format("fieldtype%d", (int)type);
+		typeName = "filetype" + Common::composeString((uint64) type);
 
 	Common::UString label = field;
 
@@ -135,20 +125,20 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 	switch (type) {
 		case Aurora::GFF3Struct::kFieldTypeChar:
-			_xml->setContents(Common::UString::format("%c", strct.getChar(field)));
+			_xml->setContents(Common::composeString(strct.getUint(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeByte:
 		case Aurora::GFF3Struct::kFieldTypeUint16:
 		case Aurora::GFF3Struct::kFieldTypeUint32:
 		case Aurora::GFF3Struct::kFieldTypeUint64:
-			_xml->setContents(Common::UString::format("%"PRIu64, Cu64(strct.getUint(field))));
+			_xml->setContents(Common::composeString(strct.getUint(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeSint16:
 		case Aurora::GFF3Struct::kFieldTypeSint32:
 		case Aurora::GFF3Struct::kFieldTypeSint64:
-			_xml->setContents(Common::UString::format("%"PRId64, Cd64(strct.getSint(field))));
+			_xml->setContents(Common::composeString(strct.getSint(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeFloat:
@@ -156,10 +146,20 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			_xml->setContents(Common::UString::format("%.6f", strct.getDouble(field)));
 			break;
 
-		case Aurora::GFF3Struct::kFieldTypeExoString:
-		case Aurora::GFF3Struct::kFieldTypeResRef:
 		case Aurora::GFF3Struct::kFieldTypeStrRef:
 			_xml->setContents(strct.getString(field));
+			break;
+
+		case Aurora::GFF3Struct::kFieldTypeExoString:
+		case Aurora::GFF3Struct::kFieldTypeResRef:
+			try {
+				_xml->setContents(strct.getString(field));
+			} catch (...) {
+				_xml->addProperty("base64", "true");
+
+				Common::ScopedPtr<Common::SeekableReadStream> data(strct.getData(field));
+				_xml->setContents(*data);
+			}
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeLocString:
@@ -167,14 +167,17 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				Aurora::LocString locString;
 
 				strct.getLocString(field, locString);
-				_xml->addProperty("strref", Common::UString::format("%u", locString.getID()));
+				_xml->addProperty("strref", Common::composeString(locString.getID()));
 
 				dumpLocString(locString);
 			}
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeVoid:
-			_xml->setContents(*strct.getData(field));
+			{
+				Common::ScopedPtr<Common::SeekableReadStream> data(strct.getData(field));
+				_xml->setContents(*data);
+			}
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeStruct:
@@ -182,13 +185,12 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeList:
-			_xml->breakLine();
 			dumpList(strct.getList(field));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeOrientation:
 			{
-				double a, b, c, d;
+				double a = 0.0, b = 0.0, c = 0.0, d = 0.0;
 
 				strct.getOrientation(field, a, b, c, d);
 
@@ -218,7 +220,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 		case Aurora::GFF3Struct::kFieldTypeVector:
 			{
-				double x, y, z;
+				double x = 0.0, y = 0.0, z = 0.0;
 
 				strct.getVector(field, x, y, z);
 
@@ -253,12 +255,25 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 }
 
 void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label) {
-	_xml->openTag("struct");
-	_xml->addProperty("label", label);
-	_xml->addProperty("id", Common::UString::format("%u", strct.getID()));
-	_xml->breakLine();
+	dumpStruct(strct, true, label);
+}
 
-	for (Aurora::GFF3Struct::iterator f = strct.begin(); f != strct.end(); ++f)
+void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct) {
+	dumpStruct(strct, false);
+}
+
+void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, bool hasLabel, const Common::UString &label) {
+	_xml->openTag("struct");
+	if (hasLabel)
+		_xml->addProperty("label", label);
+	_xml->addProperty("id", Common::composeString(strct.getID()));
+
+	if (strct.getFieldCount() > 0)
+		_xml->breakLine();
+
+	const std::vector<Common::UString> &fields = strct.getFieldNames();
+
+	for (std::vector<Common::UString>::const_iterator f = fields.begin(); f != fields.end(); ++f)
 		dumpField(strct, *f);
 
 	_xml->closeTag();
@@ -266,6 +281,9 @@ void GFF3Dumper::dumpStruct(const Aurora::GFF3Struct &strct, const Common::UStri
 }
 
 void GFF3Dumper::dumpList(const Aurora::GFF3List &list) {
+	if (!list.empty())
+		_xml->breakLine();
+
 	for (Aurora::GFF3List::const_iterator e = list.begin(); e != list.end(); ++e)
 		dumpStruct(**e);
 }

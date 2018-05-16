@@ -28,13 +28,20 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
-#include "src/common/readstream.h"
+#include "src/common/platform.h"
+#include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 #include "src/common/readfile.h"
 #include "src/common/filepath.h"
 #include "src/common/hash.h"
+#include "src/common/md5.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/erffile.h"
@@ -59,12 +66,14 @@ enum ExtractMode {
 
 const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "s" };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue,
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
-                      Aurora::GameID &game);
+                      Aurora::GameID &game, std::vector<byte> &password);
 
 bool findHashedName(uint64 hash, Common::UString &name);
+
+bool parsePassword(const Common::UString &arg, std::vector<byte> &password);
+bool readNWMMD5   (const Common::UString &arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
 void listFiles(Aurora::ERFFile &erf, Aurora::GameID game);
@@ -73,17 +82,24 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
                   std::set<Common::UString> &files, ExtractMode mode);
 
 int main(int argc, char **argv) {
-	Aurora::GameID game = Aurora::kGameIDUnknown;
-
-	int returnValue;
-	Command command;
-	Common::UString archive;
-	std::set<Common::UString> files;
-	if (!parseCommandLine(argc, argv, returnValue, command, archive, files, game))
-		return returnValue;
+	initPlatform();
 
 	try {
-		Aurora::ERFFile erf(new Common::ReadFile(archive));
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Aurora::GameID game = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		Common::UString archive;
+		std::set<Common::UString> files;
+		std::vector<byte> password;
+
+		if (!parseCommandLine(args, returnValue, command, archive, files, game, password))
+			return returnValue;
+
+		Aurora::ERFFile erf(new Common::ReadFile(archive), password);
 
 		if      (command == kCommandInfo)
 			displayInfo(erf);
@@ -96,120 +112,109 @@ int main(int argc, char **argv) {
 		else if (command == kCommandExtractSub)
 			extractFiles(erf, game, files, kExtractModeSubstitute);
 
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue,
-                      Command &command, Common::UString &archive, std::set<Common::UString> &files,
-                      Aurora::GameID &game) {
+bool parsePassword(const Common::UString &arg, std::vector<byte> &password) {
+	const size_t length = arg.size();
 
-	archive.clear();
-	files.clear();
+	password.clear();
+	password.reserve(length / 2);
 
-	// No command, just display the help
-	if (argc == 1) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+	size_t i = 0;
+	byte c = 0x00;
+	for (Common::UString::iterator s = arg.begin(); s != arg.end(); ++s, i++) {
+		byte d = 0;
 
-		return false;
+		if      (*s >= '0' && *s <= '9')
+			d = *s - '0';
+		else if (*s >= 'a' && *s <= 'f')
+			d = *s - 'a' + 10;
+		else if (*s >= 'A' && *s <= 'F')
+			d = *s - 'A' + 10;
+		else
+			throw Common::Exception("0x%08X is not a valid hex digit", (uint) *s);
+
+		if ((i % 2) == 1) {
+			c |= d;
+
+			password.push_back(c);
+
+			c = 0x00;
+		} else
+			c |= d << 4;
 	}
-
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (!strcmp(argv[i], "--nwn2")) {
-				isOption = true;
-				game     = Aurora::kGameIDNWN2;
-			} else if (!strcmp(argv[i], "--jade")) {
-				isOption = true;
-			  game     = Aurora::kGameIDJade;
-			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		args.push_back(argv[i]);
-	}
-
-	if (args.size() < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	std::vector<Common::UString>::iterator arg = args.begin();
-
-	// Find out what we should do
-	command = kCommandNone;
-	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(arg->c_str(), kCommandChar[i]))
-			command = (Command) i;
-
-	// Unknown command
-	if (command == kCommandNone) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	++arg;
-	archive = *arg;
-	++arg;
-
-	files.insert(arg, args.end());
-
 	return true;
 }
 
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <archive> [<file> [...]]\n\n", name);
-	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
-	std::fprintf(stream, "Commands:\n");
-	std::fprintf(stream, "  i          Display meta-information\n");
-	std::fprintf(stream, "  l          List archive\n");
-	std::fprintf(stream, "  v          List archive verbosely (show directory names)\n");
-	std::fprintf(stream, "  e          Extract files to current directory\n");
-	std::fprintf(stream, "  s          Extract files to current directory with full name\n");
+bool readNWMMD5(const Common::UString &arg, std::vector<byte> &password) {
+	Common::ReadFile keyFile(arg);
+
+	Common::hashMD5(keyFile, password);
+	return true;
+}
+
+namespace Common {
+namespace CLI {
+template<>
+int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, int) {
+	_val = kCommandNone;
+	for (int j = 0; j < kCommandMAX; j++) {
+		if (!strcmp(args[i].c_str(), kCommandChar[j])) {
+			_val = (Command) j;
+			return 0;
+		}
+	}
+	return -1;
+}
+}
+}
+
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &archive, std::set<Common::UString> &files,
+                      Aurora::GameID &game, std::vector<byte> &password) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::Callback;
+	using Common::CLI::ValGetter;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
+	using Aurora::GameID;
+
+	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
+	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
+	NoOption filesOpt(true, new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
+	Parser parser(argv[0], "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor",
+	              "Commands:\n"
+	              "  i          Display meta-information\n"
+	              "  l          List archive\n"
+	              "  v          List archive verbosely (show directory names)\n"
+	              "  e          Extract files to current directory\n"
+	              "  s          Extract files to current directory with full name",
+	              returnValue,
+	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
+
+	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("jade", "Alias file types according to Jade Empire rules",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	parser.addOption("pass", "Decryption password, if required, in hex notation",
+	                 kContinueParsing,
+	                 new Callback<std::vector<byte> &>("hex", parsePassword, password));
+	parser.addOption("nwn",
+	                 "Neverwinter Nights premium module file(for decrypting their HAK file)",
+	                 kContinueParsing,
+	                 new Callback<std::vector<byte> &>("file", readNWMMD5, password));
+
+	return parser.process(argv);
 }
 
 bool findHashedName(uint64 hash, Common::UString &name) {
@@ -228,6 +233,7 @@ void displayInfo(Aurora::ERFFile &erf) {
 	std::printf("Build Year: %d\n", erf.getBuildYear());
 	std::printf("Build Day: %d\n", erf.getBuildDay());
 	std::printf("Number of files: %u\n", (uint)erf.getResources().size());
+
 
 	const Aurora::LocString &description = erf.getDescription();
 	if (description.getString().empty() && (description.getID() == Aurora::kStrRefInvalid))
@@ -273,7 +279,7 @@ struct FileEntry {
 	Common::UString file;
 	uint32 size;
 
-	FileEntry(const Common::UString &f = "", uint32 s = -1) : file(f), size(s) { }
+	FileEntry(const Common::UString &f = "", uint32 s = 0xFFFFFFFF) : file(f), size(s) { }
 };
 
 void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
@@ -343,9 +349,8 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
-		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = erf.getResource(r->index);
+			Common::ScopedPtr<Common::SeekableReadStream> stream(erf.getResource(r->index));
 
 			dumpStream(*stream, fileName);
 
@@ -353,8 +358,6 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 		} catch (Common::Exception &e) {
 			Common::printException(e, "");
 		}
-
-		delete stream;
 	}
 
 }

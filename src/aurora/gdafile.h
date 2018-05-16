@@ -28,7 +28,10 @@
 #include <vector>
 #include <map>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/ustring.h"
+#include "src/common/ptrvector.h"
 
 #include "src/aurora/types.h"
 
@@ -39,10 +42,27 @@ namespace Common {
 
 namespace Aurora {
 
-/** Class to hold the GFF'd two-dimensional array of a GDA file. */
-class GDAFile {
+/** Class to hold the GFF'd two-dimensional array of a GDA file.
+ *
+ *  GDAs works very similar to 2DA files (see TwoDAFile in 2dafile.h).
+ *  But instead of keeping the data inside a simple ASCII or binary
+ *  format, GDAs store their table data inside a V4.0 GFF.
+ *
+ *  Moreover, GDAs do not contain column headers as strings. Instead,
+ *  they only store the CRC32 hash of the lower-case string encoded
+ *  in UTF-16LE. As such, it is not possible to directly list the
+ *  column names of a GDA without prior knowledge.
+ *
+ *  Several GDAs with the same column layout can also be combined into
+ *  an MGDA, creating a merged, combined table. This is commonly used
+ *  by the Dragon Age games. Within these MGDAs, rows are not anymore
+ *  identified by raw row index (since this index is now meaningless),
+ *  but by an "ID" column.
+ */
+class GDAFile : boost::noncopyable {
 public:
 	static const size_t kInvalidColumn = SIZE_MAX;
+	static const size_t kInvalidRow    = SIZE_MAX;
 
 	enum Type {
 		kTypeEmpty    = -1,
@@ -64,8 +84,20 @@ public:
 	typedef std::vector<Header> Headers;
 
 
-	GDAFile(Common::SeekableReadStream &gda);
+	/** Take over this stream and read a GDA file out of it. */
+	GDAFile(Common::SeekableReadStream *gda);
 	~GDAFile();
+
+	/** Add another GDA with the same column structure to the bottom of this GDA.
+	 *
+	 *  This effectively pastes the GDAs together, creating one combined table.
+	 *  Note that the row numbers will be continuous and therefore will be
+	 *  different depending on the order of the pasting, making them useless
+	 *  for row identification. An ID column should be used for this case.
+	 *
+	 *  The ownership stream will be transferred to this GDAFile object.
+	 */
+	void add(Common::SeekableReadStream *gda);
 
 	/** Return the number of columns in the array. */
 	size_t getColumnCount() const;
@@ -80,6 +112,9 @@ public:
 
 	/** Get a row as a GFF4 struct. */
 	const GFF4Struct *getRow(size_t row) const;
+
+	/** Find a row by its ID value. */
+	size_t findRow(uint32 id) const;
 
 	/** Find a column by its name. */
 	size_t findColumn(const Common::UString &name) const;
@@ -98,23 +133,34 @@ public:
 
 
 private:
+	typedef Common::PtrVector<GFF4File> GFF4s;
+	typedef const GFF4List * Columns;
+	typedef const GFF4List * Row;
+	typedef std::vector<Row> Rows;
+	typedef std::vector<size_t> RowStarts;
+
 	typedef std::map<uint32, size_t> ColumnHashMap;
 	typedef std::map<Common::UString, size_t> ColumnNameMap;
 
 
-	GFF4File *_gff4;
+	GFF4s _gff4s;
 
 	Headers _headers;
 
-	const GFF4List *_columns;
-	const GFF4List *_rows;
+	Columns _columns;
+	Rows    _rows;
+
+	size_t _rowCount;
+
+	RowStarts _rowStarts;
 
 	mutable ColumnHashMap _columnHashMap;
 	mutable ColumnNameMap _columnNameMap;
 
 
-	void load(Common::SeekableReadStream &gda);
-	void clear();
+	void load(Common::SeekableReadStream *gda);
+
+	Type identifyType(const Columns &columns, const Row &rows, size_t column) const;
 
 	const GFF4Struct *getRowColumn(size_t row, uint32 hash, size_t &column) const;
 	const GFF4Struct *getRowColumn(size_t row, const Common::UString &name, size_t &column) const;

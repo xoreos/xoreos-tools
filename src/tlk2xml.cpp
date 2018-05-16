@@ -25,158 +25,151 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readfile.h"
+#include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
+#include "src/common/cli.h"
+
+#include "src/aurora/types.h"
+#include "src/aurora/language.h"
 
 #include "src/xml/tlkdumper.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding);
+#include "src/util.h"
 
-void dumpTLK(const Common::UString &file, Common::Encoding encoding);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, Aurora::GameID &game);
+
+void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding);
 
 int main(int argc, char **argv) {
-	Common::Encoding encoding = Common::kEncodingInvalid;
-
-	int returnValue;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file, encoding))
-		return returnValue;
+	initPlatform();
 
 	try {
-		dumpTLK(file, encoding);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Common::Encoding encoding = Common::kEncodingInvalid;
+		Aurora::GameID   game     = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Common::UString inFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game))
+			return returnValue;
+
+		LangMan.declareLanguages(game);
+
+		dumpTLK(inFile, outFile, encoding);
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file,
-                      Common::Encoding &encoding) {
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile,
+                      Common::Encoding &encoding, Aurora::GameID &game) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
+	using Common::Encoding;
+	using Aurora::GameID;
 
-	file.clear();
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
+	Parser parser(argv[0], "BioWare TLK to XML converter",
+	              "If no output file is given, the output is written to stdout.\n\n"
+	              "There is no way to autodetect the encoding of strings in TLK files,\n"
+	              "so an encoding must be specified. Alternatively, the game this TLK\n"
+	              "is from can be given, and an appropriate encoding according to that\n"
+	              "game and the language ID found in the TLK is used.\n",
+	              returnValue,
+	              makeEndArgs(&inFileOpt, &outFileOpt));
 
-	if (argc < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
 
-		return false;
-	}
+	parser.addOption("cp1250", "Read TLK strings as Windows CP-1250", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1250, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("cp1251", "Read TLK strings as Windows CP-1251", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1251, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("cp1252", "Read TLK strings as Windows CP-1252", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1252, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("cp932", "Read TLK strings as Windows CP-932", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP932, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("cp936", "Read TLK strings as Windows CP-936", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP936, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("cp949", "Read TLK strings as Windows CP-949", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP949, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("cp950", "Read TLK strings as Windows CP-950", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP950, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("utf8", "Read TLK strings as UTF-8", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF8, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("utf16le", "Read TLK strings as little-endian UTF-16", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16LE, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addOption("utf16be", "Read TLK strings as big-endian UTF-16", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16BE, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
+	parser.addSpace();
+	parser.addOption("nwn", "Use Neverwinter Nights encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
+	parser.addOption("nwn2", "Use Neverwinter Nights 2 encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("kotor", "Use Knights of the Old Republic encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDKotOR, game)));
+	parser.addOption("kotor2", "Use Knights of the Old Republic II encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDKotOR2, game)));
+	parser.addOption("jade", "Use Jade Empire encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	parser.addOption("witcher", "Use The Witcher encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDWitcher, game)));
+	parser.addOption("dragonage", "Use Dragon Age encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDDragonAge, game)));
+	parser.addOption("dragonage2", "Use Dragon Age II encodings", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
+	                 new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
 
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (!strcmp(argv[i], "--cp1250")) {
-				isOption = true;
-				encoding = Common::kEncodingCP1250;
-			} else if (!strcmp(argv[i], "--cp1252")) {
-				isOption = true;
-				encoding = Common::kEncodingCP1252;
-			} else if (!strcmp(argv[i], "--cp932")) {
-				isOption = true;
-				encoding = Common::kEncodingCP932;
-			} else if (!strcmp(argv[i], "--cp936")) {
-				isOption = true;
-				encoding = Common::kEncodingCP949;
-			} else if (!strcmp(argv[i], "--cp949")) {
-				isOption = true;
-				encoding = Common::kEncodingCP949;
-			} else if (!strcmp(argv[i], "--cp950")) {
-				isOption = true;
-				encoding = Common::kEncodingCP950;
-			} else if (!strcmp(argv[i], "--utf8")) {
-				isOption = true;
-				encoding = Common::kEncodingUTF8;
-			} else if (!strcmp(argv[i], "--utf16le")) {
-				isOption = true;
-				encoding = Common::kEncodingUTF16LE;
-			} else if (!strcmp(argv[i], "--utf16be")) {
-				isOption = true;
-				encoding = Common::kEncodingUTF16BE;
-			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// We already have a file => error
-		if (!file.empty()) {
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
-		}
-
-		// This is a file to use
-		file = argv[i];
-	}
-
-	// No file? Error.
-	if (file.empty()) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	return true;
+	return parser.process(argv);
 }
 
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "BioWare TLK to XML converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "          --cp1250            Read TLK strings as Windows CP-1250\n");
-	std::fprintf(stream, "          --cp1252            Read TLK strings as Windows CP-1252\n");
-	std::fprintf(stream, "          --cp932             Read TLK strings as Windows CP-932\n");
-	std::fprintf(stream, "          --cp936             Read TLK strings as Windows CP-936\n");
-	std::fprintf(stream, "          --cp949             Read TLK strings as Windows CP-949\n");
-	std::fprintf(stream, "          --cp950             Read TLK strings as Windows CP-950\n");
-	std::fprintf(stream, "          --utf8              Read TLK strings as UTF-8\n");
-	std::fprintf(stream, "          --utf16le           Read TLK strings as little-endian UTF-16\n");
-	std::fprintf(stream, "          --utf16be           Read TLK strings as big-endian UTF-16\n");
-}
+void dumpTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding) {
+	Common::ScopedPtr<Common::SeekableReadStream> tlk(new Common::ReadFile(inFile));
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
-void dumpTLK(const Common::UString &file, Common::Encoding encoding) {
-	Common::ReadFile tlk(file);
+	XML::TLKDumper::dump(*out, tlk.release(), encoding);
 
-	XML::TLKDumper dumper;
-	Common::StdOutStream xml;
+	out->flush();
 
-	dumper.dump(xml, tlk, encoding);
+	if (!outFile.empty())
+		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
 }

@@ -18,10 +18,33 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Largely based on the stream implementation found in ScummVM.
-
 /** @file
  *  Basic writing stream interfaces.
+ */
+
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #ifndef COMMON_WRITESTREAM_H
@@ -148,13 +171,31 @@ public:
 		writeUint64BE((uint64)convertIEEEDouble(value));
 	}
 
-	/** Copy n bytes of the given stream into the stream. */
+	/** Copy n bytes of the given stream into the stream.
+	 *
+	 *  Even if less bytes than requested could be written to the
+	 *  stream, all requested bytes will always be read from the
+	 *  input stream.
+	 *
+	 *  @param  stream The stream to read from.
+	 *  @param  n The number of bytes to read from the stream.
+	 *  @return the number of bytes which were actually written.
+	 */
 	size_t writeStream(ReadStream &stream, size_t n);
 
-	/** Copy the complete contents of the given stream. */
+	/** Copy the complete contents of the given stream.
+	 *
+	 *  Even if less bytes than are available in the input stream
+	 *  can be written to this stream, the input stream will always
+	 *  be exhausted to completion.
+	 *
+	 *  @param  stream The stream to read from.
+	 *  @return the number of bytes which were actually written.
+	 */
 	size_t writeStream(ReadStream &stream);
 
-	/** Write the given string to the stream. No terminating zero byte is written. */
+	/** Write the given string to the stream, encoded as UTF-8.
+	 *  No terminating zero byte is written. */
 	void writeString(const UString &str);
 };
 

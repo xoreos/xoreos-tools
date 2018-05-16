@@ -26,9 +26,10 @@
 #define COMMON_HASH_H
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/encoding.h"
-#include "src/common/readstream.h"
+#include "src/common/memreadstream.h"
 
 namespace Common {
 
@@ -36,8 +37,8 @@ namespace Common {
 enum HashAlgo {
 	kHashNone  = -1, ///< No hashing at all.
 	kHashDJB2  =  0, ///< djb2 hash function by Daniel J. Bernstein.
-	kHashFNV32 =  1, ///< 32bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo.
-	kHashFNV64 =  2, ///< 64bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo.
+	kHashFNV32 =  1, ///< 32bit Fowler-Noll-Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo.
+	kHashFNV64 =  2, ///< 64bit Fowler-Noll-Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo.
 	kHashCRC32 =  3, ///< 32bit CRC.
 	kHashMAX         ///< For range checks.
 };
@@ -59,20 +60,19 @@ static inline uint32 hashStringDJB2(const UString &string) {
 static inline uint32 hashStringDJB2(const UString &string, Encoding encoding) {
 	uint32 hash = 5381;
 
-	SeekableReadStream *data = convertString(string, encoding);
-	if (data) {
-		uint32 c;
-		while ((c = data->readChar()) != ReadStream::kEOF)
-			hash = hashDJB2(hash, c);
+	ScopedPtr<SeekableReadStream> data(convertString(string, encoding, false));
+	if (!data)
+		return hash;
 
-		delete data;
-	}
+	uint32 c;
+	while ((c = data->readChar()) != ReadStream::kEOF)
+		hash = hashDJB2(hash, c);
 
 	return hash;
 }
 // '--- djb2 hash function by Daniel J. Bernstein ---'
 
-// .--- 32bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---.
+// .--- 32bit Fowler-Noll-Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---.
 static inline uint32 hashFNV32(uint32 hash, uint32 c) {
 	return (hash * 16777619) ^ c;
 }
@@ -89,20 +89,19 @@ static inline uint32 hashStringFNV32(const UString &string) {
 static inline uint32 hashStringFNV32(const UString &string, Encoding encoding) {
 	uint32 hash = 0x811C9DC5;
 
-	SeekableReadStream *data = convertString(string, encoding);
-	if (data) {
-		uint32 c;
-		while ((c = data->readChar()) != ReadStream::kEOF)
-			hash = hashFNV32(hash, c);
+	ScopedPtr<SeekableReadStream> data(convertString(string, encoding, false));
+	if (!data)
+		return hash;
 
-		delete data;
-	}
+	uint32 c;
+	while ((c = data->readChar()) != ReadStream::kEOF)
+		hash = hashFNV32(hash, c);
 
 	return hash;
 }
-// '--- 32bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---'
+// '--- 32bit Fowler-Noll-Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---'
 
-// .--- 64bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---.
+// .--- 64bit Fowler-Noll-Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---.
 static inline uint64 hashFNV64(uint64 hash, uint32 c) {
 	return (hash * 1099511628211LL) ^ c;
 }
@@ -116,21 +115,20 @@ static inline uint64 hashStringFNV64(const UString &string) {
 	return hash;
 }
 
-static inline uint32 hashStringFNV64(const UString &string, Encoding encoding) {
+static inline uint64 hashStringFNV64(const UString &string, Encoding encoding) {
 	uint64 hash = 0xCBF29CE484222325LL;
 
-	SeekableReadStream *data = convertString(string, encoding);
-	if (data) {
-		uint32 c;
-		while ((c = data->readChar()) != ReadStream::kEOF)
-			hash = hashFNV64(hash, c);
+	ScopedPtr<SeekableReadStream> data(convertString(string, encoding, false));
+	if (!data)
+		return hash;
 
-		delete data;
-	}
+	uint32 c;
+	while ((c = data->readChar()) != ReadStream::kEOF)
+		hash = hashFNV64(hash, c);
 
 	return hash;
 }
-// '--- 64bit Fowler–Noll–Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---'
+// '--- 64bit Fowler-Noll-Vo hash by Glenn Fowler, Landon Curt Noll and Phong Vo ---'
 
 /* .--- CRC32, based on the implementation by Gary S. Brown ---.
  *
@@ -204,14 +202,13 @@ static inline uint32 hashStringCRC32(const UString &string) {
 static inline uint32 hashStringCRC32(const UString &string, Encoding encoding) {
 	uint32 hash = 0xFFFFFFFF;
 
-	SeekableReadStream *data = convertString(string, encoding);
-	if (data) {
-		uint32 c;
-		while ((c = data->readChar()) != ReadStream::kEOF)
-			hash = hashCRC32(hash, c);
+	ScopedPtr<SeekableReadStream> data(convertString(string, encoding, false));
+	if (!data)
+		return hash;
 
-		delete data;
-	}
+	uint32 c;
+	while ((c = data->readChar()) != ReadStream::kEOF)
+		hash = hashCRC32(hash, c);
 
 	return hash ^ 0xFFFFFFFF;
 }

@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -43,7 +44,9 @@ namespace Aurora {
 /** A class encapsulating Nintendo DS ROM access. */
 class NDSFile : public Archive {
 public:
+	/** Over this file in the filesystem and read a NDS file out of it. */
 	NDSFile(const Common::UString &fileName);
+	/** Take over this stream and read a NDS file out of it. */
 	NDSFile(Common::SeekableReadStream *nds);
 	~NDSFile();
 
@@ -79,7 +82,7 @@ private:
 
 	typedef std::vector<IResource> IResourceList;
 
-	Common::SeekableReadStream *_nds;
+	Common::ScopedPtr<Common::SeekableReadStream> _nds;
 
 	Common::UString _title;
 	Common::UString _code;

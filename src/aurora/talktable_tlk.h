@@ -28,24 +28,62 @@
 #include <vector>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/talktable.h"
 
+namespace Common {
+	class WriteStream;
+}
+
 namespace Aurora {
 
-/** Loading BioWare's TLK talk tables. */
-class TalkTable_TLK : public AuroraBase, public TalkTable {
+/** Loading BioWare's TLK talk tables.
+ *
+ *  See class TalkTable for a general overview how talk tables work.
+ *
+ *  Unlike TalkTable_GFF, a TLK talk table is its own simple binary
+ *  format. It has a numerical, game-local ID of the language it
+ *  contains, and stores a few more optional data points per string,
+ *  like a reference to a voice-over file.
+ *
+ *  There are two versions of TLK files known and supported
+ *  - V3.0, used by Neverwinter Nights, Neverwinter Nights 2, Knight of
+ *    the Old Republic, Knight of the Old Republic II and The Witcher
+ *  - V4.0, used by Jade Empire
+ */
+class TalkTable_TLK : public AuroraFile, public TalkTable {
 public:
-	TalkTable_TLK(Common::SeekableReadStream &tlk, Common::Encoding encoding);
+	TalkTable_TLK(Common::Encoding encoding, uint32 languageID);
+	/** Take over this stream and read a TLK out of it. */
+	TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_TLK();
 
 	/** Return the language ID (ungendered) of the talk table. */
 	uint32 getLanguageID() const;
 
+	/** Set the language ID (ungendered) of the talk table. */
+	void setLanguageID(uint32 id);
+
 	const std::list<uint32> &getStrRefs() const;
 	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
+
+	/** Return all values associated to a string references in a TLK talk table. */
+	bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+	              uint32 &soundID) const;
+
+	/** Modify or add an entry to the talk table. */
+	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+	              uint32 soundID);
+
+	/** Write this TLK as a version V3.0 TLK into that stream. */
+	void write30(Common::WriteStream &out) const;
+	/** Write this TLK as a version V4.0 TLK into that stream. */
+	void write40(Common::WriteStream &out) const;
 
 	static uint32 getLanguageID(Common::SeekableReadStream &tlk);
 	static uint32 getLanguageID(const Common::UString &file);
@@ -74,14 +112,15 @@ private:
 
 		// V4
 		uint32 soundID;
+
+		Entry();
 	};
 
 	typedef std::vector<Entry> Entries;
 
 
-	Common::SeekableReadStream *_tlk;
+	Common::ScopedPtr<Common::SeekableReadStream> _tlk;
 
-	uint32 _stringsOffset;
 	uint32 _languageID;
 
 	std::list<uint32> _strRefs;
@@ -90,10 +129,12 @@ private:
 
 	void load();
 
-	void readEntryTableV3();
+	void readEntryTableV3(uint32 stringsOffset);
 	void readEntryTableV4();
 
 	Common::UString readString(const Entry &entry) const;
+
+	Common::SeekableReadStream *collectEntries(Entries &entries) const;
 };
 
 } // End of namespace Aurora

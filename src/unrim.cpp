@@ -25,10 +25,15 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/rimfile.h"
@@ -44,23 +49,28 @@ enum Command {
 
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue,
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &file, Aurora::GameID &game);
 
 void listFiles(Aurora::RIMFile &rim, Aurora::GameID game);
 void extractFiles(Aurora::RIMFile &rim, Aurora::GameID);
 
 int main(int argc, char **argv) {
-	Aurora::GameID game = Aurora::kGameIDUnknown;
-
-	int returnValue;
-	Command command;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, command, file, game))
-		return returnValue;
+	initPlatform();
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Aurora::GameID game = Aurora::kGameIDUnknown;
+
+		int returnValue = 1;
+		Command command = kCommandNone;
+		Common::UString file;
+
+		if (!parseCommandLine(args, returnValue, command, file, game))
+			return returnValue;
+
 		Aurora::RIMFile rim(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
@@ -68,82 +78,57 @@ int main(int argc, char **argv) {
 		else if (command == kCommandExtract)
 			extractFiles(rim, game);
 
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue,
-                      Command &command, Common::UString &file, Aurora::GameID &game) {
-
-	file.clear();
-
-	// No command, just display the help
-	if (argc == 1) {
-		printUsage(stdout, argv[0]);
-		returnValue = 0;
-
-		return false;
-	}
-
-	// Parse options
-	int n;
-	for (n = 1; (n < argc) && (argv[n][0] == '-'); n++) {
-		if        (!strcmp(argv[n], "--nwn2")) {
-			game = Aurora::kGameIDNWN2;
-		} else if (!strcmp(argv[n], "--jade")) {
-			game = Aurora::kGameIDJade;
-		} else {
-			// Unknown option
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
+namespace Common {
+namespace CLI {
+template<>
+int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, int) {
+	_val = kCommandNone;
+	for (int j = 0; j < kCommandMAX; j++) {
+		if (!strcmp(args[i].c_str(), kCommandChar[j])) {
+			_val = (Command) j;
+			return 0;
 		}
 	}
-
-	// Wrong number of arguments, display the help
-	if ((n + 2) != argc) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	// Find out what we should do
-	command = kCommandNone;
-	for (int i = 0; i < kCommandMAX; i++)
-		if (!strcmp(argv[n], kCommandChar[i]))
-			command = (Command) i;
-
-	// Unknown command
-	if (command == kCommandNone) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	// This is the file to use
-	file = argv[n + 1];
-
-	return true;
+	return -1;
+}
+}
 }
 
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "BioWare RIM archive extractor\n\n");
-	std::fprintf(stream, "Usage: %s [<options>] <command> <file>\n\n", name);
-	std::fprintf(stream, "Options:\n");
-	std::fprintf(stream, "  --nwn2     Alias file types according to Neverwinter Nights 2 rules\n");
-	std::fprintf(stream, "  --jade     Alias file types according to Jade Empire rules\n\n");
-	std::fprintf(stream, "Commands:\n");
-	std::fprintf(stream, "  l          List archive\n");
-	std::fprintf(stream, "  e          Extract files to current directory\n");
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Command &command, Common::UString &file, Aurora::GameID &game) {
+
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
+
+	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
+	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
+	Parser parser(argv[0], "BioWare RIM archive extractor",
+	              "Commands:\n"
+	              "  l          List archive\n"
+	              "  e          Extract files to current directory\n",
+	              returnValue,
+	              makeEndArgs(&cmdOpt, &fileOpt));
+
+	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));
+	parser.addOption("jade", "Alias file types according to Jade Empire rules",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
+
+	return parser.process(argv);
 }
 
 void listFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
@@ -176,9 +161,8 @@ void extractFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
-		Common::SeekableReadStream *stream = 0;
 		try {
-			stream = rim.getResource(r->index);
+			Common::ScopedPtr<Common::SeekableReadStream> stream(rim.getResource(r->index));
 
 			dumpStream(*stream, fileName);
 
@@ -186,8 +170,6 @@ void extractFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
 		} catch (Common::Exception &e) {
 			Common::printException(e, "");
 		}
-
-		delete stream;
 	}
 
 }

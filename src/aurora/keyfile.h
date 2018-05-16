@@ -27,6 +27,8 @@
 
 #include <vector>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/ustring.h"
 
@@ -39,8 +41,29 @@ namespace Common {
 
 namespace Aurora {
 
-/** Class to hold resource index information of a key file. */
-class KEYFile : public AuroraBase {
+/** Class to hold resource index information of a KEY file.
+ *
+ *  A KEY file is one part of the KEY/BIF resource archive system.
+ *  The KEY file contains the resource names and types, and the BIF
+ *  file contains the actual resource data. So KEY files only contain
+ *  the resource meta-data.
+ *
+ *  A KEY file can index resources of several BIF files and several
+ *  BIF files can in turn index different resources of the same BIF
+ *  file.
+ *
+ *  See also class BIFFile in biffile.h.
+ *
+ *  There are two versions of KEY files known and supported
+ *  - V1, used by Neverwinter Nights, Neverwinter Nights 2, Knight of
+ *    the Old Republic, Knight of the Old Republic II and Jade Empire
+ *  - V1.1, used by The Witcher
+ *
+ *  Please note that KEY (and BIF) files found in Infinity Engine
+ *  games (Baldur's Gate et al) are not supported at all, even though
+ *  they claim to be V1.
+ */
+class KEYFile : boost::noncopyable, public AuroraFile {
 public:
 	/** A key resource index. */
 	struct Resource {

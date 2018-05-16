@@ -1,0 +1,225 @@
+.Dd July 23, 2015
+.Dt XML2TLK 1
+.Os
+.Sh NAME
+.Nm xml2tlk
+.Nd XML to BioWare TLK converter
+.Sh SYNOPSIS
+.Nm xml2tlk
+.Op Ar options
+.Op Ar input_file
+.Ar output_file
+.Sh DESCRIPTION
+.Nm
+converts XML files created by the
+.Xr tlk2xml 1
+tool back into the BioWare TLK format.
+For a more in-depth description of TLK files,
+please see the man page for the
+.Xr tlk2xml 1
+tool.
+Also note that currently, only the non-GFF versions, V3.0 and V4.0,
+can be created by xml2tlk.
+.Pp
+The format of the input XML is pretty simple and straight-forward.
+.Bd -literal
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<tlk language="0">
+  <string id="1">Continue</string>
+  <string id="2" sound="hello">Well hello there!</string>
+  <string id="3" sound="bye" soundlength="0.5">Bye!</string>
+  <string id="4" soundid="23">Who are you?</string>
+</tlk>
+.Ed
+.Pp
+The root element is
+.Dq tlk ,
+and it can have an optional language property.
+That language ID can also be given on the command line,
+and it then overrides the one in the input XML.
+When creating a,
+versions V3.0 and V4.0 need a language ID, while versions V0.2
+and V0.5 ignore the language ID.
+.Pp
+Each child tag of the root element has to be a
+.Dq string
+element, and each
+.Dq string
+element requires an
+.Dq id
+property.
+The ID is the string reference (StrRef) for the text line,
+and the contents of the
+.Dq string
+element is the text itself.
+The whole file has to be UTF-8 encoded.
+.Pp
+Version V3.0 allows the following extra properties on a
+.Dq string :
+.Dq sound
+(a resource reference of a voice-over for this line, \(<=\ 16
+characters),
+.Dq soundlength
+(a floating point number denoting the length of the sound file in seconds),
+.Dq volumevariance
+(unused by the games) and
+.Dq pitchvariance
+(unused by the games).
+.Pp
+Version V4.0 allows the extra property
+.Dq soundid
+on a
+.Dq string ,
+which is a numerical references to a voice-over line.
+.Pp
+Versions V0.2 and V0.5 do not allow any extra properties.
+.Pp
+Because TLK files contain localized string data, it is important
+to know the encoding of those strings.
+Unfortunately, the TLK files do not contain information about the encoding.
+Version 3.0 and 4.0 contain a language identifier,
+but the meaning of that varies between games.
+V0.2 and V0.5 even lack those completely.
+However, due to the Huffman-nature of V0.5 strings, the encoding
+there is fixed to little-endian UTF-16, and strings in V0.2 files
+are also usually in little-endian UTF-16 (with the exceptions of
+files found in the Nintendo DS game
+.Em Sonic Chronicles: The Dark Brotherhood ) .
+To manually select the encoding, this tool provides a wide range
+command line options for various encodings.
+.Pp
+Alternatively, the game this TLK is from can be specified and
+.Nm
+will write the strings in an appropriate encoding for that
+game and the language ID.
+Please note that this does not work for the game
+.Em Sonic Chronicles: The Dark Brotherhood ,
+since its TLK files do not provide a language ID.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl 3
+.It Fl Fl version30
+Write a V3.0 TLK file.
+.It Fl 4
+.It Fl Fl version40
+Write a V4.0 TLK file.
+.It Fl l Ar id
+.It Fl Fl language Ar id
+Override the TLK language ID.
+.It Fl Fl cp1250
+Write strings as Windows CP-1250.
+.Pp
+Eastern European, Latin alphabet.
+.It Fl Fl cp1251
+Write strings as Windows CP-1251.
+.Pp
+Eastern European, Cyrillic alphabet.
+.It Fl Fl cp1252
+Write strings as Windows CP-1252.
+.Pp
+Western European, Latin alphabet.
+.It Fl Fl cp932
+Write strings as Windows CP-932.
+.Pp
+Japanese, extended Shift-JIS.
+.It Fl Fl cp936
+Write strings as Windows CP-936.
+.Pp
+Simplified Chinese, extended GB2312 with GBK codepoints.
+.It Fl Fl cp949
+Write strings as Windows CP-949.
+.Pp
+Korean, similar to EUC-KR.
+.It Fl Fl cp950
+Write strings as Windows CP-950.
+.Pp
+Traditional Chinese, similar to Big5.
+.It Fl Fl utf8
+Write strings as UTF-8.
+.It Fl Fl utf16le
+Write strings as little-endian UTF-16.
+.It Fl Fl utf16be
+Write strings as big-endian UTF-16.
+.It Fl Fl nwn
+Write strings in an encoding appropriate for
+.Em Neverwinter Nights .
+.It Fl Fl nwn2
+Write strings in an encoding appropriate for
+.Em Neverwinter Nights 2 .
+.It Fl Fl kotor
+Write strings in an encoding appropriate for
+.Em Knights of the Old Republic .
+.It Fl Fl kotor2
+Write strings in an encoding appropriate for
+.Em Knights of the Old Republic II .
+.It Fl Fl jade
+Write strings in an encoding appropriate for
+.Em Jade Empire .
+.It Fl Fl witcher
+Write strings in an encoding appropriate for
+.Em The Witcher .
+.It Fl Fl dragonage
+Write strings in an encoding appropriate for
+.Em Dragon Age: Origins .
+.It Fl Fl dragonage2
+Write strings in an encoding appropriate for
+.Em Dragon Age II .
+.El
+.Bl -tag -width xxxx -compact
+.It Ar input_file
+The XML file to convert.
+If no input file is specified, the XML data is read from
+.Dv stdin .
+The encoding of the XML stream must always be UTF-8.
+.It Ar output_file
+The TLK file will be written there.
+.El
+.Sh EXAMPLES
+Convert
+.Pa file1.xml
+into a V3.0 CP-1252 TLK file:
+.Pp
+.Dl $ xml2tlk --version30 --cp1252 file1.xml file2.tlk
+.Pp
+Convert
+.Pa file1.xml
+into a V4.0 UTF-8 TLK file and override the language ID:
+.Pp
+.Dl $ xml2tlk --version40 --utf8 --language 1 file1.xml file2.tlk
+.Pp
+Convert
+.Pa file1.xml
+into a V3.0 TLK file from Neverwinter Nights:
+.Pp
+.Dl $ xml2tlk --version30 --nwn file1.xml file2.tlk
+.Pp
+Convert the UTF-8 TLK
+.Pa file1.tlk
+into an XML file on
+.Dv stdout
+with
+.Xr tlk2xml 1 ,
+modify it using
+.Xr sed 1
+and write the result back into a TLK:
+.Bd -literal -offset xxxxxx
+$ tlk2xml --utf8 file1.tlk | sed -e 's/gold/candy/g' | xml2tlk \e
+  --utf8 --version30 file2.tlk
+.Ed
+.Sh SEE ALSO
+.Xr tlk2xml 1 ,
+.Xr xml2ssf 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

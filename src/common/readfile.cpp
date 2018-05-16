@@ -22,9 +22,12 @@
  *  Implementing the stream reading interfaces for files.
  */
 
+#include <cassert>
+
 #include "src/common/readfile.h"
 #include "src/common/error.h"
 #include "src/common/ustring.h"
+#include "src/common/platform.h"
 
 namespace Common {
 
@@ -59,14 +62,14 @@ bool ReadFile::open(const UString &fileName) {
 	close();
 
 	long fileSize = -1;
-	if (!(_handle  = std::fopen(fileName.c_str(), "rb")) ||
+	if (!(_handle  = Platform::openFile(fileName, Platform::kFileModeRead)) ||
 	    ((fileSize = getInitialSize(_handle)) < 0)) {
 
 		close();
 		return false;
 	}
 
-	if ((int64)fileSize > (int64)0x7FFFFFFF) {
+	if ((uint64)((unsigned long)fileSize) > (uint64)0x7FFFFFFFULL) {
 		warning("ReadFile \"%s\" is too big", fileName.c_str());
 
 		close();
@@ -132,7 +135,14 @@ size_t ReadFile::read(void *dataPtr, size_t dataSize) {
 	if (!_handle)
 		return 0;
 
+	assert(dataPtr);
 	return std::fread(dataPtr, 1, dataSize, _handle);
+}
+
+MemoryReadStream *ReadFile::readIntoMemory(const UString &fileName) {
+	ReadFile file(fileName);
+
+	return file.readStream(file.size());
 }
 
 } // End of namespace Common

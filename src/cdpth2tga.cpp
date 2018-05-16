@@ -25,11 +25,15 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/version/version.h"
+
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -37,91 +41,51 @@
 
 #include "src/images/cdpth.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &cdpthFile,
-                      Common::UString &twoDAFile, Common::UString &outFile);
+#include "src/util.h"
+
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &cdpthFile, Common::UString &twoDAFile,
+                      Common::UString &outFile);
 
 void convert(const Common::UString &cdpthFile, const Common::UString &twoDAFile,
              const Common::UString &outFile);
 
 int main(int argc, char **argv) {
-	int returnValue;
-	Common::UString cdpthFile, twoDAFile, outFile;
-	if (!parseCommandLine(argc, argv, returnValue, cdpthFile, twoDAFile, outFile))
-		return returnValue;
+	initPlatform();
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString cdpthFile, twoDAFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, cdpthFile, twoDAFile, outFile))
+			return returnValue;
+
 		convert(cdpthFile, twoDAFile, outFile);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &cdpthFile,
-                      Common::UString &twoDAFile, Common::UString &outFile) {
-	if (argc < 4) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &cdpthFile, Common::UString &twoDAFile,
+                      Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	std::vector<Common::CLI::Getter *> getters;
+	NoOption cdpthFileOpt(false, new ValGetter<Common::UString &>(cdpthFile, "cdpth"));
+	NoOption twoDAFileOpt(false, new ValGetter<Common::UString &>(twoDAFile, "2da"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
+	Parser parser(argv[0], "CDPTH depth image to TGA converter", "", returnValue,
+	              makeEndArgs(&cdpthFileOpt, &twoDAFileOpt, &outFileOpt));
 
-		return false;
-	}
-
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
-	}
-
-	if (args.size() != 3) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	cdpthFile = args[0];
-	twoDAFile = args[1];
-	outFile   = args[2];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "CDPTH depth image to TGA converter\n");
-	std::fprintf(stream, "       %s <cdpth file> <2da file> <out file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
+	return parser.process(argv);
 }
 
 static void getDimensions(const Common::UString &twoDAFile, uint32 &width, uint32 &height) {

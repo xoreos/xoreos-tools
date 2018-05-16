@@ -1,0 +1,65 @@
+.Dd July 23, 2015
+.Dt UNNSBTX 1
+.Os
+.Sh NAME
+.Nm unnsbtx
+.Nd Nintendo NSBTX texture extractor
+.Sh SYNOPSIS
+.Nm unnsbtx
+.Op Ar options
+.Ar command file
+.Sh DESCRIPTION
+.Nm
+treats Nintendo NSBTX texture as archives and converts the multiple
+images stored within into TGA files.
+The image pixel data and the palettes are automatically combined,
+provided they are named similarly.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.Fl Fl version
+Show version information and exit.
+.El
+.Bl -tag -width xx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm l
+List images inside this NSBTX texture
+.It Cm e
+Extract images as TGA files
+.El
+.It Ar file
+The NSBTX texture to read.
+.El
+.Sh LIMITATIONS
+The palette of an image has to be named similarly to the pixel data.
+Specifically, the palette has to be either named the same, or
+suffixed by
+.Dq _pl ,
+.Dq _p
+or
+.Dq _ .
+If this not the case, and a palette for an image can't be found,
+.Nm
+throws an error.
+.Sh EXAMPLES
+List all images contained in the texture
+.Pa texture.nsbtx :
+.Pp
+.Dl $ unnsbtx l texture.nsbtx
+.Pp
+Extract all images contained in the texture
+.Pa texture.nsbtx :
+.Pp
+.Dl $ unnsbtx e texture.nsbtx
+.Sh SEE ALSO
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

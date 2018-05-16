@@ -1,0 +1,121 @@
+.Dd July 23, 2015
+.Dt UNKEYBIF 1
+.Os
+.Sh NAME
+.Nm unkeybif
+.Nd BioWare KEY/BIF archive extractor
+.Sh SYNOPSIS
+.Nm unkeybif
+.Op Ar options
+.Ar command
+.Ar
+.Sh DESCRIPTION
+.Nm
+extracts BioWare KEY/BIF archives, found in many BioWare games.
+.Pp
+KEY and BIF files are fundamentally linked: a KEY file contains file
+names and types, while the BIF file contains the file data itself.
+At the same time, a KEY file can control several BIF files.
+.Pp
+For example:
+.Pp
+.Pa foo.key
+controls:
+.Bl -bullet -compact
+.It
+.Pa foo1.bif
+.It
+.Pa foo2.bif
+.It
+.Pa foo3.bif
+.El
+.Pp
+.Pa foo.key
+indexes:
+.Bl -bullet -compact
+.It
+.Pa bar.are
+and
+.Pa bar.git
+from
+.Pa foo1.bif
+.It
+.Pa qux.utc
+from
+.Pa foo2.bif
+.It
+.Pa baz.txt
+from
+.Pa foo3.bif
+.El
+.Pp
+If you want to extract all files indexed by
+.Pa foo.key ,
+you need to also specify
+.Pa foo1.bif , foo2.bif
+and
+.Pa foo3.bif
+on the command.
+If
+.Pa foo3.bif
+is missing,
+.Pa baz.txt
+will not be extracted.
+However, listing file only requires the KEY.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl Fl nwn2
+Alias file types according to
+.Em Neverwinter Nights 2
+rules.
+.Pp
+.Em Neverwinter Nights 2
+reuses a few file extension IDs differently than other BioWare games.
+.It Fl Fl jade
+Alias file types according to
+.Em Jade Empire
+rules.
+.Pp
+.Em Jade Empire
+reuses a few file extension IDs differently than other BioWare games.
+.El
+.Bl -tag -width xx -compact
+.It Ar command
+.Bl -tag -width xx -compact
+.It Cm l
+List archive contents
+.It Cm e
+Extract files to current directory
+.El
+.It Ar file
+A KEY or a BIF file to read.
+Multiple KEY and BIF files can be specified; they'll be considered a unit.
+.El
+.Sh EXAMPLES
+List all files indexed by the KEY file
+.Pa chitin.key :
+.Pp
+.Dl $ unkeybif l chitin.key
+.Pp
+Extract all files contained in
+.Pa data1.bif
+and
+.Pa data2.bif ,
+that are indexed by
+.Pa chitin.key :
+.Pp
+.Dl $ unkeybif e chitin.key data1.bif data2.bif
+.Sh SEE ALSO
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

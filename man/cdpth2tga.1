@@ -1,0 +1,67 @@
+.Dd July 23, 2015
+.Dt CDPTH2TGA 1
+.Os
+.Sh NAME
+.Nm cdpth2tga
+.Nd CDPTH depth image to TGA converter
+.Sh SYNOPSIS
+.Nm cdpth2tga
+.Op Ar options
+.Ar cdpth 2da tga
+.Sh DESCRIPTION
+.Nm
+converts CDPTH depth information files into common TGA images.
+CDPTH, Compressed DePTH, are used as depth information for area
+background images in BioWare's Nintendo DS game
+.Em Sonic Chronicles: The Dark Brotherhood .
+.Pp
+Layout-wise, a CDPTH is stored similar to CBGT:
+cells of 64\(mu64 pixels, compressed using Nintendo's 0x10 LZSS algorithm.
+Unlike CBGT, though, the cells themselves are
+.Em not
+swizzled into 8\(mu8
+tiles, and the pixel value in CDPTH is a 16bit integer specifying
+a depth.
+.Pp
+The width and height of the final image is not stored within the
+CDPTH file, and has to be provided from the outside, like from
+the dimensions of the CBGT image, the dimensions of the 2DA file
+for the CBGT image.
+.Pp
+The depth information is stored as 16-bit values, but only the
+lower 15 bits are used.
+For conversion into a grayscale image, those 15 bits of grayscale
+information are further compressed to 8-bit.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.El
+.Bl -tag -width xx -compact
+.It Ar cdpth
+The name of the CDPTH file to read.
+The CDPTH contains the depth information part of the image.
+.It Ar 2da
+The name of the 2DA file to use.
+The 2DA is necessary to know how many cells are in the CDPTH file.
+.It Ar tga
+The resulting TGA file will be written there.
+.El
+.Sh EXAMPLE
+Convert a CDPTH+2DA into a TGA:
+.Pp
+.Dl $ cdpth2tga a.cdpth a.2da result.tga
+.Sh SEE ALSO
+.Xr cbgt2tga 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

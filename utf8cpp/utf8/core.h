@@ -34,13 +34,6 @@ DEALINGS IN THE SOFTWARE.
 
 namespace utf8
 {
-    // The typedefs for 8-bit, 16-bit and 32-bit unsigned integers
-    // You may need to change them to match your system.
-    // These typedefs have the same names as ones from cstdint, or boost/cstdint
-    // [MODIFIED FOR XOREOS]
-    typedef uint8  uint8_t;
-    typedef uint16 uint16_t;
-    typedef uint32 uint32_t;
 
 // Helper code - not intended to be directly called by the library users. May be changed at any time
 namespace internal
@@ -119,15 +112,15 @@ namespace internal
     inline bool is_overlong_sequence(uint32_t cp, octet_difference_type length)
     {
         if (cp < 0x80) {
-            if (length != 1)
+            if (length != 1) 
                 return true;
         }
         else if (cp < 0x800) {
-            if (length != 2)
+            if (length != 2) 
                 return true;
         }
         else if (cp < 0x10000) {
-            if (length != 3)
+            if (length != 3) 
                 return true;
         }
 
@@ -145,11 +138,11 @@ namespace internal
 
         if (!utf8::internal::is_trail(*it))
             return INCOMPLETE_SEQUENCE;
-
+        
         return UTF8_OK;
     }
 
-    #define UTF8_CPP_INCREASE_AND_RETURN_ON_ERROR(IT, END) {utf_error ret = increase_safely(IT, END); if (ret != UTF8_OK) return ret;}
+    #define UTF8_CPP_INCREASE_AND_RETURN_ON_ERROR(IT, END) {utf_error ret = increase_safely(IT, END); if (ret != UTF8_OK) return ret;}    
 
     /// get_sequence_x functions decode utf-8 sequences of the length x
     template <typename octet_iterator>
@@ -166,9 +159,9 @@ namespace internal
     template <typename octet_iterator>
     utf_error get_sequence_2(octet_iterator& it, octet_iterator end, uint32_t& code_point)
     {
-        if (it == end)
+        if (it == end) 
             return NOT_ENOUGH_ROOM;
-
+        
         code_point = utf8::internal::mask8(*it);
 
         UTF8_CPP_INCREASE_AND_RETURN_ON_ERROR(it, end)
@@ -183,7 +176,7 @@ namespace internal
     {
         if (it == end)
             return NOT_ENOUGH_ROOM;
-
+            
         code_point = utf8::internal::mask8(*it);
 
         UTF8_CPP_INCREASE_AND_RETURN_ON_ERROR(it, end)
@@ -237,7 +230,7 @@ namespace internal
         // Get trail octets and calculate the code point
         utf_error err = UTF8_OK;
         switch (length) {
-            case 0:
+            case 0: 
                 return INVALID_LEAD;
             case 1:
                 err = utf8::internal::get_sequence_1(it, end, cp);
@@ -265,7 +258,7 @@ namespace internal
                 else
                     err = OVERLONG_SEQUENCE;
             }
-            else
+            else 
                 err = INVALID_CODE_POINT;
         }
 
@@ -314,8 +307,8 @@ namespace internal
             ((it != end) && (utf8::internal::mask8(*it))   == bom[2])
            );
     }
-
-    //Deprecated in release 2.3
+	
+    //Deprecated in release 2.3 
     template <typename octet_iterator>
     inline bool is_bom (octet_iterator it)
     {
@@ -328,3 +321,5 @@ namespace internal
 } // namespace utf8
 
 #endif // header guard
+
+

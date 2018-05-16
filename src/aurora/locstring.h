@@ -54,6 +54,12 @@ public:
 
 	void clear();
 
+	/** Is this localized string empty, without any strings whatsoever? */
+	bool empty() const;
+
+	/** Swap the contents of the LocString with this LocString's. */
+	void swap(LocString &str);
+
 	/** Return the string ID / StrRef. */
 	uint32 getID() const;
 	/** Set the string ID / StrRef. */
@@ -94,7 +100,7 @@ public:
 private:
 	typedef std::map<uint32, Common::UString> StringMap;
 
-	uint32 _id; ///< The string's ID / StrRef. */
+	uint32 _id; ///< The string's ID / StrRef.
 
 	StringMap _strings;
 

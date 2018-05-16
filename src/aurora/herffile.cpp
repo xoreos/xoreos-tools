@@ -39,16 +39,10 @@ namespace Aurora {
 HERFFile::HERFFile(Common::SeekableReadStream *herf) : _herf(herf), _dictOffset(0xFFFFFFFF), _dictSize(0) {
 	assert(_herf);
 
-	try {
-		load(*_herf);
-	} catch (...) {
-		delete _herf;
-		throw;
-	}
+	load(*_herf);
 }
 
 HERFFile::~HERFFile() {
-	delete _herf;
 }
 
 void HERFFile::load(Common::SeekableReadStream &herf) {
@@ -139,6 +133,11 @@ void HERFFile::readResList(Common::SeekableReadStream &herf) {
 			res->name = Common::FilePath::getStem(name->second);
 			res->type = TypeMan.getFileType(name->second);
 		}
+
+		if ((iRes->offset == _dictOffset) && (iRes->size == _dictSize)) {
+			res->name = "erf";
+			res->type = kFileTypeDICT;
+		}
 	}
 }
 
@@ -148,7 +147,7 @@ const Archive::ResourceList &HERFFile::getResources() const {
 
 const HERFFile::IResource &HERFFile::getIResource(uint32 index) const {
 	if (index >= _iResources.size())
-		throw Common::Exception("Resource index out of range (%d/%d)", index, _iResources.size());
+		throw Common::Exception("Resource index out of range (%u/%u)", index, (uint)_iResources.size());
 
 	return _iResources[index];
 }
@@ -161,7 +160,7 @@ Common::SeekableReadStream *HERFFile::getResource(uint32 index, bool tryNoCopy) 
 	const IResource &res = getIResource(index);
 
 	if (tryNoCopy)
-		return new Common::SeekableSubReadStream(_herf, res.offset, res.offset + res.size);
+		return new Common::SeekableSubReadStream(_herf.get(), res.offset, res.offset + res.size);
 
 	_herf->seek(res.offset);
 

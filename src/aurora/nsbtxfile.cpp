@@ -31,6 +31,23 @@
  * (<http://llref.emutalk.net/docs/?file=xml/btx0.xml>) and the
  * Nintendo DS technical information GBATEK by Martin Korth
  * (<http://problemkaputt.de/gbatek.htm>).
+ *
+ * The original copyright note in Tinke reads as follows:
+ *
+ * Copyright (C) 2011  pleoNeX
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <cassert>
@@ -57,28 +74,22 @@ namespace Aurora {
 
 NSBTXFile::ReadContext::ReadContext(Common::SeekableSubReadStreamEndian &n, const Texture &t,
                                     Common::WriteStream &s) :
-	texture(&t), palette(0), nsbtx(&n), stream(&s) {
+	texture(&t), nsbtx(&n), stream(&s) {
 }
 
 NSBTXFile::ReadContext::~ReadContext() {
-	delete[] palette;
 }
 
 
-NSBTXFile::NSBTXFile(Common::SeekableReadStream *nsbtx) : _nsbtx(0) {
+NSBTXFile::NSBTXFile(Common::SeekableReadStream *nsbtx) {
 	assert(nsbtx);
 
-	try {
-		_nsbtx = open(nsbtx);
-		load(*_nsbtx);
-	} catch (...) {
-		delete _nsbtx;
-		throw;
-	}
+	_nsbtx.reset(open(nsbtx));
+
+	load(*_nsbtx);
 }
 
 NSBTXFile::~NSBTXFile() {
-	delete _nsbtx;
 }
 
 const Archive::ResourceList &NSBTXFile::getResources() const {
@@ -91,7 +102,7 @@ uint32 NSBTXFile::getITEXSize(const Texture &texture) {
 
 uint32 NSBTXFile::getResourceSize(uint32 index) const {
 	if (index >= _textures.size())
-		throw Common::Exception("Texture index out of range (%d/%d)", index, _textures.size());
+		throw Common::Exception("Texture index out of range (%u/%u)", index, (uint)_textures.size());
 
 	return getITEXSize(_textures[index]);
 }
@@ -261,25 +272,22 @@ void NSBTXFile::getPalette(ReadContext &ctx) const {
 	if (!palette)
 		throw Common::Exception("Couldn't find a palette for texture \"%s\"", ctx.texture->name.c_str());
 
-	byte *palData = new byte[size];
+	Common::ScopedArray<byte> palData(new byte[size]);
+	memset(palData.get(), 0, size);
 
-	try {
-		ctx.nsbtx->seek(palette->offset);
+	ctx.nsbtx->seek(palette->offset);
 
-		for (uint16 i = 0; i < size; i += 3) {
-			const uint16 pixel = ctx.nsbtx->readUint16();
+	const uint16 palDataSize = MIN<size_t>(size, ((ctx.nsbtx->size() - ctx.nsbtx->pos()) / 2) * 3);
 
-			palData[i + 0] = ( pixel        & 0x1F) << 3;
-			palData[i + 1] = ((pixel >>  5) & 0x1F) << 3;
-			palData[i + 2] = ((pixel >> 10) & 0x1F) << 3;
-		}
+	for (uint16 i = 0; i < palDataSize; i += 3) {
+		const uint16 pixel = ctx.nsbtx->readUint16();
 
-	} catch (...) {
-		delete palData;
-		throw;
+		palData[i + 0] = ( pixel        & 0x1F) << 3;
+		palData[i + 1] = ((pixel >>  5) & 0x1F) << 3;
+		palData[i + 2] = ((pixel >> 10) & 0x1F) << 3;
 	}
 
-	ctx.palette = palData;
+	ctx.palette.reset(palData.release());
 }
 
 void NSBTXFile::getTexture(const ReadContext &ctx) {
@@ -318,22 +326,17 @@ void NSBTXFile::getTexture(const ReadContext &ctx) {
 
 Common::SeekableReadStream *NSBTXFile::getResource(uint32 index, bool UNUSED(tryNoCopy)) const {
 	if (index >= _textures.size())
-		throw Common::Exception("Texture index out of range (%d/%d)", index, _textures.size());
+		throw Common::Exception("Texture index out of range (%u/%u)", index, (uint)_textures.size());
 
-	Common::MemoryWriteStreamDynamic stream(false, getITEXSize(_textures[index]));
+	Common::MemoryWriteStreamDynamic stream(true, getITEXSize(_textures[index]));
 
-	try {
-		ReadContext ctx(*_nsbtx, _textures[index], stream);
-		writeITEXHeader(ctx);
+	ReadContext ctx(*_nsbtx, _textures[index], stream);
+	writeITEXHeader(ctx);
 
-		getPalette(ctx);
-		getTexture(ctx);
+	getPalette(ctx);
+	getTexture(ctx);
 
-	} catch (...) {
-		delete[] stream.getData();
-		throw;
-	}
-
+	stream.setDisposable(false);
 	return new Common::MemoryReadStream(stream.getData(), stream.size(), true);
 }
 
@@ -373,7 +376,7 @@ void NSBTXFile::readFileHeader(Common::SeekableSubReadStreamEndian &nsbtx) {
 
 	const uint32 fileSize = nsbtx.readUint32();
 	if (fileSize > (uint32)nsbtx.size())
-		throw Common::Exception("Size too large (%u > %u)", fileSize, nsbtx.size());
+		throw Common::Exception("Size too large (%u > %u)", fileSize, (uint)nsbtx.size());
 
 	const uint16 headerSize = nsbtx.readUint16();
 	if (headerSize != 16)

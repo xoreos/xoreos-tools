@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Loading Nitro CoLouR palette files.
+ *  Loading Nitro CoLoR palette files.
  */
 
 #ifndef IMAGES_NCLR_H

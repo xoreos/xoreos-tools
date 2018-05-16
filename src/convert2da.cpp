@@ -25,163 +25,154 @@
 #include <cstring>
 #include <cstdio>
 
+#include "src/version/version.h"
+
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/readfile.h"
+#include "src/common/writefile.h"
 #include "src/common/stdoutstream.h"
 #include "src/common/encoding.h"
+#include "src/common/platform.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/aurorafile.h"
 #include "src/aurora/2dafile.h"
 #include "src/aurora/gdafile.h"
 
+#include "src/util.h"
+
 enum Format {
 	kFormat2DA,
+	kFormat2DAb,
 	kFormatCSV
 };
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file, Format &format);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      std::vector<Common::UString> &files, Common::UString &outFile, Format &format);
 
-void convert2DA(const Common::UString &file, Format format);
+void write2DA(Aurora::TwoDAFile &twoDA, Format format);
+
+Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream);
+void convert2DA(const Common::UString &file, const Common::UString &outFile, Format format);
+void convert2DA(const std::vector<Common::UString> &files, const Common::UString &outFile, Format format);
 
 int main(int argc, char **argv) {
-	Format format = kFormat2DA;
-
-	int returnValue;
-	Common::UString file;
-	if (!parseCommandLine(argc, argv, returnValue, file, format))
-		return returnValue;
+	initPlatform();
 
 	try {
-		convert2DA(file, format);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		Format format = kFormat2DA;
+
+		int returnValue = 1;
+		std::vector<Common::UString> files;
+		Common::UString outFile;
+
+		if (!parseCommandLine(args, returnValue, files, outFile, format))
+			return returnValue;
+
+		convert2DA(files, outFile, format);
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue, Common::UString &file, Format &format) {
-	file.clear();
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      std::vector<Common::UString> &files, Common::UString &outFile,
+                      Format &format) {
+	using Common::CLI::NoOption;
+	using Common::CLI::kContinueParsing;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::Callback;
+	using Common::CLI::ValAssigner;
+	using Common::CLI::makeEndArgs;
+	using Common::CLI::makeAssigners;
 
-	if (argc < 2) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+	NoOption filesOpt(false, new ValGetter<std::vector<Common::UString> &>(files, "files[...]"));
+	Parser parser(argv[0], "BioWare 2DA/GDA to 2DA/CSV converter\n",
+	              "If several files are given, they must all be GDA and use the same\n"
+	              "column layout. They will be pasted together and printed as one GDA.\n\n"
+	              "If no output file is given, the output is written to stdout.",
+	              returnValue,
+	              makeEndArgs(&filesOpt));
 
-		return false;
-	}
-
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		bool isOption = false;
-
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if        (!strcmp(argv[i], "--2da") || !strcmp(argv[i], "-2")) {
-				isOption = true;
-				format   = kFormat2DA;
-			} else if (!strcmp(argv[i], "--csv") || !strcmp(argv[i], "-c")) {
-				isOption = true;
-				format   = kFormatCSV;
-			} else if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		// Was this a valid option? If so, don't try to use it as a file
-		if (isOption)
-			continue;
-
-		// We already have a file => error
-		if (!file.empty()) {
-			printUsage(stderr, argv[0]);
-			returnValue = -1;
-
-			return false;
-		}
-
-		// This is a file to use
-		file = argv[i];
-	}
-
-	// No file? Error.
-	if (file.empty()) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	return true;
-}
-
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "BioWare 2DA/GDA to 2DA/CSV converter\n\n");
-	std::fprintf(stream, "Usage: %s [options] <file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
-	std::fprintf(stream, "  -2      --2da               Convert to ASCII 2DA\n");
-	std::fprintf(stream, "  -c      --csv               Convert to CSV\n");
+	parser.addOption("output", 'o', "Write the output to this file",
+	                 kContinueParsing,
+	                 new ValGetter<Common::UString &>(outFile, "file"));
+	parser.addOption("2da", "Convert to ASCII 2DA (default)",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Format>(kFormat2DA,
+	                 format)));
+	parser.addOption("2dab", "Convert to binary 2DA", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Format>(kFormat2DAb,
+	                 format)));
+	parser.addOption("cvs", "Convert to CSV", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Format>(kFormatCSV,
+	                 format)));
+	return parser.process(argv);
 }
 
 static const uint32 k2DAID     = MKTAG('2', 'D', 'A', ' ');
 static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
-void convert2DA(const Common::UString &file, Format format) {
-	Common::ReadFile fileStream(file);
+void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
-	uint32 id = Aurora::AuroraBase::readHeaderID(fileStream);
-	fileStream.seek(0);
+	if      (format == kFormat2DA)
+		twoDA.writeASCII(*out);
+	else if (format == kFormat2DAb)
+		twoDA.writeBinary(*out);
+	else
+		twoDA.writeCSV(*out);
 
-	Aurora::TwoDAFile *twoDA = 0;
-	try {
+	out->flush();
+}
 
-		if       ((id == k2DAID) || (id == k2DAIDTab)) {
-			twoDA = new Aurora::TwoDAFile(fileStream);
+Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
+	Common::ScopedPtr<Common::SeekableReadStream> fStream(stream);
 
-		} else if (id == kGFFID) {
-			Aurora::GDAFile gda(fileStream);
-			twoDA = new Aurora::TwoDAFile(gda);
+	const uint32 id = Aurora::AuroraFile::readHeaderID(*fStream);
+	fStream->seek(0);
 
-		} else
-			throw Common::Exception("Not a 2DA or GDA file");
+	if ((id == k2DAID) || (id == k2DAIDTab))
+		return new Aurora::TwoDAFile(*fStream);
 
-		Common::StdOutStream stdOut;
+	if (id == kGFFID) {
+		Aurora::GDAFile gda(fStream.release());
 
-		if (format == kFormat2DA)
-			twoDA->dumpASCII(stdOut);
-		else
-			twoDA->dumpCSV(stdOut);
-
-	} catch (...) {
-		delete twoDA;
-		throw;
+		return new Aurora::TwoDAFile(gda);
 	}
 
-	delete twoDA;
+	throw Common::Exception("Not a 2DA or GDA file");
+}
+
+void convert2DA(const Common::UString &file, const Common::UString &outFile, Format format) {
+	Common::ScopedPtr<Aurora::TwoDAFile> twoDA(get2DAGDA(new Common::ReadFile(file)));
+
+	write2DA(*twoDA, outFile, format);
+}
+
+void convert2DA(const std::vector<Common::UString> &files, const Common::UString &outFile, Format format) {
+	if (files.size() == 1) {
+		convert2DA(files[0], outFile, format);
+		return;
+	}
+
+	Aurora::GDAFile gda(new Common::ReadFile(files[0]));
+
+	for (size_t i = 1; i < files.size(); i++)
+		gda.add(new Common::ReadFile(files[i]));
+
+	Aurora::TwoDAFile twoDA(gda);
+
+	write2DA(twoDA, outFile, format);
 }

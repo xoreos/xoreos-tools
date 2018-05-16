@@ -24,10 +24,22 @@
 
 #include "src/common/error.h"
 #include "src/common/ustring.h"
+#include "src/common/platform.h"
 #include "src/common/readstream.h"
+#include "src/common/readfile.h"
 #include "src/common/writefile.h"
+#include "src/common/stdinstream.h"
+#include "src/common/stdoutstream.h"
 
 #include "src/util.h"
+
+void initPlatform() {
+	try {
+		Common::Platform::init();
+	} catch (...) {
+		Common::exceptionDispatcherError("Failed to initialize the low-level platform-specific subsytem");
+	}
+}
 
 void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName) {
 	Common::WriteFile file;
@@ -38,4 +50,18 @@ void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileN
 	file.flush();
 
 	file.close();
+}
+
+Common::WriteStream *openFileOrStdOut(const Common::UString &file) {
+	if (!file.empty())
+		return new Common::WriteFile(file);
+
+	return new Common::StdOutStream;
+}
+
+Common::ReadStream *openFileOrStdIn(const Common::UString &file) {
+	if (!file.empty())
+		return new Common::ReadFile(file);
+
+	return new Common::StdInStream;
 }

@@ -22,17 +22,20 @@
  *  Implementing the stream writing interfaces for files.
  */
 
+#include <cassert>
+
 #include "src/common/writefile.h"
 #include "src/common/error.h"
 #include "src/common/ustring.h"
+#include "src/common/platform.h"
 #include "src/common/filepath.h"
 
 namespace Common {
 
-WriteFile::WriteFile() : _handle(0) {
+WriteFile::WriteFile() : _handle(0), _size(0) {
 }
 
-WriteFile::WriteFile(const UString &fileName) : _handle(0) {
+WriteFile::WriteFile(const UString &fileName) : _handle(0), _size(0) {
 	if (!open(fileName))
 		throw Exception("Can't open file \"%s\" for writing", fileName.c_str());
 }
@@ -47,10 +50,17 @@ WriteFile::~WriteFile() {
 bool WriteFile::open(const UString &fileName) {
 	close();
 
-	if (fileName.empty())
+	UString path = FilePath::normalize(fileName);
+	if (path.empty())
 		return false;
 
-	if (!(_handle = std::fopen(fileName.c_str(), "wb")))
+	try {
+		FilePath::createDirectories(FilePath::getDirectory(path));
+	} catch (...) {
+		return false;
+	}
+
+	if (!(_handle = Platform::openFile(path, Platform::kFileModeWrite)))
 		return false;
 
 	return true;
@@ -63,6 +73,7 @@ void WriteFile::close() {
 		std::fclose(_handle);
 
 	_handle = 0;
+	_size   = 0;
 }
 
 bool WriteFile::isOpen() const {
@@ -81,7 +92,16 @@ size_t WriteFile::write(const void *dataPtr, size_t dataSize) {
 	if (!_handle)
 		return 0;
 
-	return std::fwrite(dataPtr, 1, dataSize, _handle);
+	assert(dataPtr);
+
+	const size_t written = std::fwrite(dataPtr, 1, dataSize, _handle);
+	_size += written;
+
+	return written;
+}
+
+size_t WriteFile::size() const {
+	return _size;
 }
 
 } // End of namespace Common

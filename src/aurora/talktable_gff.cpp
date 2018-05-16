@@ -26,6 +26,8 @@
  * (<http://social.bioware.com/wiki/datoolset/index.php/TLK>).
  */
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -39,14 +41,16 @@ static const uint32 kVersion05 = MKTAG('V', '0', '.', '5');
 
 namespace Aurora {
 
-TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream &tlk, Common::Encoding encoding) :
-	TalkTable(encoding), _gff(0) {
+TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
+	TalkTable(encoding) {
+
+	if (_encoding == Common::kEncodingInvalid)
+		_encoding = Common::kEncodingUTF16LE;
 
 	load(tlk);
 }
 
 TalkTable_GFF::~TalkTable_GFF() {
-	delete _gff;
 }
 
 const std::list<uint32> &TalkTable_GFF::getStrRefs() const {
@@ -64,9 +68,47 @@ bool TalkTable_GFF::getString(uint32 strRef, Common::UString &string, Common::US
 	return true;
 }
 
-void TalkTable_GFF::load(Common::SeekableReadStream &tlk) {
+bool TalkTable_GFF::getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+                             uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+                             uint32 &soundID) const {
+
+	Entries::const_iterator e = _entries.find(strRef);
+	if (e == _entries.end())
+		return false;
+
+	string      = readString(*e->second);
+	soundResRef = "";
+
+	volumeVariance = 0;
+	pitchVariance  = 0;
+	soundLength    = -1.0f;
+
+	soundID = 0xFFFFFFFF;
+
+	return true;
+}
+
+void TalkTable_GFF::setEntry(uint32 strRef, const Common::UString &string,
+                             const Common::UString &UNUSED(soundResRef),
+                             uint32 UNUSED(volumeVariance), uint32 UNUSED(pitchVariance),
+                             float UNUSED(soundLength), uint32 UNUSED(soundID)) {
+
+	Entries::iterator entry = _entries.find(strRef);
+	if (entry == _entries.end()) {
+		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, new Entry));
+		entry = result.first;
+
+		_strRefs.push_back(strRef);
+	}
+
+	entry->second->text = string;
+}
+
+void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
+	assert(tlk);
+
 	try {
-		_gff = new GFF4File(tlk, kTLKID);
+		_gff.reset(new GFF4File(tlk, kTLKID));
 
 		const GFF4Struct &top = _gff->getTopLevel();
 
@@ -80,8 +122,6 @@ void TalkTable_GFF::load(Common::SeekableReadStream &tlk) {
 		_strRefs.sort();
 
 	} catch (Common::Exception &e) {
-		delete _gff;
-
 		e.add("Unable to load GFF TLK");
 		throw;
 	}
@@ -101,7 +141,12 @@ void TalkTable_GFF::load02(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		_entries[strRef] = new Entry(*s);
+		Common::ScopedPtr<Entry> entry(new Entry(*s));
+
+		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, entry.get()));
+		if (result.second)
+			entry.release();
+
 		_strRefs.push_back(strRef);
 	}
 }
@@ -122,12 +167,20 @@ void TalkTable_GFF::load05(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		_entries[strRef] = new Entry(*s);
+		Common::ScopedPtr<Entry> entry(new Entry(*s));
+
+		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, entry.get()));
+		if (result.second)
+			entry.release();
+
 		_strRefs.push_back(strRef);
 	}
 }
 
 Common::UString TalkTable_GFF::readString(const Entry &entry) const {
+	if (!entry.text.empty())
+		return entry.text;
+
 	if (!entry.strct)
 		return "";
 
@@ -147,13 +200,11 @@ Common::UString TalkTable_GFF::readString02(const Entry &entry) const {
 }
 
 Common::UString TalkTable_GFF::readString05(const Entry &entry) const {
-	Common::SeekableReadStream *huffTree  = _gff->getTopLevel().getData(kGFF4HuffTalkStringHuffTree);
-	Common::SeekableReadStream *bitStream = _gff->getTopLevel().getData(kGFF4HuffTalkStringBitStream);
+	Common::ScopedPtr<Common::SeekableReadStream>
+		huffTree (_gff->getTopLevel().getData(kGFF4HuffTalkStringHuffTree)),
+		bitStream(_gff->getTopLevel().getData(kGFF4HuffTalkStringBitStream));
 
-	Common::UString str = readString05(huffTree, bitStream, entry);
-
-	delete huffTree;
-	delete bitStream;
+	Common::UString str = readString05(huffTree.get(), bitStream.get(), entry);
 
 	return str;
 }
@@ -200,7 +251,7 @@ Common::UString TalkTable_GFF::readString05(Common::SeekableReadStream *huffTree
 
 	} while (utf16Str.back() != 0);
 
-	const byte  *data = (const byte *) &utf16Str[0];
+	const byte  *data = reinterpret_cast<const byte *>(&utf16Str[0]);
 	const size_t size = utf16Str.size() * 2;
 
 	return Common::readString(data, size, Common::kEncodingUTF16LE);

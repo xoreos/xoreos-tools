@@ -25,6 +25,8 @@
 #ifndef IMAGES_TPC_H
 #define IMAGES_TPC_H
 
+#include "src/common/scopedptr.h"
+
 #include "src/images/decoder.h"
 
 namespace Common {
@@ -33,7 +35,12 @@ namespace Common {
 
 namespace Images {
 
-/** BioWare's own texture format, TPC. */
+/** BioWare's own texture format, TPC.
+ *
+ *  This format is used by the two Knights of the Old Republic games.
+ *  In the Xbox versions, these files have a .txb extension, but
+ *  are still this format (not the TXB format used in Jade Empire).
+ */
 class TPC : public Decoder {
 public:
 	TPC(Common::SeekableReadStream &tpc);
@@ -43,7 +50,7 @@ public:
 	Common::SeekableReadStream *getTXI() const;
 
 private:
-	byte  *_txiData;
+	Common::ScopedArray<byte> _txiData;
 	size_t _txiDataSize;
 
 	// Loading helpers
@@ -51,6 +58,9 @@ private:
 	void readHeader(Common::SeekableReadStream &tpc, byte &encoding);
 	void readData(Common::SeekableReadStream &tpc, byte encoding);
 	void readTXIData(Common::SeekableReadStream &tpc);
+
+	bool checkCubeMap(uint32 &width, uint32 &height);
+	void fixupCubeMap();
 
 	static void deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height);
 };

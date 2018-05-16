@@ -18,10 +18,33 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Largely based on the stream implementation found in ScummVM.
-
 /** @file
  *  Basic reading stream interfaces.
+ */
+
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #ifndef COMMON_READSTREAM_H
@@ -29,6 +52,7 @@
 
 #include "src/common/types.h"
 #include "src/common/endianness.h"
+#include "src/common/disposableptr.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
 
@@ -316,9 +340,7 @@ public:
 	size_t read(void *dataPtr, size_t dataSize);
 
 protected:
-	ReadStream *_parentStream;
-
-	bool _disposeParentStream;
+	DisposablePtr<ReadStream> _parentStream;
 
 	size_t _pos;
 	size_t _end;
@@ -368,33 +390,35 @@ public:
 	~SeekableSubReadStreamEndian();
 
 	uint16 readUint16() {
-		uint16 val;
-		read(&val, 2);
-		return (_bigEndian) ? TO_BE_16(val) : TO_LE_16(val);
+		return _bigEndian ? readUint16BE() : readUint16LE();
 	}
 
 	uint32 readUint32() {
-		uint32 val;
-		read(&val, 4);
-		return (_bigEndian) ? TO_BE_32(val) : TO_LE_32(val);
+		return _bigEndian ? readUint32BE() : readUint32LE();
 	}
 
 	uint64 readUint64() {
-		uint64 val;
-		read(&val, 8);
-		return (_bigEndian) ? TO_BE_64(val) : TO_LE_64(val);
+		return _bigEndian ? readUint64BE() : readUint64LE();
 	}
 
-	FORCEINLINE int16 readSint16() {
-		return (int16)readUint16();
+	uint16 readSint16() {
+		return _bigEndian ? readSint16BE() : readSint16LE();
 	}
 
-	FORCEINLINE int32 readSint32() {
-		return (int32)readUint32();
+	uint32 readSint32() {
+		return _bigEndian ? readSint32BE() : readSint32LE();
 	}
 
-	FORCEINLINE int64 readSint64() {
-		return (int64)readUint64();
+	uint64 readSint64() {
+		return _bigEndian ? readSint64BE() : readSint64LE();
+	}
+
+	float readIEEEFloat() {
+		return _bigEndian ? readIEEEFloatBE() : readIEEEFloatLE();
+	}
+
+	double readIEEEDouble() {
+		return _bigEndian ? readIEEEDoubleBE() : readIEEEDoubleLE();
 	}
 };
 

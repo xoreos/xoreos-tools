@@ -62,21 +62,15 @@ void GFF3File::Header::read(Common::SeekableReadStream &gff3) {
 }
 
 
-GFF3File::GFF3File(Common::SeekableReadStream &gff3, uint32 id) : _stream(&gff3) {
+GFF3File::GFF3File(Common::SeekableReadStream *gff3, uint32 id, bool repairNWNPremium) :
+	_stream(gff3), _repairNWNPremium(repairNWNPremium), _offsetCorrection(0) {
+
+	assert(_stream);
+
 	load(id);
 }
 
 GFF3File::~GFF3File() {
-	clear();
-}
-
-void GFF3File::clear() {
-	_stream = 0;
-
-	for (StructArray::iterator strct = _structs.begin(); strct != _structs.end(); ++strct)
-		delete *strct;
-
-	_structs.clear();
 }
 
 uint32 GFF3File::getType() const {
@@ -97,15 +91,48 @@ void GFF3File::load(uint32 id) {
 		loadLists();
 
 	} catch (Common::Exception &e) {
-		clear();
-
 		e.add("Failed reading GFF3 file");
 		throw;
 	}
 }
 
 void GFF3File::loadHeader(uint32 id) {
-	readHeader(*_stream);
+	if (_repairNWNPremium) {
+		/* The GFF3 files in the encrypted premium module archive for Neverwinter
+		 * nights are deliberately broken: the file type and version have been
+		 * removed, and the offsets to the individual sections are increased
+		 * by a certain amount.
+		 *
+		 * This offset difference is calculated from the MD5 checksum of the
+		 * NWM file of the premium module. But since the first offset is a
+		 * known value, we can calculate the difference from there and don't
+		 * need to know the MD5 of the NWM file.
+		 */
+
+		uint32 firstOffset  = _stream->readUint32LE();
+		uint32 maybeVersion = _stream->readUint32BE();
+
+		if ((maybeVersion != kVersion32) && (maybeVersion != kVersion33)) {
+			if ((firstOffset >= 0x30) && (firstOffset <= 0x12F)) {
+				// Yes, this looks like a messed-with GFF3 found in an NWN premium module
+				_version = kVersion32;
+				id = _id = 0xFFFFFFFF;
+
+				_offsetCorrection = firstOffset - 0x30;
+
+			} else
+				// File is broken in a different way. The later checks will throw
+				_repairNWNPremium = false;
+
+		} else
+			// This is not a GFF3 file that needs repairing
+			_repairNWNPremium = false;
+
+		_stream->seek(0);
+	}
+
+	if (!_repairNWNPremium)
+		readHeader(*_stream);
 
 	if ((id != 0xFFFFFFFF) && (_id != id))
 		throw Common::Exception("GFF3 has invalid ID (want %s, got %s)",
@@ -115,6 +142,31 @@ void GFF3File::loadHeader(uint32 id) {
 		throw Common::Exception("Unsupported GFF3 file version %s", Common::debugTag(_version).c_str());
 
 	_header.read(*_stream);
+
+	// Fix offsets in the header, and check for consistency
+
+	if ((_header.structOffset       < _offsetCorrection) ||
+	    (_header.fieldOffset        < _offsetCorrection) ||
+	    (_header.labelOffset        < _offsetCorrection) ||
+	    (_header.fieldDataOffset    < _offsetCorrection) ||
+	    (_header.fieldIndicesOffset < _offsetCorrection) ||
+	    (_header.listIndicesOffset  < _offsetCorrection))
+		throw Common::Exception("GFF3 header broken: section offset smaller than offset correction");
+
+	_header.structOffset       -= _offsetCorrection;
+	_header.fieldOffset        -= _offsetCorrection;
+	_header.labelOffset        -= _offsetCorrection;
+	_header.fieldDataOffset    -= _offsetCorrection;
+	_header.fieldIndicesOffset -= _offsetCorrection;
+	_header.listIndicesOffset  -= _offsetCorrection;
+
+	if ((_header.structOffset       > _stream->size()) ||
+	    (_header.fieldOffset        > _stream->size()) ||
+	    (_header.labelOffset        > _stream->size()) ||
+	    (_header.fieldDataOffset    > _stream->size()) ||
+	    (_header.fieldIndicesOffset > _stream->size()) ||
+	    (_header.listIndicesOffset  > _stream->size()))
+		throw Common::Exception("GFF3 header broken: section offset points outside stream");
 }
 
 void GFF3File::loadStructs() {
@@ -126,6 +178,21 @@ void GFF3File::loadStructs() {
 }
 
 void GFF3File::loadLists() {
+	/* Read in the lists section of the GFF3.
+	 *
+	 * GFF3s store lists in a linear fashion, with the indices prefixes by
+	 * the number of indices to follow. For example, with the indices counts
+	 * highlighted for better readability:
+	 * [3] 0 1 2 [5] 3 4 5 6 7 [1] 8 [2] 9 10
+	 * This specifies 4 lists, with 3, 5, 1 and 2 entries, respectively.
+	 * The first list contains struct indices 0 to 2, the second 3 to 7, the
+	 * third 8 and the fourth 9 and 10.
+	 *
+	 * For easy handling, we convert this list into an array of struct
+	 * pointer arrays, and a small array to convert from an index into this
+	 * list of lists into a list index.
+	 */
+
 	_stream->seek(_header.listIndicesOffset);
 
 	// Read list array
@@ -140,7 +207,7 @@ void GFF3File::loadLists() {
 		uint32 n = rawLists[i];
 
 		if ((i + n) > rawLists.size())
-			throw Common::Exception("GFF3: List indices broken");
+			throw Common::Exception("GFF3: List indices broken during counting");
 
 		i += n;
 		listCount++;
@@ -149,36 +216,49 @@ void GFF3File::loadLists() {
 	_lists.resize(listCount);
 	_listOffsetToIndex.resize(rawLists.size(), 0xFFFFFFFF);
 
-	// Converting the raw list array into real, useable lists
+	// Converting the raw list array into real, usable lists
 	uint32 listIndex = 0;
 	for (size_t i = 0; i < rawLists.size(); listIndex++) {
 		_listOffsetToIndex[i] = listIndex;
 
 		const uint32 n = rawLists[i++];
-		assert((i + n) <= rawLists.size());
+		if ((i + n) > rawLists.size())
+			throw Common::Exception("GFF3: List indices broken during conversion");
 
 		_lists[listIndex].resize(n);
-		for (uint32 j = 0; j < n; j++, i++)
-			_lists[listIndex][j] = _structs[rawLists[i]];
+		for (uint32 j = 0; j < n; j++, i++) {
+			const size_t structIndex = rawLists[i];
+			if (structIndex >= _structs.size())
+				throw Common::Exception("GFF3: List struct index out of range (%u >= %u)",
+				                        (uint) structIndex, (uint) _structs.size());
+
+			_lists[listIndex][j] = _structs[structIndex];
+		}
 	}
 }
 
 // --- Helpers for GFF3Struct ---
 
 const GFF3Struct &GFF3File::getStruct(uint32 i) const {
-	assert(i < _structs.size());
+	if (i >= _structs.size())
+		throw Common::Exception("GFF3: Struct index out of range (%u >= %u)", i, (uint) _structs.size());
 
 	return *_structs[i];
 }
 
 const GFF3List &GFF3File::getList(uint32 i) const {
-	assert(i < _listOffsetToIndex.size());
+	if (i >= _listOffsetToIndex.size())
+		throw Common::Exception("GFF3: List offset index out of range (%u >= %u)",
+		                        i, (uint) _listOffsetToIndex.size());
 
-	i = _listOffsetToIndex[i];
+	const uint32 listIndex = _listOffsetToIndex[i];
 
-	assert(i < _lists.size());
+	if (listIndex == 0xFFFFFFFF)
+		throw Common::Exception("GFF3: Empty list index at %u", i);
 
-	return _lists[i];
+	assert(listIndex < _lists.size());
+
+	return _lists[listIndex];
 }
 
 Common::SeekableReadStream &GFF3File::getStream(uint32 offset) const {
@@ -217,6 +297,10 @@ GFF3Struct::GFF3Struct(const GFF3File &parent, uint32 offset) : _parent(&parent)
 GFF3Struct::~GFF3Struct() {
 }
 
+uint32 GFF3Struct::getID() const {
+	return _id;
+}
+
 // --- Loader ---
 
 void GFF3Struct::load(uint32 offset) {
@@ -252,6 +336,7 @@ void GFF3Struct::readField(Common::SeekableReadStream &data, uint32 index) {
 
 	// And add the field to the map and name list
 	_fields[fieldName] = Field((FieldType) fieldType, fieldData);
+
 	_fieldNames.push_back(fieldName);
 }
 
@@ -297,14 +382,6 @@ Common::SeekableReadStream &GFF3Struct::getData(const Field &field) const {
 
 // --- Field properties ---
 
-GFF3Struct::iterator GFF3Struct::begin() const {
-	return _fieldNames.begin();
-}
-
-GFF3Struct::iterator GFF3Struct::end() const {
-	return _fieldNames.end();
-}
-
 size_t GFF3Struct::getFieldCount() const {
 	return _fields.size();
 }
@@ -313,11 +390,11 @@ bool GFF3Struct::hasField(const Common::UString &field) const {
 	return getField(field) != 0;
 }
 
-uint32 GFF3Struct::getID() const {
-	return _id;
+const std::vector<Common::UString> &GFF3Struct::getFieldNames() const {
+	return _fieldNames;
 }
 
-GFF3Struct::FieldType GFF3Struct::getType(const Common::UString &field) const {
+GFF3Struct::FieldType GFF3Struct::getFieldType(const Common::UString &field) const {
 	const Field *f = getField(field);
 	if (!f)
 		return kFieldTypeNone;
@@ -367,6 +444,8 @@ uint64 GFF3Struct::getUint(const Common::UString &field, uint64 def) const {
 		return (uint64) getData(*f).readUint64LE();
 	if (f->type == kFieldTypeSint64)
 		return ( int64) getData(*f).readUint64LE();
+
+	// StrRef, a numerical reference to a string in a talk table
 	if (f->type == kFieldTypeStrRef) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -402,6 +481,8 @@ int64 GFF3Struct::getSint(const Common::UString &field, int64 def) const {
 		return (int64) getData(*f).readUint64LE();
 	if (f->type == kFieldTypeSint64)
 		return (int64) getData(*f).readUint64LE();
+
+	// StrRef, a numerical reference to a string in a talk table
 	if (f->type == kFieldTypeStrRef) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -439,6 +520,7 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 	if (!f)
 		return def;
 
+	// Direct string
 	if (f->type == kFieldTypeExoString) {
 		Common::SeekableReadStream &data = getData(*f);
 
@@ -446,78 +528,121 @@ Common::UString GFF3Struct::getString(const Common::UString &field,
 		return Common::readStringFixed(data, Common::kEncodingASCII, length);
 	}
 
+	// ResRef, resource reference, a shorter string
 	if (f->type == kFieldTypeResRef) {
+		/* In most games, this field has a limit of 16 characters, because
+		 * resource filenames were limited to 16 characters (without extension)
+		 * inside the archives. In Dragon Age: Origins and Dragon Age II,
+		 * however, this limit has been lifted, and a full 255 characters
+		 * are available in ResRef string fields. */
+
 		Common::SeekableReadStream &data = getData(*f);
 
 		const uint32 length = data.readByte();
 		return Common::readStringFixed(data, Common::kEncodingASCII, length);
 	}
 
+	// LocString, a localized string
+	if (f->type == kFieldTypeLocString) {
+		LocString locString;
+		getLocString(field, locString);
+
+		return locString.getString();
+	}
+
+	// Unsigned integer type, compose a string representation
 	if ((f->type == kFieldTypeByte  ) ||
 	    (f->type == kFieldTypeUint16) ||
 	    (f->type == kFieldTypeUint32) ||
 	    (f->type == kFieldTypeUint64) ||
 	    (f->type == kFieldTypeStrRef)) {
 
-		return Common::UString::format("%lu", getUint(field));
+		return Common::composeString(getUint(field));
 	}
 
+	// Signed integer type, compose a string representation
 	if ((f->type == kFieldTypeChar  ) ||
 	    (f->type == kFieldTypeSint16) ||
 	    (f->type == kFieldTypeSint32) ||
 	    (f->type == kFieldTypeSint64)) {
 
-		return Common::UString::format("%ld", getSint(field));
+		return Common::composeString(getSint(field));
 	}
 
+	// Floating point type, compose a string representation
 	if ((f->type == kFieldTypeFloat) ||
 	    (f->type == kFieldTypeDouble)) {
 
-		return Common::UString::format("%lf", getDouble(field));
+		return Common::composeString(getDouble(field));
 	}
 
+	// Vector, consisting of 3 floats
 	if (f->type == kFieldTypeVector) {
-		float x, y, z;
+		float x = 0.0, y = 0.0, z = 0.0;
 
 		getVector(field, x, y, z);
-		return Common::UString::format("%f/%f/%f", x, y, z);
+		return Common::composeString(x) + "/" +
+		       Common::composeString(y) + "/" +
+		       Common::composeString(z);
 	}
 
+	// Orientation, consisting of 4 floats
 	if (f->type == kFieldTypeOrientation) {
-		float a, b, c, d;
+		float a = 0.0, b = 0.0, c = 0.0, d = 0.0;
 
 		getOrientation(field, a, b, c, d);
-		return Common::UString::format("%f/%f/%f/%f", a, b, c, d);
+		return Common::composeString(a) + "/" +
+		       Common::composeString(b) + "/" +
+		       Common::composeString(c) + "/" +
+		       Common::composeString(d);
 	}
 
 	throw Common::Exception("GFF3: Field is not a string(able) type");
 }
 
-void GFF3Struct::getLocString(const Common::UString &field, LocString &str) const {
+bool GFF3Struct::getLocString(const Common::UString &field, LocString &str) const {
 	const Field *f = getField(field);
-	if (!f)
-		return;
-	if (f->type != kFieldTypeLocString)
-		throw Common::Exception("GFF3: Field is not of a localized string type");
+	if (!f || (f->type != kFieldTypeLocString))
+		return false;
 
-	Common::SeekableReadStream &data = getData(*f);
+	LocString locString;
 
-	const uint32 size = data.readUint32LE();
-	Common::SeekableSubReadStream locStringData(&data, data.pos(), data.pos() + size);
+	try {
 
-	str.readLocString(locStringData);
+		Common::SeekableReadStream &data = getData(*f);
+
+		const uint32 size = data.readUint32LE();
+		Common::SeekableSubReadStream locStringData(&data, data.pos(), data.pos() + size);
+
+		locString.readLocString(locStringData);
+
+	} catch (...) {
+		return false;
+	}
+
+	str.swap(locString);
+	return true;
 }
 
 Common::SeekableReadStream *GFF3Struct::getData(const Common::UString &field) const {
 	const Field *f = getField(field);
 	if (!f)
 		return 0;
-	if (f->type != kFieldTypeVoid)
+	if ((f->type != kFieldTypeVoid) &&
+	    (f->type != kFieldTypeExoString) &&
+	    (f->type != kFieldTypeResRef))
 		throw Common::Exception("GFF3: Field is not a data type");
 
 	Common::SeekableReadStream &data = getData(*f);
 
-	const uint32 size = data.readUint32LE();
+	uint32 size = 0;
+	if      ((f->type == kFieldTypeVoid) || (f->type == kFieldTypeExoString))
+		size = data.readUint32LE();
+	else if ( f->type == kFieldTypeResRef)
+		size = data.readByte();
+	else
+		throw Common::Exception("GFF3: Field is not a data type");
+
 	return data.readStream(size);
 }
 

@@ -30,24 +30,31 @@
 #include <vector>
 
 #include "src/common/encoding.h"
+#include "src/common/encoding_strings.h"
 #include "src/common/error.h"
+#include "src/common/scopedptr.h"
 #include "src/common/singleton.h"
 #include "src/common/ustring.h"
 #include "src/common/memreadstream.h"
+#include "src/common/writestream.h"
 
 namespace Common {
 
-static const char *kEncodingName[kEncodingMAX] = {
-	"ASCII", "UTF-8", "UTF-16LE", "UTF-16BE", "ISO-8859-15", "WINDOWS-1250", "WINDOWS-1252",
-	"CP932", "CP936", "CP949", "CP950"
+static const char * const kEncodingName[kEncodingMAX] = {
+	"ASCII", "UTF-8", "UTF-16LE", "UTF-16BE", "ISO-8859-15", "WINDOWS-1250", "WINDOWS-1251",
+	"WINDOWS-1252", "CP932", "CP936", "CP949", "CP950"
 };
 
 static const size_t kEncodingGrowthFrom[kEncodingMAX] = {
-	1, 1, 2, 2, 4, 4, 4, 4, 4, 4, 4
+	1, 1, 2, 2, 4, 4, 4, 4, 4, 4, 4, 4
 };
 
 static const size_t kEncodingGrowthTo  [kEncodingMAX] = {
-	1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1
+	1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
+};
+
+static const size_t kTerminatorLength  [kEncodingMAX] = {
+	1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
 /** A manager handling string encoding conversions. */
@@ -77,78 +84,95 @@ public:
 		}
 	}
 
+	bool hasSupportTranscode(Encoding from, Encoding to) {
+		if ((((size_t) from) >= kEncodingMAX) ||
+		    (((size_t) to  ) >= kEncodingMAX))
+			return false;
+
+		if (from == kEncodingUTF8)
+			return _contextTo[to] != ((iconv_t) -1);
+
+		if (to == kEncodingUTF8)
+			return _contextFrom[from] != ((iconv_t) -1);
+
+		return false;
+	}
+
 	UString convert(Encoding encoding, byte *data, size_t n) {
 		if (((size_t) encoding) >= kEncodingMAX)
 			throw Exception("Invalid encoding %d", encoding);
 
-		return convert(_contextFrom[encoding], data, n, kEncodingGrowthFrom[encoding]);
+		return convert(_contextFrom[encoding], data, n, kEncodingGrowthFrom[encoding], 1);
 	}
 
-	SeekableReadStream *convert(Encoding encoding, const UString &str) {
+	MemoryReadStream *convert(Encoding encoding, const UString &str, bool terminate = true) {
 		if (((size_t) encoding) >= kEncodingMAX)
 			throw Exception("Invalid encoding %d", encoding);
 
-		return convert(_contextTo[encoding], str, kEncodingGrowthTo[encoding]);
+		return convert(_contextTo[encoding], str, kEncodingGrowthTo[encoding],
+		               terminate ? kTerminatorLength[encoding] : 0);
 	}
 
 private:
 	iconv_t _contextFrom[kEncodingMAX];
 	iconv_t _contextTo  [kEncodingMAX];
 
-	const byte *convert(iconv_t &ctx, byte *data, size_t nIn, size_t nOut, size_t &size) {
+	byte *doConvert(iconv_t &ctx, byte *data, size_t nIn, size_t nOut, size_t &size) {
 		size_t inBytes  = nIn;
 		size_t outBytes = nOut;
 
-		byte *convData = new byte[outBytes + 1];
+		ScopedArray<byte> convData(new byte[outBytes]);
 
-		byte *outBuf = convData;
+		byte *outBuf = convData.get();
 
 		// Reset the converter's state
 		iconv(ctx, 0, 0, 0, 0);
 
 		// Convert
-		if (iconv(ctx, (ICONV_CONST char **) &data, &inBytes, (char **) &outBuf, &outBytes) == ((size_t) -1)) {
-			warning("iconv() failed: %s", strerror(errno));
-			delete[] convData;
+		if (iconv(ctx, const_cast<ICONV_CONST char **>(reinterpret_cast<char **>(&data)), &inBytes,
+		          reinterpret_cast<char **>(&outBuf), &outBytes) == ((size_t) -1)) {
 
+			warning("iconv() failed: %s", strerror(errno));
 			return 0;
 		}
 
-		size = nOut - outBytes + 1;
-		convData[size - 1] = '\0';
+		size = nOut - outBytes;
 
-		return convData;
+		return convData.release();
 	}
 
-	UString convert(iconv_t &ctx, byte *data, size_t n, size_t growth) {
+	UString convert(iconv_t &ctx, byte *data, size_t n, size_t growth, size_t termSize) {
 		if (ctx == ((iconv_t) -1))
 			return "[!!!]";
 
 		size_t size;
-		const byte *dataOut = convert(ctx, data, n, n * growth, size);
+		ScopedArray<byte> dataOut(doConvert(ctx, data, n, n * growth + termSize, size));
 		if (!dataOut)
 			return "[!?!]";
 
-		UString str((const char *) dataOut);
-		delete[] dataOut;
+		while (termSize-- > 0)
+			dataOut[size++] = '\0';
 
-		return str;
+		return UString(reinterpret_cast<const char *>(dataOut.get()));
 	}
 
-	SeekableReadStream *convert(iconv_t &ctx, const UString &str, size_t growth) {
+	MemoryReadStream *convert(iconv_t &ctx, const UString &str, size_t growth, size_t termSize) {
 		if (ctx == ((iconv_t) -1))
 			return 0;
 
-		byte  *dataIn = const_cast<byte *>((const byte *) str.c_str());
-		size_t nIn    = strlen(str.c_str());
-		size_t nOut   = nIn * growth;
+		byte  *dataIn = const_cast<byte *>(reinterpret_cast<const byte *>(str.c_str()));
+		size_t nIn    = std::strlen(str.c_str());
+		size_t nOut   = nIn * growth + termSize;
 
 		size_t size;
-		const byte *dataOut = convert(ctx, dataIn, nIn, nOut, size);
+		ScopedArray<byte> dataOut(doConvert(ctx, dataIn, nIn, nOut, size));
 		if (!dataOut)
 			return 0;
 
-		return new MemoryReadStream(dataOut, size - 1, true);
+		while (termSize-- > 0)
+			dataOut[size++] = '\0';
+
+		return new MemoryReadStream(dataOut.release(), size, true);
 	}
 };
 
@@ -160,6 +184,18 @@ DECLARE_SINGLETON(Common::ConversionManager)
 
 namespace Common {
 
+UString getEncodingName(Encoding encoding) {
+	if (((size_t) encoding) >= kEncodingMAX)
+		return "Invalid";
+
+	return kEncodingName[encoding];
+}
+
+bool hasSupportEncoding(Encoding encoding) {
+	return ConvMan.hasSupportTranscode(Common::kEncodingUTF8, encoding             ) &&
+	       ConvMan.hasSupportTranscode(encoding             , Common::kEncodingUTF8);
+}
+
 static uint32 readFakeChar(SeekableReadStream &stream, Encoding encoding) {
 	byte data[2];
 
@@ -168,6 +204,7 @@ static uint32 readFakeChar(SeekableReadStream &stream, Encoding encoding) {
 		case kEncodingLatin9:
 		case kEncodingUTF8:
 		case kEncodingCP1250:
+		case kEncodingCP1251:
 		case kEncodingCP1252:
 		case kEncodingCP932:
 		case kEncodingCP936:
@@ -205,6 +242,7 @@ static void writeFakeChar(std::vector<byte> &output, uint32 c, Encoding encoding
 		case kEncodingLatin9:
 		case kEncodingUTF8:
 		case kEncodingCP1250:
+		case kEncodingCP1251:
 		case kEncodingCP1252:
 		case kEncodingCP932:
 		case kEncodingCP936:
@@ -235,10 +273,10 @@ static UString createString(std::vector<byte> &output, Encoding encoding) {
 		case kEncodingASCII:
 		case kEncodingUTF8:
 			output.push_back('\0');
-			return UString((const char *) &output[0]);
+			return UString(reinterpret_cast<const char *>(&output[0]));
 
 		default:
-			return ConvMan.convert(encoding, (byte *) &output[0], output.size());
+			return ConvMan.convert(encoding, &output[0], output.size());
 	}
 
 	return "";
@@ -255,6 +293,9 @@ UString readString(SeekableReadStream &stream, Encoding encoding) {
 }
 
 UString readStringFixed(SeekableReadStream &stream, Encoding encoding, size_t length) {
+	if (length == 0)
+		return "";
+
 	std::vector<byte> output;
 	output.resize(length);
 
@@ -282,19 +323,42 @@ UString readStringLine(SeekableReadStream &stream, Encoding encoding) {
 }
 
 UString readString(const byte *data, size_t size, Encoding encoding) {
+	if (size == 0)
+		return "";
+
 	std::vector<byte> output;
 	output.resize(size);
 
-	memcpy(&output[0], data, size);
+	std::memcpy(&output[0], data, size);
 
 	return createString(output, encoding);
 }
 
-SeekableReadStream *convertString(const UString &str, Encoding encoding) {
-	if (encoding == kEncodingUTF8)
-		return new MemoryReadStream((const byte *) str.c_str(), strlen(str.c_str()));
+size_t writeString(WriteStream &stream, const Common::UString &str, Encoding encoding, bool terminate) {
+	ScopedPtr<MemoryReadStream> data(convertString(str, encoding, terminate));
 
-	return ConvMan.convert(encoding, str);
+	const size_t n = stream.writeStream(*data);
+
+	return n;
+}
+
+void writeStringFixed(WriteStream &stream, const Common::UString &str, Encoding encoding, size_t length) {
+	if (length == 0)
+		return;
+
+	ScopedPtr<MemoryReadStream> data(convertString(str, encoding, false));
+
+	size_t n = stream.writeStream(*data, length);
+	while (n++ < length)
+		stream.writeByte(0);
+}
+
+MemoryReadStream *convertString(const UString &str, Encoding encoding, bool terminateString) {
+	if (encoding == kEncodingUTF8)
+		return new MemoryReadStream(reinterpret_cast<const byte *>(str.c_str()),
+		                            std::strlen(str.c_str()) + (terminateString ? 1 : 0));
+
+	return ConvMan.convert(encoding, str, terminateString);
 }
 
 size_t getBytesPerCodepoint(Encoding encoding) {
@@ -302,6 +366,7 @@ size_t getBytesPerCodepoint(Encoding encoding) {
 		case kEncodingASCII:
 		case kEncodingLatin9:
 		case kEncodingCP1250:
+		case kEncodingCP1251:
 		case kEncodingCP1252:
 			return 1;
 
@@ -321,6 +386,61 @@ size_t getBytesPerCodepoint(Encoding encoding) {
 	}
 
 	throw Exception("getBytesPerCodepoint(): Invalid encoding (%d)", (int)encoding);
+}
+
+bool isValidCodepoint(Encoding encoding, uint32 cp) {
+	switch (encoding) {
+		case kEncodingInvalid:
+			return false;
+
+		case kEncodingASCII:
+			return cp <= 127;
+
+		case kEncodingLatin9:
+			return (cp <= 0x7F) || (cp >= 0xA0);
+
+		case kEncodingCP1250:
+			return (cp != 0x81) && (cp != 0x83) && (cp != 0x88) &&
+			       (cp != 0x90) && (cp != 0x98);
+
+		case kEncodingCP1251:
+			return cp != 0x98;
+
+		case kEncodingCP1252:
+			return (cp != 0x81) && (cp != 0x8D) && (cp != 0x8F) &&
+			       (cp != 0x90) && (cp != 0x9D);
+
+		case kEncodingUTF8:    // TODO
+		case kEncodingUTF16LE: // TODO
+		case kEncodingUTF16BE: // TODO
+		case kEncodingCP932:   // TODO
+		case kEncodingCP936:   // TODO
+		case kEncodingCP949:   // TODO
+		case kEncodingCP950:   // TODO
+		default:
+			return true;
+	}
+
+	return false;
+}
+
+Encoding parseEncoding(Common::UString str) {
+	if (str.empty())
+		return kEncodingInvalid;
+
+	str.makeLower();
+
+	for (size_t i = 0; i < ARRAYSIZE(kEncodingStrings); i++) {
+		for (size_t j = 0; j < ARRAYSIZE(kEncodingStrings[i].strings); j++) {
+			if (!kEncodingStrings[i].strings[j])
+				break;
+
+			if (str == kEncodingStrings[i].strings[j])
+				return kEncodingStrings[i].encoding;
+		}
+	}
+
+	return kEncodingInvalid;
 }
 
 } // End of namespace Common

@@ -23,6 +23,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/scopedptr.h"
 #include "src/common/readstream.h"
 
 #include "src/aurora/aurorafile.h"
@@ -46,29 +47,28 @@ uint32 TalkTable::getLanguageID() const {
 	return kLanguageInvalid;
 }
 
-TalkTable *TalkTable::load(Common::SeekableReadStream &tlk, Common::Encoding encoding) {
-	size_t pos = tlk.pos();
+void TalkTable::setLanguageID(uint32 UNUSED(id)) {
+}
+
+TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding encoding) {
+	Common::ScopedPtr<Common::SeekableReadStream> tlkStream(tlk);
+	if (!tlkStream)
+		return 0;
+
+	size_t pos = tlkStream->pos();
 
 	uint32 id, version;
 	bool utf16le;
 
-	AuroraBase::readHeader(tlk, id, version, utf16le);
+	AuroraFile::readHeader(*tlkStream, id, version, utf16le);
 
-	tlk.seek(pos);
+	tlkStream->seek(pos);
 
-	if (id == kTLKID) {
-		if (encoding == Common::kEncodingInvalid)
-			encoding = Common::kEncodingCP1252;
+	if (id == kTLKID)
+		return new TalkTable_TLK(tlkStream.release(), encoding);
 
-		return new TalkTable_TLK(tlk, encoding);
-	}
-
-	if (id == kGFFID) {
-		if (encoding == Common::kEncodingInvalid)
-			encoding = Common::kEncodingUTF16LE;
-
-		return new TalkTable_GFF(tlk, encoding);
-	}
+	if (id == kGFFID)
+		return new TalkTable_GFF(tlkStream.release(), encoding);
 
 	return 0;
 }

@@ -27,16 +27,18 @@
 
 #include <list>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/ustring.h"
 
 namespace Common {
 	class SeekableReadStream;
 	class WriteStream;
-};
+}
 
 namespace XML {
 
-class XMLWriter {
+class XMLWriter : boost::noncopyable {
 public:
 	XMLWriter(Common::WriteStream &stream);
 	~XMLWriter();
@@ -91,7 +93,6 @@ private:
 	void writeTag();
 
 	Common::UString escape(const Common::UString &str);
-	void encodeBase64(std::list<Common::UString> &base64, Common::SeekableReadStream &data);
 };
 
 } // End of namespace XML

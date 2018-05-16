@@ -25,6 +25,7 @@
 #include "src/common/ustring.h"
 #include "src/common/memreadstream.h"
 #include "src/common/writestream.h"
+#include "src/common/base64.h"
 
 #include "src/xml/xmlwriter.h"
 
@@ -103,13 +104,22 @@ void XMLWriter::writeTag() {
 	if (!tag.empty) {
 		if (!tag.base64.empty()) {
 
-			while (!tag.base64.empty()) {
-				breakLine();
-				indent(_openTags.size());
+			if (tag.base64.size() == 1) {
+
 				_stream->writeString(tag.base64.front());
 				tag.base64.pop_front();
+
+			} else {
+
+				while (!tag.base64.empty()) {
+					breakLine();
+					indent(_openTags.size());
+					_stream->writeString(tag.base64.front());
+					tag.base64.pop_front();
+				}
+				breakLine();
+
 			}
-			breakLine();
 
 		} else
 			_stream->writeString(escape(tag.contents));
@@ -188,7 +198,7 @@ void XMLWriter::setContents(const byte *data, size_t size) {
 	tag.contents.clear();
 
 	Common::MemoryReadStream stream(data, size);
-	encodeBase64(tag.base64, stream);
+	Common::encodeBase64(stream, tag.base64, 64);
 
 	tag.empty = false;
 }
@@ -202,7 +212,7 @@ void XMLWriter::setContents(Common::SeekableReadStream &stream) {
 	tag.base64.clear();
 	tag.contents.clear();
 
-	encodeBase64(tag.base64, stream);
+	Common::encodeBase64(stream, tag.base64, 64);
 
 	tag.empty = false;
 }
@@ -215,41 +225,6 @@ void XMLWriter::breakLine() {
 
 	_stream->writeString("\n");
 	_needIndent = true;
-}
-
-static const char kBase64Char[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-void XMLWriter::encodeBase64(std::list<Common::UString> &base64, Common::SeekableReadStream &data) {
-	uint8 n;
-	byte buf[3];
-
-	base64.push_back(Common::UString());
-
-	// Read up to 3 characters at a time
-	while ((n = data.read(buf, 3)) != 0) {
-		// We have a max line length of 64 characters
-		if (base64.back().size() == 64)
-			base64.push_back(Common::UString());
-
-		uint32 code = 0;
-
-		// Concat the input characters
-		for (uint8 i = 0; i < n; i++)
-			code |= buf[i] << (24 - i * 8);
-
-		// Create up to 4 6-bit base64-characters out of them
-		for (uint8 i = 0; i < (n + 1); i++) {
-			base64.back() += kBase64Char[(code >> 26) & 0x0000003F];
-			code <<= 6;
-		}
-
-		// Add padding
-		for (int i = 0; i < (3 - n); i++)
-			base64.back() += '=';
-	}
-
-	if (base64.back().empty())
-		base64.pop_back();
 }
 
 } // End of namespace XML

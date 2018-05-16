@@ -18,12 +18,36 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Largely based on the stream implementation found in ScummVM.
-
 /** @file
  *  Implementing the writing stream interfaces for memory blocks.
  */
 
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
+#include <cassert>
 #include <cstring>
 
 #include "src/common/types.h"
@@ -31,13 +55,9 @@
 
 namespace Common {
 
-MemoryWriteStream::MemoryWriteStream(byte *buf, size_t len) : _ptr(buf), _bufSize(len), _pos(0) {
-}
-
-MemoryWriteStream::~MemoryWriteStream() {
-}
-
 size_t MemoryWriteStream::write(const void *dataPtr, size_t dataSize) {
+	assert(dataPtr);
+
 	// Write at most as many bytes as are still available...
 	if (dataSize > _bufSize - _pos)
 		dataSize = _bufSize - _pos;
@@ -60,31 +80,28 @@ size_t MemoryWriteStream::size() const {
 
 
 MemoryWriteStreamDynamic::MemoryWriteStreamDynamic(bool disposeMemory, size_t capacity) :
-	_data(0), _disposeMemory(disposeMemory), _ptr(0), _pos(0), _capacity(0), _size(0) {
+	_data(0, disposeMemory), _ptr(0), _capacity(0), _size(0) {
 
 	reserve(capacity);
 }
 
 MemoryWriteStreamDynamic::~MemoryWriteStreamDynamic() {
-	if (_disposeMemory)
-		delete[] _data;
 }
 
 void MemoryWriteStreamDynamic::reserve(size_t s) {
 	if (s <= _capacity)
 		return;
 
-	byte *oldData = _data;
+	while (_capacity < s)
+		_capacity = MAX<size_t>(2, _capacity * 2);
 
-	_capacity = s + 32;
-	_data = new byte[_capacity];
-	_ptr = _data + _pos;
+	byte *newData = new byte[_capacity];
+	if (_data)
+		memcpy(newData, _data.get(), _size);
 
-	if (oldData) {
-		// Copy old data
-		std::memcpy(_data, oldData, _size);
-		delete[] oldData;
-	}
+	_data.dispose();
+	_data.reset(newData);
+	_ptr = _data.get() + _size;
 }
 
 void MemoryWriteStreamDynamic::ensureCapacity(size_t newLen) {
@@ -92,36 +109,31 @@ void MemoryWriteStreamDynamic::ensureCapacity(size_t newLen) {
 		return;
 
 	reserve(newLen);
-
-	_size = newLen;
 }
 
 size_t MemoryWriteStreamDynamic::write(const void *dataPtr, size_t dataSize) {
-	ensureCapacity(_pos + dataSize);
+	assert(dataPtr);
+
+	ensureCapacity(_size + dataSize);
 
 	std::memcpy(_ptr, dataPtr, dataSize);
 
-	_ptr += dataSize;
-	_pos += dataSize;
-
-	if ((size_t)_pos > _size)
-		_size = _pos;
+	_ptr  += dataSize;
+	_size += dataSize;
 
 	return dataSize;
 }
 
-void MemoryWriteStreamDynamic::dispose() {
-	delete[] _data;
-
-	_data     = 0;
-	_ptr      = 0;
-	_pos      = 0;
-	_size     = 0;
-	_capacity = 0;
+void MemoryWriteStreamDynamic::setDisposable(bool disposeMemory) {
+	_data.setDisposable(disposeMemory);
 }
 
-size_t MemoryWriteStreamDynamic::pos() const {
-	return _pos;
+void MemoryWriteStreamDynamic::dispose() {
+	_data.dispose();
+
+	_ptr      = 0;
+	_size     = 0;
+	_capacity = 0;
 }
 
 size_t MemoryWriteStreamDynamic::size() const {
@@ -129,7 +141,7 @@ size_t MemoryWriteStreamDynamic::size() const {
 }
 
 byte *MemoryWriteStreamDynamic::getData() {
-	return _data;
+	return _data.get();
 }
 
 } // End of namespace Common

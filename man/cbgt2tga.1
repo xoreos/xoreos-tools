@@ -1,0 +1,69 @@
+.Dd July 23, 2015
+.Dt CBGT2TGA 1
+.Os
+.Sh NAME
+.Nm cbgt2tga
+.Nd CBGT image to TGA converter
+.Sh SYNOPSIS
+.Nm cbgt2tga
+.Op Ar options
+.Ar cbgt pal 2da tga
+.Sh DESCRIPTION
+.Nm
+converts CBGT image files into common TGA images.
+CBGT, Compressed BackGround Tiles,
+are used as area background images in BioWare's Nintendo DS game
+.Em Sonic Chronicles: The Dark Brotherhood .
+.Pp
+Internally, a CBGT consists of a collection of 64\(mu64 pixel cells,
+divided into tiles of 8\(mu8 pixels.
+Each cell is compressed using Nintendo's 0x10 LZSS algorithm.
+Moreover, PAL files with the same
+name as the CBGT file contain the palette data, and 2DA files with
+the same name yet again contain the mapping of palette indices onto
+cells.
+.Pp
+The width and height of the final image is not stored within the
+CBGT file, but the palette mapping 2DA does contain the number
+cells in X and Y direction, since it stores the palette indices
+in a two-dimensional array of those dimensions.
+Therefore, multiplying the number of columns and rows in said 2DA by 64 yields
+the width and height, respectively, of the final image.
+.Sh OPTIONS
+.Bl -tag -width xx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.El
+.Bl -tag -width xx -compact
+.It Ar cbgt
+The name of the CBGT file to read.
+The CBGT contains the pixel graphics part of the image.
+.It Ar pal
+The name of the PAL file to use.
+The PAL file contains the palette part of the image.
+.It Ar 2da
+The name of the 2DA file to use.
+The 2DA file contains information on which palette to use for each part
+of the CBGT, and on how many parts are in the CBGT in the first place.
+.It Ar tga
+The resulting TGA file will be written there.
+.El
+.Sh EXAMPLE
+Convert a CBGT+PAL+2DA into a TGA:
+.Pp
+.Dl $ cbgt2tga a.cbgt a.pal a.2da result.tga
+.Sh "SEE ALSO"
+.Xr cdpth2tga 1 ,
+.Xr ncgr2tga 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.

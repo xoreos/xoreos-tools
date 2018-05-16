@@ -18,10 +18,33 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Largely based on the stream implementation found in ScummVM.
-
 /** @file
  *  Basic reading stream interfaces.
+ */
+
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #include <cassert>
@@ -29,8 +52,11 @@
 #include "src/common/readstream.h"
 #include "src/common/memreadstream.h"
 #include "src/common/error.h"
+#include "src/common/scopedptr.h"
 
 namespace Common {
+
+const uint32 ReadStream::kEOF;
 
 ReadStream::ReadStream() {
 }
@@ -39,19 +65,12 @@ ReadStream::~ReadStream() {
 }
 
 MemoryReadStream *ReadStream::readStream(size_t dataSize) {
-	byte *buf = new byte[dataSize];
+	ScopedArray<byte> buf(new byte[dataSize]);
 
-	try {
+	if (read(buf.get(), dataSize) != dataSize)
+		throw Exception(kReadError);
 
-		if (read(buf, dataSize) != dataSize)
-			throw Exception(kReadError);
-
-	} catch (...) {
-		delete[] buf;
-		throw;
-	}
-
-	return new MemoryReadStream(buf, dataSize, true);
+	return new MemoryReadStream(buf.release(), dataSize, true);
 }
 
 
@@ -80,15 +99,12 @@ size_t SeekableReadStream::evalSeek(ptrdiff_t offset, Origin whence, size_t pos,
 
 
 SubReadStream::SubReadStream(ReadStream *parentStream, size_t end, bool disposeParentStream) :
-	_parentStream(parentStream), _disposeParentStream(disposeParentStream),
-	_pos(0), _end(end), _eos(false) {
+	_parentStream(parentStream, disposeParentStream), _pos(0), _end(end), _eos(false) {
 
 	assert(parentStream);
 }
 
 SubReadStream::~SubReadStream() {
-	if (_disposeParentStream)
-		delete _parentStream;
 }
 
 bool SubReadStream::eos() const {

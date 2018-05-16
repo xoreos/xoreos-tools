@@ -27,16 +27,17 @@
 
 #include <cstdio>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/writestream.h"
-#include "src/common/noncopyable.h"
 
 namespace Common {
 
 class UString;
 
 /** A simple streaming file writing class. */
-class WriteFile : public WriteStream, public NonCopyable {
+class WriteFile : boost::noncopyable, public WriteStream {
 public:
 	WriteFile();
 	WriteFile(const UString &fileName);
@@ -62,8 +63,13 @@ public:
 
 	size_t write(const void *dataPtr, size_t dataSize);
 
+	/** Return the number of bytes written to the current file in total. */
+	size_t size() const;
+
 protected:
 	std::FILE *_handle; ///< The actual file handle.
+
+	size_t _size;
 };
 
 } // End of namespace Common

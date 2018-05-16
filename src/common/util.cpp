@@ -24,6 +24,7 @@
 
 #include "src/common/util.h"
 
+#include <cassert>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -33,7 +34,7 @@ void warning(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 #ifndef DISABLE_TEXT_CONSOLE
@@ -48,7 +49,7 @@ void status(const char *s, ...) {
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 #ifndef DISABLE_TEXT_CONSOLE
@@ -57,12 +58,26 @@ void status(const char *s, ...) {
 #endif
 }
 
+void info(const char *s, ...) {
+	char buf[STRINGBUFLEN];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
+	va_end(va);
+
+#ifndef DISABLE_TEXT_CONSOLE
+	std::fputs(buf, stdout);
+	std::fputs("\n", stdout);
+#endif
+}
+
 void NORETURN_PRE error(const char *s, ...) {
 	char buf[STRINGBUFLEN];
 	va_list va;
 
 	va_start(va, s);
-	std::vsnprintf(buf, STRINGBUFLEN, s, va);
+	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
 #ifndef DISABLE_TEXT_CONSOLE
@@ -130,10 +145,12 @@ double readNintendoFixedPoint(uint32 value, bool sign, uint8 iBits, uint8 fBits)
 	/* The Nintendo DS uses fixed point values of various formats. This method can
 	 * convert them all into a usual floating point double. */
 
+	assert((iBits + fBits + (sign ? 1 : 0)) <= 32);
+
 	// Masks for the integer, fractional and sign parts
-	const uint32 fMask =  (1 <<          fBits)  - 1;
-	const uint32 iMask = ((1 << (iBits + fBits)) - 1) - fMask;
-	const uint32 sMask =   1 << (iBits + fBits);
+	const uint32 fMask =  (UINT64_C(1) <<          fBits)  - 1;
+	const uint32 iMask = ((UINT64_C(1) << (iBits + fBits)) - 1) - fMask;
+	const uint32 sMask =   UINT64_C(1) << (iBits + fBits);
 
 	// Step of a fractional unit
 	const uint32 fDiv  =  (1 <<          fBits);

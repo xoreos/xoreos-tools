@@ -27,6 +27,8 @@
 
 #include <list>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
 #include "src/common/encoding.h"
 
@@ -37,17 +39,38 @@ namespace Common {
 
 namespace Aurora {
 
-/** Base class for BioWare's talk tables. */
-class TalkTable {
+/** Base class for BioWare's talk tables.
+ *
+ *  A talk table contains localized string data, and optional voice-
+ *  over resource names, indexed by a string reference ("StrRef").
+ *
+ *  A single talktable always contains strings in a single language
+ *  (and for a single gender of the PC), and commonly all strings for
+ *  a given context (module, campaign, ...).
+ *
+ *  See classes TalkTable_TLK and TalkTable_GFF for the two main
+ *  formats a talk table can be found in.
+ */
+class TalkTable : boost::noncopyable {
 public:
 	virtual ~TalkTable();
 
 	virtual uint32 getLanguageID() const;
+	virtual void setLanguageID(uint32 id);
 
 	virtual const std::list<uint32> &getStrRefs() const = 0;
 	virtual bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
 
-	static TalkTable *load(Common::SeekableReadStream &tlk, Common::Encoding encoding);
+	virtual bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+	                      uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+	                      uint32 &soundID) const = 0;
+
+	virtual void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+	                      uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+	                      uint32 soundID) = 0;
+
+	/** Take over this stream and read a talk table (of either format) out of it. */
+	static TalkTable *load(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 
 
 protected:

@@ -42,110 +42,147 @@ bool StreamTokenizer::isIn(uint32 c, const std::list<uint32> &list) {
 }
 
 void StreamTokenizer::addSeparator(uint32 c) {
+	assert(!isIn(c, _separators) && !isIn(c, _quotes) && !isIn(c, _chunkEnds) && !isIn(c, _ignores));
+
 	_separators.push_back(c);
 }
 
 void StreamTokenizer::addQuote(uint32 c) {
+	assert(!isIn(c, _separators) && !isIn(c, _quotes) && !isIn(c, _chunkEnds) && !isIn(c, _ignores));
+
 	_quotes.push_back(c);
 }
 
 void StreamTokenizer::addChunkEnd(uint32 c) {
+	assert(!isIn(c, _separators) && !isIn(c, _quotes) && !isIn(c, _chunkEnds) && !isIn(c, _ignores));
+
 	_chunkEnds.push_back(c);
 }
 
 void StreamTokenizer::addIgnore(uint32 c) {
+	assert(!isIn(c, _separators) && !isIn(c, _quotes) && !isIn(c, _chunkEnds) && !isIn(c, _ignores));
+
 	_ignores.push_back(c);
 }
 
 UString StreamTokenizer::getToken(SeekableReadStream &stream) {
-	// Init
-	bool   chunkEnd     = false;
-	bool   inQuote      = false;
-	bool   hasSeparator = false;
-	uint32 separator    = 0;
+	bool   chunkEnd  = false;
+	bool   inQuote   = false;
+	uint32 separator = 0xFFFFFFFF;
 
+	uint32 c;
 	UString token;
 
-	// Run through the stream, character by character
-	uint32 c;
+	/* Run through the stream, character by character, checking their
+	 * "character classes" and collecting characters for a token. */
 	while ((c = stream.readChar()) != ReadStream::kEOF) {
+		// Character classes
+		const bool isSeparatorChar = isIn(c, _separators);
+		const bool isQuoteChar     = isIn(c, _quotes);
+		const bool isChunkEndChar  = isIn(c, _chunkEnds);
+		const bool isIgnoreChar    = isIn(c, _ignores);
 
-		if (isIn(c, _chunkEnds)) {
-			// This is a end character, seek back and break
+		/* Handle ignored characters.
+		 *
+		 * All characters in the ignored characters list will be ignored
+		 * completely. They will never be added to the token.
+		 */
+		if (isIgnoreChar)
+			continue;
+
+		/* Handle quote characters.
+		 *
+		 * A quote character toggles the "we're in quotes state". Any
+		 * character that's found while in this state will be added to
+		 * the token, even if it is a separator or chunk end character.
+		 */
+		if (isQuoteChar) {
+			inQuote = !inQuote;
+			continue;
+		}
+
+		if (inQuote) {
+			token += c;
+			continue;
+		}
+
+		/* Handle chunk end characters.
+		 *
+		 * When we've reached the end of the chunk, seek back by one
+		 * character, so that the stream is positioned right before
+		 * the chunk end characters. Then break to stop collecting.
+		 */
+		if (isChunkEndChar) {
 			stream.seek(-1, SeekableReadStream::kOriginCurrent);
 			chunkEnd = true;
 			break;
 		}
 
-		if (isIn(c, _quotes)) {
-			// This is a quote character, set state
-			inQuote = !inQuote;
-			continue;
-		}
-
-		if (!inQuote && isIn(c, _separators)) {
-			// We're not in a quote and this is a separator
-
-			if (!token.empty()) {
-				// We have a token
-
-				hasSeparator = true;
-				separator = c;
-				break;
-			}
-
-			// We don't yet have a token, let the consecutive separator rule decide what to do
-
-			if (_conSepRule == kRuleHeed) {
-				// We heed every separator
-
-				hasSeparator = true;
-				separator = c;
-				break;
-			}
-
-			if ((_conSepRule == kRuleIgnoreSame) && hasSeparator && (separator != ((byte) c))) {
-				// We ignore only consecutive separators that are the same
-				hasSeparator = true;
-				separator = c;
-				break;
-			}
-
-			// We ignore all consecutive separators
-			hasSeparator = true;
+		/* Handle separator characters.
+		 *
+		 * When we've found a separator character, remember which it was
+		 * (we will need it to check if we should skip following separators).
+		 * Then break to stop collecting.
+		 */
+		if (isSeparatorChar) {
 			separator = c;
-			continue;
+			break;
 		}
 
-		if (isIn(c, _ignores))
-			// This is a character to be ignored, do so
-			continue;
+		/* At this point, we have a character that's not in any of the
+		 * special character classes and is not in quotes. This is a normal
+		 * character we'll just add to the token. Then we'll continue
+		 * with the next character.
+		 */
 
-		// A normal character, add it to our token
 		token += c;
 	}
 
-	// Is the string actually empty?
-	if (!token.empty() && (*token.begin() == '\0'))
-		token.clear();
+	/* Since we're technically operating on streams of arbitrary binary data,
+	 * we might have collected \0 characters. Cut off the token at that point.
+	 */
+	Common::UString::iterator nullChar = token.findFirst('\0');
+	if (nullChar != token.end())
+		token.truncate(nullChar);
 
-	if (!chunkEnd && (_conSepRule != kRuleHeed)) {
-		// We have to look for consecutive separators
+	/* If we stopped collecting at a chunk end, there's nothing left to do.
+	 * Just return the token.
+	 */
+	if (chunkEnd)
+		return token;
 
+	/* However, if we stopped collecting at a separator see if we should skip
+	 * following consecutive separators.
+	 *
+	 * Depending on the value ConsecutiveSeparatorRule, there's different ways
+	 * to go about this:
+	 * - kRuleHeed: Never skip consecutive separators
+	 * - kRuleIgnoreSame: Ignore all consecutive separators that are the same
+	 * - kRuleIgnoreAll: Ignore all consecutive separators
+	 *
+	 * So we're going to consume characters out of the stream until either:
+	 * - we've reached a character that is not a separator
+	 * - the rule says we shouldn't skip this separator
+	 *
+	 * In either case, the stream is positioned right after the last separator
+	 * that should be skipped.
+	 */
+	if (_conSepRule != kRuleHeed) {
 		while ((c = stream.readChar()) != ReadStream::kEOF) {
+			const bool isSeparator = isIn(c, _separators);
 
-			// Use the rule to determine when we should abort skipping consecutive separators
-			if (((_conSepRule == kRuleIgnoreSame) && (c != separator)) ||
-			    ((_conSepRule == kRuleIgnoreAll ) && !isIn(c, _separators))) {
+			bool shouldSkip = isSeparator;
+			if ((_conSepRule == kRuleIgnoreSame) && (c != separator))
+				shouldSkip = false;
 
+			if (!shouldSkip) {
 				stream.seek(-1, SeekableReadStream::kOriginCurrent);
 				break;
 			}
 		}
-
 	}
 
-	// And return the token
+	// Finally, we can return the token
 	return token;
 }
 
@@ -157,18 +194,30 @@ size_t StreamTokenizer::getTokens(SeekableReadStream &stream, std::vector<UStrin
 	list.clear();
 	list.reserve(min);
 
-	size_t realTokenCount;
-	for (realTokenCount = 0; !isChunkEnd(stream) && (realTokenCount < max); realTokenCount++) {
+	size_t realTokenCount = 0;
+	while (!isChunkEnd(stream) && (realTokenCount < max)) {
 		UString token = getToken(stream);
 
-		if (!token.empty() || (_conSepRule != kRuleIgnoreAll))
+		if (!token.empty() || (_conSepRule != kRuleIgnoreAll)) {
 			list.push_back(token);
+			realTokenCount++;
+		}
 	}
 
 	while (list.size() < min)
 		list.push_back(def);
 
 	return realTokenCount;
+}
+
+void StreamTokenizer::findFirstToken(SeekableReadStream &stream) {
+	uint32 c;
+	while ((c = stream.readChar()) != ReadStream::kEOF) {
+		if (!isIn(c, _separators) && !(isIn(c, _ignores))) {
+			stream.seek(-1, SeekableReadStream::kOriginCurrent);
+			break;
+		}
+	}
 }
 
 void StreamTokenizer::skipToken(SeekableReadStream &stream, size_t n) {

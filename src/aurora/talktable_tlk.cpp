@@ -26,9 +26,12 @@
  * (<https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware>)
  */
 
+#include <cassert>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 #include "src/common/readfile.h"
 #include "src/common/error.h"
 
@@ -41,8 +44,22 @@ static const uint32 kVersion4 = MKTAG('V', '4', '.', '0');
 
 namespace Aurora {
 
-TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream &tlk, Common::Encoding encoding) :
-	TalkTable(encoding), _tlk(&tlk) {
+TalkTable_TLK::Entry::Entry() : offset(0xFFFFFFFF), length(0xFFFFFFFF),
+	flags(0), volumeVariance(0), pitchVariance(0), soundLength(-1.0f),
+	soundID(0xFFFFFFFF) {
+
+}
+
+
+TalkTable_TLK::TalkTable_TLK(Common::Encoding encoding, uint32 languageID) :
+	TalkTable(encoding), _tlk(0), _languageID(languageID) {
+
+}
+
+TalkTable_TLK::TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding) :
+	TalkTable(encoding), _tlk(tlk) {
+
+	assert(_tlk);
 
 	load();
 }
@@ -62,6 +79,11 @@ void TalkTable_TLK::load() {
 
 		_languageID = _tlk->readUint32LE();
 
+		if (_encoding == Common::kEncodingInvalid)
+			_encoding = LangMan.getEncoding(LangMan.getLanguage(_languageID));
+		if (_encoding == Common::kEncodingInvalid)
+			_encoding = Common::kEncodingCP1252;
+
 		uint32 stringCount = _tlk->readUint32LE();
 		_entries.resize(stringCount);
 
@@ -70,14 +92,14 @@ void TalkTable_TLK::load() {
 		if (_version == kVersion4)
 			tableOffset = _tlk->readUint32LE();
 
-		_stringsOffset = _tlk->readUint32LE();
+		const uint32 stringsOffset = _tlk->readUint32LE();
 
 		// Go to the table
 		_tlk->seek(tableOffset);
 
 		// Read in all the table data
 		if (_version == kVersion3)
-			readEntryTableV3();
+			readEntryTableV3(stringsOffset);
 		else
 			readEntryTableV4();
 
@@ -87,7 +109,7 @@ void TalkTable_TLK::load() {
 	}
 }
 
-void TalkTable_TLK::readEntryTableV3() {
+void TalkTable_TLK::readEntryTableV3(uint32 stringsOffset) {
 	for (size_t i = 0; i < _entries.size(); i++) {
 		Entry &entry = _entries[i];
 
@@ -95,11 +117,14 @@ void TalkTable_TLK::readEntryTableV3() {
 		entry.soundResRef    = Common::readStringFixed(*_tlk, Common::kEncodingASCII, 16);
 		entry.volumeVariance = _tlk->readUint32LE();
 		entry.pitchVariance  = _tlk->readUint32LE();
-		entry.offset         = _tlk->readUint32LE() + _stringsOffset;
+		entry.offset         = _tlk->readUint32LE() + stringsOffset;
 		entry.length         = _tlk->readUint32LE();
 		entry.soundLength    = _tlk->readIEEEFloatLE();
 
-		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
+		if (!(entry.flags & kFlagSoundLengthPresent))
+			entry.soundLength = -1.0f;
+
+		if (((entry.length > 0) && (entry.flags & kFlagTextPresent)) || (!entry.soundResRef.empty()))
 			_strRefs.push_back(i);
 	}
 }
@@ -113,12 +138,15 @@ void TalkTable_TLK::readEntryTableV4() {
 		entry.length  = _tlk->readUint16LE();
 		entry.flags   = kFlagTextPresent;
 
-		if ((entry.length > 0) && (entry.flags & kFlagTextPresent))
+		if (((entry.length > 0) && (entry.flags & kFlagTextPresent)) || (entry.soundID != 0xFFFFFFFF))
 			_strRefs.push_back(i);
 	}
 }
 
 Common::UString TalkTable_TLK::readString(const Entry &entry) const {
+	if (!_tlk || !entry.text.empty())
+		return entry.text;
+
 	if ((entry.length == 0) || !(entry.flags & kFlagTextPresent))
 		return "";
 
@@ -131,19 +159,18 @@ Common::UString TalkTable_TLK::readString(const Entry &entry) const {
 	if (length == 0)
 		return "";
 
-	Common::MemoryReadStream *data   = _tlk->readStream(length);
-	Common::MemoryReadStream *parsed = LangMan.preParseColorCodes(*data);
+	Common::ScopedPtr<Common::MemoryReadStream> data(_tlk->readStream(length));
+	Common::ScopedPtr<Common::MemoryReadStream> parsed(LangMan.preParseColorCodes(*data));
 
-	Common::UString str = Common::readString(*parsed, _encoding);
-
-	delete parsed;
-	delete data;
-
-	return str;
+	return Common::readString(*parsed, _encoding);
 }
 
 uint32 TalkTable_TLK::getLanguageID() const {
 	return _languageID;
+}
+
+void TalkTable_TLK::setLanguageID(uint32 id) {
+	_languageID = id;
 }
 
 const std::list<uint32> &TalkTable_TLK::getStrRefs() const {
@@ -160,11 +187,170 @@ bool TalkTable_TLK::getString(uint32 strRef, Common::UString &string, Common::US
 	return true;
 }
 
+bool TalkTable_TLK::getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+                             uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+                             uint32 &soundID) const {
+
+	if (strRef >= _entries.size())
+		return false;
+
+	const Entry &entry = _entries[strRef];
+
+	string      = readString(entry);
+	soundResRef = entry.soundResRef;
+
+	volumeVariance = entry.volumeVariance;
+	pitchVariance  = entry.pitchVariance;
+	soundLength    = entry.soundLength;
+
+	soundID = entry.soundID;
+
+	return true;
+}
+
+void TalkTable_TLK::setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+                             uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+                             uint32 soundID) {
+
+	if (strRef >= _entries.size()) {
+		for (size_t i = _entries.size(); i < strRef; i++)
+			_strRefs.push_back(i);
+
+		_strRefs.sort();
+		_strRefs.unique();
+
+		_entries.resize(strRef + 1);
+	}
+
+	Entry &entry = _entries[strRef];
+
+	entry.text        = string;
+	entry.soundResRef = soundResRef;
+
+	entry.volumeVariance = volumeVariance;
+	entry.pitchVariance  = pitchVariance;
+	entry.soundLength    = soundLength;
+
+	entry.soundID = soundID;
+
+	entry.length = 0;
+	entry.offset = 0xFFFFFFFF;
+
+	entry.flags = 0;
+	if (!entry.text.empty())
+		entry.flags |= kFlagTextPresent;
+	if (!entry.soundResRef.empty())
+		entry.flags |= kFlagSoundPresent;
+	if (entry.soundLength > 0.0f)
+		entry.flags |= kFlagSoundLengthPresent;
+}
+
+Common::SeekableReadStream *TalkTable_TLK::collectEntries(Entries &entries) const {
+	entries.resize(_entries.size());
+
+	Common::MemoryWriteStreamDynamic data;
+
+	try {
+		for (size_t i = 0; i < _entries.size(); i++) {
+			entries[i].length = 0;
+			entries[i].offset = 0;
+
+			const Common::UString text = readString(_entries[i]);
+			if (!text.empty()) {
+				entries[i].offset = data.size();
+				entries[i].length = Common::writeString(data, text, _encoding, false);
+			}
+
+			entries[i].soundResRef = _entries[i].soundResRef;
+
+			entries[i].volumeVariance = _entries[i].volumeVariance;
+			entries[i].pitchVariance  = _entries[i].pitchVariance;
+			entries[i].soundLength    = _entries[i].soundLength;
+
+			entries[i].soundID = _entries[i].soundID;
+
+			entries[i].flags = 0;
+			if (entries[i].length > 0)
+				entries[i].flags |= kFlagTextPresent;
+			if (!entries[i].soundResRef.empty())
+				entries[i].flags |= kFlagSoundPresent;
+			if (entries[i].soundLength >= 0.0f)
+				entries[i].flags |= kFlagSoundLengthPresent;
+		}
+	} catch (...) {
+		data.dispose();
+		throw;
+	}
+
+	return new Common::MemoryReadStream(data.getData(), data.size(), true);
+}
+
+void TalkTable_TLK::write30(Common::WriteStream &out) const {
+	out.writeUint32BE(kTLKID);
+	out.writeUint32BE(kVersion3);
+
+	out.writeUint32LE(_languageID);
+
+	Entries entries;
+	Common::ScopedPtr<Common::SeekableReadStream> data(collectEntries(entries));
+
+	const uint32 stringsOffset = 20 + entries.size() * 40;
+
+	out.writeUint32LE(entries.size());
+	out.writeUint32LE(stringsOffset);
+
+	for (Entries::const_iterator e = entries.begin(); e != entries.end(); ++e) {
+		out.writeUint32LE(e->flags);
+
+		Common::writeStringFixed(out, e->soundResRef, Common::kEncodingASCII, 16);
+
+		out.writeUint32LE(e->volumeVariance);
+		out.writeUint32LE(e->pitchVariance);
+		out.writeUint32LE(e->offset);
+		out.writeUint32LE(e->length);
+
+		out.writeIEEEFloatLE(MAX(0.0f, e->soundLength));
+	}
+
+	out.writeStream(*data);
+}
+
+void TalkTable_TLK::write40(Common::WriteStream &out) const {
+	out.writeUint32BE(kTLKID);
+	out.writeUint32BE(kVersion4);
+
+	out.writeUint32LE(_languageID);
+
+	Entries entries;
+	Common::ScopedPtr<Common::SeekableReadStream> data(collectEntries(entries));
+
+	const uint32 stringsOffset = 32 + entries.size() * 10;
+
+	out.writeUint32LE(entries.size());
+
+	// Offset to the string table. We'll put it right after the header, with some padding
+	out.writeUint32LE(32);
+
+	out.writeUint32LE(stringsOffset);
+
+	// Padding
+	out.writeUint32LE(0);
+	out.writeUint32LE(0);
+
+	for (Entries::const_iterator e = entries.begin(); e != entries.end(); ++e) {
+		out.writeUint32LE(e->soundID);
+		out.writeUint32LE(e->offset + stringsOffset);
+		out.writeUint16LE(e->length);
+	}
+
+	out.writeStream(*data);
+}
+
 uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
 	uint32 id, version;
 	bool utf16le;
 
-	AuroraBase::readHeader(tlk, id, version, utf16le);
+	AuroraFile::readHeader(tlk, id, version, utf16le);
 
 	if ((id != kTLKID) || ((version != kVersion3) && (version != kVersion4)))
 		return kLanguageInvalid;

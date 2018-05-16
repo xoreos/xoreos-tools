@@ -19,41 +19,38 @@
  */
 
 /** @file
- *  Utility class for handling special data structures found in BioWare's Aurora files.
+ *  Base for BioWare's Aurora engine files.
  */
 
 #include "src/common/readstream.h"
-#include "src/common/ustring.h"
 
 #include "src/aurora/aurorafile.h"
 
 namespace Aurora {
 
-AuroraBase::AuroraBase() {
+AuroraFile::AuroraFile() {
 	clear();
 }
 
-void AuroraBase::clear() {
+void AuroraFile::clear() {
 	_id      = 0;
 	_version = 0;
 	_utf16le = false;
 }
 
-uint32 AuroraBase::getID() const {
+uint32 AuroraFile::getID() const {
 	return _id;
 }
 
-uint32 AuroraBase::getVersion() const {
+uint32 AuroraFile::getVersion() const {
 	return _version;
 }
 
-bool AuroraBase::isUTF16LE() const {
+bool AuroraFile::isUTF16LE() const {
 	return _utf16le;
 }
 
-void AuroraBase::readHeader(Common::SeekableReadStream &stream,
-                            uint32 &id, uint32 &version, bool &utf16le) {
-
+void AuroraFile::readHeader(Common::ReadStream &stream, uint32 &id, uint32 &version, bool &utf16le) {
 	id      = stream.readUint32BE();
 	version = stream.readUint32BE();
 
@@ -72,23 +69,23 @@ void AuroraBase::readHeader(Common::SeekableReadStream &stream,
 		utf16le = false;
 }
 
-void AuroraBase::readHeader(Common::SeekableReadStream &stream, uint32 &id, uint32 &version) {
+void AuroraFile::readHeader(Common::ReadStream &stream, uint32 &id, uint32 &version) {
 	bool utf16le;
 	readHeader(stream, id, version, utf16le);
 }
 
-uint32 AuroraBase::readHeaderID(Common::SeekableReadStream &stream) {
+uint32 AuroraFile::readHeaderID(Common::ReadStream &stream) {
 	uint32 id, version;
 	readHeader(stream, id, version);
 
 	return id;
 }
 
-void AuroraBase::readHeader(Common::SeekableReadStream &stream) {
+void AuroraFile::readHeader(Common::ReadStream &stream) {
 	readHeader(stream, _id, _version, _utf16le);
 }
 
-uint32 AuroraBase::convertUTF16LE(uint32 x1, uint32 x2) {
+uint32 AuroraFile::convertUTF16LE(uint32 x1, uint32 x2) {
 	// Take 8 byte and remove every second byte
 
 	return ((x1 & 0xFF000000)      ) | ((x1 & 0x0000FF00) << 8) |

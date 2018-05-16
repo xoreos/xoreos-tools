@@ -26,10 +26,13 @@
 #define AURORA_GFF3FILE_H
 
 #include <vector>
-#include <list>
 #include <map>
 
+#include <boost/noncopyable.hpp>
+
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
+#include "src/common/ptrvector.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -47,10 +50,42 @@ class GFF3Struct;
 /** A GFF (generic file format) V3.2/V3.3 file, found in all Aurora games
  *  except Sonic Chronicles: The Dark Brotherhood. Even games that have
  *  V4.0/V4.1 GFFs additionally use V3.2/V3.3 files as well.
+ *
+ *  GFF files store hierarchical data, similar in concept to XML. They are
+ *  used whenever such data is useful: to, for example, hold area and object
+ *  descriptions, module and campaign specifications or conversations. They
+ *  consist of a top-level struct, with a collection of fields of various
+ *  types, indexed by a human-readable string name. A field can then be
+ *  another struct (which itself will be a collection of fields) or a
+ *  list of structs, leading to a recursive, hierarchical structure.
+ *
+ *  GFF V3.2/V3.3 files come in a multitude of types (ARE, DLG, ...), each
+ *  with its own 4-byte type ID ('ARE ', 'DLG ', ...). When specified in
+ *  the GFF3File constructor, the loader will enforce that it matches, and
+ *  throw an exception should it not. Conversely, an ID of 0xFFFFFFFF means
+ *  that no such type ID enforcement should be done. In both cases, the type
+ *  ID read from the file can get access through getType().
+ *
+ *  The GFF V3.2/V3.3 files found in the encrypted premium module archives
+ *  of Neverwinter Nights are deliberately broken in various way. When the
+ *  constructor parameter repairNWNPremium is set to true, GFF3File will
+ *  detect such broken files and automatically repair them. When this
+ *  parameter is set to false, no detection will take place, and these
+ *  broken files will lead the loader to throw an exception.
+ *
+ *  There is no functional difference between GFF V3.2 and V3.3 files. GFF
+ *  V3.3 files exclusively appear in The Witcher (and every GFF file there
+ *  is of version V3.3), simply to denote that the language table used for
+ *  LocStrings is different. Since xoreos has more flexible handling of
+ *  language IDs anyway, this doesn't concern us.
+ *
+ *  See also: GFF4File in gff4file.h for the later V4.0/V4.1 versions of
+ *  the GFF format.
  */
-class GFF3File : public AuroraBase {
+class GFF3File : boost::noncopyable, public AuroraFile {
 public:
-	GFF3File(Common::SeekableReadStream &gff3, uint32 id);
+	/** Take over this stream and read a GFF3 file out of it. */
+	GFF3File(Common::SeekableReadStream *gff3, uint32 id = 0xFFFFFFFF, bool repairNWNPremium = false);
 	~GFF3File();
 
 	/** Return the GFF3's specific type. */
@@ -81,18 +116,23 @@ private:
 		void read(Common::SeekableReadStream &gff3);
 	};
 
-	typedef std::vector<GFF3Struct *> StructArray;
+	typedef Common::PtrVector<GFF3Struct> StructArray;
 	typedef std::vector<GFF3List> ListArray;
 
 
-	Common::SeekableReadStream *_stream;
+	Common::ScopedPtr<Common::SeekableReadStream> _stream;
 
-	Header _header; ///< The GFF's header
+	Header _header; ///< The GFF3's header.
+
+	/** Should we try to read GFF3 files found in Neverwinter Nights premium modules? */
+	bool   _repairNWNPremium;
+	/** The correctional value for offsets to repair Neverwinter Nights premium modules. */
+	uint32 _offsetCorrection;
 
 	StructArray _structs; ///< Our structs.
 	ListArray   _lists;   ///< Our lists.
 
-	/** To convert list offsets found in GFF to real indices. */
+	/** To convert list offsets found in GFF3 to real indices. */
 	std::vector<uint32> _listOffsetToIndex;
 
 
@@ -101,33 +141,27 @@ private:
 	void loadHeader(uint32 id);
 	void loadStructs();
 	void loadLists();
-
-	void clear();
 	// '---
 
 	// .--- Helper methods called by GFF3Struct
-	/** Return the GFF stream. */
+	/** Return the GFF3 stream. */
 	Common::SeekableReadStream &getStream(uint32 offset) const;
-	/** Return the GFF stream seeked to the start of the field data. */
+	/** Return the GFF3 stream seeked to the start of the field data. */
 	Common::SeekableReadStream &getFieldData() const;
 
-	/** Return a struct within the GFF. */
+	/** Return a struct within the GFF3. */
 	const GFF3Struct &getStruct(uint32 i) const;
-	/** Return a list within the GFF. */
+	/** Return a list within the GFF3. */
 	const GFF3List   &getList  (uint32 i) const;
 	// '---
 
 	friend class GFF3Struct;
 };
 
-/** A struct within a GFF. */
+/** A struct within a GFF3. */
 class GFF3Struct {
 public:
-	// .--- Public types and methods for the GFF3Dumper tool
-	typedef std::list<Common::UString> FieldNameList;
-	typedef FieldNameList::const_iterator iterator;
-
-	/** The type of a GFF field. */
+	/** The type of a GFF3 field. */
 	enum FieldType {
 		kFieldTypeNone        = - 1, ///< Invalid type.
 		kFieldTypeByte        =   0, ///< A single byte.
@@ -141,29 +175,38 @@ public:
 		kFieldTypeFloat       =   8, ///< IEEE float.
 		kFieldTypeDouble      =   9, ///< IEEE double.
 		kFieldTypeExoString   =  10, ///< String.
-		kFieldTypeResRef      =  11, ///< String, max. 16 characters.
+		kFieldTypeResRef      =  11, ///< Resource reference, string.
 		kFieldTypeLocString   =  12, ///< Localized string.
 		kFieldTypeVoid        =  13, ///< Random data of variable length.
 		kFieldTypeStruct      =  14, ///< Struct containing a number of fields.
 		kFieldTypeList        =  15, ///< List containing a number of structs.
 		kFieldTypeOrientation =  16, ///< An object orientation.
 		kFieldTypeVector      =  17, ///< A vector of 3 floats.
-		kFieldTypeStrRef      =  18  ///< A reference into the TalkTable.
+		kFieldTypeStrRef      =  18  ///< String reference, index into a talk table.
 	};
 
-	iterator begin() const;
-	iterator end() const;
-
-	FieldType getType(const Common::UString &field) const;
-	// '---
-
-	/** Return the struct's ID. */
+	/** Return the struct's ID.
+	 *
+	 *  The ID is a (non-unique) number that's saved in the GFF3 file.
+	 *  It's sometimes used to identify the higher-level meaning of a struct
+	 *  within a GFF3.
+	 *
+	 *  The purpose of the ID in a GFF3 struct is comparable to the label in
+	 *  a GFF4 struct.
+	 */
 	uint32 getID() const;
 
 	/** Return the number of fields in this struct. */
 	size_t getFieldCount() const;
 	/** Does this specific field exist? */
 	bool hasField(const Common::UString &field) const;
+
+	/** Return a list of all field names in this struct. */
+	const std::vector<Common::UString> &getFieldNames() const;
+
+	/** Return the type of this field, or kFieldTypeNone if such a field doesn't exist. */
+	FieldType getFieldType(const Common::UString &field) const;
+
 
 	// .--- Read field values
 	char   getChar(const Common::UString &field, char   def = '\0' ) const;
@@ -176,7 +219,7 @@ public:
 	Common::UString getString(const Common::UString &field,
 	                          const Common::UString &def = "") const;
 
-	void getLocString(const Common::UString &field, LocString &str) const;
+	bool getLocString(const Common::UString &field, LocString &str) const;
 
 	void getVector     (const Common::UString &field,
 	                    float &x, float &y, float &z          ) const;
@@ -210,14 +253,16 @@ private:
 	typedef std::map<Common::UString, Field> FieldMap;
 
 
-	const GFF3File *_parent; ///< The parent GFF.
+	const GFF3File *_parent; ///< The parent GFF3.
 
 	uint32 _id;         ///< The struct's ID.
 	uint32 _fieldIndex; ///< Field / Field indices index.
 	uint32 _fieldCount; ///< Field count.
 
-	FieldMap      _fields;     ///< The fields, indexed by their label.
-	FieldNameList _fieldNames;
+	FieldMap _fields; ///< The fields, indexed by their label.
+
+	/** The names of all fields in this struct. */
+	std::vector<Common::UString> _fieldNames;
 
 
 	// .--- Loader
@@ -242,6 +287,9 @@ private:
 	// '---
 
 	friend class GFF3File;
+
+	template<typename T>
+	friend void Common::DeallocatorDefault::destroy(T *);
 };
 
 } // End of namespace Aurora

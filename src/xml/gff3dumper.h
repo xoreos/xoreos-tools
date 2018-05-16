@@ -25,6 +25,7 @@
 #ifndef XML_GFF3DUMPER_H
 #define XML_GFF3DUMPER_H
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -46,19 +47,20 @@ public:
 	~GFF3Dumper();
 
 	/** Dump the GFF into XML. */
-	void dump(Common::WriteStream &output, Common::SeekableReadStream &input,
-	          Common::Encoding encoding);
+	void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
+	          Common::Encoding encoding, bool allowNWNPremium = false);
 
 private:
-	Aurora::GFF3File *_gff3;
-	XMLWriter *_xml;
+	Common::ScopedPtr<Aurora::GFF3File> _gff3;
+	Common::ScopedPtr<XMLWriter> _xml;
 
 	void dumpLocString(const Aurora::LocString &locString);
 	void dumpField(const Aurora::GFF3Struct &strct, const Common::UString &field);
-	void dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label = "");
+	void dumpStruct(const Aurora::GFF3Struct &strct, const Common::UString &label);
+	void dumpStruct(const Aurora::GFF3Struct &strct);
 	void dumpList(const Aurora::GFF3List &list);
 
-	void clear();
+	void dumpStruct(const Aurora::GFF3Struct &strct, bool hasLabel, const Common::UString &label = "");
 };
 
 } // End of namespace XML

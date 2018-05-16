@@ -25,6 +25,8 @@
 #ifndef IMAGES_TXB_H
 #define IMAGES_TXB_H
 
+#include "src/common/scopedptr.h"
+
 #include "src/images/decoder.h"
 
 namespace Common {
@@ -33,7 +35,14 @@ namespace Common {
 
 namespace Images {
 
-/** Another one of BioWare's own texture formats, TXB. */
+/** Another one of BioWare's own texture formats, TXB.
+ *
+ *  This format is used by Jade Empire.
+ *
+ *  Even though the Xbox versions of the Knights of the Old Republic games
+ *  features textures with a .txb extension, these are actually in the TPC
+ *  format, not this TXB format.
+ */
 class TXB : public Decoder {
 public:
 	TXB(Common::SeekableReadStream &txb);
@@ -45,16 +54,16 @@ public:
 private:
 	size_t _dataSize;
 
-	byte  *_txiData;
+	Common::ScopedArray<byte> _txiData;
 	size_t _txiDataSize;
 
 	// Loading helpers
 	void load(Common::SeekableReadStream &txb);
-	void readHeader(Common::SeekableReadStream &txb, bool &needDeSwizzle);
-	void readData(Common::SeekableReadStream &txb, bool needDeSwizzle);
+	void readHeader(Common::SeekableReadStream &txb, byte &encoding);
+	void readData(Common::SeekableReadStream &txb, byte encoding);
 	void readTXIData(Common::SeekableReadStream &txb);
 
-	static void deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height);
+	static void deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height, uint8 bpp);
 };
 
 } // End of namespace Images

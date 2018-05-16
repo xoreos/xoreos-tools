@@ -1,0 +1,34 @@
+# Maintainer: Sven Hesse <drmccoy@drmccoy.de>
+
+pkgname=xoreos-tools-git
+_gitname=xoreos-tools
+pkgver=0.0.4.r0.g06f686c
+pkgrel=1
+pkgdesc="Tools to help with xoreos development"
+arch=('i686' 'x86_64')
+url="https://xoreos.org/"
+license=('GPL3')
+depends=('zlib' 'libxml2' 'boost' 'boost-libs')
+makedepends=()
+source=('git://github.com/xoreos/xoreos-tools.git')
+md5sums=('SKIP')
+
+pkgver() {
+	cd "$srcdir/$_gitname"
+
+	git describe --long --match desc/\* | cut -d '/' -f 2- | sed -e 's/\(.*\)-\([^-]*\)-\([^-]*\)/\1.r\2.\3/'
+}
+
+build() {
+	cd "$srcdir/$_gitname"
+
+	./autogen.sh
+	./configure --with-release=xArch --with-lto --prefix=/usr
+	make
+}
+
+package() {
+	cd "$srcdir/$_gitname"
+
+	make DESTDIR="$pkgdir/" install
+}

@@ -58,6 +58,7 @@ enum Language {
 	kLanguageJapanese,
 
 	kLanguageMAX,
+	kLanguageDebug   = 0xFFFFFFFD, ///< Pseudo value for debug strings.
 	kLanguageChinese = 0xFFFFFFFE, ///< Pseudo value that means either traditional or simplified Chinese.
 	kLanguageInvalid = 0xFFFFFFFF
 };
@@ -70,6 +71,45 @@ enum LanguageGender {
 	kLanguageGenderCurrent = 0xFF ///< Pseudo value that means the current language gender.
 };
 
+/** The global language manager.
+ *
+ *  The language manager holds all known supported languages of a game, as well
+ *  as the currently selected language(s) and gender (see below for details).
+ *
+ *  A language consists of these parts:
+ *  - A value of the Language type, describing what exact language this is.
+ *  - A numerical language ID by which the language is referenced in game data
+ *    files. This is the ungendered version of the language ID (see below for
+ *    details).
+ *  - The encoding to use when reading or writing text strings of this language.
+ *  - The encoding to use when reading or writing LocStrings of this language.
+ *    This can, but does not have to, be the same encoding as other strings of
+ *    this language.
+ *
+ *  Since the encoding can be different when reading LocStrings, two different
+ *  functions exist to query the encoding of language strings: one for
+ *  LocStrings and one for other string.s
+ *
+ *  Depending on the game, two different languages might be selected at the
+ *  same time, differentiating between use: the current language for text and
+ *  the current language for speech. Therefore, there are also two functions to
+ *  query the current language: one for the current text language, one for the
+ *  current speech language.
+ *
+ *  A language ID exists in two variants: gendered and ungendered. Some data
+ *  files specify ungendered language IDs, some gendered. A gendered language
+ *  ID is used to describe strings that may exist in two versions: one for
+ *  male player characters and one for female player characters. The ungendered
+ *  language ID used when describing a language as such.
+ *
+ *  The ungendered language IDs of a game are usually a simple running index.
+ *  The gendered variant of an ungendered language ID x is 2 * x + 0 for male
+ *  and 2 * x + 1 for female. The LanguageManager has functions to convert
+ *  between gendered language IDs and ungendered language IDs plus Gender value.
+ *
+ *  Likewise, the LanguageManager holds the value of the current gender of
+ *  the player character.
+ */
 class LanguageManager : public Common::Singleton<LanguageManager> {
 public:
 	struct Declaration {
@@ -77,24 +117,46 @@ public:
 
 		uint32 id;
 		Common::Encoding encoding;
+		Common::Encoding encodingLocString;
 	};
 
 	LanguageManager();
 	~LanguageManager();
 
 	// .--- Managed language methods
-	/** Clear all managaged languages from the LanguageManager. */
+	/** Clear all managed languages from the LanguageManager. */
 	void clear();
 
 	/** Add a supported language for the current game to the LanguageManager,
 	 *  together with its internal (ungendered) language ID and usual encoding. */
 	void addLanguage(Language language, uint32 id, Common::Encoding encoding);
 	/** Add a supported language for the current game to the LanguageManager,
+	 *  together with its internal (ungendered) language ID, the usual encoding,
+	 *  and the encoding when reading an embedded LocString string. */
+	void addLanguage(Language language, uint32 id, Common::Encoding encoding,
+	                 Common::Encoding encodingLocString);
+	/** Add a supported language for the current game to the LanguageManager,
 	 *  together with its internal (ungendered) language ID and usual encoding. */
 	void addLanguage(const Declaration &languageDeclaration);
 	/** Add several supported language for the current game to the LanguageManager,
 	 *  together with their internal (ungendered) language ID and usual encoding. */
 	void addLanguages(const Declaration *languageDeclarations, size_t count);
+
+	/** Add all supported languages for a specific game to the LanguageManager. */
+	void declareLanguages(GameID game);
+
+	/** Override the encoding of a specific (ungendered) language ID.
+	 *
+	 *  If this language ID has no language declared already, this method adds a
+	 *  fake language entry!
+	 */
+	void overrideEncoding(uint32 id, Common::Encoding encoding);
+	/** Override the encodings of a specific (ungendered) language ID.
+	 *
+	 *  If this language ID has no language declared already, this method adds a
+	 *  fake language entry!
+	 */
+	void overrideEncoding(uint32 id, Common::Encoding encoding, Common::Encoding encodingLocString);
 
 	/** Construct the internal language ID for an ungendered use of a language.
 	 *
@@ -137,6 +199,8 @@ public:
 
 	/** Return the encoding used for the given language. */
 	Common::Encoding getEncoding(Language language) const;
+	/** Return the encoding used for the given language, for reading an embedded LocString string. */
+	Common::Encoding getEncodingLocString(Language language) const;
 	// '---
 
 	// .--- Current language
@@ -160,6 +224,8 @@ public:
 
 	/** Return the encoding for the current text language. */
 	Common::Encoding getCurrentEncoding() const;
+	/** Return the encoding for the current text language, for reading an embedded LocString string. */
+	Common::Encoding getCurrentEncodingLocString() const;
 	// '---
 
 	// .--- Static language utility methods
@@ -167,7 +233,7 @@ public:
 	static Common::UString getLanguageName(Language language);
 
 	/** Parse this string into a language. */
-	static Language parseLanguage(Common::UString str);
+	static Language parseLanguage(const Common::UString &str);
 
 	/** Convert an ungendered language ID to a gendered language ID. */
 	static uint32 convertLanguageIDToGendered(uint32 languageID, LanguageGender gender);
@@ -210,6 +276,8 @@ private:
 	Language _currentLanguageText;
 	Language _currentLanguageVoice;
 	LanguageGender _currentGender;
+
+	uint32 _fakeLanguage;
 
 	const Declaration *find(Language language) const;
 	const Declaration *find(uint32 id) const;

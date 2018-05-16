@@ -28,6 +28,8 @@
 #include <map>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
+#include "src/common/ptrmap.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -35,14 +37,36 @@
 
 namespace Aurora {
 
-/** Loading BioWare's GFF'd talk tables. */
+/** Loading BioWare's GFF'd talk tables.
+ *
+ *  See class TalkTable for a general overview how talk tables work.
+ *
+ *  Unlike TalkTable_TLK, a GFF talk table stores the string data
+ *  within a V4.0 GFF. It does not store any language ID (the language
+ *  is implicit in the talk tables file name), nor any other data
+ *  besides the raw strings. getSoundResRef() always returns an empty
+ *  string.
+ *
+ *  There are two versions of GFF'd talk tables known and supported
+ *  - V0.2, used by Sonic Chronicles and Dragon Age: Origins
+ *  - V0.5, used by Dragon Age II
+ */
 class TalkTable_GFF : public TalkTable {
 public:
-	TalkTable_GFF(Common::SeekableReadStream &tlk, Common::Encoding encoding);
+	/** Take over this stream and read a GFF'd TLK out of it. */
+	TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_GFF();
 
 	const std::list<uint32> &getStrRefs() const;
 	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
+
+	bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
+	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
+	              uint32 &soundID) const;
+
+	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
+	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
+	              uint32 soundID);
 
 
 private:
@@ -54,16 +78,16 @@ private:
 		Entry(const GFF4Struct *s = 0) : strct(s) { }
 	};
 
-	typedef std::map<uint32, Entry *> Entries;
+	typedef Common::PtrMap<uint32, Entry> Entries;
 
 
-	GFF4File *_gff;
+	Common::ScopedPtr<GFF4File> _gff;
 
 	std::list<uint32> _strRefs;
 
 	Entries _entries;
 
-	void load(Common::SeekableReadStream &tlk);
+	void load(Common::SeekableReadStream *tlk);
 	void load02(const GFF4Struct &top);
 	void load05(const GFF4Struct &top);
 

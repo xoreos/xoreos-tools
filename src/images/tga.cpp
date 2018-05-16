@@ -18,10 +18,33 @@
  * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Partially based on the TGA implementation found in ScummVM.
-
 /** @file
  *  Decoding TGA (TarGa) images.
+ */
+
+/* Based on ScummVM (<http://scummvm.org>) code, which is released
+ * under the terms of version 2 or later of the GNU General Public
+ * License.
+ *
+ * The original copyright note in ScummVM reads as follows:
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #include <cstring>
@@ -80,6 +103,10 @@ void TGA::readHeader(Common::SeekableReadStream &tga, ImageType &imageType, byte
 	_mipMaps[0]->width  = tga.readUint16LE();
 	_mipMaps[0]->height = tga.readUint16LE();
 
+	if ((_mipMaps[0]->width >= 0x8000) || (_mipMaps[0]->height >= 0x8000))
+		throw Common::Exception("Unsupported image dimensions (%dx%d)",
+		                        _mipMaps[0]->width, _mipMaps[0]->height);
+
 	// Bits per pixel
 	pixelDepth = tga.readByte();
 
@@ -115,7 +142,7 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 		else if (_format == kPixelFormatB8G8R8A8)
 			_mipMaps[0]->size *= 4;
 
-		_mipMaps[0]->data = new byte[_mipMaps[0]->size];
+		_mipMaps[0]->data.reset(new byte[_mipMaps[0]->size]);
 
 		if (imageType == kImageTypeTrueColor) {
 			if (pixelDepth == 16) {
@@ -124,7 +151,7 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 				// Hopefully Sonic is the only game that needs 16bpp TGAs.
 
 				uint16 count = _mipMaps[0]->width * _mipMaps[0]->height;
-				byte   *dst  = _mipMaps[0]->data;
+				byte   *dst  = _mipMaps[0]->data.get();
 
 				while (count--) {
 					uint16 pixel = tga.readUint16LE();
@@ -136,22 +163,22 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 				}
 			} else {
 				// Read it in raw
-				tga.read(_mipMaps[0]->data, _mipMaps[0]->size);
+				tga.read(_mipMaps[0]->data.get(), _mipMaps[0]->size);
 			}
 		} else {
 			readRLE(tga, pixelDepth);
 		}
 	} else if (imageType == kImageTypeBW) {
 		_mipMaps[0]->size = _mipMaps[0]->width * _mipMaps[0]->height * 4;
-		_mipMaps[0]->data = new byte[_mipMaps[0]->size];
+		_mipMaps[0]->data.reset(new byte[_mipMaps[0]->size]);
 
-		byte  *data  = _mipMaps[0]->data;
+		byte  *data  = _mipMaps[0]->data.get();
 		uint32 count = _mipMaps[0]->width * _mipMaps[0]->height;
 
 		while (count-- > 0) {
 			byte g = tga.readByte();
 
-			memset(data, g, 3);
+			std::memset(data, g, 3);
 			data[3] = 0xFF;
 
 			data += 4;
@@ -161,14 +188,14 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 
 	// Bit 5 of imageDesc set means the origin in upper-left corner
 	if (imageDesc & 0x20)
-		::Images::flipVertically(_mipMaps[0]->data, _mipMaps[0]->width, _mipMaps[0]->height, pixelDepth / 8);
+		::Images::flipVertically(_mipMaps[0]->data.get(), _mipMaps[0]->width, _mipMaps[0]->height, pixelDepth / 8);
 }
 
 void TGA::readRLE(Common::SeekableReadStream &tga, byte pixelDepth) {
 	if (pixelDepth != 24 && pixelDepth != 32)
 		throw Common::Exception("Unhandled RLE depth %d", pixelDepth);
 
-	byte  *data  = _mipMaps[0]->data;
+	byte  *data  = _mipMaps[0]->data.get();
 	uint32 count = _mipMaps[0]->width * _mipMaps[0]->height;
 
 	while (count > 0) {

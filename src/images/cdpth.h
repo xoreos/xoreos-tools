@@ -27,6 +27,8 @@
 
 #include <vector>
 
+#include "src/common/ptrvector.h"
+
 #include "src/images/decoder.h"
 
 namespace Common {
@@ -55,7 +57,7 @@ public:
 	~CDPTH();
 
 private:
-	typedef std::vector<Common::SeekableReadStream *> Cells;
+	typedef Common::PtrVector<Common::SeekableReadStream> Cells;
 
 	struct ReadContext {
 		Common::SeekableReadStream *cdpth;
@@ -66,7 +68,6 @@ private:
 		uint32 height;
 
 		ReadContext(Common::SeekableReadStream &c, uint32 w, uint32 h);
-		~ReadContext();
 	};
 
 	void load(ReadContext &ctx);

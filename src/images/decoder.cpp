@@ -24,6 +24,7 @@
 
 #include <cassert>
 
+#include "src/common/scopedptr.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/memreadstream.h"
@@ -35,27 +36,63 @@
 
 namespace Images {
 
-Decoder::MipMap::MipMap() : width(0), height(0), size(0), data(0) {
+Decoder::MipMap::MipMap() : width(0), height(0), size(0) {
+}
+
+Decoder::MipMap::MipMap(const MipMap &mipMap) : width(0), height(0), size(0) {
+	*this = mipMap;
 }
 
 Decoder::MipMap::~MipMap() {
-	delete[] data;
+}
+
+Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
+	if (&mipMap == this)
+		return *this;
+
+	width  = mipMap.width;
+	height = mipMap.height;
+	size   = mipMap.size;
+
+	data.reset(new byte[size]);
+
+	std::memcpy(data.get(), mipMap.data.get(), size);
+
+	return *this;
 }
 
 void Decoder::MipMap::swap(MipMap &right) {
 	SWAP(width , right.width );
 	SWAP(height, right.height);
 	SWAP(size  , right.size  );
-	SWAP(data  , right.data  );
+
+	data.swap(right.data);
 }
 
 
-Decoder::Decoder() : _format(kPixelFormatR8G8B8A8) {
+Decoder::Decoder() : _format(kPixelFormatR8G8B8A8), _layerCount(1), _isCubeMap(false) {
+}
+
+Decoder::Decoder(const Decoder &decoder) {
+	*this = decoder;
 }
 
 Decoder::~Decoder() {
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
-		delete *m;
+}
+
+Decoder &Decoder::operator=(const Decoder &decoder) {
+	_format = decoder._format;
+
+	_layerCount = decoder._layerCount;
+	_isCubeMap  = decoder._isCubeMap;
+
+	_mipMaps.clear();
+	_mipMaps.reserve(decoder._mipMaps.size());
+
+	for (MipMaps::const_iterator m = decoder._mipMaps.begin(); m != decoder._mipMaps.end(); ++m)
+		_mipMaps.push_back(new MipMap(**m));
+
+	return *this;
 }
 
 Common::SeekableReadStream *Decoder::getTXI() const {
@@ -73,13 +110,30 @@ PixelFormat Decoder::getFormat() const {
 }
 
 size_t Decoder::getMipMapCount() const {
-	return _mipMaps.size();
+	assert((_mipMaps.size() % _layerCount) == 0);
+
+	return _mipMaps.size() / _layerCount;
 }
 
-const Decoder::MipMap &Decoder::getMipMap(size_t mipMap) const {
-	assert(mipMap < _mipMaps.size());
+size_t Decoder::getLayerCount() const {
+	return _layerCount;
+}
 
-	return *_mipMaps[mipMap];
+bool Decoder::isCubeMap() const {
+	assert(!_isCubeMap || (_layerCount == 6));
+
+	return _isCubeMap;
+}
+
+const Decoder::MipMap &Decoder::getMipMap(size_t mipMap, size_t layer) const {
+	assert(layer < _layerCount);
+	assert((_mipMaps.size() % _layerCount) == 0);
+
+	const size_t index = layer * getMipMapCount() + mipMap;
+
+	assert(index < _mipMaps.size());
+
+	return *_mipMaps[index];
 }
 
 void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
@@ -88,28 +142,32 @@ void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
 	    (format != kPixelFormatDXT5))
 		throw Common::Exception("Unknown compressed format %d", format);
 
+	/* The DXT algorithms work on 4x4 pixel blocks. Textures smaller than one
+	 * block will be padded, but larger textures need to be correctly aligned. */
+	if (!hasValidDimensions(format, in.width, in.height))
+		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", in.width, in.height, format);
+
 	out.width  = in.width;
 	out.height = in.height;
 	out.size   = MAX(out.width * out.height * 4, 64);
-	out.data   = new byte[out.size];
 
-	Common::MemoryReadStream *stream = new Common::MemoryReadStream(in.data, in.size);
+	out.data.reset(new byte[out.size]);
+
+	Common::ScopedPtr<Common::MemoryReadStream> stream(new Common::MemoryReadStream(in.data.get(), in.size));
 
 	if      (format == kPixelFormatDXT1)
-		decompressDXT1(out.data, *stream, out.width, out.height, out.width * 4);
+		decompressDXT1(out.data.get(), *stream, out.width, out.height, out.width * 4);
 	else if (format == kPixelFormatDXT3)
-		decompressDXT3(out.data, *stream, out.width, out.height, out.width * 4);
+		decompressDXT3(out.data.get(), *stream, out.width, out.height, out.width * 4);
 	else if (format == kPixelFormatDXT5)
-		decompressDXT5(out.data, *stream, out.width, out.height, out.width * 4);
-
-	delete stream;
+		decompressDXT5(out.data.get(), *stream, out.width, out.height, out.width * 4);
 }
 
 void Decoder::decompress() {
 	if (!isCompressed())
 		return;
 
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m) {
+	for (MipMaps::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m) {
 		MipMap decompressed;
 
 		decompress(decompressed, **m, _format);
@@ -120,34 +178,33 @@ void Decoder::decompress() {
 	_format = kPixelFormatR8G8B8A8;
 }
 
-bool Decoder::dumpTGA(const Common::UString &fileName) const {
+void Decoder::dumpTGA(const Common::UString &fileName) const {
 	if (_mipMaps.size() < 1)
-		return false;
+		throw Common::Exception("Image contains no mip maps");
 
 	if (!isCompressed()) {
 		Images::dumpTGA(fileName, *this);
-		return true;
+		return;
 	}
 
-	MipMap mipMap;
-	decompress(mipMap, *_mipMaps[0], _format);
-	Images::dumpTGA(fileName, mipMap.data, mipMap.width, mipMap.height, kPixelFormatR8G8B8A8);
+	Decoder decoder(*this);
+	decoder.decompress();
 
-	return true;
+	Images::dumpTGA(fileName, decoder);
 }
 
 void Decoder::flipHorizontally() {
 	decompress();
 
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
-		::Images::flipHorizontally((*m)->data, (*m)->width, (*m)->height, getBPP(_format));
+	for (MipMaps::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
+		::Images::flipHorizontally((*m)->data.get(), (*m)->width, (*m)->height, getBPP(_format));
 }
 
 void Decoder::flipVertically() {
 	decompress();
 
-	for (std::vector<MipMap *>::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
-		::Images::flipVertically((*m)->data, (*m)->width, (*m)->height, getBPP(_format));
+	for (MipMaps::iterator m = _mipMaps.begin(); m != _mipMaps.end(); ++m)
+		::Images::flipVertically((*m)->data.get(), (*m)->width, (*m)->height, getBPP(_format));
 }
 
 } // End of namespace Images

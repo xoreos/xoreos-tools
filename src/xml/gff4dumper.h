@@ -28,6 +28,7 @@
 #include <set>
 #include <map>
 
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/gff4file.h"
@@ -45,8 +46,8 @@ public:
 	~GFF4Dumper();
 
 	/** Dump the GFF into XML. */
-	void dump(Common::WriteStream &output, Common::SeekableReadStream &input,
-	          Common::Encoding encoding);
+	void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
+	          Common::Encoding encoding, bool allowNWNPremium = false);
 
 private:
 	struct GFF4Field {
@@ -54,44 +55,41 @@ private:
 		uint32 field;
 
 		uint32 label;
-		Aurora::GFF4Struct::IFieldType type;
+		Aurora::GFF4Struct::FieldType type;
 		bool isList;
 		bool isGeneric;
 
 		GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g);
 	};
 
-	typedef std::set<uint32> IDSet;
+	typedef std::set<uint64> IDSet;
 	typedef std::map<uint32, Common::UString> FieldNames;
 
 
 	FieldNames _fieldNames;
 
-	Aurora::GFF4File *_gff4;
-	XMLWriter *_xml;
+	Common::ScopedPtr<Aurora::GFF4File> _gff4;
+	Common::ScopedPtr<XMLWriter> _xml;
 
 	Common::Encoding _encoding;
 
 	IDSet _structIDs;
 
 
-	bool insertID(uint32 id);
+	bool insertID(uint64 id);
 
-	Common::UString getIFieldTypeName(uint32 type, bool isList) const;
+	Common::UString getFieldTypeName(uint32 type, bool isList) const;
 
-	void openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex, uint32 index);
-
-	void openFieldTag(uint32 type, bool isList);
-	void openFieldTagLabel(uint32 type, bool isList, uint32 label);
-	void openFieldTagIndex(uint32 type, bool isList, uint32 index);
+	void openFieldTag (uint32 type, bool typeList, bool hasLabel, uint32 label, bool hasIndex,
+	                   size_t index, bool isGenericElement = false);
 	void closeFieldTag(bool doBreak = true);
 
-	void dumpFieldUint  (const GFF4Field &field);
-	void dumpFieldSint  (const GFF4Field &field);
-	void dumpFieldDouble(const GFF4Field &field);
-	void dumpFieldString(const GFF4Field &field);
-	void dumpFieldTlk   (const GFF4Field &field);
-	void dumpFieldVector(const GFF4Field &field);
+	void dumpFieldUint  (const GFF4Field &field, bool isGenericElement = false);
+	void dumpFieldSint  (const GFF4Field &field, bool isGenericElement = false);
+	void dumpFieldDouble(const GFF4Field &field, bool isGenericElement = false);
+	void dumpFieldString(const GFF4Field &field, bool isGenericElement = false);
+	void dumpFieldTlk   (const GFF4Field &field, bool isGenericElement = false);
+	void dumpFieldVector(const GFF4Field &field, bool isGenericElement = false);
 
 	void dumpFieldGeneric(const GFF4Field &field);
 	void dumpFieldList   (const GFF4Field &field);
@@ -99,11 +97,9 @@ private:
 	void dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool isGeneric);
 
 	void dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label,
-	                bool hasIndex, uint32 index, bool isGeneric);
+	                bool hasIndex, size_t index, bool isGeneric);
 
 	Common::UString findFieldName(uint32 label) const;
-
-	void clear();
 };
 
 } // End of namespace XML

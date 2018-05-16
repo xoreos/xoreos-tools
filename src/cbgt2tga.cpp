@@ -25,19 +25,24 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "src/version/version.h"
+
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
+#include "src/common/platform.h"
 #include "src/common/readfile.h"
+#include "src/common/cli.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
 
 #include "src/images/cbgt.h"
 
-void printUsage(FILE *stream, const char *name);
-bool parseCommandLine(int argc, char **argv, int &returnValue,
+#include "src/util.h"
+
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &cbgtFile , Common::UString &palFile,
                       Common::UString &twoDAFile, Common::UString &outFile);
 
@@ -45,85 +50,42 @@ void convert(const Common::UString &cbgtFile , const Common::UString &palFile,
              const Common::UString &twoDAFile, const Common::UString &outFile);
 
 int main(int argc, char **argv) {
-	int returnValue;
-	Common::UString cbgtFile, palFile, twoDAFile, outFile;
-	if (!parseCommandLine(argc, argv, returnValue, cbgtFile, palFile, twoDAFile, outFile))
-		return returnValue;
+	initPlatform();
 
 	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString cbgtFile, palFile, twoDAFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, cbgtFile, palFile, twoDAFile, outFile))
+			return returnValue;
+
 		convert(cbgtFile, palFile, twoDAFile, outFile);
-	} catch (Common::Exception &e) {
-		Common::printException(e);
-		return -1;
-	} catch (std::exception &e) {
-		error("%s", e.what());
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
 	return 0;
 }
 
-bool parseCommandLine(int argc, char **argv, int &returnValue,
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &cbgtFile , Common::UString &palFile,
                       Common::UString &twoDAFile, Common::UString &outFile) {
-	if (argc < 5) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	std::vector<Common::CLI::Getter *> getters;
+	NoOption cbgtFileOpt(false, new ValGetter<Common::UString &>(cbgtFile, "cbgt"));
+	NoOption palFileOpt(false, new ValGetter<Common::UString &>(palFile, "pal"));
+	NoOption twoDAFileOpt(false, new ValGetter<Common::UString &>(twoDAFile, "2da"));
+	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
+	Parser parser(argv[0], "CBGT image to TGA converter", "", returnValue,
+	              makeEndArgs(&cbgtFileOpt, &palFileOpt, &twoDAFileOpt, &outFileOpt));
 
-		return false;
-	}
-
-	std::vector<Common::UString> args;
-
-	bool optionsEnd = false;
-	for (int i = 1; i < argc; i++) {
-		// A "--" marks an end to all options
-		if (!strcmp(argv[i], "--")) {
-			optionsEnd = true;
-			continue;
-		}
-
-		// We're still handling options
-		if (!optionsEnd) {
-			// Help text
-			if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-				printUsage(stdout, argv[0]);
-				returnValue = 0;
-
-				return false;
-			}
-
-			if (!strncmp(argv[i], "-", 1) || !strncmp(argv[i], "--", 2)) {
-			  // An options, but we already checked for all known ones
-
-				printUsage(stderr, argv[0]);
-				returnValue = -1;
-
-				return false;
-			}
-		}
-
-		args.push_back(argv[i]);
-	}
-
-	if (args.size() != 4) {
-		printUsage(stderr, argv[0]);
-		returnValue = -1;
-
-		return false;
-	}
-
-	cbgtFile  = args[0];
-	palFile   = args[1];
-	twoDAFile = args[2];
-	outFile   = args[3];
-
-	return true;
-}
-
-void printUsage(FILE *stream, const char *name) {
-	std::fprintf(stream, "CBGT image to TGA converter\n");
-	std::fprintf(stream, "       %s <cbgt file> <pal file> <2da file> <out file>\n", name);
-	std::fprintf(stream, "  -h      --help              This help text\n");
+	return parser.process(argv);
 }
 
 void convert(const Common::UString &cbgtFile , const Common::UString &palFile,

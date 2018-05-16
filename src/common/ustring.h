@@ -29,7 +29,10 @@
 #include <sstream>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+
 #include "src/common/types.h"
+#include "src/common/system.h"
 
 #include "utf8cpp/utf8.h"
 
@@ -60,12 +63,14 @@ public:
 		}
 	};
 
+	/** Construct an empty string. */
+	UString();
 	/** Copy constructor. */
 	UString(const UString &str);
 	/** Construct UString from an UTF-8 string. */
 	UString(const std::string &str);
 	/** Construct UString from an UTF-8 string. */
-	UString(const char *str = "");
+	UString(const char *str);
 	/** Construct UString from the first n bytes of an UTF-8 string. */
 	UString(const char *str, size_t n);
 	/** Construct UString by creating n copies of Unicode codepoint c. */
@@ -121,6 +126,7 @@ public:
 	iterator end() const;
 
 	iterator findFirst(uint32 c) const;
+	iterator findFirst(const UString &what) const;
 	iterator findLast(uint32 c) const;
 
 	bool beginsWith(const UString &with) const;
@@ -136,7 +142,7 @@ public:
 	void trimRight();
 	void trim();
 
-	/** Replace all occurences of a character with another character. */
+	/** Replace all occurrences of a character with another character. */
 	void replaceAll(uint32 what, uint32 with);
 
 	/** Convert the string to lowercase. */
@@ -149,9 +155,9 @@ public:
 	/** Return an uppercased copy of the string. */
 	UString toUpper() const;
 
-	/** Convert an iterator into a numerical position. */
-	iterator getPosition(size_t n)    const;
 	/** Convert a numerical position into an iterator. */
+	iterator getPosition(size_t n)    const;
+	/** Convert an iterator into a numerical position. */
 	size_t   getPosition(iterator it) const;
 
 	/** Insert character c in front of this position. */
@@ -172,7 +178,7 @@ public:
 	UString substr(iterator from, iterator to) const;
 
 	/** Print formatted data into an UString object, similar to sprintf(). */
-	static UString format(const char *s, ...);
+	static UString format(const char *s, ...) GCC_PRINTF(1, 2);
 
 	static size_t split(const UString &text, uint32 delim, std::vector<UString> &texts);
 
@@ -208,6 +214,31 @@ static inline UString operator+(const std::string &left, const UString &right) {
 static inline UString operator+(const char *left, const UString &right) {
 	return UString(left) + right;
 }
+
+
+// Hash functions
+
+struct hashUStringCaseSensitive {
+	size_t operator()(const UString &str) const {
+		size_t seed = 0;
+
+		for (UString::iterator it = str.begin(); it != str.end(); ++it)
+			boost::hash_combine<uint32>(seed, *it);
+
+		return seed;
+	}
+};
+
+struct hashUStringCaseInsensitive {
+	size_t operator()(const UString &str) const {
+		size_t seed = 0;
+
+		for (UString::iterator it = str.begin(); it != str.end(); ++it)
+			boost::hash_combine<uint32>(seed, UString::toLower(*it));
+
+		return seed;
+	}
+};
 
 } // End of namespace Common
 

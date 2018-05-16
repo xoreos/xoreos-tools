@@ -25,9 +25,11 @@
 #ifndef AURORA_HERFFILE_H
 #define AURORA_HERFFILE_H
 
+#include <vector>
 #include <map>
 
 #include "src/common/types.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -39,9 +41,18 @@ namespace Common {
 
 namespace Aurora {
 
-/** Class to hold resource data of an HERF file. */
+/** Class to hold resource data of an HERF archive file.
+ *
+ *  A HERF file is a very simplified version of a ERF file, similar to a
+ *  RIM file. But unlike a RIM file, a HERF file only stores djb2 hashes
+ *  of the included resource names. A dictionary, which matches hashes
+ *  back to names might be present, but doesn't have to.
+ *
+ *  HERF files are only used in the Nintendo DS game Sonic Chronicles.
+ */
 class HERFFile : public Archive {
 public:
+	/** Take over this stream and read an HERF file out of it. */
 	HERFFile(Common::SeekableReadStream *herf);
 	~HERFFile();
 
@@ -66,7 +77,7 @@ private:
 
 	typedef std::vector<IResource> IResourceList;
 
-	Common::SeekableReadStream *_herf;
+	Common::ScopedPtr<Common::SeekableReadStream> _herf;
 
 	/** External list of resource names and types. */
 	ResourceList _resources;
