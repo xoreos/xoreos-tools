@@ -182,6 +182,9 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 			disassembler.createDot(*out, printControlTypes);
 			break;
 
+		case kCommandNone:
+			disassembler.createListing(*out, printStack);
+			break;
 		default:
 			throw Common::Exception("Invalid command %u", (uint)command);
 	}
