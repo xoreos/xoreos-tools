@@ -34,7 +34,7 @@ namespace Common {
 namespace CLI {
 
 class Getter;
-struct NoOption;
+class NoOption;
 
 enum OptionRet {
 	kContinueParsing = 0,
