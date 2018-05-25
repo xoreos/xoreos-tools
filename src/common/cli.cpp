@@ -137,6 +137,7 @@ int Option::doOption(const std::vector<Common::UString> &args, int i, int size) 
 		case kGetter:
 			if (i + 1 < size)
 				return _getter->get(args, i + 1, size) + 1;
+			break;
 		default:
 			break;
 	}
