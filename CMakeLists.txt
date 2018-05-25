@@ -99,6 +99,9 @@ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
   # clang is far too trigger-happy on this warning, so let's disable it
   set_check_compiler_flag_cxx("-Wundefined-var-template" "-Wno-undefined-var-template")
+
+  # We do not yet mark any of our overrides. Let's disable this for now
+  set_check_compiler_flag_cxx("-Winconsistent-missing-override" "-Wno-inconsistent-missing-override")
 endif()
 
 # platform specific warning settings
