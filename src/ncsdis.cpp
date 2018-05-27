@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 		Aurora::GameID game = Aurora::kGameIDUnknown;
 
 		int returnValue = 1;
-		Command command = kCommandNone;
+		Command command = kCommandListing;
 		bool printStack = false;
 		bool printControlTypes = false;
 		Common::UString inFile, outFile;
