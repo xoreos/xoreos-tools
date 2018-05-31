@@ -110,6 +110,14 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&inFileOpt, &outFileOpt));
 
+	parser.addSpace();
+	parser.addOption("list", "Create full disassembly listing (default)", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Command>(kCommandListing, command)));
+	parser.addOption("assembly", "Only create disassembly mnemonics", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Command>(kCommandAssembly, command)));
+	parser.addOption("dot", "Create a graphviz dot file", kContinueParsing,
+	                 makeAssigners(new ValAssigner<Command>(kCommandDot, command)));
+	parser.addSpace();
 	parser.addOption("nwn", "This is a Neverwinter Nights script", kContinueParsing,
 	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
 	parser.addOption("nwn2", "This is a Neverwinter Nights 2 script", kContinueParsing,
@@ -127,12 +135,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addOption("dragonage2", "This is a Dragon Age II script", kContinueParsing,
 	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
 	parser.addSpace();
-	parser.addOption("list", "Create full disassembly listing (default)", kContinueParsing,
-	                 makeAssigners(new ValAssigner<Command>(kCommandListing, command)));
-	parser.addOption("assembly", "Only create disassembly mnemonics", kContinueParsing,
-	                 makeAssigners(new ValAssigner<Command>(kCommandAssembly, command)));
-	parser.addOption("dot", "Create a graphviz dot file", kContinueParsing,
-	                 makeAssigners(new ValAssigner<Command>(kCommandDot, command)));
 	parser.addOption("stack", "Print the stack frame for each instruction"
 	                 " (Only available in list or assembly mode)",
 	                 kContinueParsing,
