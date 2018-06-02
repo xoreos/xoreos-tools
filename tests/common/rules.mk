@@ -95,6 +95,8 @@ tests_common_test_blowfish_SOURCES  = tests/common/blowfish.cpp
 tests_common_test_blowfish_LDADD    = $(common_LIBS)
 tests_common_test_blowfish_CXXFLAGS = $(test_CXXFLAGS)
 
+noinst_HEADERS += tests/common/encoding.h tests/common/encoding_tests.h
+
 check_PROGRAMS                           += tests/common/test_encoding_ascii
 tests_common_test_encoding_ascii_SOURCES  = tests/common/encoding_ascii.cpp
 tests_common_test_encoding_ascii_LDADD    = $(common_LIBS)
