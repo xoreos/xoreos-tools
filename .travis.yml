@@ -6,12 +6,16 @@ compiler:
   - gcc
   - clang
 
+os:
+  - linux
+  - osx
+
 env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     #   via the "travis encrypt" command using the project repo's public key
     - secure: "PY2nEbgPiLlKzs5bojGmDE1KFjTQws504ZoEBh3O9AAJWfkEMQvhwfkO6wfp3hYXsQ4fZUfJM03CsJFxXiGk1oxXqBQ/lB1eKhf7GN8AY2giD+Ei6dD3hKbUwlmsbCk1YXryWsffrGwY/++0sRkgcYqAKHvQ1Z5POTNHNGMcg9M="
-    - coverity_scan_run_condition='\( "$CC" = gcc \) -a \( $USECMAKE -eq 0 \)'
+    - coverity_scan_run_condition='\( "$CC" = gcc \) -a \( $USECMAKE -eq 0 \) -a \( "$TRAVIS_OS_NAME" = linux \)'
     - coverity_scan_script_test_mode=false
   matrix:
     # Let's test both our autoconf and CMake build system
@@ -23,7 +27,15 @@ env:
 matrix:
   exclude:
     - compiler: clang
+      os: linux
       env: USECMAKE=1
+    # Exclude gcc build for osx
+    - compiler: gcc
+      os: osx
+
+# If building on osx, use brew to install dependencies
+before_install:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install zlib xz libxml2; fi
 
 script:
   # Configure, autotools
