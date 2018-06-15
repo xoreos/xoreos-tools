@@ -49,7 +49,7 @@ of Electronic Arts, Inc. All rights reserved.
 boost.m4
 ********
    xoreos-tools uses Benoit Sigoure's boost.m4 autoconf macros
-   (<http://github.com/tsuna/boost.m4>) to check for the needed Boost
+   (<https://github.com/tsuna/boost.m4>) to check for the needed Boost
    libraries. boost.m4 is licensed under version 3 or later of the GNU General
    Public License. For the full license text, see COPYING or
    <https://gnu.org/licenses/gpl-3.0.html>.
@@ -63,10 +63,10 @@ UTF-8 CPP
 
 ScummVM code
 ************
-   xoreos-tools uses some ScummVM (<http://scummvm.org/>) code, most prominently
-   the endian, singleton and stream code. ScummVM is licensed under version 2 or
-   later of the GNU General Public License. For the full license text, see
-   doc/LICENSE.GPLv2 or <https://gnu.org/licenses/gpl-2.0.html>.
+   xoreos-tools uses some ScummVM (<https://scummvm.org/>) code, most
+   prominently the endian, singleton and stream code. ScummVM is licensed under
+   version 2 or later of the GNU General Public License. For the full license
+   text, see doc/LICENSE.GPLv2 or <https://gnu.org/licenses/gpl-2.0.html>.
 
 Nintendo DS formats
 *******************
@@ -76,7 +76,7 @@ Nintendo DS formats
    license text, see COPYING or <https://gnu.org/licenses/gpl-3.0.html>.
    They are also based on lowlines' file format specifications
    (<http://llref.emutalk.net/docs/>) and the Nintendo DS information
-   documentation GBATEK by Martin Korth (<http://problemkaputt.de/gbatek.htm>).
+   documentation GBATEK by Martin Korth (<https://problemkaputt.de/gbatek.htm>).
 
 Google Test
 ***********
