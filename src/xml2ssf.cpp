@@ -132,7 +132,7 @@ void createSSF(const Common::UString &inFile, const Common::UString &outFile, Au
 	Common::WriteFile ssf(outFile);
 	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 
-	XML::SSFCreator::create(ssf, *xml, game);
+	XML::SSFCreator::create(ssf, *xml, game, inFile);
 
 	ssf.flush();
 	ssf.close();

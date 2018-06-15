@@ -38,7 +38,8 @@ namespace XML {
 
 class SSFCreator {
 public:
-	static void create(Common::WriteStream &output, Common::ReadStream &input, Aurora::GameID game);
+	static void create(Common::WriteStream &output, Common::ReadStream &input,
+	                   Aurora::GameID game, const Common::UString &inputFileName);
 };
 
 } // End of namespace XML

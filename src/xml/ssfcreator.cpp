@@ -35,8 +35,10 @@
 
 namespace XML {
 
-void SSFCreator::create(Common::WriteStream &output, Common::ReadStream &input, Aurora::GameID game) {
-	XMLParser xml(input, true);
+void SSFCreator::create(Common::WriteStream &output, Common::ReadStream &input,
+                        Aurora::GameID game, const Common::UString &inputFileName) {
+
+	XMLParser xml(input, true, inputFileName);
 	const XMLNode &xmlRoot = xml.getRoot();
 
 	if (xmlRoot.getName() != "ssf")
