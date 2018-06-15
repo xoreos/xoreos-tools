@@ -43,8 +43,11 @@ EXTRA_DIST += \
 # Licenses and credits
 dist_doc_DATA += \
     COPYING \
-    COPYING.GPLv2 \
     AUTHORS \
+    $(EMPTY)
+
+EXTRA_DIST += \
+    doc/LICENSE.GPLv2 \
     $(EMPTY)
 
 # User documentation

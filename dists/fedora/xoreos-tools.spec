@@ -124,7 +124,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_mandir}/man1/xoreostex2tga.1.*
 
 %doc *.md AUTHORS ChangeLog TODO
-%license COPYING*
+%license COPYING
 
 %changelog
 * Mon Feb 15 2016 Ben Rosser <rosser.bjr@gmail.com> 0.0.4-1
