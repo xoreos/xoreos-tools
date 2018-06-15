@@ -17,28 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
 
-# Unit tests.
+# Unit tests for the XML namespace.
 
-# Our Unit test framework, Google Test
+xml_LIBS = \
+    $(test_LIBS) \
+    src/xml/libxml.la \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    tests/version/libversion.la \
+    $(LDADD)
 
-include tests/googletest/rules.mk
-
-test_LIBS  = \
-    tests/googletest/libgtest.la \
-    tests/googletest/libgtest_main.la \
-    $(GTEST_LIBS)
-    $(EMPTY)
-
-test_CXXFLAGS = $(GTEST_FLAGS) $(AM_CXXFLAGS)
-
-noinst_HEADERS += \
-    tests/skip.h \
-    $(EMPTY)
-
-include tests/version/rules.mk
-include tests/common/rules.mk
-include tests/aurora/rules.mk
-include tests/images/rules.mk
-include tests/xml/rules.mk
-
-TESTS += $(check_PROGRAMS)
+check_PROGRAMS                   += tests/xml/test_xmlparser
+tests_xml_test_xmlparser_SOURCES  = tests/xml/xmlparser.cpp
+tests_xml_test_xmlparser_LDADD    = $(xml_LIBS)
+tests_xml_test_xmlparser_CXXFLAGS = $(test_CXXFLAGS)

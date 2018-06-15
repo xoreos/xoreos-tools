@@ -80,6 +80,7 @@ Makefile.in
 /tests/common/test_*
 /tests/aurora/test_*
 /tests/images/test_*
+/tests/xml/test_*
 
 # Unix binaries
 /src/gff2xml
