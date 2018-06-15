@@ -43,7 +43,8 @@ public:
 	};
 
 	static void create(Common::WriteStream &output, Common::ReadStream &input,
-	                   Version &version, Common::Encoding encoding, uint32 languageID = 0xFFFFFFFF);
+	                   Version &version, Common::Encoding encoding,
+	                   const Common::UString &inputFileName, uint32 languageID = 0xFFFFFFFF);
 };
 
 } // End of namespace XML

@@ -190,7 +190,7 @@ void createTLK(const Common::UString &inFile, const Common::UString &outFile, Co
 	Common::WriteFile tlk(outFile);
 	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 
-	XML::TLKCreator::create(tlk, *xml, version, encoding, language);
+	XML::TLKCreator::create(tlk, *xml, version, encoding, inFile, language);
 
 	tlk.flush();
 	tlk.close();

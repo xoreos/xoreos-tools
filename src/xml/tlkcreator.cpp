@@ -37,12 +37,13 @@
 namespace XML {
 
 void TLKCreator::create(Common::WriteStream &output, Common::ReadStream &input,
-                        Version &version, Common::Encoding encoding, uint32 languageID) {
+                        Version &version, Common::Encoding encoding,
+                        const Common::UString &inputFileName, uint32 languageID) {
 
 	if ((version != kVersion30) && (version != kVersion40))
 		throw Common::Exception("Invalid TLK version");
 
-	XMLParser xml(input, true);
+	XMLParser xml(input, true, inputFileName);
 	const XMLNode &xmlRoot = xml.getRoot();
 
 	if (xmlRoot.getName() != "tlk")
