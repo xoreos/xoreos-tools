@@ -283,6 +283,18 @@ src_ncsdis_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/erf
+src_erf_SOURCES = \
+    src/erf.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_erf_LDADD = \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 # Subdirectories
 
 include src/version/rules.mk
