@@ -103,6 +103,7 @@ Makefile.in
 /src/cbgt2tga
 /src/cdpth2tga
 /src/ncsdis
+/src/erf
 
 # Windows binaries
 /src/gff2xml.exe
@@ -125,3 +126,4 @@ Makefile.in
 /src/cbgt2tga.exe
 /src/cdpth2tga.exe
 /src/ncsdis.exe
+/src/erf.exe
