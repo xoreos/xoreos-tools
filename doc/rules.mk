@@ -17,42 +17,24 @@
 # You should have received a copy of the GNU General Public License
 # along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
 
-# Top-level automake build recipe.
+# Documentation for xoreos-tools
 
-# Extra files to help with the sources
-EXTRA_DIST += \
-    BUILDDEP.md \
-    .uncrustifyrc \
+# Licenses and credits
+dist_doc_DATA += \
+    COPYING \
+    AUTHORS \
     $(EMPTY)
 
-# Extra autotools files
-EXTRA_DIST += \
-    autogen.sh \
+# User documentation
+dist_doc_DATA += \
+    ChangeLog \
+    NEWS.md \
+    TODO \
+    README.md \
     $(EMPTY)
 
-# Files for CMake, our alternative build system
-EXTRA_DIST += \
-    CMakeLists.txt \
-    cmake/CMakeAM.cmake \
-    cmake/CMakeUninstall.cmake \
-    cmake/FindIconv.cmake \
-    cmake/SetCheckCompilerFlag.cmake \
-    cmake/toolchain/i686-windows-mingw.cmake \
-    cmake/toolchain/x86_64-windows-mingw.cmake \
+# Documents for contributors
+dist_doc_DATA += \
+    CONTRIBUTING.md \
+    CODE_OF_CONDUCT.md \
     $(EMPTY)
-
-EXTRA_DIST += \
-    doc/LICENSE.GPLv2 \
-    $(EMPTY)
-
-# Subdirectories
-
-include dists/rules.mk
-include man/rules.mk
-include doc/rules.mk
-
-include utf8cpp/rules.mk
-
-include src/rules.mk
-
-include tests/rules.mk
