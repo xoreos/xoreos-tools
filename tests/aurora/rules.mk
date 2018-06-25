@@ -100,3 +100,8 @@ check_PROGRAMS                    += tests/aurora/test_gdafile
 tests_aurora_test_gdafile_SOURCES  = tests/aurora/gdafile.cpp
 tests_aurora_test_gdafile_LDADD    = $(aurora_LIBS)
 tests_aurora_test_gdafile_CXXFLAGS = $(test_CXXFLAGS)
+
+check_PROGRAMS                      += tests/aurora/test_erfwriter
+tests_aurora_test_erfwriter_SOURCES  = tests/aurora/erfwriter.cpp
+tests_aurora_test_erfwriter_LDADD    = $(aurora_LIBS)
+tests_aurora_test_erfwriter_CXXFLAGS = $(test_CXXFLAGS)
