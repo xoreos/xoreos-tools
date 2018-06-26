@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 		Aurora::ERFWriter erfWriter(id, files.size(), writeFile);
 		for (std::set<Common::UString>::const_iterator iter = files.begin(); iter != files.end(); ++iter, ++i) {
 			std::printf("Packing %u/%u: %s ... ", (uint)i, (uint)files.size(), iter->c_str());
+			std::fflush(stdout);
 
 			Common::UString file = *iter;
 			Common::ReadFile fileStream(file);
