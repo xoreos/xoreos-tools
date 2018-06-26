@@ -104,9 +104,11 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&filesOpt));
 
+	parser.addSpace();
 	parser.addOption("output", 'o', "Write the output to this file",
 	                 kContinueParsing,
 	                 new ValGetter<Common::UString &>(outFile, "file"));
+	parser.addSpace();
 	parser.addOption("2da", "Convert to ASCII 2DA (default)",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<Format>(kFormat2DA,

@@ -200,12 +200,14 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
+	parser.addSpace();
 	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN2, game)));
 	parser.addOption("jade", "Alias file types according to Jade Empire rules",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
+	parser.addSpace();
 	parser.addOption("pass", "Decryption password, if required, in hex notation",
 	                 kContinueParsing,
 	                 new Callback<std::vector<byte> &>("hex", parsePassword, password));

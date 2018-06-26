@@ -146,12 +146,15 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              makeEndArgs(&inFileOpt, &outFileOpt));
 
 
+	parser.addSpace();
 	parser.addOption("cp1252", "Read GFF4 strings as Windows CP-1252", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Common::Encoding>(Common::kEncodingCP1252,
 	                 encoding)));
+	parser.addSpace();
 	parser.addOption("nwnpremium", "This is a broken GFF from a Neverwinter Nights premium module",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<bool>(true, nwnPremium)));
+	parser.addSpace();
 	parser.addOption("nwn", "Use Neverwinter Nights encodings", kContinueParsing,
 	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
 	parser.addOption("nwn2", "Use Neverwinter Nights 2 encodings", kContinueParsing,

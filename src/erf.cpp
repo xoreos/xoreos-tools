@@ -97,6 +97,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&archiveOpt, &filesOpt));
 
+	parser.addSpace();
 	parser.addOption("erf", "Set ERF as archive id (default)",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<uint32>(kERFID, id)));

@@ -99,6 +99,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&inFileOpt, &outFileOpt));
 
+	parser.addSpace();
 	parser.addOption("auto", "Autodetect input type (default)", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeNone, type)));
 	parser.addOption("dds", "Input file is DDS", kContinueParsing,
@@ -111,6 +112,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTXB, type)));
 	parser.addOption("tga", "Input file is TGA", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTGA, type)));
+	parser.addSpace();
 	parser.addOption("flip", 'f', "Flip the image vertically", kContinueParsing,
 	                 makeAssigners(new ValAssigner<bool>(true, flip)));
 	return parser.process(argv);

@@ -121,6 +121,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&cmdOpt, &fileOpt));
 
+	parser.addSpace();
 	parser.addOption("nwn2", "Alias file types according to Neverwinter Nights 2 rules",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDNWN2, game)));

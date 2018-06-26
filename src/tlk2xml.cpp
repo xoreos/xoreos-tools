@@ -102,7 +102,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue,
 	              makeEndArgs(&inFileOpt, &outFileOpt));
 
-
+	parser.addSpace();
 	parser.addOption("cp1250", "Read TLK strings as Windows CP-1250", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1250, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));

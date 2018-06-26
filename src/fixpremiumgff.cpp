@@ -88,6 +88,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
 
+	parser.addSpace();
 	parser.addOption("id", "Write this GFF ID into the output file",
 			 kContinueParsing, new ValGetter<Common::UString &>(id, "id"));
 
