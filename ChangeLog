@@ -2,6 +2,7 @@ Someday, ????-??-?? (Version 0.0.5)
 	- Tools added:
 		- ssf2xml
 		- xml2ssf
+		- erf
 	- DOCS:
 		- Corrected example section of the convert2da manpage
 		- Improved documentation in various files
