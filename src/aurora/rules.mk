@@ -49,6 +49,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/smallfile.h \
     src/aurora/nitrofile.h \
     src/aurora/nsbtxfile.h \
+    src/aurora/erfwriter.h \
     $(EMPTY)
 
 src_aurora_libaurora_la_SOURCES += \
@@ -75,4 +76,5 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/smallfile.cpp \
     src/aurora/nitrofile.cpp \
     src/aurora/nsbtxfile.cpp \
+    src/aurora/erfwriter.cpp \
     $(EMPTY)

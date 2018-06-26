@@ -131,6 +131,19 @@ public:
 			throw Exception(kWriteError);
 	}
 
+	/** Write n bytes of value to the stream. */
+	void writeBytes(byte value, size_t n) {
+		for (size_t i = 0; i < n; ++i) {
+			if (write(&value, 1) != 1)
+				throw Exception(kWriteError);
+		}
+	}
+
+	/** Write n zeros to the stream. */
+	FORCEINLINE void writeZeros(size_t n) {
+		writeBytes(0, n);
+	}
+
 	FORCEINLINE void writeSint16LE(int16 value) {
 		writeUint16LE((uint16)value);
 	}
@@ -197,6 +210,64 @@ public:
 	/** Write the given string to the stream, encoded as UTF-8.
 	 *  No terminating zero byte is written. */
 	void writeString(const UString &str);
+};
+
+class SeekableWriteStream : public WriteStream {
+public:
+	/** The position a seeking offset takes as a base. */
+	enum Origin {
+		kOriginBegin   = 0, ///< Seek from the begin of the stream.
+		kOriginCurrent = 1, ///< Seek from the current position of the stream.
+		kOriginEnd     = 2, ///< Seek from the end of the stream.
+		kOriginMAX          ///< For range checks.
+	};
+
+	SeekableWriteStream();
+	~SeekableWriteStream();
+
+	/** Obtains the current value of the stream position indicator of the stream.
+	 *
+	 *  @return the current position indicator, or kPositionInvalid if an error occurred.
+	 */
+	virtual size_t pos() const = 0;
+
+	/** Obtains the total size of the stream, measured in bytes.
+	 *  If this value is unknown or can not be computed, kSizeInvalid is returned.
+	 *
+	 *  @return the size of the stream, or kSizeInvalid if an error occurred.
+	 */
+	virtual size_t size() const = 0;
+
+	/** Sets the stream position indicator for the stream. The new position,
+	 *  measured in bytes, is obtained by adding offset bytes to the position
+	 *  specified by whence. If whence is set to kOriginBegin, kOriginCurrent, or
+	 *  kOriginEnd, the offset is relative to the start of the file, the current
+	 *  position indicator, or end-of-file, respectively.
+	 *
+	 *  On error, or when trying to seek outside the stream, a kSeekError
+	 *  exception is thrown.
+	 *
+	 *  @param  offset the relative offset in bytes.
+	 *  @param  whence the seek reference: kOriginBegin, kOriginCurrent or kOriginEnd.
+	 *  @return the previous position of the stream, before seeking.
+	 */
+	virtual size_t seek(ptrdiff_t offset, Origin whence = kOriginBegin) = 0;
+
+	/** Skip the specified number of bytes, adding that offset to the current
+	 *  position in the stream.
+	 *
+	 *  On error, or when trying to skip outside the stream, a kSeekError
+	 *  exception is thrown.
+	 *
+	 *  @param  offset the number of bytes to skip.
+	 *  @return the previous position of the stream, before skipping.
+	 */
+	virtual size_t skip(ptrdiff_t offset) {
+		return seek(offset, kOriginCurrent);
+	}
+
+	/** Evaluate the seek offset relative to whence into a position from the beginning. */
+	static size_t evalSeek(ptrdiff_t offset, Origin whence, size_t pos, size_t begin, size_t size);
 };
 
 } // End of namespace Common
