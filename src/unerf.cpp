@@ -348,6 +348,7 @@ void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
 			fileName.replaceAll('/', '=');
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
+		std::fflush(stdout);
 
 		try {
 			Common::ScopedPtr<Common::SeekableReadStream> stream(erf.getResource(r->index));
