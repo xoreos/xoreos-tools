@@ -40,7 +40,8 @@ static const uint32 kHAKID = MKTAG('H', 'A', 'K', ' ');
 static const uint32 kSAVID = MKTAG('S', 'A', 'V', ' ');
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &archive, std::set<Common::UString> &files, uint32 id);
+                      Common::UString &archive, std::set<Common::UString> &files, uint32 id,
+                      Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -49,12 +50,14 @@ int main(int argc, char **argv) {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);
 
-		uint32 id = kERFID;
+		Aurora::GameID game = Aurora::kGameIDUnknown;
+
 		int returnValue = 1;
+		uint32 id = kERFID;
 		Common::UString archive;
 		std::set<Common::UString> files;
 
-		if (!parseCommandLine(args, returnValue, archive, files, id))
+		if (!parseCommandLine(args, returnValue, archive, files, id, game))
 			return returnValue;
 
 		Common::WriteFile writeFile(archive);
@@ -68,7 +71,9 @@ int main(int argc, char **argv) {
 			Common::UString file = *iter;
 			Common::ReadFile fileStream(file);
 
-			erfWriter.add(Common::FilePath::getStem(file), TypeMan.getFileType(file), fileStream);
+			const Aurora::FileType type = TypeMan.unaliasFileType(TypeMan.getFileType(file), game);
+
+			erfWriter.add(Common::FilePath::getStem(file), type, fileStream);
 			std::printf("Done\n");
 		}
 	} catch (...) {
@@ -79,7 +84,8 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &archive, std::set<Common::UString> &files, uint32 id) {
+                      Common::UString &archive, std::set<Common::UString> &files, uint32 id,
+                      Aurora::GameID &game) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -88,6 +94,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	using Common::CLI::ValAssigner;
 	using Common::CLI::makeEndArgs;
 	using Common::CLI::makeAssigners;
+	using Aurora::GameID;
 
 	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "output archive"));
 	NoOption filesOpt(true, new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
@@ -110,6 +117,10 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addOption("sav", "Set SAV as archive id",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<uint32>(kSAVID, id)));
+	parser.addSpace();
+	parser.addOption("jade", "Unalias file types according to Jade Empire rules",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDJade, game)));
 
 	return parser.process(argv);
 }

@@ -33,8 +33,6 @@ Generation of zlib-compressed archives.
 .It
 Generation of Blowfish-encrypted archives.
 .It
-Generation of archives with numerical extension IDs belonging to different games.
-.It
 Generation of XOR-encrypted archives.
 .It
 Setting of a description for archives.
@@ -56,6 +54,14 @@ Set archive ID to MOD.
 Set archive ID to HAK.
 .It Fl Fl sav
 Set archive ID to SAV.
+.It Fl Fl jade
+Unalias file types according to
+.Em Jade Empire
+rules.
+.Pp
+.Em Jade Empire
+reuses a few file extension IDs differently than other BioWare games.
+To correctly write Jade Empire ERF archives, use this flag.
 .It Ar output_archive
 The ERF archive to be written.
 .It Ar files

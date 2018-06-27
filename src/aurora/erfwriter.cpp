@@ -101,8 +101,6 @@ void ERFWriter::add(const Common::UString &resRef, FileType resType, Common::Rea
 	if (resType >= kFileTypeMAXArchive)
 		resType = kFileTypeRES;
 
-	// TODO: Handle file type aliases
-
 	_stream.write(resRef.c_str(), MIN<size_t>(resRef.size(), 16));
 	_stream.writeZeros(16 - MIN<size_t>(resRef.size(), 16));
 	_stream.writeUint32LE(_currentFileCount);
