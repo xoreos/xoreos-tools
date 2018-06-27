@@ -1,0 +1,77 @@
+.Dd June 27, 2018
+.Dt ERF 1
+.Os
+.Sh NAME
+.Nm erf
+.Nd BioWare ERF (.erf, .mod, .nwm, .sav) Archive Packer
+.Sh SYNOPSIS
+.Nm unerf
+.Op Ar options
+.Ar output_archive
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+packs files together into a BioWare ERF archive, found in many
+BioWare Games as files with the extensions .erf, .mod, .nwm or .sav.
+Moreover, in some games, a .rim file might be an ERF instead of a RIM.
+.Pp
+There's several different versions of ERFs.
+This tool supports only the version V1.0.
+.Pp
+Unsupported Features:
+.Bl -bullet -compact
+.It
+Generation of archives with stripped filenames.
+.It
+Generation of zlib-compressed archives.
+.It
+Generation of Blowfish-encrypted archives.
+.It
+Generation of Archives with numerical extension IDs belonging to different games.
+.It
+Generation of XOR-encrypted archives.
+.It
+Setting of a description for archives.
+.It
+Usage of paths in archives.
+.El
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl Fl erf
+Set ERF as archive id
+.It Fl Fl mod
+Set MOD as archive id
+.It Fl Fl hak
+Set HAK as archive id
+.It Fl Fl sav
+Set SAV as archive id
+.It Ar output_archive
+The ERF archive to be written.
+.It Ar files
+One or more files to pack together.
+.El
+.Sh EXAMPLES
+Pack some files together into an erf archive
+.Pp
+.Dl $ erf archive.erf file1.dat file2.dat file3.dat
+.Pp
+Pack some files together into a sav archive
+.Pp
+.Dl $ erf --sav archive.sav file1.dat file2.dat file3.dat
+.Sh SEE ALSO
+.Xr unerf 1 ,
+.Xr unherf 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.
