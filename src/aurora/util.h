@@ -45,7 +45,7 @@ public:
 	~FileTypeManager();
 
 	/** Alias a file type, for reading in original game files. */
-	FileType aliasFileType(FileType type, GameID game = kGameIDUnknown) const;
+	FileType aliasFileType(FileType type, GameID game) const;
 	/** Unalias a file type, for writing original game files. */
 	FileType unaliasFileType(FileType type, GameID game) const;
 
