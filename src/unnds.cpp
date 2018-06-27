@@ -139,9 +139,7 @@ void listFiles(Aurora::NDSFile &nds) {
 	std::printf("=======================================|===========\n");
 
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = TypeMan.aliasFileType(r->type);
-
-		std::printf("%32s%-6s | %10d\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
+		std::printf("%32s%-6s | %10d\n", r->name.c_str(), TypeMan.setFileType("", r->type).c_str(),
 		                               nds.getResourceSize(r->index));
 	}
 }
@@ -154,8 +152,7 @@ void extractFiles(Aurora::NDSFile &nds) {
 
 	size_t i = 1;
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Aurora::FileType type     = TypeMan.aliasFileType(r->type);
-		const Common::UString fileName = TypeMan.setFileType(r->name, type);
+		const Common::UString fileName = TypeMan.setFileType(r->name, r->type);
 
 		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
 
