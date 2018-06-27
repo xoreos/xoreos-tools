@@ -348,59 +348,33 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 	// Disambiguate reused type IDs that describe a different file format in a specific game
 	switch (game) {
 		case kGameIDNWN2:
-			switch ((int) type) {
-				case 3000:
-					return Aurora::kFileTypeOSC;
-				case 3001:
-					return Aurora::kFileTypeUSC;
-				case 3002:
-					return Aurora::kFileTypeTRN;
-				case 3003:
-					return Aurora::kFileTypeUTR;
-				case 3004:
-					return Aurora::kFileTypeUEN;
-				case 3005:
-					return Aurora::kFileTypeULT;
-				case 3006:
-					return Aurora::kFileTypeSEF;
-				case 3007:
-					return Aurora::kFileTypePFX;
-				case 3008:
-					return Aurora::kFileTypeCAM;
-				case 3009:
-					return Aurora::kFileTypeLFX;
-				case 3010:
-					return Aurora::kFileTypeBFX;
-				case 3011:
-					return Aurora::kFileTypeUPE;
-				case 3012:
-					return Aurora::kFileTypeROS;
-				case 3013:
-					return Aurora::kFileTypeRST;
-				case 3014:
-					return Aurora::kFileTypeIFX;
-				case 3015:
-					return Aurora::kFileTypePFB;
-				case 3016:
-					return Aurora::kFileTypeZIP;
-				case 3017:
-					return Aurora::kFileTypeWMP;
-				case 3018:
-					return Aurora::kFileTypeBBX;
-				case 3019:
-					return Aurora::kFileTypeTFX;
-				case 3020:
-					return Aurora::kFileTypeWLK;
-				case 3021:
-					return Aurora::kFileTypeXML;
-				case 3022:
-					return Aurora::kFileTypeSCC;
-				case 3033:
-					return Aurora::kFileTypePTX;
-				case 3034:
-					return Aurora::kFileTypeLTX;
-				case 3035:
-					return Aurora::kFileTypeTRX;
+			switch (static_cast<int>(type)) {
+				case 3000: return Aurora::kFileTypeOSC;
+				case 3001: return Aurora::kFileTypeUSC;
+				case 3002: return Aurora::kFileTypeTRN;
+				case 3003: return Aurora::kFileTypeUTR;
+				case 3004: return Aurora::kFileTypeUEN;
+				case 3005: return Aurora::kFileTypeULT;
+				case 3006: return Aurora::kFileTypeSEF;
+				case 3007: return Aurora::kFileTypePFX;
+				case 3008: return Aurora::kFileTypeCAM;
+				case 3009: return Aurora::kFileTypeLFX;
+				case 3010: return Aurora::kFileTypeBFX;
+				case 3011: return Aurora::kFileTypeUPE;
+				case 3012: return Aurora::kFileTypeROS;
+				case 3013: return Aurora::kFileTypeRST;
+				case 3014: return Aurora::kFileTypeIFX;
+				case 3015: return Aurora::kFileTypePFB;
+				case 3016: return Aurora::kFileTypeZIP;
+				case 3017: return Aurora::kFileTypeWMP;
+				case 3018: return Aurora::kFileTypeBBX;
+				case 3019: return Aurora::kFileTypeTFX;
+				case 3020: return Aurora::kFileTypeWLK;
+				case 3021: return Aurora::kFileTypeXML;
+				case 3022: return Aurora::kFileTypeSCC;
+				case 3033: return Aurora::kFileTypePTX;
+				case 3034: return Aurora::kFileTypeLTX;
+				case 3035: return Aurora::kFileTypeTRX;
 				default:
 					break;
 			}
@@ -408,14 +382,10 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 
 		case kGameIDJade:
 			switch (type) {
-				case kFileTypeBTC:
-					return kFileTypeCRE;
-				case kFileTypeBTP:
-					return kFileTypePLA;
-				case kFileTypeBTT:
-					return kFileTypeTRG;
-				case kFileTypeGIT:
-					return kFileTypeSAV;
+				case kFileTypeBTC: return kFileTypeCRE;
+				case kFileTypeBTP: return kFileTypePLA;
+				case kFileTypeBTT: return kFileTypeTRG;
+				case kFileTypeGIT: return kFileTypeSAV;
 				default:
 					break;
 			}
@@ -427,20 +397,13 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 
 	// Alias multiple type IDs that describe the same format
 	switch (type) {
-		case kFileTypeQST2:
-			return kFileTypeQST;
-		case kFileTypeMDX2:
-			return kFileTypeMDX;
-		case kFileTypeTXB2:
-			return kFileTypeTXB;
-		case kFileTypeMDB2:
-			return kFileTypeMDB;
-		case kFileTypeMDA2:
-			return kFileTypeMDA;
-		case kFileTypeSPT2:
-			return kFileTypeSPT;
-		case kFileTypeJPG2:
-			return kFileTypeJPG;
+		case kFileTypeQST2: return kFileTypeQST;
+		case kFileTypeMDX2: return kFileTypeMDX;
+		case kFileTypeTXB2: return kFileTypeTXB;
+		case kFileTypeMDB2: return kFileTypeMDB;
+		case kFileTypeMDA2: return kFileTypeMDA;
+		case kFileTypeSPT2: return kFileTypeSPT;
+		case kFileTypeJPG2: return kFileTypeJPG;
 		default:
 			break;
 	}
