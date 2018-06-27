@@ -44,6 +44,7 @@ public:
 	FileTypeManager();
 	~FileTypeManager();
 
+	/** Alias a file type, for reading in original game files. */
 	FileType aliasFileType(FileType type, GameID game = kGameIDUnknown) const;
 
 	/** Return the file type of a file name, detected by its extension. */
