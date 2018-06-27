@@ -31,7 +31,7 @@ namespace Common {
 
 namespace CLI {
 
-static void cliSetHelp(Common::UString &helpStr, const char *longName,
+static void cliSetHelp(UString &helpStr, const char *longName,
                        char shortName, const char *optionArgs,
                        uint32_t maxArgLength, const char *help) {
 	helpStr += "  ";
@@ -56,13 +56,13 @@ static void cliSetHelp(Common::UString &helpStr, const char *longName,
 }
 
 template<>
-int ValGetter<UString &>::get(const std::vector<Common::UString> &args, int i, int) {
+int ValGetter<UString &>::get(const std::vector<UString> &args, int i, int) {
 	_val = args[i];
 	return 0;
 }
 
 template<>
-int ValGetter<uint32_t &>::get(const std::vector<Common::UString> &args, int i, int) {
+int ValGetter<uint32_t &>::get(const std::vector<UString> &args, int i, int) {
 	const char *str = args[i].c_str();
 
 	for (int j = 0;j < str[j]; ++j) {
@@ -74,7 +74,7 @@ int ValGetter<uint32_t &>::get(const std::vector<Common::UString> &args, int i, 
 }
 
 template<>
-int ValGetter<int32_t &>::get(const std::vector<Common::UString> &args, int i, int) {
+int ValGetter<int32_t &>::get(const std::vector<UString> &args, int i, int) {
 	const char *str = args[i].c_str();
 	int j = 0;
 
@@ -89,7 +89,7 @@ int ValGetter<int32_t &>::get(const std::vector<Common::UString> &args, int i, i
 }
 
 template<>
-int ValGetter<std::vector<Common::UString> &>::get(const std::vector<Common::UString> &args,
+int ValGetter<std::vector<UString> &>::get(const std::vector<UString> &args,
                                                    int i, int size) {
 	int j = i;
 
@@ -99,7 +99,7 @@ int ValGetter<std::vector<Common::UString> &>::get(const std::vector<Common::USt
 }
 
 template<>
-int ValGetter<std::list<Common::UString> &>::get(const std::vector<Common::UString> &args,
+int ValGetter<std::list<UString> &>::get(const std::vector<UString> &args,
                                                  int i, int size) {
 	int j = i;
 
@@ -109,7 +109,7 @@ int ValGetter<std::list<Common::UString> &>::get(const std::vector<Common::UStri
 }
 
 template<>
-int ValGetter<std::set<Common::UString> &>::get(const std::vector<Common::UString> &args,
+int ValGetter<std::set<UString> &>::get(const std::vector<UString> &args,
                                                 int i, int size) {
 	int j = i;
 
@@ -118,7 +118,7 @@ int ValGetter<std::set<Common::UString> &>::get(const std::vector<Common::UStrin
 	return j - i;
 }
 
-int Option::doOption(const std::vector<Common::UString> &args, int i, int size) {
+int Option::doOption(const std::vector<UString> &args, int i, int size) {
 	switch (_type) {
 		case kAssigner:
 			assign();
@@ -170,7 +170,7 @@ void NoOption::free() {
 	delete _getter;
 }
 
-Parser::Parser(const Common::UString &name, const char *description, const char *bottom,
+Parser::Parser(const UString &name, const char *description, const char *bottom,
                int &returnVal, std::vector<NoOption> endCli) :
 	_bottom(bottom), _helpStr(description), _options(), _noOptions(endCli), _returnVal(returnVal) {
 
@@ -211,8 +211,8 @@ void Parser::addOption(const char *longName, char shortName, const char *help,
 }
 
 void Parser::addOption(const char *longName, char shortName, const char *help,
-                       OptionRet ret, void (*printer)(Common::UString &),
-                       Common::UString &str) {
+                       OptionRet ret, void (*printer)(UString &),
+                       UString &str) {
 	_options.push_back(new Option(longName, shortName, help, ret, printer, str));
 }
 
@@ -233,28 +233,28 @@ void Parser::addOption(const char *longName, char shortName, const char *help,
 
 
 Option *findMatchOptionShortName(std::vector<Option *> options,
-                                 const Common::UString &str) {
+                                 const UString &str) {
 	for (int i = 0, size = options.size(); i < size; ++i) {
 		Option *option = options[i];
 
-		if ((Common::UString('-') + option->shortName()) == str)
+		if ((UString('-') + option->shortName()) == str)
 			return option;
 	}
 	return 0;
 }
 
 Option *findMatchOptionName(std::vector<Option *> options,
-                            const Common::UString &str) {
+                            const UString &str) {
 	for (int i = 0, size = options.size(); i < size; ++i) {
 		Option *option = options[i];
 
-		if ((Common::UString("--") + option->name()) == str)
+		if ((UString("--") + option->name()) == str)
 			return option;
 	}
 	return 0;
 }
 
-bool Parser::process(const std::vector<Common::UString> &argv) {
+bool Parser::process(const std::vector<UString> &argv) {
 	// Build usage string
 	int maxArgLength = 17;
 
@@ -276,7 +276,7 @@ bool Parser::process(const std::vector<Common::UString> &argv) {
 	_helpStr += "Options:\n";
 	for (size_t i = 0; i < _options.size(); ++i) {
 		Option &option = *_options[i];
-		Common::UString str;
+		UString str;
 
 		if (option.type() == Option::kSpace) {
 			_helpStr += '\n';

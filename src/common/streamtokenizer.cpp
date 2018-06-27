@@ -141,7 +141,7 @@ UString StreamTokenizer::getToken(SeekableReadStream &stream) {
 	/* Since we're technically operating on streams of arbitrary binary data,
 	 * we might have collected \0 characters. Cut off the token at that point.
 	 */
-	Common::UString::iterator nullChar = token.findFirst('\0');
+	UString::iterator nullChar = token.findFirst('\0');
 	if (nullChar != token.end())
 		token.truncate(nullChar);
 

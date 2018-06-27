@@ -140,8 +140,8 @@ UString FilePath::absolutize(const UString &p) {
 }
 
 UString FilePath::relativize(const UString &basePath, const UString &path) {
-	const Common::UString normPath = normalize(path, false);
-	const Common::UString normBase = normalize(basePath, false);
+	const UString normPath = normalize(path, false);
+	const UString normBase = normalize(basePath, false);
 
 	UString relative = "";
 

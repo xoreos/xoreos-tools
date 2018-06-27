@@ -55,7 +55,7 @@ public:
 	Getter(const char *aName) : _name(aName) {}
 	virtual ~Getter() {}
 
-	virtual int get(const std::vector<Common::UString> &args, int i, int size) = 0;
+	virtual int get(const std::vector<UString> &args, int i, int size) = 0;
 	const char *name() const { return _name; }
 private:
 	const char *_name;
@@ -67,7 +67,7 @@ public:
 	ValGetter(T val, const char *aName) : Getter(aName), _val(val) {}
 	virtual ~ValGetter() {}
 
-	int get(const std::vector<Common::UString> &args, int i, int size);
+	int get(const std::vector<UString> &args, int i, int size);
 private:
 	T _val;
 };
@@ -119,18 +119,18 @@ public:
 		_vPrint(other._vPrint), _print(other._print), _printerStr(other._printerStr) {}
 	Printer(void (*aPrinter)()) :
 		_vPrint(aPrinter), _print(0), _printerStr(_useless) {}
-	Printer(void (*aPrinter)(Common::UString &), Common::UString &str) :
+	Printer(void (*aPrinter)(UString &), UString &str) :
 		_vPrint(0), _print(aPrinter), _printerStr(str) {}
 
 	void (*vPrint())() { return _vPrint; }
-	void (*print())(Common::UString &)  { return _print; }
+	void (*print())(UString &)  { return _print; }
 
 	const UString &useless() const { return _useless; }
 	UString &printerStr() const { return _printerStr; }
 
 public:
 	void (*_vPrint)();
-	void (*_print)(Common::UString &);
+	void (*_print)(UString &);
 
 	UString _useless;
 	UString &_printerStr;
@@ -157,8 +157,8 @@ public:
 		_help(anHelp), _returnVal(ret), _getter(0), _callback(0),
 		_assigners(), _printer(aPrinter) {}
 	Option(const char *aName, char aShortName,
-	       const char *anHelp, OptionRet ret, void (*aPrinter)(Common::UString &),
-	       Common::UString &printerStr) :
+	       const char *anHelp, OptionRet ret, void (*aPrinter)(UString &),
+	       UString &printerStr) :
 		_type(kPrinter), _name(aName), _shortName(aShortName),
 		_help(anHelp), _returnVal(ret), _getter(0), _callback(0),
 		_printer(aPrinter, printerStr) {}
@@ -191,22 +191,22 @@ public:
 		kSpace
 	};
 
-	int doOption(const std::vector<Common::UString> &args, int i, int size);
+	int doOption(const std::vector<UString> &args, int i, int size);
 	void assign();
 	void free();
 	Type type() const { return _type; }
-	const Common::UString &name() const { return _name; }
+	const UString &name() const { return _name; }
 	char shortName() const { return _shortName; }
-	const Common::UString &help() const { return _help; }
+	const UString &help() const { return _help; }
 	OptionRet returnVal() const { return _returnVal; }
 	Getter *getter() const { return _getter; }
 	CallbackBase *callback() const { return _callback; }
 
 private:
 	Type _type;
-	Common::UString _name;
+	UString _name;
 	char _shortName;
-	Common::UString _help;
+	UString _help;
 	OptionRet _returnVal;
 	Getter *_getter;
 	CallbackBase *_callback;
@@ -227,7 +227,7 @@ public:
 	               OptionRet ret, void (*printer)());
 	void addOption(const char *longName, char shortName, const char *help,
 	               OptionRet ret,
-	               void (*printer)(Common::UString &), Common::UString &str);
+	               void (*printer)(UString &), UString &str);
 	void addOption(const char *longName, char shortName, const char *help,
 	               OptionRet ret, std::vector<Assigner *> assigners);
 	void addOption(const char *longName, char shortName, const char *help,
@@ -240,7 +240,7 @@ public:
 		addOption(longName, 0, help, ret, printer);
 	}
 	void addOption(const char *longName, const char *help, OptionRet ret,
-	               void (*printer)(Common::UString &), Common::UString &str) {
+	               void (*printer)(UString &), UString &str) {
 		addOption(longName, 0, help, ret, printer, str);
 	}
 	void addOption(const char *longName, const char *help, OptionRet ret,
@@ -261,7 +261,7 @@ public:
 		addOption(0, shortName, help, ret, printer);
 	}
 	void addOption(char shortName, const char *help, OptionRet ret,
-	               void (*printer)(Common::UString &), Common::UString &str) {
+	               void (*printer)(UString &), UString &str) {
 		addOption(0, shortName, help, ret, printer, str);
 	}
 	void addOption(char shortName, const char *help, OptionRet ret,
@@ -277,25 +277,25 @@ public:
 		addOption(0, shortName, help, ret, callback);
 	}
 
-	bool process(const std::vector<Common::UString> &argv);
+	bool process(const std::vector<UString> &argv);
 
 	void usage() { printUsage(_helpStr); }
 
 private:
-	static void printUsage(Common::UString &str) {
+	static void printUsage(UString &str) {
 		std::printf("%s\n", str.c_str());
 	}
 
-	inline bool isShorOption(const Common::UString &arg) const {
+	inline bool isShorOption(const UString &arg) const {
 		return arg.c_str()[0] == '-' && arg.c_str()[1] != '-';
 	}
 
-	inline bool isLongOption(const Common::UString &arg) const {
+	inline bool isLongOption(const UString &arg) const {
 		return arg.c_str()[0] == '-' && arg.c_str()[1] == '-';
 	}
 
-	Common::UString _bottom;
-	Common::UString _helpStr;
+	UString _bottom;
+	UString _helpStr;
 	std::vector<Option *> _options;
 	std::vector<NoOption> _noOptions;
 	int &_returnVal;

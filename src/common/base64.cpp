@@ -206,7 +206,7 @@ void encodeBase64(ReadStream &data, std::list<UString> &base64, size_t lineLengt
 
 SeekableReadStream *decodeBase64(const UString &base64) {
 	const size_t dataLength = (countLength(base64) / 4) * 3;
-	Common::ScopedArray<byte> data(new byte[dataLength]);
+	ScopedArray<byte> data(new byte[dataLength]);
 
 	MemoryWriteStream output(data.get(), dataLength);
 
@@ -218,7 +218,7 @@ SeekableReadStream *decodeBase64(const UString &base64) {
 
 SeekableReadStream *decodeBase64(const std::list<UString> &base64) {
 	const size_t dataLength = (countLength(base64) / 4) * 3;
-	Common::ScopedArray<byte> data(new byte[dataLength]);
+	ScopedArray<byte> data(new byte[dataLength]);
 
 	MemoryWriteStream output(data.get(), dataLength);
 

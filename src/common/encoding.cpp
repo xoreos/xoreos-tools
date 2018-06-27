@@ -192,8 +192,8 @@ UString getEncodingName(Encoding encoding) {
 }
 
 bool hasSupportEncoding(Encoding encoding) {
-	return ConvMan.hasSupportTranscode(Common::kEncodingUTF8, encoding             ) &&
-	       ConvMan.hasSupportTranscode(encoding             , Common::kEncodingUTF8);
+	return ConvMan.hasSupportTranscode(kEncodingUTF8, encoding     ) &&
+	       ConvMan.hasSupportTranscode(encoding     , kEncodingUTF8);
 }
 
 static uint32 readFakeChar(SeekableReadStream &stream, Encoding encoding) {
@@ -334,7 +334,7 @@ UString readString(const byte *data, size_t size, Encoding encoding) {
 	return createString(output, encoding);
 }
 
-size_t writeString(WriteStream &stream, const Common::UString &str, Encoding encoding, bool terminate) {
+size_t writeString(WriteStream &stream, const UString &str, Encoding encoding, bool terminate) {
 	ScopedPtr<MemoryReadStream> data(convertString(str, encoding, terminate));
 
 	const size_t n = stream.writeStream(*data);
@@ -342,7 +342,7 @@ size_t writeString(WriteStream &stream, const Common::UString &str, Encoding enc
 	return n;
 }
 
-void writeStringFixed(WriteStream &stream, const Common::UString &str, Encoding encoding, size_t length) {
+void writeStringFixed(WriteStream &stream, const UString &str, Encoding encoding, size_t length) {
 	if (length == 0)
 		return;
 
@@ -424,7 +424,7 @@ bool isValidCodepoint(Encoding encoding, uint32 cp) {
 	return false;
 }
 
-Encoding parseEncoding(Common::UString str) {
+Encoding parseEncoding(UString str) {
 	if (str.empty())
 		return kEncodingInvalid;
 
