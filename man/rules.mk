@@ -40,4 +40,5 @@ dist_man1_MANS += \
     man/unrim.1 \
     man/xoreostex2tga.1 \
     man/ncsdis.1 \
+    man/erf.1 \
     $(EMPTY)
