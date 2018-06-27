@@ -348,6 +348,14 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 	// Disambiguate reused type IDs that describe a different file format in a specific game
 	switch (game) {
 		case kGameIDNWN2:
+			switch (type) {
+				case kFileTypeMDB2: return kFileTypeMDB;
+				case kFileTypeMDA2: return kFileTypeMDA;
+				case kFileTypeSPT2: return kFileTypeSPT;
+				case kFileTypeJPG2: return kFileTypeJPG;
+				default:
+					break;
+			}
 			switch (static_cast<int>(type)) {
 				case 3000: return kFileTypeOSC;
 				case 3001: return kFileTypeUSC;
@@ -386,24 +394,14 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 				case kFileTypeBTP: return kFileTypePLA;
 				case kFileTypeBTT: return kFileTypeTRG;
 				case kFileTypeGIT: return kFileTypeSAV;
+				case kFileTypeQST2: return kFileTypeQST;
+				case kFileTypeMDX2: return kFileTypeMDX;
+				case kFileTypeTXB2: return kFileTypeTXB;
 				default:
 					break;
 			}
 			break;
 
-		default:
-			break;
-	}
-
-	// Alias multiple type IDs that describe the same format
-	switch (type) {
-		case kFileTypeQST2: return kFileTypeQST;
-		case kFileTypeMDX2: return kFileTypeMDX;
-		case kFileTypeTXB2: return kFileTypeTXB;
-		case kFileTypeMDB2: return kFileTypeMDB;
-		case kFileTypeMDA2: return kFileTypeMDA;
-		case kFileTypeSPT2: return kFileTypeSPT;
-		case kFileTypeJPG2: return kFileTypeJPG;
 		default:
 			break;
 	}
@@ -441,6 +439,10 @@ FileType FileTypeManager::unaliasFileType(FileType type, GameID game) const {
 				case kFileTypePTX: return static_cast<FileType>(3033);
 				case kFileTypeLTX: return static_cast<FileType>(3034);
 				case kFileTypeTRX: return static_cast<FileType>(3035);
+				case kFileTypeMDB: return kFileTypeMDB2;
+				case kFileTypeMDA: return kFileTypeMDA2;
+				case kFileTypeSPT: return kFileTypeSPT2;
+				case kFileTypeJPG: return kFileTypeJPG2;
 				default:
 					break;
 			}
@@ -452,6 +454,9 @@ FileType FileTypeManager::unaliasFileType(FileType type, GameID game) const {
 				case kFileTypePLA: return kFileTypeBTP;
 				case kFileTypeTRG: return kFileTypeBTT;
 				case kFileTypeSAV: return kFileTypeGIT;
+				case kFileTypeQST: return kFileTypeQST2;
+				case kFileTypeMDX: return kFileTypeMDX2;
+				case kFileTypeTXB: return kFileTypeTXB2;
 				default:
 					break;
 			}
@@ -460,19 +465,6 @@ FileType FileTypeManager::unaliasFileType(FileType type, GameID game) const {
 		default:
 			break;
 	}
-
-	/* TODO: What to do with these?
-	 *
-	 * kFileTypeQST2
-	 * kFileTypeMDX2
-	 * kFileTypeTXB2
-	 * kFileTypeMDB2
-	 * kFileTypeMDA2
-	 * kFileTypeSPT2
-	 * kFileTypeJPG2
-	 *
-	 * Are they used by multiple games? Is there an actual difference between them?
-	 */
 
 	return type;
 }
