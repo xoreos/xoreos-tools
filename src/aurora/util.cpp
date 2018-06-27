@@ -411,6 +411,72 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 	return type;
 }
 
+FileType FileTypeManager::unaliasFileType(FileType type, GameID game) const {
+	switch (game) {
+		case kGameIDNWN2:
+			switch (type) {
+				case Aurora::kFileTypeOSC: return static_cast<FileType>(3000);
+				case Aurora::kFileTypeUSC: return static_cast<FileType>(3001);
+				case Aurora::kFileTypeTRN: return static_cast<FileType>(3002);
+				case Aurora::kFileTypeUTR: return static_cast<FileType>(3003);
+				case Aurora::kFileTypeUEN: return static_cast<FileType>(3004);
+				case Aurora::kFileTypeULT: return static_cast<FileType>(3005);
+				case Aurora::kFileTypeSEF: return static_cast<FileType>(3006);
+				case Aurora::kFileTypePFX: return static_cast<FileType>(3007);
+				case Aurora::kFileTypeCAM: return static_cast<FileType>(3008);
+				case Aurora::kFileTypeLFX: return static_cast<FileType>(3009);
+				case Aurora::kFileTypeBFX: return static_cast<FileType>(3010);
+				case Aurora::kFileTypeUPE: return static_cast<FileType>(3011);
+				case Aurora::kFileTypeROS: return static_cast<FileType>(3012);
+				case Aurora::kFileTypeRST: return static_cast<FileType>(3013);
+				case Aurora::kFileTypeIFX: return static_cast<FileType>(3014);
+				case Aurora::kFileTypePFB: return static_cast<FileType>(3015);
+				case Aurora::kFileTypeZIP: return static_cast<FileType>(3016);
+				case Aurora::kFileTypeWMP: return static_cast<FileType>(3017);
+				case Aurora::kFileTypeBBX: return static_cast<FileType>(3018);
+				case Aurora::kFileTypeTFX: return static_cast<FileType>(3019);
+				case Aurora::kFileTypeWLK: return static_cast<FileType>(3020);
+				case Aurora::kFileTypeXML: return static_cast<FileType>(3021);
+				case Aurora::kFileTypeSCC: return static_cast<FileType>(3022);
+				case Aurora::kFileTypePTX: return static_cast<FileType>(3033);
+				case Aurora::kFileTypeLTX: return static_cast<FileType>(3034);
+				case Aurora::kFileTypeTRX: return static_cast<FileType>(3035);
+				default:
+					break;
+			}
+			break;
+
+		case kGameIDJade:
+			switch (type) {
+				case kFileTypeCRE: return kFileTypeBTC;
+				case kFileTypePLA: return kFileTypeBTP;
+				case kFileTypeTRG: return kFileTypeBTT;
+				case kFileTypeSAV: return kFileTypeGIT;
+				default:
+					break;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	/* TODO: What to do with these?
+	 *
+	 * kFileTypeQST2
+	 * kFileTypeMDX2
+	 * kFileTypeTXB2
+	 * kFileTypeMDB2
+	 * kFileTypeMDA2
+	 * kFileTypeSPT2
+	 * kFileTypeJPG2
+	 *
+	 * Are they used by multiple games? Is there an actual difference between them?
+	 */
+
+	return type;
+}
+
 FileType FileTypeManager::getFileType(const Common::UString &path) {
 	buildExtensionLookup();
 
