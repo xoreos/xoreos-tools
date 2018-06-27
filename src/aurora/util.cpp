@@ -349,32 +349,32 @@ FileType FileTypeManager::aliasFileType(FileType type, GameID game) const {
 	switch (game) {
 		case kGameIDNWN2:
 			switch (static_cast<int>(type)) {
-				case 3000: return Aurora::kFileTypeOSC;
-				case 3001: return Aurora::kFileTypeUSC;
-				case 3002: return Aurora::kFileTypeTRN;
-				case 3003: return Aurora::kFileTypeUTR;
-				case 3004: return Aurora::kFileTypeUEN;
-				case 3005: return Aurora::kFileTypeULT;
-				case 3006: return Aurora::kFileTypeSEF;
-				case 3007: return Aurora::kFileTypePFX;
-				case 3008: return Aurora::kFileTypeCAM;
-				case 3009: return Aurora::kFileTypeLFX;
-				case 3010: return Aurora::kFileTypeBFX;
-				case 3011: return Aurora::kFileTypeUPE;
-				case 3012: return Aurora::kFileTypeROS;
-				case 3013: return Aurora::kFileTypeRST;
-				case 3014: return Aurora::kFileTypeIFX;
-				case 3015: return Aurora::kFileTypePFB;
-				case 3016: return Aurora::kFileTypeZIP;
-				case 3017: return Aurora::kFileTypeWMP;
-				case 3018: return Aurora::kFileTypeBBX;
-				case 3019: return Aurora::kFileTypeTFX;
-				case 3020: return Aurora::kFileTypeWLK;
-				case 3021: return Aurora::kFileTypeXML;
-				case 3022: return Aurora::kFileTypeSCC;
-				case 3033: return Aurora::kFileTypePTX;
-				case 3034: return Aurora::kFileTypeLTX;
-				case 3035: return Aurora::kFileTypeTRX;
+				case 3000: return kFileTypeOSC;
+				case 3001: return kFileTypeUSC;
+				case 3002: return kFileTypeTRN;
+				case 3003: return kFileTypeUTR;
+				case 3004: return kFileTypeUEN;
+				case 3005: return kFileTypeULT;
+				case 3006: return kFileTypeSEF;
+				case 3007: return kFileTypePFX;
+				case 3008: return kFileTypeCAM;
+				case 3009: return kFileTypeLFX;
+				case 3010: return kFileTypeBFX;
+				case 3011: return kFileTypeUPE;
+				case 3012: return kFileTypeROS;
+				case 3013: return kFileTypeRST;
+				case 3014: return kFileTypeIFX;
+				case 3015: return kFileTypePFB;
+				case 3016: return kFileTypeZIP;
+				case 3017: return kFileTypeWMP;
+				case 3018: return kFileTypeBBX;
+				case 3019: return kFileTypeTFX;
+				case 3020: return kFileTypeWLK;
+				case 3021: return kFileTypeXML;
+				case 3022: return kFileTypeSCC;
+				case 3033: return kFileTypePTX;
+				case 3034: return kFileTypeLTX;
+				case 3035: return kFileTypeTRX;
 				default:
 					break;
 			}
@@ -415,32 +415,32 @@ FileType FileTypeManager::unaliasFileType(FileType type, GameID game) const {
 	switch (game) {
 		case kGameIDNWN2:
 			switch (type) {
-				case Aurora::kFileTypeOSC: return static_cast<FileType>(3000);
-				case Aurora::kFileTypeUSC: return static_cast<FileType>(3001);
-				case Aurora::kFileTypeTRN: return static_cast<FileType>(3002);
-				case Aurora::kFileTypeUTR: return static_cast<FileType>(3003);
-				case Aurora::kFileTypeUEN: return static_cast<FileType>(3004);
-				case Aurora::kFileTypeULT: return static_cast<FileType>(3005);
-				case Aurora::kFileTypeSEF: return static_cast<FileType>(3006);
-				case Aurora::kFileTypePFX: return static_cast<FileType>(3007);
-				case Aurora::kFileTypeCAM: return static_cast<FileType>(3008);
-				case Aurora::kFileTypeLFX: return static_cast<FileType>(3009);
-				case Aurora::kFileTypeBFX: return static_cast<FileType>(3010);
-				case Aurora::kFileTypeUPE: return static_cast<FileType>(3011);
-				case Aurora::kFileTypeROS: return static_cast<FileType>(3012);
-				case Aurora::kFileTypeRST: return static_cast<FileType>(3013);
-				case Aurora::kFileTypeIFX: return static_cast<FileType>(3014);
-				case Aurora::kFileTypePFB: return static_cast<FileType>(3015);
-				case Aurora::kFileTypeZIP: return static_cast<FileType>(3016);
-				case Aurora::kFileTypeWMP: return static_cast<FileType>(3017);
-				case Aurora::kFileTypeBBX: return static_cast<FileType>(3018);
-				case Aurora::kFileTypeTFX: return static_cast<FileType>(3019);
-				case Aurora::kFileTypeWLK: return static_cast<FileType>(3020);
-				case Aurora::kFileTypeXML: return static_cast<FileType>(3021);
-				case Aurora::kFileTypeSCC: return static_cast<FileType>(3022);
-				case Aurora::kFileTypePTX: return static_cast<FileType>(3033);
-				case Aurora::kFileTypeLTX: return static_cast<FileType>(3034);
-				case Aurora::kFileTypeTRX: return static_cast<FileType>(3035);
+				case kFileTypeOSC: return static_cast<FileType>(3000);
+				case kFileTypeUSC: return static_cast<FileType>(3001);
+				case kFileTypeTRN: return static_cast<FileType>(3002);
+				case kFileTypeUTR: return static_cast<FileType>(3003);
+				case kFileTypeUEN: return static_cast<FileType>(3004);
+				case kFileTypeULT: return static_cast<FileType>(3005);
+				case kFileTypeSEF: return static_cast<FileType>(3006);
+				case kFileTypePFX: return static_cast<FileType>(3007);
+				case kFileTypeCAM: return static_cast<FileType>(3008);
+				case kFileTypeLFX: return static_cast<FileType>(3009);
+				case kFileTypeBFX: return static_cast<FileType>(3010);
+				case kFileTypeUPE: return static_cast<FileType>(3011);
+				case kFileTypeROS: return static_cast<FileType>(3012);
+				case kFileTypeRST: return static_cast<FileType>(3013);
+				case kFileTypeIFX: return static_cast<FileType>(3014);
+				case kFileTypePFB: return static_cast<FileType>(3015);
+				case kFileTypeZIP: return static_cast<FileType>(3016);
+				case kFileTypeWMP: return static_cast<FileType>(3017);
+				case kFileTypeBBX: return static_cast<FileType>(3018);
+				case kFileTypeTFX: return static_cast<FileType>(3019);
+				case kFileTypeWLK: return static_cast<FileType>(3020);
+				case kFileTypeXML: return static_cast<FileType>(3021);
+				case kFileTypeSCC: return static_cast<FileType>(3022);
+				case kFileTypePTX: return static_cast<FileType>(3033);
+				case kFileTypeLTX: return static_cast<FileType>(3034);
+				case kFileTypeTRX: return static_cast<FileType>(3035);
 				default:
 					break;
 			}
