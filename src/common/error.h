@@ -67,10 +67,10 @@ extern const Exception kWriteError; ///< Exception when writing to a stream fail
 void printException(Exception &e, const UString &prefix = "ERROR: ");
 
 /** Default exception dispatcher that prints the exception and errors out. */
-void exceptionDispatcherError(const UString &reason = "");
+void exceptionDispatcherError(const UString &reason = UString());
 
 /** Exception dispatcher that prints the exception as a warning and ignores it otherwise. */
-void exceptionDispatcherWarnAndIgnore(const UString &reason = "");
+void exceptionDispatcherWarnAndIgnore(const UString &reason = UString());
 
 } // End of namespace Common
 
