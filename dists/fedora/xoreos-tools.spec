@@ -44,6 +44,7 @@ Currently, the following tools are included:
 * xml2tlk: Convert XML back to BioWare TLK
 * xml2ssf: Convert XML back to BioWare SSF
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
+* erf: Create BioWare ERF archives
 * fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
 * unerf: Extract BioWare ERF archives
 * unherf: Extract BioWare HERF archives
@@ -84,6 +85,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_bindir}/cdpth2tga
 %{_bindir}/convert2da
 %{_bindir}/desmall
+%{_bindir}/erf
 %{_bindir}/fixpremiumgff
 %{_bindir}/gff2xml
 %{_bindir}/nbfs2tga
@@ -106,6 +108,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_mandir}/man1/cdpth2tga.1*
 %{_mandir}/man1/convert2da.1*
 %{_mandir}/man1/desmall.1*
+%{_mandir}/man1/erf.1*
 %{_mandir}/man1/fixpremiumgff.1.*
 %{_mandir}/man1/gff2xml.1.*
 %{_mandir}/man1/nbfs2tga.1.*
