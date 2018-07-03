@@ -1,3 +1,24 @@
+Changes in xoreos-tools version 0.0.5
+=====================================
+
+This release of the xoreos-tool package features three new tools:
+ssf2xml, xml2ssf and erf.
+
+The first toool, ssf2xml, takes a sound set file as used in the two Neverwinter
+Nights and the two Knights of the Old Republic games and converts it into a
+user-readable XML file. That file can then be edited and, with the help of the
+second new tool, xml2ssf, converted back into a game-readable SSF file.
+
+The third new tool is a packer for the ERF archive format. It is the counterpart
+of the already existing unerf tool, which extracts ERF archives. However, unlike
+the unerf tool, the erf tool can only create ERF archives of the version 1.0,
+as used by Neverwinter Nights, Knights of the Old Republic I and II, Jade Empire
+and The Witcher. Later versions of the format are not yet supported.
+
+Apart from that, this release of course also includes a ton of user-invisible
+code quality and documentation fixes.
+
+
 Changes in xoreos-tools version 0.0.4
 =====================================
 
