@@ -35,6 +35,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/biffile.h \
     src/aurora/ndsrom.h \
     src/aurora/herffile.h \
+    src/aurora/obbfile.h \
     src/aurora/locstring.h \
     src/aurora/gff3file.h \
     src/aurora/gff4file.h \
@@ -63,6 +64,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/biffile.cpp \
     src/aurora/ndsrom.cpp \
     src/aurora/herffile.cpp \
+    src/aurora/obbfile.cpp \
     src/aurora/locstring.cpp \
     src/aurora/gff3file.cpp \
     src/aurora/gff4file.cpp \
