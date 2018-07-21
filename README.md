@@ -50,7 +50,7 @@ that this does not work for Sonic Chronicles: The Dark Brotherhood,
 because its TLK files do not provide a language ID.
 
 Neverwinter Nights, Neverwinter Nights 2, Knights of the Old Republic,
-Knights of the Old Republic 2, Jade Empire:
+Knights of the Old Republic 2:
 
 | Language ID | Language              | Encoding |
 |------------:|:----------------------|:---------|
@@ -64,6 +64,21 @@ Knights of the Old Republic 2, Jade Empire:
 |         129 | Chinese (Traditional) | CP-950   |
 |         130 | Chinese (Simplified)  | CP-936   |
 |         131 | Japanese              | CP-932   |
+
+Jade Empire:
+
+| Language ID | Language              | Encoding |
+|------------:|:----------------------|:---------|
+|           0 | English               | UTF-8    |
+|           1 | French                | UTF-8    |
+|           2 | German                | UTF-8    |
+|           3 | Italian               | UTF-8    |
+|           4 | Spanish               | UTF-8    |
+|           5 | Polish                | UTF-8    |
+|           6 | Czech                 | UTF-8    |
+|           7 | Hungarian             | UTF-8    |
+|         130 | Chinese (Simplified)  | UTF-8    |
+|         132 | Russian               | UTF-8    |
 
 The Witcher:
 

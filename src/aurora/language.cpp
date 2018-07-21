@@ -144,16 +144,16 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
 	}, { // Jade Empire
-		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
-		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
-		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
-		{ kLanguageItalian           ,                3, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
-		{ kLanguageSpanish           ,                4, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
-		{ kLanguagePolish            ,                5, Common::kEncodingCP1250 , Common::kEncodingCP1250  },
-		{ kLanguageKorean            ,              128, Common::kEncodingCP949  , Common::kEncodingCP949   },
-		{ kLanguageChineseTraditional,              129, Common::kEncodingCP950  , Common::kEncodingCP950   },
-		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
-		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
+		{ kLanguageEnglish           ,                0, Common::kEncodingUTF8   , Common::kEncodingCP1252  },
+		{ kLanguageFrench            ,                1, Common::kEncodingUTF8   , Common::kEncodingCP1252  },
+		{ kLanguageGerman            ,                2, Common::kEncodingUTF8   , Common::kEncodingCP1252  },
+		{ kLanguageItalian           ,                3, Common::kEncodingUTF8   , Common::kEncodingCP1252  },
+		{ kLanguageSpanish           ,                4, Common::kEncodingUTF8   , Common::kEncodingCP1252  },
+		{ kLanguagePolish            ,                5, Common::kEncodingUTF8   , Common::kEncodingCP1250  },
+		{ kLanguageCzech             ,                6, Common::kEncodingUTF8   , Common::kEncodingCP1250  },
+		{ kLanguageHungarian         ,                7, Common::kEncodingUTF8   , Common::kEncodingCP1250  },
+		{ kLanguageChineseSimplified ,              130, Common::kEncodingUTF8   , Common::kEncodingCP936   },
+		{ kLanguageRussian           ,              132, Common::kEncodingUTF8   , Common::kEncodingCP1251  },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
 	}, { // The Witcher
 		{ kLanguageDebug             ,                0, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
