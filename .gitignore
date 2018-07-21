@@ -95,6 +95,7 @@ Makefile.in
 /src/unrim
 /src/unkeybif
 /src/unnds
+/src/unobb
 /src/unnsbtx
 /src/desmall
 /src/xoreostex2tga
@@ -118,6 +119,7 @@ Makefile.in
 /src/unrim.exe
 /src/unkeybif.exe
 /src/unnds.exe
+/src/unobb.exe
 /src/unnsbtx.exe
 /src/desmall.exe
 /src/xoreostex2tga.exe

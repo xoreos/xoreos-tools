@@ -52,6 +52,7 @@ Currently, the following tools are included:
 * unnds: Extract Nintendo DS roms
 * unnsbtx: Extract Nintendo NSBTX textures into TGA images
 * unkeybif: Extract BioWare KEY/BIF archives
+* unobb: Extract Aspyr's OBB virtual filesystem
 * desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
 * xoreostex2tga: Convert BioWare's texture formats into TGA
 * nbfs2tga: Convert Nintendo's raw NBFS images into TGA
@@ -98,6 +99,7 @@ rm %{buildroot}%{_pkgdocdir}/*
 %{_bindir}/unkeybif
 %{_bindir}/unnds
 %{_bindir}/unnsbtx
+%{_bindir}/unobb
 %{_bindir}/unrim
 %{_bindir}/xml2tlk
 %{_bindir}/xml2ssf

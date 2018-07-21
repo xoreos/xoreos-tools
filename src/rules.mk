@@ -180,6 +180,18 @@ src_unnds_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/unobb
+src_unobb_SOURCES = \
+    src/unobb.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_unobb_LDADD = \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 bin_PROGRAMS += src/unnsbtx
 src_unnsbtx_SOURCES = \
     src/unnsbtx.cpp \
