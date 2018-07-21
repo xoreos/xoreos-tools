@@ -95,7 +95,7 @@ void LanguageManager::addLanguages(const Declaration *languageDeclarations, size
 }
 
 static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] = {
-	{
+	{ // Neverwinter Nights
 		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -107,7 +107,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
 		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Neverwinter Nights 2
 		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -119,7 +119,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
 		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Star Wars: Knights of the Old Republic
 		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -131,7 +131,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
 		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Star Wars: Knights of the Old Republic II - The Sith Lords
 		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -143,7 +143,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
 		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Jade Empire
 		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageGerman            ,                2, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -155,7 +155,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageChineseSimplified ,              130, Common::kEncodingCP936  , Common::kEncodingCP936   },
 		{ kLanguageJapanese          ,              131, Common::kEncodingCP932  , Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // The Witcher
 		{ kLanguageDebug             ,                0, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguageEnglish           ,                3, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguagePolish            ,                5, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
@@ -170,7 +170,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageChineseTraditional,               21, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguageChineseSimplified ,               22, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Sonic Chronicles: The Dark Brotherhood
 		{ kLanguageEnglish           , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageGerman            , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -178,7 +178,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageSpanish           , kLanguageInvalid, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageJapanese          , kLanguageInvalid, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Dragon Age: Origins
 		{ kLanguageEnglish           ,                0, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
 		{ kLanguageRussian           ,                2, Common::kEncodingUTF16LE, Common::kEncodingCP1251  },
@@ -191,7 +191,7 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageKorean            ,                9, Common::kEncodingUTF16LE, Common::kEncodingCP949   },
 		{ kLanguageJapanese          ,               10, Common::kEncodingUTF16LE, Common::kEncodingCP932   },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
-	}, {
+	}, { // Dragon Age II
 		{ kLanguageEnglish           ,                0, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingUTF16LE, Common::kEncodingCP1252  },
 		{ kLanguageRussian           ,                2, Common::kEncodingUTF16LE, Common::kEncodingCP1251  },
