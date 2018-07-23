@@ -23,27 +23,21 @@
  */
 
 #include <cstring>
-#include <cstdio>
 
-#include <map>
+#include <set>
 
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
-#include "src/common/readstream.h"
 #include "src/common/readfile.h"
-#include "src/common/filepath.h"
-#include "src/common/hash.h"
 #include "src/common/cli.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/herffile.h"
 
 #include "src/archives/util.h"
-#include "src/archives/files_sonic.h"
 
 #include "src/util.h"
 
@@ -57,11 +51,7 @@ enum Command {
 const char *kCommandChar[kCommandMAX] = { "l", "e" };
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Command &command, Common::UString &file);
-
-bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext);
-
-void extractFiles(Aurora::HERFFile &rim);
+                      Command &command, Common::UString &archive, std::set<Common::UString> &files);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -72,17 +62,19 @@ int main(int argc, char **argv) {
 
 		int returnValue = 1;
 		Command command = kCommandNone;
-		Common::UString file;
+		Common::UString archive;
+		std::set<Common::UString> files;
 
-		if (!parseCommandLine(args, returnValue, command, file))
+		if (!parseCommandLine(args, returnValue, command, archive, files))
 			return returnValue;
 
-		Aurora::HERFFile herf(new Common::ReadFile(file));
+		Aurora::HERFFile herf(new Common::ReadFile(archive));
+		files = Archives::fixPathSeparator(files);
 
 		if      (command == kCommandList)
 			Archives::listFiles(herf, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandExtract)
-			extractFiles(herf);
+			Archives::extractFiles(herf, Aurora::kGameIDUnknown, false, files);
 
 	} catch (...) {
 		Common::exceptionDispatcherError();
@@ -108,62 +100,22 @@ int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, i
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Command &command, Common::UString &file) {
+                      Command &command, Common::UString &archive, std::set<Common::UString> &files) {
+
 	using Common::CLI::NoOption;
-	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
 	using Common::CLI::ValGetter;
 	using Common::CLI::makeEndArgs;
 
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
-	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
+	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
+	NoOption filesOpt(true, new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
 	Parser parser(argv[0], "BioWare HERF archive extractor",
 	              "Commands:\n"
 	              "  l          List archive\n"
 	              "  e          Extract files to current directory\n",
-	              returnValue, makeEndArgs(&cmdOpt, &fileOpt));
+	              returnValue,
+	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
 	return parser.process(argv);
-}
-
-bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext) {
-	const char *fileName = Archives::findSonicFile(hash);
-	if (fileName != 0) {
-		name = Common::FilePath::getStem(fileName);
-		ext  = Common::FilePath::getExtension(fileName);
-		return true;
-	}
-
-	name = Common::UString::format("0x%08X", hash);
-	ext  = "";
-	return false;
-}
-
-void extractFiles(Aurora::HERFFile &herf) {
-	const Aurora::Archive::ResourceList &resources = herf.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	size_t i = 1;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
-		if (fileName.empty())
-			findHashedName(r->hash, fileName, fileExt);
-
-		fileName = fileName + fileExt;
-
-		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
-
-		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(herf.getResource(r->index));
-
-			dumpStream(*stream, fileName);
-
-			std::printf("Done\n");
-		} catch (Common::Exception &e) {
-			Common::printException(e, "");
-		}
-	}
-
 }

@@ -22,24 +22,19 @@
  *  Tool to extract ERF (.erf, .mod, .nwm, .sav) archives.
  */
 
-#include <vector>
-#include <set>
-
 #include <cstring>
 #include <cstdio>
 
+#include <vector>
+#include <set>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
-#include "src/common/memreadstream.h"
-#include "src/common/memwritestream.h"
 #include "src/common/readfile.h"
-#include "src/common/filepath.h"
-#include "src/common/hash.h"
 #include "src/common/md5.h"
 #include "src/common/cli.h"
 
@@ -47,7 +42,6 @@
 #include "src/aurora/erffile.h"
 
 #include "src/archives/util.h"
-#include "src/archives/files_dragonage.h"
 
 #include "src/util.h"
 
@@ -57,29 +51,20 @@ enum Command {
 	kCommandList            ,
 	kCommandListVerbose     ,
 	kCommandExtract         ,
-	kCommandExtractSub      ,
+	kCommandExtractDir      ,
 	kCommandMAX
 };
 
-enum ExtractMode {
-	kExtractModeStrip,
-	kExtractModeSubstitute
-};
-
-const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "s" };
+const char *kCommandChar[kCommandMAX] = { "i", "l", "v", "e", "x" };
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password);
 
-bool findHashedName(uint64 hash, Common::UString &name);
-
 bool parsePassword(const Common::UString &arg, std::vector<byte> &password);
 bool readNWMMD5   (const Common::UString &arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
-void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
-                  std::set<Common::UString> &files, ExtractMode mode);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -100,6 +85,7 @@ int main(int argc, char **argv) {
 			return returnValue;
 
 		Aurora::ERFFile erf(new Common::ReadFile(archive), password);
+		files = Archives::fixPathSeparator(files);
 
 		if      (command == kCommandInfo)
 			displayInfo(erf);
@@ -108,9 +94,9 @@ int main(int argc, char **argv) {
 		else if (command == kCommandListVerbose)
 			Archives::listFiles(erf, game, true);
 		else if (command == kCommandExtract)
-			extractFiles(erf, game, files, kExtractModeStrip);
-		else if (command == kCommandExtractSub)
-			extractFiles(erf, game, files, kExtractModeSubstitute);
+			Archives::extractFiles(erf, game, false, files);
+		else if (command == kCommandExtractDir)
+			Archives::extractFiles(erf, game, true, files);
 
 	} catch (...) {
 		Common::exceptionDispatcherError();
@@ -177,6 +163,7 @@ int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, i
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::GameID &game, std::vector<byte> &password) {
+
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -193,10 +180,10 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	Parser parser(argv[0], "BioWare ERF (.erf, .mod, .nwm, .sav) archive extractor",
 	              "Commands:\n"
 	              "  i          Display meta-information\n"
-	              "  l          List archive\n"
-	              "  v          List archive verbosely (show directory names)\n"
-	              "  e          Extract files to current directory\n"
-	              "  s          Extract files to current directory with full name",
+	              "  l          List files (stripping directories)\n"
+	              "  v          List files verbosely (with directories)\n"
+	              "  e          Extract files to current directory, stripping directories\n"
+	              "  x          Extract files to current directory, creating subdirectories\n",
 	              returnValue,
 	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
@@ -219,22 +206,11 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	return parser.process(argv);
 }
 
-bool findHashedName(uint64 hash, Common::UString &name) {
-	const char *fileName = Archives::findDragonAgeFile(hash);
-	if (fileName) {
-		name = Common::FilePath::changeExtension(fileName, "");
-		return true;
-	}
-
-	name = Common::formatHash(hash);
-	return false;
-}
-
 void displayInfo(Aurora::ERFFile &erf) {
 	std::printf("Version: %s\n", Common::debugTag(erf.getVersion()).c_str());
 	std::printf("Build Year: %d\n", erf.getBuildYear());
 	std::printf("Build Day: %d\n", erf.getBuildDay());
-	std::printf("Number of files: %u\n", (uint)erf.getResources().size());
+	std::printf("Number of files: %s\n", Common::composeString(erf.getResources().size()).c_str());
 
 
 	const Aurora::LocString &description = erf.getDescription();
@@ -252,48 +228,4 @@ void displayInfo(Aurora::ERFFile &erf) {
 		std::printf("%s\n", s->str.c_str());
 		std::printf("'=== ===\n");
 	}
-}
-
-void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
-                  std::set<Common::UString> &files, ExtractMode mode) {
-
-	const Aurora::Archive::ResourceList &resources = erf.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	size_t i = 1;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		Common::UString name = r->name;
-		if (name.empty())
-			findHashedName(r->hash, name);
-
-		name.replaceAll('\\', '/');
-
-		if (mode == kExtractModeStrip)
-			name = Common::FilePath::getFile(name);
-
-		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
-		Common::UString fileName = TypeMan.addFileType(name, type);
-
-		if (!files.empty() && (files.find(fileName) == files.end()))
-			continue;
-
-		if (mode == kExtractModeSubstitute)
-			fileName.replaceAll('/', '=');
-
-		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
-		std::fflush(stdout);
-
-		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(erf.getResource(r->index));
-
-			dumpStream(*stream, fileName);
-
-			std::printf("Done\n");
-		} catch (Common::Exception &e) {
-			Common::printException(e, "");
-		}
-	}
-
 }

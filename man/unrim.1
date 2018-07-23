@@ -1,4 +1,4 @@
-.Dd June 27, 2018
+.Dd July 24, 2018
 .Dt UNRIM 1
 .Os
 .Sh NAME
@@ -7,7 +7,9 @@
 .Sh SYNOPSIS
 .Nm unrim
 .Op Ar options
-.Ar command file
+.Ar command
+.Ar archive
+.Op Ar
 .Sh DESCRIPTION
 .Nm
 extracts BioWare RIM archives, found in many BioWare games.
@@ -46,8 +48,11 @@ List archive contents
 .It Cm e
 Extract files to current directory
 .El
-.It Ar file
+.It Ar archive
 The RIM archive to read.
+.It Ar file
+One or more files to extract.
+If none are given, the whole archive is extracted.
 .El
 .Sh EXAMPLES
 List all files contained in the archive

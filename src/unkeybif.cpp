@@ -24,18 +24,18 @@
 
 #include <cstring>
 #include <cstdio>
+
 #include <list>
 #include <vector>
 
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ptrvector.h"
 #include "src/common/util.h"
 #include "src/common/ustring.h"
+#include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
-#include "src/common/readstream.h"
 #include "src/common/readfile.h"
 #include "src/common/filepath.h"
 #include "src/common/cli.h"
@@ -71,7 +71,6 @@ void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aur
                  const std::vector<Common::UString> &bifFiles);
 
 void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
-void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
 void extractFiles(const Common::PtrVector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
@@ -131,6 +130,7 @@ int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, i
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, std::list<Common::UString> &files, Aurora::GameID &game) {
+
 	using Common::CLI::NoOption;
 	using Common::CLI::Parser;
 	using Common::CLI::ValGetter;
@@ -212,10 +212,10 @@ void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aur
 
 		// Go over all BIFs handled by the KEY
 		const Aurora::KEYFile::BIFList &keyBifs = (*k)->getBIFs();
-		for (uint kb = 0; kb < keyBifs.size(); kb++) {
+		for (size_t kb = 0; kb < keyBifs.size(); kb++) {
 
 			// Go over all BIFs
-			for (uint b = 0; b < bifFiles.size(); b++) {
+			for (size_t b = 0; b < bifFiles.size(); b++) {
 
 				// If they match, merge
 				if (Common::FilePath::getFile(keyBifs[kb]).equalsIgnoreCase(Common::FilePath::getFile(bifFiles[b])))
@@ -229,7 +229,9 @@ void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aur
 
 }
 
-void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
+void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys,
+               const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
+
 	for (size_t i = 0; i < keys.size(); i++) {
 		Archives::listFiles(*keys[i], keyFiles[i], game);
 
@@ -238,35 +240,15 @@ void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector
 	}
 }
 
-void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game) {
-	const Aurora::Archive::ResourceList &resources = bif.getResources();
+void extractFiles(const Common::PtrVector<Aurora::BIFFile> &bifs,
+                  const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
 
-	uint i = 1;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Aurora::FileType type     = TypeMan.aliasFileType(r->type, game);
-		const Common::UString  fileName = TypeMan.setFileType(r->name, type);
-
-		std::printf("Extracting %u/%u: %s ... ", i, (uint) resources.size(), fileName.c_str());
-
-		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(bif.getResource(r->index));
-
-			dumpStream(*stream, fileName);
-
-			std::printf("Done\n");
-		} catch (Common::Exception &e) {
-			Common::printException(e, "");
-		}
-	}
-
-}
-
-void extractFiles(const Common::PtrVector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game) {
-	for (uint i = 0; i < bifs.size(); i++) {
-		std::printf("%s: %u indexed files (of %u)\n\n", bifFiles[i].c_str(), (uint)bifs[i]->getResources().size(),
+	for (size_t i = 0; i < bifs.size(); i++) {
+		std::printf("%s: %s indexed files (of %u)\n\n", bifFiles[i].c_str(),
+		            Common::composeString(bifs[i]->getResources().size()).c_str(),
                 bifs[i]->getInternalResourceCount());
 
-		extractFiles(*bifs[i], game);
+		Archives::extractFiles(*bifs[i], game, false, std::set<Common::UString>());
 
 		if (i < (bifs.size() - 1))
 			std::printf("\n");

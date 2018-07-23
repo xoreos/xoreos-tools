@@ -1,4 +1,4 @@
-.Dd July 23, 2015
+.Dd July 24, 2018
 .Dt UNNSBTX 1
 .Os
 .Sh NAME
@@ -7,7 +7,9 @@
 .Sh SYNOPSIS
 .Nm unnsbtx
 .Op Ar options
-.Ar command file
+.Ar command
+.Ar archive
+.Op Ar
 .Sh DESCRIPTION
 .Nm
 treats Nintendo NSBTX texture as archives and converts the multiple
@@ -30,8 +32,11 @@ List images inside this NSBTX texture
 .It Cm e
 Extract images as TGA files
 .El
-.It Ar file
+.It Ar archive
 The NSBTX texture to read.
+.It Ar file
+One or more files to extract.
+If none are given, the whole texture is extracted.
 .El
 .Sh LIMITATIONS
 The palette of an image has to be named similarly to the pixel data.

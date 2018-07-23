@@ -1,4 +1,4 @@
-.Dd July 23, 2015
+.Dd July 24, 2018
 .Dt UNHERF 1
 .Os
 .Sh NAME
@@ -7,7 +7,9 @@
 .Sh SYNOPSIS
 .Nm unherf
 .Op Ar options
-.Ar command file
+.Ar command
+.Ar archive
+.Op Ar
 .Sh DESCRIPTION
 .Nm
 extract BioWare HERF archives, found in the Nintendo DS game
@@ -35,8 +37,11 @@ List archive contents
 .It Cm e
 Extract files to current directory
 .El
-.It Ar file
+.It Ar archive
 The HERF archive to read.
+.It Ar file
+One or more files to extract.
+If none are given, the whole archive is extracted.
 .El
 .Sh EXAMPLES
 List all files contained in the archive

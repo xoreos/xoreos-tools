@@ -1,4 +1,4 @@
-.Dd June 27, 2018
+.Dd July 24, 2018
 .Dt UNERF 1
 .Os
 .Sh NAME
@@ -93,13 +93,13 @@ of a HAK file for a Neverwinter Nights premium module.
 .It Cm i
 Display meta-information about the archive
 .It Cm l
-List archive contents
+List filesystem contents (without directories)
 .It Cm v
-List archive contents with full paths
+List filesystem contents with full paths
 .It Cm e
-Extract files to current directory
-.It Cm s
-Extract files to current directory with full name
+Extract files to current directory, stripping directories
+.It Cm x
+Extract files to current directory with full path, including directories.
 .El
 .It Ar archive
 The ERF archive to read.
@@ -138,14 +138,14 @@ from the archive
 Extract all files, with full path, in the archive
 .Pa areas.erf :
 .Pp
-.Dl $ unerf s areas.erf
+.Dl $ unerf x areas.erf
 .Pp
 Extract the file
 .Pa areas\earea1.are
 from the archive
 .Pa areas.erf :
 .Pp
-.Dl $ unerf s areas.erf areas\e\earea1.are
+.Dl $ unerf x areas.erf areas\e\earea1.are
 .Sh SEE ALSO
 .Xr erf 1 ,
 .Xr fixpremiumgff 1 ,

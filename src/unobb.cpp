@@ -23,19 +23,17 @@
  */
 
 #include <cstring>
-#include <cstdio>
+
+#include <set>
 
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
-#include "src/common/filepath.h"
-#include "src/common/readfile.h"
 #include "src/common/cli.h"
+#include "src/common/readfile.h"
 
-#include "src/aurora/util.h"
 #include "src/aurora/obbfile.h"
 
 #include "src/archives/util.h"
@@ -56,8 +54,6 @@ const char *kCommandChar[kCommandMAX] = { "l", "v", "e", "x" };
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files);
 
-void extractFiles(Aurora::OBBFile &obb, bool directories, std::set<Common::UString> &files);
-
 int main(int argc, char **argv) {
 	initPlatform();
 
@@ -74,15 +70,16 @@ int main(int argc, char **argv) {
 			return returnValue;
 
 		Aurora::OBBFile obb(new Common::ReadFile(archive));
+		files = Archives::fixPathSeparator(files);
 
 		if      (command == kCommandList)
 			Archives::listFiles(obb, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandListVerbose)
 			Archives::listFiles(obb, Aurora::kGameIDUnknown, true);
 		else if (command == kCommandExtract)
-			extractFiles(obb, false, files);
+			Archives::extractFiles(obb, Aurora::kGameIDUnknown, false, files);
 		else if (command == kCommandExtractDir)
-			extractFiles(obb, true, files);
+			Archives::extractFiles(obb, Aurora::kGameIDUnknown, true, files);
 
 	} catch (...) {
 		Common::exceptionDispatcherError();
@@ -111,12 +108,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
                       Command &command, Common::UString &archive, std::set<Common::UString> &files) {
 
 	using Common::CLI::NoOption;
-	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
 	using Common::CLI::ValGetter;
-	using Common::CLI::ValAssigner;
 	using Common::CLI::makeEndArgs;
-	using Common::CLI::makeAssigners;
 
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
 	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
@@ -131,39 +125,4 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
 	return parser.process(argv);
-}
-
-void extractFiles(Aurora::OBBFile &obb, bool directories, std::set<Common::UString> &files) {
-	const Aurora::Archive::ResourceList &resources = obb.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	size_t i = 1;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Common::UString path     = TypeMan.addFileType(r->name, r->type);
-		const Common::UString fileName = Common::FilePath::getFile(path);
-		const Common::UString dirName  = Common::FilePath::getDirectory(path);
-		const Common::UString name     = directories ? path : fileName;
-
-		if (!files.empty() && (files.find(path) == files.end()))
-			continue;
-
-		if (directories && !dirName.empty())
-			Common::FilePath::createDirectories(dirName);
-
-		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, name.c_str());
-		std::fflush(stdout);
-
-		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(obb.getResource(r->index));
-
-			dumpStream(*stream, name);
-
-			std::printf("Done\n");
-		} catch (Common::Exception &e) {
-			Common::printException(e, "");
-		}
-	}
-
 }

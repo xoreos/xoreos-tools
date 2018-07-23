@@ -25,13 +25,13 @@
 #include <cstring>
 #include <cstdio>
 
+#include <set>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
-#include "src/common/readstream.h"
 #include "src/common/readfile.h"
 #include "src/common/cli.h"
 
@@ -53,10 +53,9 @@ enum Command {
 const char *kCommandChar[kCommandMAX] = { "i", "l", "e" };
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Command &command, Common::UString &file);
+                      Command &command, Common::UString &archive, std::set<Common::UString> &files);
 
 void displayInfo(Aurora::NDSFile &nds);
-void extractFiles(Aurora::NDSFile &nds);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -67,19 +66,21 @@ int main(int argc, char **argv) {
 
 		int returnValue = 1;
 		Command command = kCommandNone;
-		Common::UString file;
+		Common::UString archive;
+		std::set<Common::UString> files;
 
-		if (!parseCommandLine(args, returnValue, command, file))
+		if (!parseCommandLine(args, returnValue, command, archive, files))
 			return returnValue;
 
-		Aurora::NDSFile nds(new Common::ReadFile(file));
+		Aurora::NDSFile nds(new Common::ReadFile(archive));
+		files = Archives::fixPathSeparator(files);
 
 		if      (command == kCommandInfo)
 			displayInfo(nds);
 		else if (command == kCommandList)
 			Archives::listFiles(nds, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandExtract)
-			extractFiles(nds);
+			Archives::extractFiles(nds, Aurora::kGameIDUnknown, false, files);
 
 	} catch (...) {
 		Common::exceptionDispatcherError();
@@ -105,21 +106,23 @@ int ValGetter<Command &>::get(const std::vector<Common::UString> &args, int i, i
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Command &command, Common::UString &file) {
+                      Command &command, Common::UString &archive, std::set<Common::UString> &files) {
+
 	using Common::CLI::NoOption;
-	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
 	using Common::CLI::ValGetter;
 	using Common::CLI::makeEndArgs;
 
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
-	NoOption fileOpt(false, new ValGetter<Common::UString &>(file, "file"));
+	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
+	NoOption filesOpt(true, new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
 	Parser parser(argv[0], "Nintendo DS archive extractor",
 	              "Commands:\n"
 	              "  i          Display meta-information\n"
 	              "  l          List archive\n"
 	              "  e          Extract files to current directory\n",
-	              returnValue, makeEndArgs(&cmdOpt, &fileOpt));
+	              returnValue,
+	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
 	return parser.process(argv);
 }
@@ -128,29 +131,4 @@ void displayInfo(Aurora::NDSFile &nds) {
 	std::printf("Game name: \"%s\"\n", nds.getTitle().c_str());
 	std::printf("Game code: \"%s\"\n", nds.getCode().c_str());
 	std::printf("Game maker: \"%s\"\n", nds.getMaker().c_str());
-}
-
-void extractFiles(Aurora::NDSFile &nds) {
-	const Aurora::Archive::ResourceList &resources = nds.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	size_t i = 1;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
-		const Common::UString fileName = TypeMan.setFileType(r->name, r->type);
-
-		std::printf("Extracting %u/%u: %s ... ", (uint)i, (uint)fileCount, fileName.c_str());
-
-		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(nds.getResource(r->index));
-
-			dumpStream(*stream, fileName);
-
-			std::printf("Done\n");
-		} catch (Common::Exception &e) {
-			Common::printException(e, "");
-		}
-	}
-
 }

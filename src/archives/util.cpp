@@ -27,10 +27,13 @@
 #include <vector>
 
 #include "src/common/util.h"
-#include "src/common/ustring.h"
 #include "src/common/strutil.h"
+#include "src/common/error.h"
 #include "src/common/hash.h"
+#include "src/common/scopedptr.h"
 #include "src/common/filepath.h"
+#include "src/common/readstream.h"
+#include "src/common/writefile.h"
 
 #include "src/aurora/util.h"
 #include "src/aurora/archive.h"
@@ -177,6 +180,102 @@ void listFiles(const Aurora::NSBTXFile &nsbtx) {
 
 	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r)
 		std::printf("%16s.tga\n", r->name.c_str());
+}
+
+static void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName) {
+	Common::WriteFile file;
+	if (!file.open(fileName))
+		throw Common::Exception(Common::kOpenError);
+
+	file.writeStream(stream);
+	file.flush();
+
+	file.close();
+}
+
+void extractFiles(const Aurora::Archive &archive, Aurora::GameID game, bool directories,
+                  const std::set<Common::UString> &files) {
+
+	const Aurora::Archive::ResourceList &resources = archive.getResources();
+	const size_t fileCount = resources.size();
+
+	std::printf("Number of files: %s\n\n", Common::composeString(fileCount).c_str());
+
+	size_t i = 1;
+	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
+		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
+
+		const Common::UString path     = findPath(r->name, type, r->hash, archive.getNameHashAlgo());
+		const Common::UString fileName = Common::FilePath::getFile(path);
+		const Common::UString dirName  = Common::FilePath::getDirectory(path);
+		const Common::UString name     = directories ? path : fileName;
+
+		if (!files.empty() && (files.find(name) == files.end()))
+			continue;
+
+		if (directories && !dirName.empty())
+			Common::FilePath::createDirectories(dirName);
+
+		std::printf("Extracting %s/%s: %s ... ", Common::composeString(i).c_str(),
+		                                         Common::composeString(fileCount).c_str(),
+		                                         name.c_str());
+		std::fflush(stdout);
+
+		try {
+			Common::ScopedPtr<Common::SeekableReadStream> stream(archive.getResource(r->index));
+
+			dumpStream(*stream, name);
+
+			std::printf("Done\n");
+		} catch (Common::Exception &e) {
+			Common::printException(e, "");
+		}
+	}
+}
+
+void extractFiles(const Aurora::NSBTXFile &nsbtx, const std::set<Common::UString> &files,
+                  void (*dumper)(Common::SeekableReadStream &stream, const Common::UString &fileName)) {
+
+	const Aurora::Archive::ResourceList &resources = nsbtx.getResources();
+	const size_t fileCount = resources.size();
+
+	std::printf("Number of files: %s\n\n", Common::composeString(fileCount).c_str());
+
+	size_t i = 1;
+	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r, ++i) {
+		const Common::UString name = r->name + ".tga";
+
+		if (!files.empty() && (files.find(name) == files.end()))
+			continue;
+
+		std::printf("Extracting %s/%s: %s ... ", Common::composeString(i).c_str(),
+		                                         Common::composeString(fileCount).c_str(),
+		                                         name.c_str());
+		std::fflush(stdout);
+
+		try {
+			Common::ScopedPtr<Common::SeekableReadStream> stream(nsbtx.getResource(r->index));
+
+			dumper(*stream, name);
+
+			std::printf("Done\n");
+		} catch (Common::Exception &e) {
+			Common::printException(e, "");
+		}
+	}
+}
+
+std::set<Common::UString> fixPathSeparator(const std::set<Common::UString> &files) {
+	std::set<Common::UString> newFiles;
+
+	for (std::set<Common::UString>::const_iterator f = files.begin(); f != files.end(); ++f) {
+		Common::UString file = *f;
+		file.replaceAll('\\', '/');
+
+		newFiles.insert(file);
+	}
+
+	return newFiles;
 }
 
 } // End of namespace Archives
