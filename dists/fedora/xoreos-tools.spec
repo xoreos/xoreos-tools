@@ -81,52 +81,11 @@ rm %{buildroot}%{_pkgdocdir}/*
 
 %files
 
-# Scripts.
-%{_bindir}/cbgt2tga
-%{_bindir}/cdpth2tga
-%{_bindir}/convert2da
-%{_bindir}/desmall
-%{_bindir}/erf
-%{_bindir}/fixpremiumgff
-%{_bindir}/gff2xml
-%{_bindir}/nbfs2tga
-%{_bindir}/ncgr2tga
-%{_bindir}/ncsdis
-%{_bindir}/tlk2xml
-%{_bindir}/ssf2xml
-%{_bindir}/unerf
-%{_bindir}/unherf
-%{_bindir}/unkeybif
-%{_bindir}/unnds
-%{_bindir}/unnsbtx
-%{_bindir}/unobb
-%{_bindir}/unrim
-%{_bindir}/xml2tlk
-%{_bindir}/xml2ssf
-%{_bindir}/xoreostex2tga
+# Binaries.
+%{_bindir}/*
 
-# man pages.
-%{_mandir}/man1/cbgt2tga.1*
-%{_mandir}/man1/cdpth2tga.1*
-%{_mandir}/man1/convert2da.1*
-%{_mandir}/man1/desmall.1*
-%{_mandir}/man1/erf.1*
-%{_mandir}/man1/fixpremiumgff.1.*
-%{_mandir}/man1/gff2xml.1.*
-%{_mandir}/man1/nbfs2tga.1.*
-%{_mandir}/man1/ncgr2tga.1.*
-%{_mandir}/man1/ncsdis.1.*
-%{_mandir}/man1/tlk2xml.1.*
-%{_mandir}/man1/ssf2xml.1.*
-%{_mandir}/man1/unerf.1.*
-%{_mandir}/man1/unherf.1.*
-%{_mandir}/man1/unkeybif.1.*
-%{_mandir}/man1/unnds.1.*
-%{_mandir}/man1/unnsbtx.1.*
-%{_mandir}/man1/unrim.1.*
-%{_mandir}/man1/xml2tlk.1.*
-%{_mandir}/man1/xml2ssf.1.*
-%{_mandir}/man1/xoreostex2tga.1.*
+# Man pages.
+%{_mandir}/man1/*
 
 %doc *.md AUTHORS ChangeLog TODO
 %license COPYING
