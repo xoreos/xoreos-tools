@@ -38,6 +38,8 @@
 #include "src/aurora/util.h"
 #include "src/aurora/ndsrom.h"
 
+#include "src/archives/util.h"
+
 #include "src/util.h"
 
 enum Command {
@@ -54,7 +56,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
                       Command &command, Common::UString &file);
 
 void displayInfo(Aurora::NDSFile &nds);
-void listFiles(Aurora::NDSFile &nds);
 void extractFiles(Aurora::NDSFile &nds);
 
 int main(int argc, char **argv) {
@@ -76,7 +77,7 @@ int main(int argc, char **argv) {
 		if      (command == kCommandInfo)
 			displayInfo(nds);
 		else if (command == kCommandList)
-			listFiles(nds);
+			Archives::listFiles(nds, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandExtract)
 			extractFiles(nds);
 
@@ -127,21 +128,6 @@ void displayInfo(Aurora::NDSFile &nds) {
 	std::printf("Game name: \"%s\"\n", nds.getTitle().c_str());
 	std::printf("Game code: \"%s\"\n", nds.getCode().c_str());
 	std::printf("Game maker: \"%s\"\n", nds.getMaker().c_str());
-}
-
-void listFiles(Aurora::NDSFile &nds) {
-	const Aurora::Archive::ResourceList &resources = nds.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::printf("               Filename                |    Size\n");
-	std::printf("=======================================|===========\n");
-
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		std::printf("%32s%-6s | %10d\n", r->name.c_str(), TypeMan.setFileType("", r->type).c_str(),
-		                               nds.getResourceSize(r->index));
-	}
 }
 
 void extractFiles(Aurora::NDSFile &nds) {

@@ -38,6 +38,8 @@
 #include "src/aurora/util.h"
 #include "src/aurora/obbfile.h"
 
+#include "src/archives/util.h"
+
 #include "src/util.h"
 
 enum Command {
@@ -54,8 +56,6 @@ const char *kCommandChar[kCommandMAX] = { "l", "v", "e", "x" };
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files);
 
-void listFiles(Aurora::OBBFile &obb);
-void listVerboseFiles(Aurora::OBBFile &obb);
 void extractFiles(Aurora::OBBFile &obb, bool directories, std::set<Common::UString> &files);
 
 int main(int argc, char **argv) {
@@ -76,9 +76,9 @@ int main(int argc, char **argv) {
 		Aurora::OBBFile obb(new Common::ReadFile(archive));
 
 		if      (command == kCommandList)
-			listFiles(obb);
+			Archives::listFiles(obb, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandListVerbose)
-			listVerboseFiles(obb);
+			Archives::listFiles(obb, Aurora::kGameIDUnknown, true);
 		else if (command == kCommandExtract)
 			extractFiles(obb, false, files);
 		else if (command == kCommandExtractDir)
@@ -131,59 +131,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
 	return parser.process(argv);
-}
-
-void listFiles(Aurora::OBBFile &obb) {
-	const Aurora::Archive::ResourceList &resources = obb.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::printf("                 Filename                  |    Size\n");
-	std::printf("===========================================|===========\n");
-
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Common::UString name = Common::FilePath::getFile(r->name);
-
-		std::printf("%38s%-4s | %10d\n", name.c_str(), TypeMan.setFileType("", r->type).c_str(),
-		                                 obb.getResourceSize(r->index));
-	}
-}
-
-struct FileEntry {
-	Common::UString file;
-	uint32 size;
-
-	FileEntry(const Common::UString &f = "", uint32 s = 0xFFFFFFFF) : file(f), size(s) { }
-};
-
-void listVerboseFiles(Aurora::OBBFile &obb) {
-	const Aurora::Archive::ResourceList &resources = obb.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::vector<FileEntry> fileEntries;
-	fileEntries.reserve(fileCount);
-
-	size_t nameLength = 10;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Common::UString name = TypeMan.addFileType(r->name, r->type);
-
-		nameLength = MAX<size_t>(nameLength, name.size() + 1);
-
-		fileEntries.push_back(FileEntry(name, obb.getResourceSize(r->index)));
-	}
-
-	if ((nameLength % 2) == 1)
-		nameLength++;
-
-	std::printf("%sFileName%s|    Size\n", Common::UString(' ', (nameLength - 8) / 2).c_str(),
-	                                       Common::UString(' ', (nameLength - 8) / 2).c_str());
-	std::printf("%s|===========\n", Common::UString('=', nameLength).c_str());
-
-	for (std::vector<FileEntry>::const_iterator f = fileEntries.begin(); f != fileEntries.end(); ++f)
-		std::printf("%-*s| %10d\n", (int)nameLength, f->file.c_str(), f->size);
 }
 
 void extractFiles(Aurora::OBBFile &obb, bool directories, std::set<Common::UString> &files) {

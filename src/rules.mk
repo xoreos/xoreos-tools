@@ -23,8 +23,6 @@
 
 noinst_HEADERS += \
     src/util.h \
-    src/files_sonic.h \
-    src/files_dragonage.h \
     $(EMPTY)
 
 # The individual tools
@@ -122,9 +120,9 @@ bin_PROGRAMS += src/unerf
 src_unerf_SOURCES = \
     src/unerf.cpp \
     src/util.cpp \
-    src/files_dragonage.cpp \
     $(EMPTY)
 src_unerf_LDADD = \
+    src/archives/libarchives.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
     src/version/libversion.la \
@@ -135,9 +133,9 @@ bin_PROGRAMS += src/unherf
 src_unherf_SOURCES = \
     src/unherf.cpp \
     src/util.cpp \
-    src/files_sonic.cpp \
     $(EMPTY)
 src_unherf_LDADD = \
+    src/archives/libarchives.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
     src/version/libversion.la \
@@ -150,6 +148,7 @@ src_unrim_SOURCES = \
     src/util.cpp \
     $(EMPTY)
 src_unrim_LDADD = \
+    src/archives/libarchives.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
     src/version/libversion.la \
@@ -162,6 +161,7 @@ src_unkeybif_SOURCES = \
     src/util.cpp \
     $(EMPTY)
 src_unkeybif_LDADD = \
+    src/archives/libarchives.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
     src/version/libversion.la \
@@ -174,6 +174,7 @@ src_unnds_SOURCES = \
     src/util.cpp \
     $(EMPTY)
 src_unnds_LDADD = \
+    src/archives/libarchives.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
     src/version/libversion.la \
@@ -186,6 +187,7 @@ src_unobb_SOURCES = \
     src/util.cpp \
     $(EMPTY)
 src_unobb_LDADD = \
+    src/archives/libarchives.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
     src/version/libversion.la \
@@ -198,6 +200,7 @@ src_unnsbtx_SOURCES = \
     src/util.cpp \
     $(EMPTY)
 src_unnsbtx_LDADD = \
+    src/archives/libarchives.la \
     src/images/libimages.la \
     src/aurora/libaurora.la \
     src/common/libcommon.la \
@@ -312,6 +315,7 @@ src_erf_LDADD = \
 include src/version/rules.mk
 include src/common/rules.mk
 include src/aurora/rules.mk
+include src/archives/rules.mk
 include src/nwscript/rules.mk
 include src/images/rules.mk
 include src/xml/rules.mk

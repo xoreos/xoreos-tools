@@ -44,6 +44,8 @@
 #include "src/aurora/keyfile.h"
 #include "src/aurora/biffile.h"
 
+#include "src/archives/util.h"
+
 #include "src/util.h"
 
 enum Command {
@@ -68,7 +70,6 @@ void openBIFs(const std::vector<Common::UString> &bifFiles, Common::PtrVector<Au
 void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aurora::BIFFile> &bifs,
                  const std::vector<Common::UString> &bifFiles);
 
-void listFiles(const Aurora::KEYFile &key, Aurora::GameID game);
 void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
 void extractFiles(const Aurora::BIFFile &bif, Aurora::GameID game);
 void extractFiles(const Common::PtrVector<Aurora::BIFFile> &bifs, const std::vector<Common::UString> &bifFiles, Aurora::GameID game);
@@ -228,35 +229,9 @@ void mergeKEYBIF(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aur
 
 }
 
-void listFiles(const Aurora::KEYFile &key, Aurora::GameID game) {
-	const Aurora::KEYFile::ResourceList &resources = key.getResources();
-
-	std::printf("              Filename               | BIF\n");
-	std::printf("=====================================|=====");
-
-	const Aurora::KEYFile::BIFList &bifs = key.getBIFs();
-
-	size_t maxBIFLength = 0;
-	for (Aurora::KEYFile::BIFList::const_iterator b = bifs.begin(); b != bifs.end(); ++b)
-		maxBIFLength = MAX<size_t>(maxBIFLength, b->size());
-
-	for (size_t i = 4; i < maxBIFLength; i++)
-		std::printf("=");
-
-	std::printf("\n");
-
-	for (Aurora::KEYFile::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
-
-		std::printf("%32s%s | %s\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
-		                             (r->bifIndex < bifs.size()) ? bifs[r->bifIndex].c_str() : "");
-	}
-}
-
 void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
-	for (uint i = 0; i < keys.size(); i++) {
-		std::printf("%s: %u files\n\n", keyFiles[i].c_str(), (uint)keys[i]->getResources().size());
-		listFiles(*keys[i], game);
+	for (size_t i = 0; i < keys.size(); i++) {
+		Archives::listFiles(*keys[i], keyFiles[i], game);
 
 		if (i < (keys.size() - 1))
 			std::printf("\n");

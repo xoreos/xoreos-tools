@@ -40,6 +40,8 @@
 
 #include "src/images/xoreositex.h"
 
+#include "src/archives/util.h"
+
 #include "src/util.h"
 
 enum Command {
@@ -54,7 +56,6 @@ const char *kCommandChar[kCommandMAX] = { "l", "e" };
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &file);
 
-void listFiles(Aurora::NSBTXFile &nsbtx);
 void extractFiles(Aurora::NSBTXFile &nsbtx);
 
 int main(int argc, char **argv) {
@@ -74,7 +75,7 @@ int main(int argc, char **argv) {
 		Aurora::NSBTXFile nsbtx(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
-			listFiles(nsbtx);
+			Archives::listFiles(nsbtx);
 		else if (command == kCommandExtract)
 			extractFiles(nsbtx);
 
@@ -118,19 +119,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              returnValue, makeEndArgs(&cmdOpt, &fileOpt));
 
 	return parser.process(argv);
-}
-
-void listFiles(Aurora::NSBTXFile &nsbtx) {
-	const Aurora::Archive::ResourceList &resources = nsbtx.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::printf("      Filename       |    Size\n");
-	std::printf("=====================|===========\n");
-
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r)
-		std::printf("%16s.tga | %10d\n", r->name.c_str(), nsbtx.getResourceSize(r->index));
 }
 
 void dumpImage(Common::SeekableReadStream &stream, const Common::UString &fileName) {

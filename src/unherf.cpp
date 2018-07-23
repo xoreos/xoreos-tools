@@ -42,8 +42,10 @@
 #include "src/aurora/util.h"
 #include "src/aurora/herffile.h"
 
+#include "src/archives/util.h"
+#include "src/archives/files_sonic.h"
+
 #include "src/util.h"
-#include "src/files_sonic.h"
 
 enum Command {
 	kCommandNone    = -1,
@@ -59,7 +61,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext);
 
-void listFiles(Aurora::HERFFile &rim);
 void extractFiles(Aurora::HERFFile &rim);
 
 int main(int argc, char **argv) {
@@ -79,7 +80,7 @@ int main(int argc, char **argv) {
 		Aurora::HERFFile herf(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
-			listFiles(herf);
+			Archives::listFiles(herf, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandExtract)
 			extractFiles(herf);
 
@@ -126,7 +127,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext) {
-	const char *fileName = findSonicFile(hash);
+	const char *fileName = Archives::findSonicFile(hash);
 	if (fileName != 0) {
 		name = Common::FilePath::getStem(fileName);
 		ext  = Common::FilePath::getExtension(fileName);
@@ -136,24 +137,6 @@ bool findHashedName(uint32 hash, Common::UString &name, Common::UString &ext) {
 	name = Common::UString::format("0x%08X", hash);
 	ext  = "";
 	return false;
-}
-
-void listFiles(Aurora::HERFFile &herf) {
-	const Aurora::Archive::ResourceList &resources = herf.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::printf("               Filename                |    Size\n");
-	std::printf("=======================================|===========\n");
-
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		Common::UString fileName = r->name, fileExt = TypeMan.setFileType("", r->type);
-		if (fileName.empty())
-			findHashedName(r->hash, fileName, fileExt);
-
-		std::printf("%32s%-6s | %10d\n", fileName.c_str(), fileExt.c_str(), herf.getResourceSize(r->index));
-	}
 }
 
 void extractFiles(Aurora::HERFFile &herf) {

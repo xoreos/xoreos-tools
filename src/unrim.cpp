@@ -38,6 +38,8 @@
 #include "src/aurora/util.h"
 #include "src/aurora/rimfile.h"
 
+#include "src/archives/util.h"
+
 #include "src/util.h"
 
 enum Command {
@@ -52,7 +54,6 @@ const char *kCommandChar[kCommandMAX] = { "l", "e" };
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &file, Aurora::GameID &game);
 
-void listFiles(Aurora::RIMFile &rim, Aurora::GameID game);
 void extractFiles(Aurora::RIMFile &rim, Aurora::GameID);
 
 int main(int argc, char **argv) {
@@ -74,7 +75,7 @@ int main(int argc, char **argv) {
 		Aurora::RIMFile rim(new Common::ReadFile(file));
 
 		if      (command == kCommandList)
-			listFiles(rim, game);
+			Archives::listFiles(rim, game, false);
 		else if (command == kCommandExtract)
 			extractFiles(rim, game);
 
@@ -130,23 +131,6 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	                 makeAssigners(new ValAssigner<Aurora::GameID>(Aurora::kGameIDJade, game)));
 
 	return parser.process(argv);
-}
-
-void listFiles(Aurora::RIMFile &rim, Aurora::GameID game) {
-	const Aurora::Archive::ResourceList &resources = rim.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::printf("              Filename               |    Size\n");
-	std::printf("=====================================|===========\n");
-
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
-
-		std::printf("%32s%s | %10d\n", r->name.c_str(), TypeMan.setFileType("", type).c_str(),
-		                               rim.getResourceSize(r->index));
-	}
 }
 
 void extractFiles(Aurora::RIMFile &rim, Aurora::GameID game) {

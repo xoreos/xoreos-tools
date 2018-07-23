@@ -46,8 +46,10 @@
 #include "src/aurora/util.h"
 #include "src/aurora/erffile.h"
 
+#include "src/archives/util.h"
+#include "src/archives/files_dragonage.h"
+
 #include "src/util.h"
-#include "src/files_dragonage.h"
 
 enum Command {
 	kCommandNone        = -1,
@@ -76,8 +78,6 @@ bool parsePassword(const Common::UString &arg, std::vector<byte> &password);
 bool readNWMMD5   (const Common::UString &arg, std::vector<byte> &password);
 
 void displayInfo(Aurora::ERFFile &erf);
-void listFiles(Aurora::ERFFile &erf, Aurora::GameID game);
-void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game);
 void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
                   std::set<Common::UString> &files, ExtractMode mode);
 
@@ -104,9 +104,9 @@ int main(int argc, char **argv) {
 		if      (command == kCommandInfo)
 			displayInfo(erf);
 		else if (command == kCommandList)
-			listFiles(erf, game);
+			Archives::listFiles(erf, game, false);
 		else if (command == kCommandListVerbose)
-			listVerboseFiles(erf, game);
+			Archives::listFiles(erf, game, true);
 		else if (command == kCommandExtract)
 			extractFiles(erf, game, files, kExtractModeStrip);
 		else if (command == kCommandExtractSub)
@@ -220,7 +220,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 bool findHashedName(uint64 hash, Common::UString &name) {
-	const char *fileName = findDragonAgeFile(hash);
+	const char *fileName = Archives::findDragonAgeFile(hash);
 	if (fileName) {
 		name = Common::FilePath::changeExtension(fileName, "");
 		return true;
@@ -252,73 +252,6 @@ void displayInfo(Aurora::ERFFile &erf) {
 		std::printf("%s\n", s->str.c_str());
 		std::printf("'=== ===\n");
 	}
-}
-
-void listFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
-	const Aurora::Archive::ResourceList &resources = erf.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::printf("              Filename               |    Size\n");
-	std::printf("=====================================|===========\n");
-
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
-
-		Common::UString name = r->name;
-		if (name.empty())
-			findHashedName(r->hash, name);
-
-		name = Common::FilePath::getFile(name);
-
-		std::printf("%32s%-4s | %10d\n", name.c_str(), TypeMan.setFileType("", type).c_str(),
-		                                 erf.getResourceSize(r->index));
-	}
-}
-
-struct FileEntry {
-	Common::UString file;
-	uint32 size;
-
-	FileEntry(const Common::UString &f = "", uint32 s = 0xFFFFFFFF) : file(f), size(s) { }
-};
-
-void listVerboseFiles(Aurora::ERFFile &erf, Aurora::GameID game) {
-	const Aurora::Archive::ResourceList &resources = erf.getResources();
-	const size_t fileCount = resources.size();
-
-	std::printf("Number of files: %u\n\n", (uint)fileCount);
-
-	std::vector<FileEntry> fileEntries;
-	fileEntries.reserve(fileCount);
-
-	size_t nameLength = 10;
-	for (Aurora::Archive::ResourceList::const_iterator r = resources.begin(); r != resources.end(); ++r) {
-		const Aurora::FileType type = TypeMan.aliasFileType(r->type, game);
-
-		Common::UString name = r->name;
-		if (name.empty())
-			findHashedName(r->hash, name);
-
-		name.replaceAll('\\', '/');
-
-		name = TypeMan.addFileType(name, type);
-
-		nameLength = MAX<size_t>(nameLength, name.size() + 1);
-
-		fileEntries.push_back(FileEntry(name, erf.getResourceSize(r->index)));
-	}
-
-	if ((nameLength % 2) == 1)
-		nameLength++;
-
-	std::printf("%sFileName%s|    Size\n", Common::UString(' ', (nameLength - 8) / 2).c_str(),
-	                                       Common::UString(' ', (nameLength - 8) / 2).c_str());
-	std::printf("%s|===========\n", Common::UString('=', nameLength).c_str());
-
-	for (std::vector<FileEntry>::const_iterator f = fileEntries.begin(); f != fileEntries.end(); ++f)
-		std::printf("%-*s| %10d\n", (int)nameLength, f->file.c_str(), f->size);
 }
 
 void extractFiles(Aurora::ERFFile &erf, Aurora::GameID game,
