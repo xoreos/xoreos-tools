@@ -32,34 +32,9 @@ BuildRequires:  boost-regex, boost-locale
 
 %description
 A collection of tools to help with the reverse-engineering of BioWare's
-Aurora engine games. xoreos-tools is part of the xoreos project; please
-see the xoreos website and its GitHub repositories for details,
-especially the main README.md.
+Aurora engine games.
 
-Currently, the following tools are included:
-
-* gff2xml: Convert BioWare GFF to XML
-* tlk2xml: Convert BioWare TLK to XML
-* ssf2xml: Convert BioWare SSF to XML
-* xml2tlk: Convert XML back to BioWare TLK
-* xml2ssf: Convert XML back to BioWare SSF
-* convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
-* erf: Create BioWare ERF archives
-* fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
-* unerf: Extract BioWare ERF archives
-* unherf: Extract BioWare HERF archives
-* unrim: Extract BioWare RIM archives
-* unnds: Extract Nintendo DS roms
-* unnsbtx: Extract Nintendo NSBTX textures into TGA images
-* unkeybif: Extract BioWare KEY/BIF archives
-* unobb: Extract Aspyr's OBB virtual filesystem
-* desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
-* xoreostex2tga: Convert BioWare's texture formats into TGA
-* nbfs2tga: Convert Nintendo's raw NBFS images into TGA
-* ncgr2tga: Convert Nintendo's NCGR images into TGA
-* cbgt2tga: Convert CBGT images into TGA
-* cdpth2tga: Convert CDPTH depth images into TGA
-* ncsdis: Disassemble NWScript bytecode
+xoreos-tools is part of the xoreos project.
 
 %prep
 %setup -q
