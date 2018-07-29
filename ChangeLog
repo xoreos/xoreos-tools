@@ -3,6 +3,8 @@ Someday, ????-??-?? (Version 0.0.6)
 		- unobb
 	- AURORA:
 		- Fixed the encoding matrix for Jade Empire
+	- XOREOSTEX2TGA:
+		- Added support for swizzled Xbox SBM images
 
 Tuesday, 2018-07-03 (Version 0.0.5)
 	- Tools added:
