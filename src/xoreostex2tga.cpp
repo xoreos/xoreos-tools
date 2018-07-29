@@ -104,7 +104,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeNone, type)));
 	parser.addOption("dds", "Input file is DDS", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeDDS, type)));
-	parser.addOption("smb", "Input file is SBM", kContinueParsing,
+	parser.addOption("sbm", "Input file is SBM", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeSBM, type)));
 	parser.addOption("tpc", "Input file is TPC", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::FileType>(Aurora::kFileTypeTPC, type)));
