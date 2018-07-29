@@ -51,10 +51,10 @@
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::FileType &type, bool &flip);
+                      Aurora::FileType &type, bool &flip, bool &deswizzle);
 
 void convert(const Common::UString &inFile, const Common::UString &outFile,
-             Aurora::FileType type, bool flip);
+             Aurora::FileType type, bool flip, bool deswizzle);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -66,12 +66,12 @@ int main(int argc, char **argv) {
 		int returnValue = 1;
 		Common::UString inFile, outFile;
 		Aurora::FileType type = Aurora::kFileTypeNone;
-		bool flip = false;
+		bool flip = false, deswizzle = false;
 
-		if (!parseCommandLine(args, returnValue, inFile, outFile, type, flip))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, type, flip, deswizzle))
 			return returnValue;
 
-		convert(inFile, outFile, type, flip);
+		convert(inFile, outFile, type, flip, deswizzle);
 	} catch (...) {
 		Common::exceptionDispatcherError();
 	}
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::FileType &type, bool &flip) {
+                      Aurora::FileType &type, bool &flip, bool &deswizzle) {
 
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
@@ -115,6 +115,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addSpace();
 	parser.addOption("flip", 'f', "Flip the image vertically", kContinueParsing,
 	                 makeAssigners(new ValAssigner<bool>(true, flip)));
+	parser.addSpace();
+	parser.addOption("deswizzle", 'd', "Input file is an Xbox SBM that needs deswizzling",
+	                 kContinueParsing, makeAssigners(new ValAssigner<bool>(true, deswizzle)));
 	return parser.process(argv);
 }
 
@@ -149,12 +152,12 @@ static Aurora::FileType detectType(const Common::UString &file) {
 	return Aurora::kFileTypeNone;
 }
 
-Images::Decoder *openImage(Common::SeekableReadStream &stream, Aurora::FileType type) {
+static Images::Decoder *openImage(Common::SeekableReadStream &stream, Aurora::FileType type, bool deswizzle) {
 	switch (type) {
 		case Aurora::kFileTypeDDS:
 			return new Images::DDS(stream);
 		case Aurora::kFileTypeSBM:
-			return new Images::SBM(stream);
+			return new Images::SBM(stream, deswizzle);
 		case Aurora::kFileTypeTPC:
 			return new Images::TPC(stream);
 		case Aurora::kFileTypeTXB:
@@ -168,7 +171,7 @@ Images::Decoder *openImage(Common::SeekableReadStream &stream, Aurora::FileType 
 }
 
 void convert(const Common::UString &inFile, const Common::UString &outFile,
-             Aurora::FileType type, bool flip) {
+             Aurora::FileType type, bool flip, bool deswizzle) {
 
 	Common::ReadFile in(inFile);
 
@@ -185,7 +188,7 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
 		}
 	}
 
-	Common::ScopedPtr<Images::Decoder> image(openImage(in, type));
+	Common::ScopedPtr<Images::Decoder> image(openImage(in, type, deswizzle));
 	if (flip)
 		image->flipVertically();
 
