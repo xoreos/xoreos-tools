@@ -26,6 +26,7 @@
 #define AURORA_LANGUAGE_H
 
 #include <map>
+#include <vector>
 
 #include "src/common/types.h"
 #include "src/common/singleton.h"
@@ -157,6 +158,9 @@ public:
 	 *  fake language entry!
 	 */
 	void overrideEncoding(uint32 id, Common::Encoding encoding, Common::Encoding encodingLocString);
+
+	/** Return all declared supported languages for the current game. */
+	std::vector<Language> getLanguages() const;
 
 	/** Construct the internal language ID for an ungendered use of a language.
 	 *
