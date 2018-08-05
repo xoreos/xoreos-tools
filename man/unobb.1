@@ -1,9 +1,9 @@
-.Dd July 24, 2018
+.Dd August 5, 2018
 .Dt UNOBB 1
 .Os
 .Sh NAME
 .Nm unobb
-.Nd Aspyr OBB virtual filesystem extractor
+.Nd Aspyr OBB virtual filesystem / archive extractor
 .Sh SYNOPSIS
 .Nm unobb
 .Op Ar options
@@ -14,11 +14,14 @@
 .Nm
 extracts Aspyr's OBB filesystem files, found in their Android
 .Em Jade Empire
+port, and OBB ZIP archives, found in Aspyr's Android
+.Em Star Wars: Knights of the Old Republic
 port.
 .Pp
-OBB files contain a
+OBB files contain either a
 .Dq virtual filesystem ,
-with files split into chunks and compressed via zlib.
+with files split into chunks and compressed via zlib, or plain
+ZIP archives.
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Fl h

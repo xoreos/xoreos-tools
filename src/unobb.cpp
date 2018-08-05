@@ -19,7 +19,7 @@
  */
 
 /** @file
- *  Tool to extract Aspyr's OBB virtual filesystems.
+ *  Tool to extract Aspyr's OBB virtual filesystems / ZIP archives.
  */
 
 #include <cstring>
@@ -33,8 +33,10 @@
 #include "src/common/platform.h"
 #include "src/common/cli.h"
 #include "src/common/readfile.h"
+#include "src/common/scopedptr.h"
 
 #include "src/aurora/obbfile.h"
+#include "src/aurora/zipfile.h"
 
 #include "src/archives/util.h"
 
@@ -54,6 +56,8 @@ const char *kCommandChar[kCommandMAX] = { "l", "v", "e", "x" };
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, Common::UString &archive, std::set<Common::UString> &files);
 
+bool isPKZIP(Common::SeekableReadStream &stream);
+
 int main(int argc, char **argv) {
 	initPlatform();
 
@@ -69,17 +73,24 @@ int main(int argc, char **argv) {
 		if (!parseCommandLine(args, returnValue, command, archive, files))
 			return returnValue;
 
-		Aurora::OBBFile obb(new Common::ReadFile(archive));
+		Common::ScopedPtr<Common::SeekableReadStream> stream(new Common::ReadFile(archive));
+
+		Common::ScopedPtr<Aurora::Archive> arc;
+		if (isPKZIP(*stream))
+			arc.reset(new Aurora::ZIPFile(stream.release()));
+		else
+			arc.reset(new Aurora::OBBFile(stream.release()));
+
 		files = Archives::fixPathSeparator(files);
 
 		if      (command == kCommandList)
-			Archives::listFiles(obb, Aurora::kGameIDUnknown, false);
+			Archives::listFiles(*arc, Aurora::kGameIDUnknown, false);
 		else if (command == kCommandListVerbose)
-			Archives::listFiles(obb, Aurora::kGameIDUnknown, true);
+			Archives::listFiles(*arc, Aurora::kGameIDUnknown, true);
 		else if (command == kCommandExtract)
-			Archives::extractFiles(obb, Aurora::kGameIDUnknown, false, files);
+			Archives::extractFiles(*arc, Aurora::kGameIDUnknown, false, files);
 		else if (command == kCommandExtractDir)
-			Archives::extractFiles(obb, Aurora::kGameIDUnknown, true, files);
+			Archives::extractFiles(*arc, Aurora::kGameIDUnknown, true, files);
 
 	} catch (...) {
 		Common::exceptionDispatcherError();
@@ -115,7 +126,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption cmdOpt(false, new ValGetter<Command &>(command, "command"));
 	NoOption archiveOpt(false, new ValGetter<Common::UString &>(archive, "archive"));
 	NoOption filesOpt(true, new ValGetter<std::set<Common::UString> &>(files, "files[...]"));
-	Parser parser(argv[0], "Aspyr OBB virtual filesystem extractor",
+	Parser parser(argv[0], "Aspyr OBB virtual filesystem / archive extractor",
 	              "Commands:\n"
 	              "  l          List files (stripping directories)\n"
 	              "  v          List files verbosely (with directories)\n"
@@ -125,4 +136,12 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	              makeEndArgs(&cmdOpt, &archiveOpt, &filesOpt));
 
 	return parser.process(argv);
+}
+
+bool isPKZIP(Common::SeekableReadStream &stream) {
+	const size_t pos = stream.pos();
+	const bool pkzip = stream.readUint16BE() == MKTAG_16('P', 'K');
+
+	stream.seek(pos);
+	return pkzip;
 }
