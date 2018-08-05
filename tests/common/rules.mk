@@ -177,6 +177,16 @@ tests_common_test_deflate_SOURCES  = tests/common/deflate.cpp
 tests_common_test_deflate_LDADD    = $(common_LIBS)
 tests_common_test_deflate_CXXFLAGS = $(test_CXXFLAGS)
 
+check_PROGRAMS                    += tests/common/test_zipfile
+tests_common_test_zipfile_SOURCES  = tests/common/zipfile.cpp
+tests_common_test_zipfile_LDADD    = $(common_LIBS)
+tests_common_test_zipfile_CXXFLAGS = $(test_CXXFLAGS)
+
+check_PROGRAMS                 += tests/common/test_lzma
+tests_common_test_lzma_SOURCES  = tests/common/lzma.cpp
+tests_common_test_lzma_LDADD    = $(common_LIBS)
+tests_common_test_lzma_CXXFLAGS = $(test_CXXFLAGS)
+
 check_PROGRAMS                            += tests/common/test_streamtokenizer
 tests_common_test_streamtokenizer_SOURCES  = tests/common/streamtokenizer.cpp
 tests_common_test_streamtokenizer_LDADD    = $(common_LIBS)
