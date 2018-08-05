@@ -19,11 +19,14 @@
  */
 
 /** @file
- *  Handling BioWare's BIFs (resource data files).
+ *  Handling BioWare's BZFs (resource data files), used in the Android
+ *  and iOS versions of Knights of the Old Republic.
+ *
+ *  Essentially, they are BIF files with LZMA-compressed data.
  */
 
-#ifndef AURORA_BIFFILE_H
-#define AURORA_BIFFILE_H
+#ifndef AURORA_BZFFILE_H
+#define AURORA_BZFFILE_H
 
 #include <vector>
 
@@ -42,37 +45,18 @@ namespace Aurora {
 
 class KEYFile;
 
-/** Class to hold resource data information of a BIF file.
+/** Class to hold resource data information of a BZF file.
  *
- *  A BIF file is one part of the KEY/BIF resource archive system.
- *  The KEY file contains the resource names and types, and the BIF
- *  file contains the actual resource data. So BIF files only contain
- *  the resource data itself.
+ *  A BZF is a compressed variation of a BIF file, found exclusively
+ *  in the Android and iOS version of Knights of the Old Republic.
  *
- *  A KEY file can index resources of several BIF files and several
- *  BIF files can in turn index different resources of the same BIF
- *  file.
- *
- *  Additionally, there are BZF files. A BZF is a compressed variation
- *  of a BIF file, found exclusively in the Android and iOS version of
- *  Knights of the Old Republic.
- *
- *  See also classes KEYFile in keyfile.h and BZFFile in bzffile.h.
- *
- *  There are two versions of BIF files known and supported
- *  - V1, used by Neverwinter Nights, Neverwinter Nights 2, Knight of
- *    the Old Republic, Knight of the Old Republic II and Jade Empire
- *  - V1.1, used by The Witcher
- *
- *  Please note that BIF (and KEY) files found in Infinity Engine
- *  games (Baldur's Gate et al) are not supported at all, even though
- *  they claim to be V1.
+ *  See also classes KEYFile in keyfile.h and BIFFile in biffile.h.
  */
-class BIFFile : public KEYDataFile, public AuroraFile {
+class BZFFile : public KEYDataFile, public AuroraFile {
 public:
-	/** Take over this stream and read a BIF file out of it. */
-	BIFFile(Common::SeekableReadStream *bif);
-	~BIFFile();
+	/** Take over this stream and read a BZF file out of it. */
+	BZFFile(Common::SeekableReadStream *bzf);
+	~BZFFile();
 
 	/** Return the number of internal resources (including unmerged ones). */
 	uint32 getInternalResourceCount() const;
@@ -101,13 +85,15 @@ private:
 	struct IResource {
 		FileType type; ///< The resource's type.
 
-		uint32 offset; ///< The offset of the resource within the BIF.
+		uint32 offset; ///< The offset of the resource within the BZF.
 		uint32 size;   ///< The resource's size.
+
+		uint32 packedSize; ///< Raw, compressed data size.
 	};
 
 	typedef std::vector<IResource> IResourceList;
 
-	Common::ScopedPtr<Common::SeekableReadStream> _bif;
+	Common::ScopedPtr<Common::SeekableReadStream> _bzf;
 
 	/** External list of resource names and types. */
 	ResourceList _resources;
@@ -115,12 +101,12 @@ private:
 	/** Internal list of resource offsets and sizes. */
 	IResourceList _iResources;
 
-	void load(Common::SeekableReadStream &bif);
-	void readVarResTable(Common::SeekableReadStream &bif, uint32 offset);
+	void load(Common::SeekableReadStream &bzf);
+	void readVarResTable(Common::SeekableReadStream &bzf, uint32 offset);
 
 	const IResource &getIResource(uint32 index) const;
 };
 
 } // End of namespace Aurora
 
-#endif // AURORA_BIFFILE_H
+#endif // AURORA_BZFFILE_H

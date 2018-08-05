@@ -32,7 +32,9 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/erffile.h \
     src/aurora/rimfile.h \
     src/aurora/keyfile.h \
+    src/aurora/keydatafile.h \
     src/aurora/biffile.h \
+    src/aurora/bzffile.h \
     src/aurora/ndsrom.h \
     src/aurora/zipfile.h \
     src/aurora/herffile.h \
@@ -63,6 +65,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/rimfile.cpp \
     src/aurora/keyfile.cpp \
     src/aurora/biffile.cpp \
+    src/aurora/bzffile.cpp \
     src/aurora/ndsrom.cpp \
     src/aurora/zipfile.cpp \
     src/aurora/herffile.cpp \

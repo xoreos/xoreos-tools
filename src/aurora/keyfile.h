@@ -52,7 +52,11 @@ namespace Aurora {
  *  BIF files can in turn index different resources of the same BIF
  *  file.
  *
- *  See also class BIFFile in biffile.h.
+ *  Additionally, there are BZF files. A BZF is a compressed variation
+ *  of a BIF file, found exclusively in the Android and iOS versions of
+ *  Knights of the Old Republic.
+ *
+ *  See also classes BIFFile in biffile.h and BZFFile in bzffile.h.
  *
  *  There are two versions of KEY files known and supported
  *  - V1, used by Neverwinter Nights, Neverwinter Nights 2, Knight of
