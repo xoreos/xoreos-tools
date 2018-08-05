@@ -251,6 +251,10 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 list(APPEND XOREOSTOOLS_LIBRARIES ${Boost_LIBRARIES})
 
+find_package(LibLZMA REQUIRED)
+include_directories(${LIBLZMA_INCLUDE_DIR})
+list(APPEND XOREOS_LIBRARIES ${LIBLZMA_LIBRARY})
+
 find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 list(APPEND XOREOSTOOLS_LIBRARIES ${LIBXML2_LIBRARIES})

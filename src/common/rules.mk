@@ -41,6 +41,7 @@ src_common_libcommon_la_SOURCES += \
     src/common/md5.h \
     src/common/blowfish.h \
     src/common/deflate.h \
+    src/common/lzma.h \
     src/common/base64.h \
     src/common/error.h \
     src/common/util.h \
@@ -69,6 +70,7 @@ src_common_libcommon_la_SOURCES += \
     src/common/md5.cpp \
     src/common/blowfish.cpp \
     src/common/deflate.cpp \
+    src/common/lzma.cpp \
     src/common/base64.cpp \
     src/common/error.cpp \
     src/common/util.cpp \
