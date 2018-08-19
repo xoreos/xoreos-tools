@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 		std::vector<Common::UString> args;
 		Common::Platform::getParameters(argc, argv, args);
 
-		Common::Encoding encoding = Common::kEncodingUTF16LE;
+		Common::Encoding encoding = Common::kEncodingInvalid;
 		Aurora::GameID   game     = Aurora::kGameIDUnknown;
 
 		EncodingOverrides encOverrides;

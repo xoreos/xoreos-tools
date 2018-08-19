@@ -73,6 +73,9 @@ void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *i
 	_gff4.reset(new Aurora::GFF4File(input));
 	_xml.reset(new XMLWriter(output));
 
+	if (_encoding == Common::kEncodingInvalid)
+			_encoding = _gff4->getNativeEncoding();
+
 	_xml->openTag("gff4");
 	_xml->addProperty("type"    , Common::tagToString(_gff4->getType()       , true));
 	_xml->addProperty("version" , Common::tagToString(_gff4->getTypeVersion(), true));
