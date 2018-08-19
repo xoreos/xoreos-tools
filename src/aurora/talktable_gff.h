@@ -35,6 +35,11 @@
 #include "src/aurora/types.h"
 #include "src/aurora/talktable.h"
 
+namespace Common {
+	class SeekableReadStream;
+	class SeekableSubReadStreamEndian;
+}
+
 namespace Aurora {
 
 /** Loading BioWare's GFF'd talk tables.
@@ -47,8 +52,9 @@ namespace Aurora {
  *  besides the raw strings. getSoundResRef() always returns an empty
  *  string.
  *
- *  There are two versions of GFF'd talk tables known and supported
- *  - V0.2, used by Sonic Chronicles and Dragon Age: Origins
+ *  There are three versions of GFF'd talk tables known and supported
+ *  - V0.2, used by Sonic Chronicles and Dragon Age: Origins (PC)
+ *  - V0.4, used by Dragon Age: Origins (Xbox 360)
  *  - V0.5, used by Dragon Age II
  */
 class TalkTable_GFF : public TalkTable {
@@ -93,10 +99,10 @@ private:
 
 	Common::UString readString(const Entry &entry) const;
 	Common::UString readString02(const Entry &entry) const;
-	Common::UString readString05(const Entry &entry) const;
+	Common::UString readString05(const Entry &entry, bool bigEndian) const;
 
-	Common::UString readString05(Common::SeekableReadStream *huffTree,
-	                             Common::SeekableReadStream *bitStream,
+	Common::UString readString05(Common::SeekableSubReadStreamEndian &huffTree,
+	                             Common::SeekableSubReadStreamEndian &bitStream,
 	                             const Entry &entry) const;
 };
 
