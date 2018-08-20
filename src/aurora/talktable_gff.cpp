@@ -192,7 +192,7 @@ Common::UString TalkTable_GFF::readString(const Entry &entry) const {
 	else if (_gff->getTypeVersion() == kVersion04)
 		return readString05(entry, _gff->isBigEndian());
 	else if (_gff->getTypeVersion() == kVersion05)
-		return readString05(entry, false);
+		return readString05(entry, _gff->isBigEndian());
 
 	return "";
 }
