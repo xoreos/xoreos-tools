@@ -37,71 +37,96 @@
 #include <ctype.h>
 #include "src/common/ustring.h"
 #include "src/aurora/xmlfix.h"
+#include "xmlfix.h"
+using namespace Aurora;
 
-using std::cout;
+// using std::cout;
 using std::string;
+// using std::ifstream;
+// using std::ofstream;
+
+// Prototypes
+std::string trim(std::string line);
 
 int comCount = 0; //Track number of open/closed comments.
 bool inUIButton = false; //Used to fix </UIButton> tags that are never opened. 
 
-static Common::SeekableReadStream *fixXML(Common::SeekableReadStream *xml) {
+static Common::SeekableReadStream * fixXML(Common::SeekableReadStream *xml) {
 	//TODO
 	return nullptr;
 }
 
 int main(int argc, char* argv[]) {
 	if (argc != 2) {
-		cout << "Please specify an xml file to parse.\n"
+		std::cout << "Please specify an xml file to parse.\n"
 			"a file name <fileName>Fixed will be created.\n";
 			// TODO: update this when we no longer create new files.
 			// Double-check, but I believe we want to modify the
 			// original file, not create a new one. 
 		return -1;
 	}
+
 	//First get our file names	
-	Common::UString oldFileName = argv[1];
-	Common::UString newFileName = oldFileName;
-	Common::UString line; //Each line of XML we parse
+	std::string oldFileName = argv[1];
+	std::string newFileName = oldFileName;
+	std::string sline;    // Input line
+	Common::UString line; // Conversion line for XMLFix class call
+	Aurora::XMLFix fixer;
+
+//	Common::UString oldFileName = argv[1];
+//	Common::UString newFileName = oldFileName;
+//	Common::UString line; //Each line of XML we parse
 	size_t perLoc = oldFileName.find("."); //Location of period in the file name.
 										   //There is a period	
 	if (perLoc != std::string::npos) {//Add Fixed before the extension
 		newFileName.insert(perLoc, "Fixed");
-	}
-	else {//Add Fixed at the end of the file
+	} else {
+		// Add Fixed at the end of the file
 		newFileName = newFileName + "Fixed";
 	}
-	//Then open the actual files. (converted to CStrings so fstream won't complain).
-	ifstream readFile(oldFileName.c_str(), ios::in);
-	if (!readFile.is_open()) {//We check twice so that we don't create files if garbage is passed in.
-		cout << "Error opening files." << endl;
+
+	// Open the files
+	std::ifstream readFile(oldFileName, std::ios::in);
+	if (!readFile.is_open()) { // We check twice so that we don't create files if garbage is passed in.
+		std::cout << "Error opening files." << std::endl;
 		return -1;
 	}
-	ofstream writeFile(newFileName.c_str(), ios::out | ios::trunc);//Create or overwrite
+	std::ofstream writeFile(newFileName, std::ios::out | std::ios::trunc);//Create or overwrite
 	if (!writeFile.is_open()) {
-		cout << "Error opening files." << endl;
+		std::cout << "Error opening files." << std::endl;
 		return -1;
 	}
-	//Check for XML style
-	if (getline(readFile, line)) {
-		if (trim(line).find("<?xml") == 0) {//If we start with an XML formatter
-											//Write this line first.
-			line = fixXMLTag(line);
-			writeFile << line << "\n";
-		}
-		else {
-			cout << "Improper XML file.\n";
+
+	// Read in the first line
+	if (std::getline(readFile, sline)) {
+		// Convert to UString for XMLFix class function call
+		line = sline;
+
+		// Check for XML format
+		if (trim(sline).find("<?xml") == 0) {
+			// Filter the line then write to file
+			line = fixer.fixXMLTag(line);
+			writeFile << line.c_str() << "\n";
+		} else {
+			// Abort
+			std::cout << "Improper XML file.\n";
 			return -1;
 		}
 	}
 	else {
-		cout << "Error reading file\n";
+		// Abort
+		std::cout << "Error reading file\n";
 		return -1;
 	}
-	//Then insert the root element.
+
+	// Insert the root element.
 	writeFile << "<Root>\n";
-	while (getline(readFile, line)) {
-		countComments(line);
-		writeFile << parseLine(line) << "\n";
+	while (std::getline(readFile, sline)) {
+		// Convert to UString for class function call
+		line = sline;
+//		countComments(sline); // private function
+		line = fixer.parseLine(line);
+		writeFile << line.c_str() << "\n";
 	}
 	writeFile << "</Root>\n";
 	readFile.close();
@@ -112,7 +137,7 @@ int main(int argc, char* argv[]) {
 /**Read and fix any line of XML that is passed in,
 * Returns that fixed line.
 */
-Common::UString parseLine(Common::UString line) {
+Common::UString XMLFix::parseLine(Common::UString line) {
 	line = fixUnclosedNodes(line);
 	line = escapeSpacedStrings(line, false);//Fix problematic strings (with spaces or special characters)
 	line = fixMismatchedParen(line);
@@ -132,7 +157,7 @@ Common::UString parseLine(Common::UString line) {
 * This probably doesn't need to run on every
 * Line.
 */
-Common::UString fixCopyright(Common::UString line) {
+Common::UString XMLFix::fixCopyright(Common::UString line) {
 	//If this is the copyright line, remove the unicode.
 	if (line.find("Copyright") != std::string::npos) {
 		if (!comCount) {
@@ -153,7 +178,7 @@ Common::UString fixCopyright(Common::UString line) {
 * Returns the unmodified line with the
 * Proper opening XML tag.
 */
-Common::UString fixXMLTag(Common::UString line) {
+Common::UString XMLFix::fixXMLTag(Common::UString line) {
 	//Let's ensure we close this properly.
 	if (line.find("<?xml") != string::npos) {
 		line = trim(line);
@@ -173,7 +198,7 @@ Common::UString fixXMLTag(Common::UString line) {
 * If there is a closed UIButton without an open
 * UIButton.
 */
-Common::UString fixUnclosedNodes(Common::UString line) {
+Common::UString XMLFix::fixUnclosedNodes(Common::UString line) {
 	size_t pos = line.find("<UIButton");
 	//Open node	
 	if (pos != string::npos) {
@@ -198,33 +223,33 @@ Common::UString fixUnclosedNodes(Common::UString line) {
 * In the context open("FooBar"), so that's the only
 * Case we look for right now.
 */
-Common::UString escapeInnerQuotes(Common::UString line) {
-	if (countOccurances(line, '"') > 2) {//We have more than 2 quotes in one line
+Common::UString XMLFix::escapeInnerQuotes(Common::UString line) {
+	const uint32 quote_mark = '\"';
+	if (countOccurances(line, quote_mark) > 2) {//We have more than 2 quotes in one line
 		size_t firstQuotPos = line.find("\""); //The first quotation mark
-		size_t lastQuotPos = line.find_last_of("\""); //The last quotation mark
+		size_t lastQuotPos = line.find_last_of(quote_mark); //The last quotation mark
 		bool inPar = false;
 		for (size_t i = firstQuotPos + 1; i < lastQuotPos - 1; i++) {
-			//We're in a parenthetical, all quotes need to be replaced
-			//This is not covered by our previous cases if there are 
-			//Multiple quoted entries in one set of parens.
+			// For a parenthetical, all quotes need to be replaced
+			// This is not covered by our previous cases if there are 
+			// multiple quoted entries in one set of parens.
 			if (line.at(i) == '(') {
 				inPar = true;
-			}
-			else if (line.at(i) == ')') {
+			} else if (line.at(i) == ')') {
 				inPar = false;
-			}
-			else if (inPar && line.at(i) == '"') {
+			} else if (inPar && line.at(i) == '"') {
 				line.replace(i, 1, "&quot;");
-				lastQuotPos = line.find_last_of("\""); //Update string length
-			}if (line.at(i) == '(' && line.at(i + 1) == '"') {//Opening paren, encode the quote
+				lastQuotPos = line.find_last_of(quote_mark); // Update string length
+			}
+			
+			if (line.at(i) == '(' && line.at(i + 1) == '"') {
+				// Opening paren, encode the quote
 				line.replace(i + 1, 1, "&quot;");
-				lastQuotPos = line.find_last_of("\""); //Our string changed, last quote should too.
-			}
-			//If we have a close paren or a comma [as in foo=("elem1",bar)]
-			//Closed paren, encode the quote
-			else if ((line.at(i) == '"' && line.at(i + 1) == ')') || (line.at(i) == '"' && line.at(i + 1) == ',')) {
+				lastQuotPos = line.find_last_of(quote_mark); // Our string changed, last quote should too.
+			} else if ((line.at(i) == '"' && line.at(i + 1) == ')') || (line.at(i) == '"' && line.at(i + 1) == ',')) {
+				// Found a close paren or a comma [as in foo=("elem1",bar)], so encode the quote
 				line.replace(i, 1, "&quot;");
-				lastQuotPos = line.find_last_of("\""); //Update string length
+				lastQuotPos = line.find_last_of(quote_mark); // Update string length
 			}
 		}
 	}
@@ -236,32 +261,32 @@ Common::UString escapeInnerQuotes(Common::UString line) {
 * Appears in a string, line, and returns that
 * Number. //TODO: can we replace this with std::count?
 */
-int countOccurances(Common::UString, char find) {
+int countOccurances(Common::UString line, uint32 find) {
 	int count = 0;
 	for (size_t i = 0; i < line.length(); i++) {
-		if (line[i] == find) {
+		if (line.at(i) == find) {
 			count++;
 		}
 	}
 	return count;
 }
 
-//Adds a closing paren if a line is missing such a thing.
-Common::UString fixMismatchedParen(Common::UString line) {
+// Adds a closing paren if a line is missing such a thing.
+Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 	bool inParen = false;
 	size_t end = line.length();
 	for (size_t i = 0; i < end; i++) {
+		uint32 c = line.at(i);
 		if (!inParen) {
-			if (line[i] == '(') {
+			if (c == '(') {
 				inParen = true;
 			}
-		}
-		else {
+		} else {
 			size_t pos = line.find("/>");
-			if (line[i] == ')') {
+			if (c == ')') {
 				inParen = false;
-			}
-			else if (i == pos - 1) {//We're at the end of the string and haven't closed a paren.
+			} else if (i == pos - 1) {
+				// We're at the end of the string and haven't closed a paren.
 				if (line.at(pos - 1) != ')') {
 					line.insert(pos, ")");
 					break;
@@ -277,7 +302,7 @@ Common::UString fixMismatchedParen(Common::UString line) {
 * By a quotation mark. Insert that quotation mark,
 * and return the fixed line.
 */
-Common::UString fixOpenQuotes(Common::UString line) {
+Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	//We have an equal with no open quote
 	size_t end = line.length() - 1;
 	for (size_t i = 0; i < end; i++) {
@@ -338,7 +363,7 @@ Common::UString fixOpenQuotes(Common::UString line) {
 * there isn't a close quote, AND we have an
 * odd number of quotes.
 */
-Common::UString fixUnevenQuotes(Common::UString line) {
+Common::UString XMLFix::fixUnevenQuotes(Common::UString line) {
 	size_t closeBrace = line.find("/>");
 	//We don't have a close quote before our close brace
 	//Sometimes there is a space after a quote
@@ -357,27 +382,31 @@ Common::UString fixUnevenQuotes(Common::UString line) {
 * Point in the code, and if we do end up adding too many, it will be
 * Removed in a later function (such as fixTripleQuote())
 */
-std::string fixUnclosedQuote(std::string line) {
+Common::UString XMLFix::fixUnclosedQuote(Common::UString line) {
 	bool inQuote = false; //Tracks if we are inside a quote
 	size_t end = line.length();
 	for (size_t i = 0; i < end; i++) {
+		uint32 c = line.at(i);
 		if (!inQuote) {
-			if (line[i] == '"') {
+			if (c == '"') {
 				inQuote = true;
 			}
-		}
-		else {
-			if (line[i] == '"') {//Inquote is true, we're in a quoted part.
-				inQuote = false; //This is a close quote
-								 //A close quote should be followed by a space.
-				if (line.at(i + 1) != ' ' && line.at(i + 1) != '/' && line.at(i + 1) != '"') {
+		} else {
+			// Inquote is true, we're in a quoted part.
+			if (c == '"') {
+				//This is a close quote
+				inQuote = false;
+
+				// A close quote should be followed by a space.
+				uint32 d = line.at(i + 1);
+				if (d != ' ' && d != '/' && d != '"') {
 					line.insert(i + 1, " ");
 					i++;
 					end++;
 				}
-			}
-			else if (isspace(line[i])) {//We can't check for just a space, 
-										//because files sometimes also contain newlines.
+			} else if (Common::UString::isSpace(c)) {
+				// We can't check for just a space, because files
+				// sometimes also contain newlines.
 				line.insert(i, "\"");
 				i++;
 				end++;
@@ -392,21 +421,20 @@ std::string fixUnclosedQuote(std::string line) {
 * Another close brace fix. If we're in a quote and we don't
 * have a close quote and we see a />, we add a close quote.
 */
-std::string fixCloseBraceQuote(std::string line) {
+Common::UString XMLFix::fixCloseBraceQuote(Common::UString line) {
 	bool inQuote = false;
 	size_t end = line.length();
 	for (size_t i = 0; i < end; i++) {
+		uint32 c = line.at(i);
 		if (!inQuote) {
-			if (line[i] == '"') {
+			if (c == '"') {
 				inQuote = true;
 			}
-		}
-		else {
+		} else {
 			size_t pos = line.find("/>");
-			if (line[i] == '"') {//Inquote is true, we're in a quoted part.
+			if (c == '"') {//Inquote is true, we're in a quoted part.
 				inQuote = false;
-			}
-			else if (pos != std::string::npos) {
+			} else if (pos != std::string::npos) {
 				if (line.at(pos - 1) != '"') {
 					line.insert(pos, "\"");
 					break;
@@ -418,16 +446,18 @@ std::string fixCloseBraceQuote(std::string line) {
 }
 
 /**
-* If there are any -- inside of a comment,
-* This will remove them and replace it with
-* A single dash. Otherwise this breaks
-* Compatibility.
+* If there are any '--' inside of a comment,
+* this will remove them and replace it with
+* a single dash. Otherwise this breaks
+* compatibility.
 */
-std::string doubleDashFix(std::string line) {
+Common::UString XMLFix::doubleDashFix(Common::UString line) {
 	size_t pos = line.find("--");
+
 	//It's not a comment
 	if (pos < line.length() - 1 && line.at(pos + 2) != '>' && (pos > 0 && line.at(pos - 1) != '!')) {
-		line.erase(pos, 1);//Remove one dash.
+		// Remove one dash
+		line.erase(pos, 1);
 	}
 	return line;
 }
@@ -444,7 +474,7 @@ std::string doubleDashFix(std::string line) {
 * Returns the modified line, without double or
 * Triple quotes.
 */
-std::string tripleQuoteFix(std::string line) {
+Common::UString XMLFix::tripleQuoteFix(Common::UString line) {
 	size_t pos = line.find("\"\"\"");
 	if (pos != std::string::npos) {
 		line.erase(pos, 2);//Remove two quotes.
@@ -468,7 +498,7 @@ std::string tripleQuoteFix(std::string line) {
 * Returns a safe string (devoid of problematic phrases) if undo is false, or
 * The original string, with problematic phrases restored if undo is true.
 */
-std::string escapeSpacedStrings(std::string line, bool undo) {
+Common::UString XMLFix::escapeSpacedStrings(Common::UString line, bool undo) {
 	//Just used as containers.
 	//Might be an easier/cleaner way to do this, perhaps with some sort of map instead of two arrays.
 	string switchWordsFrom[] = { "portrait frame" , "0 / 0 MB", "->", ">>",
@@ -505,7 +535,7 @@ std::string escapeSpacedStrings(std::string line, bool undo) {
 * Track number of open and closed comments
 * Used for tracking copyright.
 */
-void countComments(std::string line) {
+void XMLFix::countComments(std::string line) {
 	if (line.find("<!--") != std::string::npos)
 	{
 		comCount++;
