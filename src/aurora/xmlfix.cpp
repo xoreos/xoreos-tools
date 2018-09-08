@@ -1,7 +1,33 @@
-//Converts NWN xml code to proper XML code.
-//Fixes unescaped special characters, root
-//Elements, mismatched nodes, unclosed 
-//Parentheses, and unclosed quotes.
+/* xoreos-tools - Tools to help with xoreos development
+ *
+ * xoreos-tools is the legal property of its developers, whose names
+ * can be found in the AUTHORS file distributed with this source
+ * distribution.
+ *
+ * xoreos-tools is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * xoreos-tools is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with xoreos-tools. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** @file
+ *  Fix broken, non-standard XML files.
+ */
+
+/**
+* This class converts NWN2 xml code to proper XML code.
+* It fixes unescaped special characters, root elements,
+* mismatched nodes, unclosed parentheses, and unclosed
+* quotes.
+*/
 
 #include <iostream>
 #include <string>
@@ -9,8 +35,8 @@
 #include <algorithm>
 #include <stdio.h>
 #include <ctype.h>
-#include "../common/ustring.h"
-#include "XMLFix.h"
+#include "src/common/ustring.h"
+#include "src/aurora/xmlfix.h"
 
 using std::cout;
 using std::string;
@@ -26,7 +52,10 @@ static Common::SeekableReadStream *fixXML(Common::SeekableReadStream *xml) {
 int main(int argc, char* argv[]) {
 	if (argc != 2) {
 		cout << "Please specify an xml file to parse.\n"
-			"a file name <fileName>Fixed will be created.\n";//TODO: update this when we no longer create new files. Double-check, but I believe we want to modify the original file, not create a new one. 
+			"a file name <fileName>Fixed will be created.\n";
+			// TODO: update this when we no longer create new files.
+			// Double-check, but I believe we want to modify the
+			// original file, not create a new one. 
 		return -1;
 	}
 	//First get our file names	
