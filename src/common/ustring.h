@@ -197,6 +197,40 @@ public:
 
 	static uint32 fromUTF16(uint16 c);
 
+	/** Replicate std::string functionality */
+	// For now this is test only -- I hope to merge as much as possible into xmlfix.cpp
+	uint32 at(size_t pos) {
+		return _string.at(pos);
+	}
+	void erase(size_t pos, size_t len) {
+		if (len < 1)
+			return;
+		this->erase(this->getPosition(pos), this->getPosition(pos + len));
+	}
+	size_t find(const UString &str) {
+		return this->getPosition(this->findFirst(str));
+	}
+	size_t find_last_of(uint32 c) {
+		return this->getPosition(this->findLast(c));
+	}
+	size_t find_last_of(UString &str) {
+		uint32 c = str.at(0);
+		return this->find_last_of(c); // Temporary hack: just match first character
+	}
+	void insert(size_t pos, const UString &str) {
+		this->insert(this->getPosition(pos), str);
+	}
+	// length -> use size()
+	size_t length() {
+		return _size;
+	}
+	void replace(size_t pos, size_t len, const UString &str) {
+		if (len < 1)
+			return;
+		this->erase(this->getPosition(pos), this->getPosition(pos+len));
+		this->insert(this->getPosition(pos), str);
+	}
+
 private:
 	std::string _string; ///< Internal string holding the actual data.
 
