@@ -47,11 +47,11 @@ public:
 	Common::UString parseLine(Common::UString line);
 
 private:
-	int comCount = 0;        // Track number of open/closed comments
+	int comCount = 0;        // Track the number of open/closed comments
 	bool inUIButton = false; // Used to fix </UIButton> tags that were never opened
 
 	void replaceAll(Common::UString& str, const Common::UString& from, const Common::UString& to);
-	int countOccurances(Common::UString line, char find);
+	int countOccurances(Common::UString line, uint32 find);
 	void countComments(Common::UString line);
 
 	// Line filters

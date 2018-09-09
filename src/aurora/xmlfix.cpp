@@ -31,9 +31,13 @@
 
 /*
  * TODO:
+ * - Add a test for a valid XML header
  * - Merge in revisions to UString.h
  * - Only run fixCopyright once?
  * - Check for other NWN2 XML issues
+ * - Convert quotedCloseFix to use Common::UString
+ * - Replace countOccurances with count()?
+ * - Update fixOpenQuotes to ignore comments?
  * - Optimize for performance
  */
 
@@ -53,9 +57,6 @@
 using namespace Aurora;
 
 using std::string;
-
-// Prototypes
-std::string trim(std::string line);
 
 /**
  * This filter converts the contents of an NWN2 XML
@@ -148,7 +149,7 @@ Common::UString XMLFix::fixCopyright(Common::UString line) {
 Common::UString XMLFix::fixXMLTag(Common::UString line) {
 	// Let's ensure we close this properly.
 	if (line.find("<?xml") != string::npos) {
-		line = trim(line);
+		line.trim();
 		if (line.at(line.length() - 2) != '?') {
 			line.insert(line.length() - 1, "?");
 		}
@@ -229,11 +230,10 @@ Common::UString XMLFix::escapeInnerQuotes(Common::UString line) {
 }
 
 /**
-* Counts the number of times a character, find,
-* Appears in a string, line, and returns that
-* Number. //TODO: can we replace this with std::count?
+* Counts the number of times a character 'find'
+* appears in a USstring 'line' and returns that number.
 */
-int countOccurances(Common::UString line, uint32 find) {
+int XMLFix::countOccurances(Common::UString line, uint32 find) {
 	int count = 0;
 	for (size_t i = 0; i < line.length(); i++) {
 		if (line.at(i) == find) {
@@ -517,44 +517,29 @@ void XMLFix::countComments(Common::UString line) {
 	}
 }
 
-//TODO replace this with Common::UString.trim()
-/**
-* Remove leading and trailing whitespace.
-* Returns line without leading and trailing
-* Spaces.
-*/
-std::string trim(std::string line) {
-	string whitespace = " \t\n\v\f\r";
-	size_t lineBegin = line.find_first_not_of(whitespace);
-	if (lineBegin == std::string::npos) {
-		return ""; // empty string
-	}
-	int lineEnd = line.find_last_not_of(whitespace);
-	int lineRange = lineEnd - lineBegin + 1;
-	return line.substr(lineBegin, lineRange);
-}
-
 /**
 * If we have a "/>", replace it with a />
-* If we have a />", raplce it with a />
+* If we have a />", replace it with a />
 * If we have a >", replace it with a ">
 * This function is another instance of
-* Cleaning up after ourselves.
+* cleaning up after ourselves.
 */
-std::string quotedCloseFix(std::string line) {
-	size_t pos = line.find("\"/>\"");
+Common::UString XMLFix::quotedCloseFix(Common::UString line) {
+	// For now, just use std::string calls
+	std::string sline = line.c_str();
+	size_t pos = sline.find("\"/>\"");
 	if (pos != std::string::npos) {
-		line.erase(pos, 1);
-		line.erase(pos + 2, 1);
+		sline.erase(pos, 1);
+		sline.erase(pos + 2, 1);
 	}
-	pos = line.find("/>\"");
+	pos = sline.find("/>\"");
 	if (pos != std::string::npos) {
-		line.erase(pos + 2, 1);
+		sline.erase(pos + 2, 1);
 	}
-	pos = line.find(">\"");
+	pos = sline.find(">\"");
 	if (pos != std::string::npos) {
-		line.erase(pos + 1, 1);
-		line.insert(pos, "\"");
+		sline.erase(pos + 1, 1);
+		sline.insert(pos, "\"");
 	}
-	return line;
+	return (Common::UString)sline;
 }
