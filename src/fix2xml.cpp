@@ -26,10 +26,6 @@
  * TODO:
  * Use XMLFix::fixXMLStream for XML corrections
  * Remove need for 'trim' call
- * Throw exceptions from file processing
- * Pass output file path as an (optional) argument
- * Use the common parser
- * Standardize per project practices
  */
 
 #include <iostream>
@@ -38,64 +34,94 @@
 #include <algorithm>
 #include <stdio.h>
 #include <ctype.h>
+#include "src/util.h"
 #include "src/common/ustring.h"
+#include "src/common/util.h"
+#include "src/common/error.h"
+#include "src/common/platform.h"
+#include "src/common/cli.h"
 #include "src/aurora/xmlfix.h"
-// using namespace Aurora;
-
-using std::cout;
-using std::endl;
-using std::string;
 
 // Prototypes
-int fixXMLFile(Common::UString &inFile);
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile);
+
+void convert(const Common::UString &inFile, const Common::UString &outFile);
+
 std::string strim(std::string line);
 
-int main(int argc, char** argv) {
-	if (argc != 2) {
-		cout << "Please specify an xml file to parse.\n"
-			"a file name <fileName>Fixed will be created.\n";
-		return -1;
+int main(int argc, char **argv) {
+	initPlatform();
+
+	try {
+		std::vector<Common::UString> args;
+		Common::Platform::getParameters(argc, argv, args);
+
+		int returnValue = 1;
+		Common::UString xmlFile, outFile;
+
+		if (!parseCommandLine(args, returnValue, xmlFile, outFile))
+			return returnValue;
+
+		convert(xmlFile, outFile);
+	} catch (...) {
+		Common::exceptionDispatcherError();
 	}
 
-	Common::UString inFile = argv[1];
+	return 0;
+}
 
-	int rCode = fixXMLFile( inFile );
-
-	return rCode;
+bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
+                      Common::UString &inFile, Common::UString &outFile) {
+	using Common::CLI::Parser;
+	using Common::CLI::ValGetter;
+	using Common::CLI::NoOption;
+	using Common::CLI::makeEndArgs;
+	std::vector<Common::CLI::Getter *> getters;
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output file"));
+	Parser parser(argv[0], "Convert NWN2 XML file to standard XML format", "", returnValue,
+                      makeEndArgs(&inFileOpt, &outFileOpt));
+	return parser.process(argv);
 }
 
 /*
  * Read in the input file, apply XML format corections, then write to output file.
  */
-int fixXMLFile(Common::UString &inFile) {
+void convert(const Common::UString &inFile, const Common::UString &outFile) {
+	using std::string;
+	
 	// Get the i/o file names	
 	std::string oldFileName = inFile.c_str();
-	std::string newFileName = oldFileName;
+	std::string newFileName = outFile.c_str();
 	std::string sline;    // Input line
 	Common::UString line; // Conversion line for XMLFix class call
 	Aurora::XMLFix fixer; // Need a copy of the XML filter class
 	
-	// Find location of period in the file name.
-	size_t perLoc = oldFileName.find(".");
-	if (perLoc != std::string::npos) {
-		// Found a period, so add 'Fixed' before the extension
-		newFileName.insert(perLoc, "Fixed");
-	} else {
-		// Add 'Fixed' at the end of the file
-		newFileName = newFileName + "Fixed";
+	if ( outFile == "" ) {
+		// Default to old file name
+		newFileName = oldFileName;
+
+		// Find location of period in the file name.
+		size_t perLoc = oldFileName.find(".");
+		if (perLoc != std::string::npos) {
+			// Found a period, so add 'Fixed' before the extension
+			newFileName.insert(perLoc, "Fixed");
+		} else {
+			// Add 'Fixed' at the end of the file
+			newFileName = newFileName + "Fixed";
+		}
 	}
 	
 	// Open the files
 	std::ifstream readFile(oldFileName, std::ios::in);
 	if (!readFile.is_open()) {
 		// We check twice so that we don't create files if garbage is passed in.
-		cout << "Error opening files." << endl;
-		return -1;
+		throw Common::Exception("Unable to open input file \"%s\" for read", inFile.c_str());
 	}
 	std::ofstream writeFile(newFileName, std::ios::out | std::ios::trunc); // Create or overwrite
 	if (!writeFile.is_open()) {
-		cout << "Error opening files." << endl;
-		return -1;
+		throw Common::Exception("Unable to open output file \"%s\" for write", newFileName.c_str());
 	}
 	
 	// Read in the first line
@@ -110,13 +136,11 @@ int fixXMLFile(Common::UString &inFile) {
 			writeFile << line.c_str() << "\n";
 		} else {
 			// Abort
-			cout << "Improper XML file.\n";
-			return -1;
+			throw Common::Exception("Input file is not a proper XML format file");
 		}
 	} else {
 		// Abort
-		cout << "Error reading file\n";
-		return -1;
+		throw Common::Exception("Error while reading input file \"%s\"", inFile.c_str());
 	}
 
 	// Insert the root element.
@@ -132,7 +156,6 @@ int fixXMLFile(Common::UString &inFile) {
 	// Close the files
 	readFile.close();
 	writeFile.close();
-	return 0;
 }
 
 
@@ -143,7 +166,7 @@ int fixXMLFile(Common::UString &inFile) {
 * Spaces.
 */
 std::string strim(std::string line) {
-	string whitespace = " \t\n\v\f\r";
+	std::string whitespace = " \t\n\v\f\r";
 	size_t lineBegin = line.find_first_not_of(whitespace);
 	if (lineBegin == std::string::npos) {
 		return ""; // empty string
