@@ -31,7 +31,6 @@
 
 /*
  * TODO:
- * - Add a test for a valid XML header
  * - Merge in revisions to UString.h
  * - Only run fixCopyright once?
  * - Check for other NWN2 XML issues
@@ -72,6 +71,13 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream *xml
 	// Create the output stream
 	Common::MemoryWriteStreamDynamic out;
 	out.reserve(xml->size());
+	
+	// Check for a standard header
+	xml->seek(0);
+	Common::UString line = Common::readStringLine(*xml, Common::kEncodingUTF8);
+	if (line.find("<?xml") != 0) {
+		throw Common::Exception("Input stream does not have a proper XML header");
+	}
 
 	try {
 		// Cycle through the input stream
