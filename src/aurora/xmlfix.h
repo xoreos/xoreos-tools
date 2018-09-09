@@ -28,6 +28,8 @@
 #include <iostream>
 #include <string>
 
+#include "src/common/ustring.h"
+
 namespace Common {
 	class Ustring;
 	class SeekableReadStream;
@@ -38,21 +40,26 @@ namespace Aurora {
 class XMLFix { 
 
 public:
-	static Common::SeekableReadStream *fixXML(Common::SeekableReadStream *xml);
+	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream *xml);
 
-	// Temporary public/static for testing because they're called from main()
+	// Temporarily public for testing because they're called from fix2xml
 	Common::UString fixXMLTag(Common::UString line);
 	Common::UString parseLine(Common::UString line);
 
 private:
+	int comCount = 0;        // Track number of open/closed comments
+	bool inUIButton = false; // Used to fix </UIButton> tags that were never opened
+
+	void replaceAll(Common::UString& str, const Common::UString& from, const Common::UString& to);
+	int countOccurances(Common::UString line, char find);
+	void countComments(Common::UString line);
+
+	// Line filters
 	Common::UString fixLine(Common::UString line);
 	Common::UString trim(Common::UString line);
 	Common::UString fixOpenQuotes(Common::UString line);
 	Common::UString escapeInnerQuotes(Common::UString line);
 	Common::UString replaceString(Common::UString& origStr, Common::UString& oldText, Common::UString newText);
-	void replaceAll(Common::UString& str, const Common::UString& from, const Common::UString& to);
-	int countOccurances(Common::UString line, char find);
-	void countComments(std::string line);
 	Common::UString fixCopyright(Common::UString line);
 	Common::UString doubleDashFix(Common::UString line);
 	Common::UString tripleQuoteFix(Common::UString line);
@@ -63,7 +70,6 @@ private:
 	Common::UString fixUnclosedQuote(Common::UString line);
 	Common::UString fixUnevenQuotes(Common::UString line);
 	Common::UString fixUnclosedNodes(Common::UString line);
-
 };
 
 } // End of namespace Aurora
