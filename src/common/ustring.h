@@ -135,6 +135,9 @@ public:
 	bool contains(const UString &what) const;
 	bool contains(uint32 c) const;
 
+	/** Return the (utf8 encoded) character at the position index */
+	uint32 at(size_t pos) const;
+
 	void truncate(const iterator &it);
 	void truncate(size_t n);
 
@@ -196,43 +199,6 @@ public:
 	static bool isCntrl(uint32 c); ///< Is the character an ASCII control character?
 
 	static uint32 fromUTF16(uint16 c);
-
-	/** Replicate std::string functionality */
-	// For now this is test only -- I hope to merge as much as possible into xmlfix.cpp
-	uint32 at(size_t pos) {
-		if (pos < _size)
-			return _string.at(pos);
-		else
-			return 0;
-	}
-	void erase(size_t pos, size_t len) {
-		if (len < 1)
-			return;
-		this->erase(this->getPosition(pos), this->getPosition(pos + len));
-	}
-	size_t find(const UString &str) {
-		return this->getPosition(this->findFirst(str));
-	}
-	size_t find_last_of(uint32 c) {
-		return this->getPosition(this->findLast(c));
-	}
-	size_t find_last_of(UString &str) {
-		uint32 c = str.at(0);
-		return this->find_last_of(c); // Temporary hack: just match first character
-	}
-	void insert(size_t pos, const UString &str) {
-		this->insert(this->getPosition(pos), str);
-	}
-	// length -> use size()
-	size_t length() {
-		return _size;
-	}
-	void replace(size_t pos, size_t len, const UString &str) {
-		if (len < 1)
-			return;
-		this->erase(this->getPosition(pos), this->getPosition(pos+len));
-		this->insert(this->getPosition(pos), str);
-	}
 
 private:
 	std::string _string; ///< Internal string holding the actual data.

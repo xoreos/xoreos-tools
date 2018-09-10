@@ -338,6 +338,13 @@ bool UString::contains(uint32 c) const {
 	return findFirst(c) != end();
 }
 
+uint32 UString::at(size_t pos) const {
+	if (pos < _size)
+		return _string.at(pos);
+	else
+		return 0;
+}
+
 void UString::truncate(const iterator &it) {
 	UString temp;
 
