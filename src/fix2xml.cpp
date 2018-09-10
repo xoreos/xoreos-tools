@@ -41,16 +41,13 @@
 #include "src/common/memreadstream.h"
 #include "src/aurora/xmlfix.h"
 
-const Common::UString OUTPUT_FILE_TAG = "_Fixed"; // Add tag if no output file specified
+const Common::UString OUTPUT_FILE_TAG = "_Fixed"; // Tag to add if no output file specified
 
-// Prototypes
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile);
 
 void convert(Common::UString &inFile, Common::UString &outFile);
-void old_convert(const Common::UString &inFile, const Common::UString &outFile);
 
-std::string strim(std::string line);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -99,8 +96,8 @@ void convert(Common::UString &inFile, Common::UString &outFile) {
 		outFileName = inFile;
 
 		// Find location of period in the file name.
-		size_t perLoc = inFile.find(".");
-		if (perLoc != std::string::npos) {
+		Common::UString::iterator perLoc = outFileName.findLast('.');
+		if (perLoc != outFileName.end()) {
 			// Found a period, so insert tag before the extension
 			outFileName.insert(perLoc, OUTPUT_FILE_TAG);
 		} else {
