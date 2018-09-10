@@ -200,7 +200,10 @@ public:
 	/** Replicate std::string functionality */
 	// For now this is test only -- I hope to merge as much as possible into xmlfix.cpp
 	uint32 at(size_t pos) {
-		return _string.at(pos);
+		if (pos < _size)
+			return _string.at(pos);
+		else
+			return 0;
 	}
 	void erase(size_t pos, size_t len) {
 		if (len < 1)
