@@ -43,7 +43,7 @@ class XMLWriter;
 /** Dump GFF V3.2/V3.3 into XML files. */
 class GFF3Dumper : public GFFDumper {
 public:
-	GFF3Dumper();
+	GFF3Dumper(bool sacFile = false);
 	~GFF3Dumper();
 
 	/** Dump the GFF into XML. */
@@ -51,6 +51,8 @@ public:
 	          Common::Encoding encoding, bool allowNWNPremium = false);
 
 private:
+	bool _sacFile;
+
 	Common::ScopedPtr<Aurora::GFF3File> _gff3;
 	Common::ScopedPtr<XMLWriter> _xml;
 

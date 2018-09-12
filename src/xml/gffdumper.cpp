@@ -115,10 +115,17 @@ GFFDumper::GFFDumper() {
 GFFDumper::~GFFDumper() {
 }
 
-static GFFVersion identifyGFF(Common::SeekableReadStream &input, bool allowNWNPremium) {
+static GFFVersion identifyGFF(Common::SeekableReadStream &input, bool allowNWNPremium, bool sacFile) {
 	uint32 id = 0xFFFFFFFF, version = 0xFFFFFFFF;
 
 	size_t pos = input.pos();
+
+	if (sacFile) {
+		input.skip(4);
+		uint32 stringLength = input.readUint32LE();
+		input.skip(stringLength);
+		input.skip(4);
+	}
 
 	id      = input.readUint32BE();
 	version = input.readUint32BE();
@@ -152,12 +159,12 @@ static GFFVersion identifyGFF(Common::SeekableReadStream &input, bool allowNWNPr
 	return gffVersion;
 }
 
-GFFDumper *GFFDumper::identify(Common::SeekableReadStream &input, bool allowNWNPremium) {
-	const GFFVersion version = identifyGFF(input, allowNWNPremium);
+GFFDumper *GFFDumper::identify(Common::SeekableReadStream &input, bool allowNWNPremium, bool sacFile) {
+	const GFFVersion version = identifyGFF(input, allowNWNPremium, sacFile);
 
 	switch (version) {
 		case kGFFVersion3:
-			return new GFF3Dumper();
+			return new GFF3Dumper(sacFile);
 
 		case kGFFVersion4:
 			return new GFF4Dumper();

@@ -42,7 +42,7 @@ public:
 	virtual ~GFFDumper();
 
 	/** Factory function: identifies the version of the GFF and returns a proper dumper instance. */
-	static GFFDumper *identify(Common::SeekableReadStream &input, bool allowNWNPremium = false);
+	static GFFDumper *identify(Common::SeekableReadStream &input, bool allowNWNPremium = false, bool sacFile = false);
 
 	/** Dump the GFF into XML. */
 	virtual void dump(Common::WriteStream &output, Common::SeekableReadStream *input,
