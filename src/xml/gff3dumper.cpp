@@ -31,6 +31,7 @@
 #include "src/common/writestream.h"
 
 #include "src/aurora/locstring.h"
+#include "src/aurora/sacfile.h"
 #include "src/aurora/gff3file.h"
 
 #include "src/xml/xmlwriter.h"
@@ -38,7 +39,7 @@
 
 namespace XML {
 
-GFF3Dumper::GFF3Dumper() {
+GFF3Dumper::GFF3Dumper(bool sacFile) : _sacFile(sacFile) {
 }
 
 GFF3Dumper::~GFF3Dumper() {
@@ -52,7 +53,12 @@ void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *i
 		_xml.reset();
 	} BOOST_SCOPE_EXIT_END
 
-	_gff3.reset(new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium));
+	if (_sacFile) {
+		_gff3.reset(new Aurora::SACFile(input));
+	} else {
+		_gff3.reset(new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium));
+	}
+
 	_xml.reset(new XMLWriter(output));
 
 	_xml->openTag("gff3");

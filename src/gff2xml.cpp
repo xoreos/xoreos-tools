@@ -51,12 +51,12 @@ typedef std::map<uint32, Common::Encoding> EncodingOverrides;
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Common::Encoding &encoding, Aurora::GameID &game,
-                      EncodingOverrides &encOverrides, bool &nwnPremium);
+                      EncodingOverrides &encOverrides, bool &nwnPremium, bool &sacFile);
 
 bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOverrides);
 
-void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
-             Common::Encoding encoding, bool nwnPremium);
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding, bool nwnPremium,
+             bool sacFile);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -71,11 +71,12 @@ int main(int argc, char **argv) {
 		EncodingOverrides encOverrides;
 
 		bool nwnPremium = false;
+		bool sacFile = false;
 
 		int returnValue = 1;
 		Common::UString inFile, outFile;
 
-		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, encOverrides, nwnPremium))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, encoding, game, encOverrides, nwnPremium, sacFile))
 			return returnValue;
 
 		LangMan.declareLanguages(game);
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
 		for (EncodingOverrides::const_iterator e = encOverrides.begin(); e != encOverrides.end(); ++e)
 			LangMan.overrideEncoding(e->first, e->second);
 
-		dumpGFF(inFile, outFile, encoding, nwnPremium);
+		dumpGFF(inFile, outFile, encoding, nwnPremium, sacFile);
 	} catch (...) {
 		Common::exceptionDispatcherError();
 	}
@@ -118,7 +119,7 @@ bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOve
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Common::Encoding &encoding, Aurora::GameID &game,
-                      EncodingOverrides &encOverrides, bool &nwnPremium) {
+                      EncodingOverrides &encOverrides, bool &nwnPremium, bool &sacFile) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -174,17 +175,19 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addSpace();
 	parser.addOption("encoding", "Override an encoding", kContinueParsing,
 	                 new Callback<EncodingOverrides &>("str", parseEncodingOverride, encOverrides));
+	parser.addOption("sac", "Read the extra sac file header", kContinueParsing,
+	                 makeAssigners(new ValAssigner<bool>(true, sacFile)));
 
 	return parser.process(argv);
 }
 
 
-void dumpGFF(const Common::UString &inFile, const Common::UString &outFile,
-             Common::Encoding encoding, bool nwnPremium) {
+void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding, bool nwnPremium,
+             bool sacFile) {
 
 	Common::ScopedPtr<Common::SeekableReadStream> gff(new Common::ReadFile(inFile));
 
-	Common::ScopedPtr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium));
+	Common::ScopedPtr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium, sacFile));
 
 	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
