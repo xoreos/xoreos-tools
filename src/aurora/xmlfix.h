@@ -53,19 +53,21 @@ private:
 	bool isCommentLine(Common::UString line);
 
 	// Line filters
-	Common::UString fixXMLTag(Common::UString line);
 	Common::UString parseLine(Common::UString line);
-	Common::UString fixOpenQuotes(Common::UString line);
-	Common::UString escapeInnerQuotes(Common::UString line);
 	Common::UString fixCopyright(Common::UString line);
+	Common::UString fixXMLTag(Common::UString line);
+	Common::UString fixUnclosedNodes(Common::UString line);
+	Common::UString escapeInnerQuotes(Common::UString line);
+	Common::UString fixMismatchedParen(Common::UString line);
+	Common::UString fixOpenQuotes(Common::UString line);
+	Common::UString fixUnevenQuotes(Common::UString line);
+	Common::UString fixUnclosedQuote(Common::UString line);
+	Common::UString fixCloseBraceQuote(Common::UString line);
 	Common::UString doubleDashFix(Common::UString line);
 	Common::UString replaceText(Common::UString line, const Common::UString badStr, const Common::UString goodStr);
-	Common::UString escapeSpacedStrings(Common::UString line, bool undo);
-	Common::UString fixMismatchedParen(Common::UString line);
-	Common::UString fixCloseBraceQuote(Common::UString line);
-	Common::UString fixUnclosedQuote(Common::UString line);
-	Common::UString fixUnevenQuotes(Common::UString line);
-	Common::UString fixUnclosedNodes(Common::UString line);
+	Common::UString fixKnownIssues(Common::UString line);
+	Common::UString escapeSpacedStrings(Common::UString line);
+	Common::UString tokenizeProblemPhrases(Common::UString line, bool undo);
 };
 
 } // End of namespace Aurora
