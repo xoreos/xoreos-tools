@@ -291,7 +291,7 @@ Common::UString XMLFix::fixUnclosedNodes(Common::UString line) {
 	// Close node	
 	pos = line.findFirst(endButton);
 	if (pos != line.end()) {
-		//If we aren't in a node, delete the close node.
+		// If we aren't in a node, delete the close node.
 		if (!_inUIButton) {
 			line = replaceText(line, endButton, "");
 		}
@@ -660,8 +660,8 @@ Common::UString XMLFix::commentFix(Common::UString line) {
 		
 		// Not a full utf-8 check, but it works for the stock files
 		if (c & 0x8000) {
-			// Discard this character
-			Common::UString::iterator it = line.getPosition(i);
+			// Discard this character and recheck position
+			Common::UString::iterator it = line.getPosition(i--);
 			line.erase(it);
 		}
 	}
