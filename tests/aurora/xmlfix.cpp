@@ -105,34 +105,9 @@ GTEST_TEST(xmlFix, fixXMLStream) {
 
 	Aurora::XMLFix converter;
 	Common::SeekableReadStream *valid = converter.fixXMLStream(*invalid);
-//	int kDataValidSize = strlen(kDataValid) + 28; // Add the '\' escape characters
-//	ASSERT_EQ(valid->size(), kDataValid);
 	ASSERT_EQ(valid->size(), strlen(kDataValid));
 
-//	bool isEscape false;
 	for (size_t i = 0; i < strlen(kDataValid); i++) {
-		// Convert escaped characters
-//		char cDataValid = kDataValid[i];
-//		if (kDataValid[i] == '\"') {
-//			// Skip to the escaped character
-//			isEscape = true;
-//			continue;
-//		} else if (isEscape) {
-//			// Convert to the escaped character
-//			switch (c) {
-//				't':
-//					c = '\t';
-//					break;
-//				'n':
-//					c = '\n';
-//					break;
-//			}
-//
-//			// Escape complete
-//			isEscape = false;
-//		}
-
-//		EXPECT_EQ(valid->readByte(), cDataValid) << "At index " << i;
 		EXPECT_EQ(valid->readByte(), kDataValid[i]) << "At index " << i;
 	}
 
