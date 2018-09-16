@@ -44,7 +44,6 @@ public:
 
 private:
 	int  comCount = 0;        	// Track the number of open/closed comments
-	bool fixedXML = false;   	// Track if xml tag is fixed
 	bool fixedCopyright = false;	// Track if the copyright character is fixed
 	bool inUIButton = false; 	// Used to fix </UIButton> tags that were never opened
 
