@@ -416,17 +416,6 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	for (size_t i = 0; i < line.size(); i++) {
 		if (line.at(i) == quote_mark)
 			quoteCount++;
-		
-		// Track open and closed tags
-		if ((quoteCount % 2) == 0) {
-			// We're not in quotes
-			c = line.at(i);
-			if (c == '<') {
-				_openTag = true;
-			} else if (c == '>') {
-				_openTag = false;
-			}
-		}
 
 		if (line.at(i) == ')') {
 			// A close paren should be followed by: "
@@ -524,6 +513,17 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 			it = line.getPosition(i); // Avoid error throw
 			Common::UString s = line.format("&#%02d;", (int)c);
 			line.insert(it, s);
+		}
+		
+		// Track open and closed tags
+		if ((quoteCount % 2) == 0) {
+			// We're not in quotes
+			c = line.at(i);
+			if (c == '<') {
+				_openTag = true;
+			} else if (c == '>') {
+				_openTag = false;
+			}
 		}
 	}
 
@@ -736,8 +736,13 @@ bool XMLFix::isCommentLine(Common::UString line) {
 	pos = line.findFirst("<!--");
 	if (pos != line.end()) {
 		// Check for an appended inline comment, per fontfamily.xml
-		if (line.getPosition(tag) < line.getPosition(pos)) {
-			return false; // Don't track appended comments
+		tag = line.findFirst(">");
+		if (tag != line.end() && line.getPosition(tag) < line.getPosition(pos)) {
+			/*
+			 * Found a close tag '>' before the start of a comment.
+			 * Appended comments aren't counted.
+			 */
+			return false;
 		} else {
 			_comCount++;
 		}
