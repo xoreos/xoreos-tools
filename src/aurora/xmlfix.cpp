@@ -45,8 +45,6 @@
 #include "src/common/util.h"
 using namespace Aurora;
 
-using std::string;
-
 const uint32 quote_mark = '\"';
 
 /**
@@ -180,7 +178,7 @@ Common::UString XMLFix::parseLine(Common::UString line) {
 			// These calls are only needed for a comment
 			if (!_fixedCopyright)
 				line = fixCopyright(line);
-			line = doubleDashFix(line);
+			line = commentFix(line);
 		}	
 	} else {
 		// Split off an appended comment (per fontfamily.xml)
@@ -200,14 +198,11 @@ Common::UString XMLFix::parseLine(Common::UString line) {
 		}
 
 		// Fix a non-comment line
-		line = fixKnownIssues(line);      // Do this first
+		line = fixKnownIssues(line);
 		line = fixUnclosedNodes(line);
-		line = tokenizeProblemPhrases(line, false); // Fix problematic strings (with spaces or special characters)
-		line = fixOpenQuotes(line);
-		line = escapeSpacedStrings(line); // Fix strings with spaces or special characters
 		line = fixMismatchedParen(line);
+		line = fixOpenQuotes(line);
 		line = escapeInnerQuotes(line);
-		line = tokenizeProblemPhrases(line, true);  // Restore the problematic strings to their proper values.
 
 		// Restore appended comment
 		if (comment.size() > 0) {
@@ -407,11 +402,10 @@ Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	Common::UString::iterator pos;
 	int quoteCount = 0; // Count quote marks
-	uint c;
+	uint32 c;
 
 	// We have an equal with no open quote
-	size_t end = line.size();
-	for (size_t i = 0; i < end; i++) {
+	for (size_t i = 0; i < line.size(); i++) {
 		if (line.at(i) == quote_mark)
 			quoteCount++;
 		
@@ -428,10 +422,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 
 		if (line.at(i) == ')') {
 			// A close paren should be followed by: "
-			if (i < end - 1 && line.at(i + 1) != quote_mark) {
+			if (i < line.size() - 1 && line.at(i + 1) != quote_mark) {
 				pos = line.getPosition(i + 1);
 				line.insert(pos, quote_mark);
-				end++;
 			}	
 
 			/* 
@@ -450,7 +443,6 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
 					quoteCount++; // Add quote
-					end++;
 
 					// Skip forward to avoid extra quotes
 					i++;
@@ -462,22 +454,34 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		// Close the quotes for an equals
 		if (quoteCount % 2) {
 			c = line.at(i);
-			if (line.isSpace(c) || c == '/' || c == '>') {
+			if (i > 0 && (c == ' ' || c == '\t' || c == '>' || c == '/')) {
+				// Look ahead for another space
+				bool needQuote = true;
+				for (size_t j = i + 1; j < line.size(); j++) {
+					c = line.at(j);
+					if (c == '=' || c == ',' || c == '>') {
+						// Past prior assignment
+						break;
+					} else if (c == ' ' || c == '\t' || c == quote_mark) {
+						// Another space or closing quotes
+						needQuote = false;
+						break;
+					}
+				}
+
 				// Check if a quote was added above
-				if (line.at(i - 1) != quote_mark) {
+				if (needQuote == 1 && line.at(i - 1) != quote_mark) {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
 					quoteCount++; // Add quote
-					end++;
 				}
 			}
 		}
 
 		// Equal sign should be followed by a quote
-		if (line.at(i) == '=' && i < end - 1 && line.at(i + 1) != quote_mark) {
+		if (line.at(i) == '=' && i < line.size() - 1 && line.at(i + 1) != quote_mark) {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			end++;
 		}
 
 		/*
@@ -485,10 +489,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		 * But if we replace it directly here, it will be doubly escaped
 		 * because we run escapeInnerQuotes() next.
 		 */
-		if (line.at(i) == '(' && i < end - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
+		if (line.at(i) == '(' && i < line.size() - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			end++;
 		}
 
 		// No quote before ',', so add it in.
@@ -496,20 +499,28 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 			pos = line.getPosition(i);
 			line.insert(pos, quote_mark);
 			quoteCount++; // Add quote
-			end++;
 		}
 
 		// No quote after a comma, so add it in unless there's a paren (1 case)
-		if (line.at(i) == ',' && i < end - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
+		if (line.at(i) == ',' && i < line.size() - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			end++;
+		}
+
+		// Check for a space or slash inside quotes
+		c = line.at(i);
+		if (quoteCount % 2 && (line.isSpace(c) || c == '/')) {
+			// Replace space character with an HTML ASCII tag
+			Common::UString::iterator it = line.getPosition(i);
+			line.erase(it);
+			it = line.getPosition(i); // Avoid error throw
+			Common::UString s = line.format("&#%02d;", (int)c);
+			line.insert(it, s);
 		}
 	}
 
 	// Check for an open equals at the end of the line
 	if ((quoteCount > 0) && (quoteCount % 2 != 0)) {
-		end = line.size();
 		line.insert(line.end(), quote_mark);
 	}
 
@@ -620,7 +631,7 @@ Common::UString XMLFix::fixCloseBraceQuote(Common::UString line) {
 * a single dash. Otherwise this breaks
 * compatibility.
 */
-Common::UString XMLFix::doubleDashFix(Common::UString line) {
+Common::UString XMLFix::commentFix(Common::UString line) {
 	Common::UString::iterator first = line.findFirst("--");
 
 	// Does the line have a '--'?
@@ -631,6 +642,18 @@ Common::UString XMLFix::doubleDashFix(Common::UString line) {
 		if (pos < line.size() - 1 && line.at(pos + 2) != '>' && (pos > 0 && line.at(pos - 1) != '!')) {
 			// Remove one dash
 			Common::UString::iterator it = line.getPosition(pos);
+			line.erase(it);
+		}
+	}
+
+	// Look for a non utf-8 character
+	for (size_t i = 0; i < line.size(); i++) {
+		uint32 c = line.at(i);
+		
+		// Not a full utf-8 check, but it works for the stock files
+		if (c & 0x8000) {
+			// Discard this character
+			Common::UString::iterator it = line.getPosition(i);
 			line.erase(it);
 		}
 	}
@@ -672,83 +695,18 @@ Common::UString XMLFix::replaceText(Common::UString line,
 */
 Common::UString XMLFix::fixKnownIssues(Common::UString line) {
 	// Initialize the array of token/substr pairs
-	const int rows = 5;
+	const int rows = 4;
 	const Common::UString pair[rows][2] = {
 		{ "=true fontFamily=", "=truefontfamily=" },	// Fix for examine.xml
 		{ "=181357", "=\"181357\"\"" },			// Fix for gfx_options.xml
 		{ ",ALIGN_LEFT)", ",ALIGN_LEFT\")" },		// Fix for ig_chargen_abilities.xml
 		{ "cter\" fontfamily=", "cter\"fontfamily=" },	// Fix for multiplayer_downloadsx2.xml
-		{ "=", " = " }					// Fix for playermenu_popup.xml
 	};
 
 	// Loop through the array
 	for (int i = 0; i < rows; i++) {
 		// Fix the substr
 		line = replaceText(line, pair[i][1], pair[i][0] );
-	}
-
-	return line;
-}
-
-/**
-* If a space or slash character is found inside a quote, this will convert
-* the character to an HTML tag. Doing so will prevent misplaced quotes.
-*/
-Common::UString XMLFix::escapeSpacedStrings(Common::UString line) {
-	// Escape any remaining spaces inside quotes
-	bool inQuote = false;
-	for (size_t i = 0; i < line.size(); i++) {
-		int c = line.at(i);
-		if (c == quote_mark) {
-			// Flip boolean
-			inQuote = !inQuote;
-		}
-
-		// Check for a space or slash inside quotes
-		if (inQuote && (line.isSpace(c) || c == '/')) {
-			// Replace space character with an HTML ASCII tag
-			Common::UString::iterator it = line.getPosition(i);
-			line.erase(it);
-			it = line.getPosition(i); // Avoid error throw
-			Common::UString s = line.format("&#%02d;", (int)c);
-			line.insert(it, s);
-		}
-	}
-	return line;
-}
-
-/**
-* Some lines contain problematic phrases. (phrases that include
-* / or , characters).
-*
-* If left untouched, other functions will destroy these strings
-* instead of fixing them.
-*
-* Returns a safe string (devoid of problematic phrases) if undo is false, or
-* the original string, with problematic phrases restored if undo is true.
-*/
-Common::UString XMLFix::tokenizeProblemPhrases(Common::UString line, bool undo) {
-	// Initialize the array of token/phrase pairs
-	const int rows = 7;
-	const Common::UString pair[rows][2] = {
-		{ "$01$", "->" },
-		{ "$02$", ">>" },
-		{ "$03$", " = " },
-		{ "$04$", "0 / 0 MB" },
-		{ "$05$", "portrait frame" },
-		{ "$06$", "Player Chat" },
-		{ "$07$", "Speaker Name" }
-	};
-
-	// Loop through the array
-	for (int i = 0; i < rows; i++) {
-		if (undo) {
-			// Change the token instances back to the key phrase
-			line = replaceText(line, pair[i][0], pair[i][1] );
-		} else {
-			// Change the key phrase instances to the token
-			line = replaceText(line, pair[i][1], pair[i][0] );
-		}
 	}
 
 	return line;
