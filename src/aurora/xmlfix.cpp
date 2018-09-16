@@ -42,6 +42,7 @@
 #include "src/common/memwritestream.h"
 #include "src/common/scopedptr.h"
 #include "src/common/error.h"
+#include "src/common/util.h"
 using namespace Aurora;
 
 using std::string;
@@ -53,11 +54,12 @@ const uint32 quote_mark = '\"';
  * stream into standardized XML.
  */
 Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml, bool hideComments) {
-	Common::UString line;
+	Common::UString line, buffer;
 	
 	// Initialize the internal tracking variables
 	_hideComments = hideComments;
 	_comCount = 0;
+	_openTag = false;
 	_fixedCopyright = false;
 	_inUIButton = false;
 	
@@ -89,16 +91,41 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 
 		// Cycle through the remaining input stream
 		while (!xml.eos()) {
+			// Track the previous state
+			bool priorTag = _openTag;
+
 			// Read a line of text
 			line = Common::readStringLine(xml, Common::kEncodingLatin9);
+
 			// Fix the XML format
 			if (line.size() > 0)
 				line = XMLFix::parseLine(line);
-
-			// Copy to the output stream
-			line += "\n"; // Stripped by readStringLine
-			out.write(line.c_str(), line.size());
+			
+			if (_openTag) {
+				// This is a multi-line wrap
+				if (!priorTag) {
+					// Starting a new buffer
+					buffer = line;
+				} else {
+					// Append line to the buffer
+					buffer += " " + line;
+				}
+			} else {
+				// Check for a multi-line wrap
+				if (priorTag) {
+					// Finish wrapping the lines
+					line = buffer + " " + line;
+					buffer = ""; // Start over
+				}
+				
+				// Write line to the output stream
+				line += "\n"; // Stripped by readStringLine
+				out.write(line.c_str(), line.size());
+			}
 		}
+
+		if (_openTag)
+			throw Common::Exception("XML ended on an open tag");
 
 		// Insert end root element
 		const Common::UString endRoot = "</Root>\n";
@@ -138,7 +165,8 @@ Common::UString XMLFix::parseLine(Common::UString line) {
 		line = escapeInnerQuotes(line);
 		line = escapeSpacedStrings(line, true);  // Restore the problematic strings to their proper values.
 	} 
-
+	
+	// Remove extra padding
 	return line;
 }
 
@@ -331,6 +359,17 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	for (size_t i = 0; i < end; i++) {
 		if (line.at(i) == quote_mark)
 			quoteCount++;
+		
+		// Track open and closed tags
+		if ((quoteCount % 2) == 0) {
+			// We're not in quotes
+			uint32 c = line.at(i);
+			if (c == '<') {
+				_openTag = true;
+			} else if (c == '>') {
+				_openTag = false;
+			}
+		}
 
 		if (line.at(i) == ')') {
 			/* 
@@ -347,18 +386,15 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 				if (c != quote_mark && c != '(') {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
-					quoteCount++;
+					quoteCount++; // Add quote
 					end++;
-					i++; // Advance our position
 				}
 			}
 			
 			// A close paren should be followed by: "
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			quoteCount++;
 			end++;
-			i++; // Advance our position
 		}
 
 		// Close the quotes for an equals
@@ -369,7 +405,7 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 				if (line.at(i - 1) != quote_mark) {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
-					quoteCount++;
+					quoteCount++; // Add quote
 					end++;
 				}
 			}
@@ -379,8 +415,6 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		if (line.at(i) == '=' && i < end - 1 && line.at(i + 1) != quote_mark) {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			quoteCount++;
-			i++; // Our string got longer.
 			end++;
 		}
 
@@ -392,7 +426,6 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		if (line.at(i) == '(' && i < end - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			quoteCount++;
 			end++;
 		}
 
@@ -400,7 +433,7 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		if (line.at(i) == ',' && i > 0 && line.at(i - 1) != quote_mark) {
 			pos = line.getPosition(i);
 			line.insert(pos, quote_mark);
-			quoteCount++;
+			quoteCount++; // Add quote
 			end++;
 		}
 
@@ -408,7 +441,6 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		if (line.at(i) == ',' && i < end - 1 && line.at(i + 1) != quote_mark) {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-			quoteCount++;
 			end++;
 		}
 	}
@@ -630,8 +662,10 @@ bool XMLFix::isCommentLine(Common::UString line) {
 	pos = line.findFirst("-->");
 	if (pos != line.end()) {
 		_comCount--;
+
+		// Should never be negative
 		if (_comCount < 0)
-			_comCount = 0; // Should never happen?
+			throw Common::Exception("Invalid closing comment tag in XML");
 	}
 
 	return isComment;
