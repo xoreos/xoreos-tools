@@ -40,16 +40,17 @@ namespace Aurora {
 class XMLFix { 
 
 public:
-	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml);
+	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml, bool hideComments = false);
 
 private:
-	int  comCount = 0;        	// Track the number of open/closed comments
-	bool fixedCopyright = false;	// Track if the copyright character is fixed
-	bool inUIButton = false; 	// Used to fix </UIButton> tags that were never opened
+	int  _comCount = 0;        	// Track the number of open/closed comments
+	bool _hideComments = false;     // If true, blank out any comment lines
+	bool _fixedCopyright = false;	// Track if the copyright character is fixed
+	bool _inUIButton = false; 	// Used to fix </UIButton> tags that were never opened
 
 	void replaceAll(Common::UString& str, const Common::UString& from, const Common::UString& to);
 	int countOccurances(Common::UString line, uint32 find);
-	void countComments(Common::UString line);
+	bool isCommentLine(Common::UString line);
 
 	// Line filters
 	Common::UString fixXMLTag(Common::UString line);

@@ -29,14 +29,6 @@
 * quotes.
 */
 
-/*
- * TODO:
- * - Check for other NWN2 XML issues
- * - Replace countOccurances with count()?
- * - Update fixOpenQuotes to ignore comments?
- * - Optimize for performance
- */
-
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -60,13 +52,14 @@ const uint32 quote_mark = '\"';
  * This filter converts the contents of an NWN2 XML data
  * stream into standardized XML.
  */
-Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml) {
+Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml, bool hideComments) {
 	Common::UString line;
 	
 	// Initialize the internal tracking variables
-	comCount = 0;
-	fixedCopyright = false;
-	inUIButton = false;
+	_hideComments = hideComments;
+	_comCount = 0;
+	_fixedCopyright = false;
+	_inUIButton = false;
 	
 	/*
 	 * Check for a standard header line.
@@ -98,7 +91,6 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 		while (!xml.eos()) {
 			// Read a line of text
 			line = Common::readStringLine(xml, Common::kEncodingLatin9);
-
 			// Fix the XML format
 			if (line.size() > 0)
 				line = XMLFix::parseLine(line);
@@ -126,19 +118,27 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 * Returns that fixed line.
 */
 Common::UString XMLFix::parseLine(Common::UString line) {
-	line = fixUnclosedNodes(line);
-	line = escapeSpacedStrings(line, false); // Fix problematic strings (with spaces or special characters)
-	line = fixMismatchedParen(line);
-	line = fixOpenQuotes(line); // It's imperative that this run before the copyright line, or not on it at
-	                            // all. Could update to ignore comments.
-	line = escapeInnerQuotes(line);
-	if (!fixedCopyright)
-		line = fixCopyright(line);
-	line = doubleDashFix(line);
-	line = quotedCloseFix(line);
-	line = tripleQuoteFix(line);
-	line = escapeSpacedStrings(line, true); //Restore the problematic strings to their proper values.
-	countComments(line);
+	// Call isCommentLine() to track comment lines and blocks
+	if (isCommentLine(line)) {
+		if (_hideComments) {
+			// Comments are not wanted, so blank out the line
+			line = "";
+		} else {
+			// These calls are only needed for a comment
+			if (!_fixedCopyright)
+				line = fixCopyright(line);
+			line = doubleDashFix(line);
+		}	
+	} else {
+		// Fix a non-comment line
+		line = fixUnclosedNodes(line);
+		line = escapeSpacedStrings(line, false); // Fix problematic strings (with spaces or special characters)
+		line = fixMismatchedParen(line);
+		line = fixOpenQuotes(line);
+		line = escapeInnerQuotes(line);
+		line = escapeSpacedStrings(line, true);  // Restore the problematic strings to their proper values.
+	} 
+
 	return line;
 }
 
@@ -163,7 +163,7 @@ Common::UString XMLFix::fixCopyright(Common::UString line) {
 		line.insert(startPos, "Copyright &copy; 2006 ");
 
 		// Flag as fixed
-		fixedCopyright = true;
+		_fixedCopyright = true;
 	}
 	return line;
 }
@@ -196,27 +196,27 @@ Common::UString XMLFix::fixXMLTag(Common::UString line) {
 /**
 * If there is a close node without an open node
 * This will delete it. Right now it only works
-* If there is a closed UIButton without an open
-* UIButton.
+* if there is a close UIButton without a prior
+* open UIButton.
 */
 Common::UString XMLFix::fixUnclosedNodes(Common::UString line) {
 	const Common::UString startButton = "<UIButton";
-	const Common::UString endButton = "</UIButton>";
+	const Common::UString endButton   = "</UIButton>";
 	
 	// Open node	
 	Common::UString::iterator pos = line.findFirst(startButton);
 	if (pos != line.end()) {
-		inUIButton = true;
+		_inUIButton = true;
 	}
 	
 	// Close node	
 	pos = line.findFirst(endButton);
 	if (pos != line.end()) {
 		//If we aren't in a node, delete the close node.
-		if (!inUIButton) {
+		if (!_inUIButton) {
 			line = replaceText(line, endButton, "");
 		}
-		inUIButton = false;
+		_inUIButton = false;
 	}
 	return line;
 }
@@ -245,7 +245,7 @@ Common::UString XMLFix::escapeInnerQuotes(Common::UString line) {
 				inPar = true;
 			} else if (c == ')') {
 				inPar = false;
-			} else if (inPar && c == '"') {
+			} else if (inPar && c == quote_mark) {
 				pos = line.getPosition(i);
 				line.erase(pos);
 				pos = line.getPosition(i); // Avoid error throw
@@ -255,14 +255,14 @@ Common::UString XMLFix::escapeInnerQuotes(Common::UString line) {
 			
 			c = line.at(i); // May have changed
 			uint32 d = line.at(i + 1);
-			if (c == '(' && d == '"') {
+			if (c == '(' && d == quote_mark) {
 				// Opening paren, encode the quote
 				pos = line.getPosition(i + 1);
 				line.erase(pos);
 				pos = line.getPosition(i + 1); // Avoid error throw
 				line.insert(pos, "&quot;");
 				lastQuotPos = line.getPosition(line.findLast(quote_mark)); // Updated string length
-			} else if ((c == '"' && d == ')') || (c == '"' && d == ',')) {
+			} else if ((c == quote_mark && d == ')') || (c == quote_mark && d == ',')) {
 				// Found a close paren or a comma [as in foo=("elem1",bar)], so encode the quote
 				pos = line.getPosition(i);
 				line.erase(pos);
@@ -324,64 +324,102 @@ Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 */
 Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	Common::UString::iterator pos;
+	int quoteCount = 0; // Count quote marks
 
 	// We have an equal with no open quote
-	size_t end = line.size() - 1;
+	size_t end = line.size();
 	for (size_t i = 0; i < end; i++) {
-		// Equal sign should be followed by a quote
-		if (line.at(1) == '=' && line.at(i + 1) != '"') {
+		if (line.at(i) == quote_mark)
+			quoteCount++;
+
+		if (line.at(i) == ')') {
+			/* 
+			 * A closed paren should usually be preceeded by: "
+			 *
+			 * There are some exceptions to this:
+			 *  - when we have one quoted element in a 2 element
+			 *    parenthesis set. This is always a number.
+			 *    Example: ("elem="foo",local=5)
+			 *  - when we have () empty.
+			 */
+			if (i > 0) {
+				uint32 c = line.at(i - 1);
+				if (c != quote_mark && c != '(') {
+					pos = line.getPosition(i);
+					line.insert(pos, quote_mark);
+					quoteCount++;
+					end++;
+					i++; // Advance our position
+				}
+			}
+			
+			// A close paren should be followed by: "
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
+			quoteCount++;
+			end++;
+			i++; // Advance our position
+		}
+
+		// Close the quotes for an equals
+		if (quoteCount % 2) {
+			uint32 c = line.at(i);
+			if (line.isSpace(c) || c == '/' || c == '>') {
+				// Check if a quote was added above
+				if (line.at(i - 1) != quote_mark) {
+					pos = line.getPosition(i);
+					line.insert(pos, quote_mark);
+					quoteCount++;
+					end++;
+				}
+			}
+		}
+
+		// Equal sign should be followed by a quote
+		if (line.at(i) == '=' && i < end - 1 && line.at(i + 1) != quote_mark) {
+			pos = line.getPosition(i + 1);
+			line.insert(pos, quote_mark);
+			quoteCount++;
 			i++; // Our string got longer.
 			end++;
 		}
 
-		// Open paren should be followed by a &quot; (or an immediate close paren)
-		// But if we replace it directly here, it will be doubly escaped
-		// because we run escapeInnerQuotes() next.
-		if (line.at(i) == '(' && line.at(i + 1) != '"' && line.at(i + 1) != ')') {
+		/*
+		 * Open paren should be followed by a &quot; (or an immediate close paren)
+		 * But if we replace it directly here, it will be doubly escaped
+		 * because we run escapeInnerQuotes() next.
+		 */
+		if (line.at(i) == '(' && i < end - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
+			quoteCount++;
 			end++;
 		}
 
-		// A closed quote should be preceeded by &quot; See above.
-		// There are some exceptions to this, like when we have one quoted element
-		// in a 2 element parenthesis set. This is always a number. ("elem="foo",local=5)
-		// or when we have () empty.
-		if (i > 0 && line.at(i) == ')' && line.at(i - 1) != '"' && line.at(i - 1) != '(') {
+		// No quote before ',', so add it in.
+		if (line.at(i) == ',' && i > 0 && line.at(i - 1) != quote_mark) {
 			pos = line.getPosition(i);
 			line.insert(pos, quote_mark);
-			end++;
-		}
-
-		// No quote before , add it in.
-		if (i > 0 && line.at(i) == ',' && line.at(i - 1) != '"') {
-			pos = line.getPosition(i);
-			line.insert(pos, quote_mark);
+			quoteCount++;
 			end++;
 		}
 
 		// No quote after a comma
-		if (line.at(i) == ',' && line.at(i + 1) != '"') {
+		if (line.at(i) == ',' && i < end - 1 && line.at(i + 1) != quote_mark) {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
+			quoteCount++;
 			end++;
-
 		}
+	}
 
-		// A close paren should be followed by a " or a space and a \>
-// Why? This adds a spurious " after a close parenthesis.
-//		if (i < end - 1 && line.at(i) == ')' && line.at(i + 2) != '\\') {
-//			pos = line.getPosition(i + 1);
-//			line.insert(pos, quote_mark);
-//			i++; // Our string got longer.
-//			end++;
-//		}
+	// Check for an open equals at the end of the line
+	if (quoteCount % 2) {
+		end = line.size();
+		line.insert(line.end(), quote_mark);
 	}
 
 	line = fixCloseBraceQuote(line);
-	line = fixUnclosedQuote(line);
 	line = fixUnevenQuotes(line);
 
 	return line;
@@ -408,13 +446,13 @@ Common::UString XMLFix::fixUnevenQuotes(Common::UString line) {
 
 /**
 * After all of this, if we can iterate through a string
-* And find a quote followed by a whitespace character, insert a quote.
+* and find a quote followed by a whitespace character, insert a quote.
 * Preconditions are such that this should never occur naturally at this
-* Point in the code, and if we do end up adding too many, it will be
-* Removed in a later function (such as fixTripleQuote())
+* point in the code, and if we do end up adding too many, it will be
+* removed in a later function (such as fixTripleQuote())
 */
 Common::UString XMLFix::fixUnclosedQuote(Common::UString line) {
-	const uint32 space = ' ';
+	Common::UString::iterator pos;
 	bool inQuote = false; // Tracks if we are inside a quote
 	size_t end = line.size();
 
@@ -425,22 +463,20 @@ Common::UString XMLFix::fixUnclosedQuote(Common::UString line) {
 				inQuote = true;
 			}
 		} else {
-			// Inquote is true, we're in a quoted part.
-			if (c == quote_mark) {
-				// This is a close quote
-				inQuote = false;
-
-				// A close quote should be followed by a space, slash, quote, or comma
+			if (c == quote_mark) {   // Inquote is true, we're in a quoted part.
+				inQuote = false; // This is a close quote
+						 // A close quote should be followed by a space.
 				uint32 d = line.at(i + 1);
-				if (d != space && d != '/' && d != quote_mark && d != ',') {
-					line.insert(line.getPosition(i + 1), space);
+				if (d != ' ' && d != '/' && d != quote_mark) {
+					pos = line.getPosition(i + 1);
+					line.insert(pos, ' ');
 					i++;
 					end++;
 				}
-			} else if (Common::UString::isSpace(c)) {
-				// We can't check for just a space, because files
-				// sometimes also contain newlines.
-				line.insert(line.getPosition(i), quote_mark);
+			} else if (line.isSpace(c)) { // We can't check for just a space, 
+						      // because files sometimes also contain newlines.
+				pos = line.getPosition(i);
+				line.insert(pos, quote_mark);
 				i++;
 				end++;
 				inQuote = false;
@@ -472,6 +508,11 @@ Common::UString XMLFix::fixCloseBraceQuote(Common::UString line) {
 
 		// Check for an open quote at the end
 		if (inQuote) {
+			// Look for a space before the "/>"
+			if (line.at(end - 1) == ' ') {
+				pos = line.getPosition(end - 1);
+			}
+			
 			// Insert a close quote
 			line.insert(pos, quote_mark);
 		}
@@ -503,37 +544,6 @@ Common::UString XMLFix::doubleDashFix(Common::UString line) {
 }
 
 /**
-* If there are three consecutive quotes,
-* Replace with one quote.
-* Let's be honest, this can only happen as a
-* Result of other methods, and this is a kludgy fix.
-* Note that this will only find one per line.
-* This will also remove double quotes that are not
-* Intended to be in the XML. name="" is the only
-* Legitimate appearance of "" in the NWN xml code.
-* Returns the modified line, without double or
-* Triple quotes.
-*/
-Common::UString XMLFix::tripleQuoteFix(Common::UString line) {
-	Common::UString::iterator startPos = line.findFirst("\"\"\"");
-	if (startPos != line.end()) {
-		Common::UString::iterator endPos = line.getPosition(line.getPosition(startPos) + 2);
-		line.erase(startPos, endPos); //Remove two quotes.
-	}
-
-	// Might as well escape "" as well, while we're at it.
-	startPos = line.findFirst("name=\"\"");
-	if (startPos == line.end()) {
-		// The line doesn't contain name=""	
-		startPos = line.findFirst("\"\"");
-		if (startPos != line.end()) {
-			Common::UString::iterator endPos = line.getPosition(line.getPosition(startPos) + 1);
-			line.erase(startPos, endPos); // Remove one quote.
-		}
-	} return line;
-}
-
-/*
  * Change any instances of badStr to goodStr in line.
  * If undo is true, change instances of badStr to goodStr.
  */
@@ -602,59 +612,28 @@ Common::UString XMLFix::escapeSpacedStrings(Common::UString line, bool undo) {
 
 /**
 * Track number of open and closed HTML comments, one per line
-* Used for tracking copyright.
 */
-void XMLFix::countComments(Common::UString line) {
+bool XMLFix::isCommentLine(Common::UString line) {
 	Common::UString::iterator pos;
+	bool isComment = false;
 
 	// Start of a comment
 	pos = line.findFirst("<!--");
 	if (pos != line.end()) {
-		comCount++;
+		_comCount++;
 	}
+
+	if (_comCount > 0)
+		isComment = true;
 
 	// End of a comment
 	pos = line.findFirst("-->");
 	if (pos != line.end()) {
-		comCount--;
+		_comCount--;
+		if (_comCount < 0)
+			_comCount = 0; // Should never happen?
 	}
+
+	return isComment;
 }
 
-/**
-* If we have a "/>", replace it with a />
-* If we have a />", replace it with a />
-* If we have a >", replace it with a >
-* This function is another instance of
-* cleaning up after ourselves.
-*/
-Common::UString XMLFix::quotedCloseFix(Common::UString line) {
-	Common::UString::iterator pos;
-	size_t n;
-
-	// Remove quotes from: "/>"
-	pos = line.findFirst("\"/>\"");
-	if (pos != line.end()) {
-		n = line.getPosition(pos);
-		line.erase(pos);
-		pos = line.getPosition(n + 2);
-		line.erase(pos);
-	}
-
-	// Remove quote from: />"
-	pos = line.findFirst("/>\"");
-	if (pos != line.end()) {
-		n = line.getPosition(pos);
-		pos = line.getPosition(n + 2);
-		line.erase(pos);
-	}
-
-	// Remove quote from: >"
-	pos = line.findFirst(">\"");
-	if (pos != line.end()) {
-		n = line.getPosition(pos);
-		pos = line.getPosition(n + 1);
-		line.erase(pos);
-	}
-
-	return line;
-}
