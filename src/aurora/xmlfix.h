@@ -42,19 +42,19 @@ class XMLFix {
 public:
 	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml);
 
-	// Temporarily public for testing because they're called from fix2xml
-	Common::UString fixXMLTag(Common::UString line);
-	Common::UString parseLine(Common::UString line);
-
 private:
-	int comCount = 0;        // Track the number of open/closed comments
-	bool inUIButton = false; // Used to fix </UIButton> tags that were never opened
+	int  comCount = 0;        	// Track the number of open/closed comments
+	bool fixedXML = false;   	// Track if xml tag is fixed
+	bool fixedCopyright = false;	// Track if the copyright character is fixed
+	bool inUIButton = false; 	// Used to fix </UIButton> tags that were never opened
 
 	void replaceAll(Common::UString& str, const Common::UString& from, const Common::UString& to);
 	int countOccurances(Common::UString line, uint32 find);
 	void countComments(Common::UString line);
 
 	// Line filters
+	Common::UString fixXMLTag(Common::UString line);
+	Common::UString parseLine(Common::UString line);
 	Common::UString fixLine(Common::UString line);
 	Common::UString trim(Common::UString line);
 	Common::UString fixOpenQuotes(Common::UString line);
@@ -64,6 +64,7 @@ private:
 	Common::UString doubleDashFix(Common::UString line);
 	Common::UString tripleQuoteFix(Common::UString line);
 	Common::UString quotedCloseFix(Common::UString line);
+	Common::UString replaceText(Common::UString line, const Common::UString badStr, const Common::UString goodStr);
 	Common::UString escapeSpacedStrings(Common::UString line, bool undo);
 	Common::UString fixMismatchedParen(Common::UString line);
 	Common::UString fixCloseBraceQuote(Common::UString line);

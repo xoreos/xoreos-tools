@@ -58,40 +58,56 @@ using namespace Aurora;
 using std::string;
 
 /**
- * This filter converts the contents of an NWN2 XML
- * data stream into standardized XML.
+ * This filter converts the contents of an NWN2 XML data
+ * stream into standardized XML.
  */
 Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml) {
 	Common::UString line;
 
 	// Initialize the internal tracking variables
 	comCount = 0;
+	fixedXML = false;
+	fixedCopyright = false;
 	inUIButton = false;
 	
-	// Check for a standard header
+	/*
+	 * Check for a standard header line.
+	 * The input encoding is set to Common::kEncodingLatin9
+	 * so it doesn't throw an error on the copyright symbol.
+	 */
 	xml.seek(0);
-	line = Common::readStringLine(xml, Common::kEncodingUTF8);
-	if (line.find("<?xml") != 0) 
-		throw Common::Exception("Input stream does not have a proper XML header");
-	
+	line = Common::readStringLine(xml, Common::kEncodingLatin9);
+	Common::UString::iterator pos = line.findFirst("<?xml");
+	if (pos == line.end()) 
+		throw Common::Exception("Input stream does not have an XML header");
+
 	// Create the output stream
 	Common::MemoryWriteStreamDynamic out;
 	out.reserve(xml.size());
 
 	try {
+		// Insert root element
+		const Common::UString startRoot = "<Root>\n";
+		out.write(startRoot.c_str(), startRoot.size());
+
 		// Cycle through the input stream
 		xml.seek(0);
 		while (!xml.eos()) {
 			// Read a line of text
-			line = Common::readStringLine(xml, Common::kEncodingUTF8);
+			line = Common::readStringLine(xml, Common::kEncodingLatin9);
 
 			// Fix the XML format
-			line = XMLFix::parseLine(line);
-			line += "/n"; // Stripped by readStringLine
+			if (line.size() > 0)
+				line = XMLFix::parseLine(line);
+			line += "\n"; // Stripped by readStringLine
 
 			// Copy to the output stream
 			out.write(line.c_str(), line.size());
 		}
+
+		// Insert end root element
+		const Common::UString endRoot = "</Root>\n";
+		out.write(endRoot.c_str(), endRoot.size());
 	} catch (Common::Exception &e) {
 		e.add("Failed to fix XML stream");
 		throw e;
@@ -106,16 +122,16 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 * Returns that fixed line.
 */
 Common::UString XMLFix::parseLine(Common::UString line) {
+	if (!fixedXML)
+		line = fixXMLTag(line);
 	line = fixUnclosedNodes(line);
 	line = escapeSpacedStrings(line, false); // Fix problematic strings (with spaces or special characters)
 	line = fixMismatchedParen(line);
 	line = fixOpenQuotes(line); // It's imperative that this run before the copyright line, or not on it at
 	                            // all. Could update to ignore comments.
 	line = escapeInnerQuotes(line);
-	line = fixCopyright(line);  // Does this need to run EVERY line?
-	                            // Worst case improvement, we could have a global variable for whether or not
-				    // we've found it, and just run it once per file, on the assumption that it
-				    // will only appear once per file.
+	if (!fixedCopyright)
+		line = fixCopyright(line);
 	line = doubleDashFix(line);
 	line = quotedCloseFix(line);
 	line = tripleQuoteFix(line);
@@ -130,17 +146,22 @@ Common::UString XMLFix::parseLine(Common::UString line) {
 */
 Common::UString XMLFix::fixCopyright(Common::UString line) {
 	//If this is the copyright line, remove the unicode.
-	if (line.find("Copyright") != std::string::npos) {
-		if (!comCount) {
-			return "<!-- Copyright 2006 Obsidian Entertainment, Inc. -->";
-		} else {
-			/*
-			 * If we're in a comment, don't add a new one.
-			 * This line may not be a perfect match, but
-			 * it gets the point across.
-			 */
-			return "Copyright 2006 Obsidian Entertainment, Inc.";
-		}
+	Common::UString::iterator startPos = line.findFirst("Copyright");
+	if (startPos != line.end()) {
+		Common::UString::iterator endPos = line.findFirst("Obsidian");
+		size_t pos = line.getPosition(startPos);
+		
+		// Remove the copyright character
+		line.erase(startPos, endPos);
+		
+		// Regenerate iterator to avoid throwing an exception
+		startPos = line.getPosition(pos);
+		
+		// Insert the replacement
+		line.insert(startPos, "Copyright &copy; 2006 ");
+
+		// Flag as fixed
+		fixedCopyright = true;
 	}
 	return line;
 }
@@ -148,21 +169,27 @@ Common::UString XMLFix::fixCopyright(Common::UString line) {
 /**
 * Corrects improper opening XML tags.
 * An improper XML tag has '<xml' instead of '<?xml'.
-* Also changes references to NWN2UI to XML so
-* xml-lint reads it properly.
+* Also changes references to NWN2UI encoding to utf-8
+* so xml-lint reads it properly.
 */
 Common::UString XMLFix::fixXMLTag(Common::UString line) {
-	// Let's ensure we close this properly.
-	if (line.find("<?xml") != string::npos) {
+	// Check for an xml tag
+	Common::UString::iterator pos = line.findFirst("<?xml");
+	if (pos != line.end()) {
+		// Ensure we close this properly.
 		line.trim();
-		if (line.at(line.length() - 2) != '?') {
-			line.insert(line.length() - 1, "?");
+		if (line.at(line.size() - 2) != '?') {
+			pos = line.getPosition(line.size() - 1);
+			line.insert(pos, '?');
 		}
-		
-		// NWN2UI is not a supported format. changing it to xml appears to work.
-		if (line.find("encoding=\"NWN2UI\"") != std::string::npos) {
-			return "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-		}
+
+		// Check for unsupported encoding format NWN2UI
+		const Common::UString badEncoding = "encoding=\"NWN2UI\"";
+		const Common::UString goodEncoding = "encoding=\"utf-8\"";
+		line = replaceText( line, badEncoding, goodEncoding );
+
+		// Flag as fixed
+		fixedXML = true;
 	}
 	return line;
 }
@@ -240,7 +267,7 @@ Common::UString XMLFix::escapeInnerQuotes(Common::UString line) {
 */
 int XMLFix::countOccurances(Common::UString line, uint32 find) {
 	int count = 0;
-	for (size_t i = 0; i < line.length(); i++) {
+	for (size_t i = 0; i < line.size(); i++) {
 		if (line.at(i) == find) {
 			count++;
 		}
@@ -248,26 +275,27 @@ int XMLFix::countOccurances(Common::UString line, uint32 find) {
 	return count;
 }
 
-// Adds a closing paren if a line is missing such a thing.
+/*
+ * Adds a closing paren if a line is missing such a thing.
+ */
 Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 	bool inParen = false;
-	size_t end = line.length();
+	size_t end = line.size();
+	Common::UString::iterator it = line.findFirst("/>");
+	size_t pos = line.getPosition(it);
 	for (size_t i = 0; i < end; i++) {
 		uint32 c = line.at(i);
 		if (!inParen) {
 			if (c == '(') {
 				inParen = true;
 			}
-		} else {
-			size_t pos = line.find("/>");
-			if (c == ')') {
-				inParen = false;
-			} else if (i == pos - 1) {
-				// We're at the end of the string and haven't closed a paren.
-				if (line.at(pos - 1) != ')') {
-					line.insert(pos, ")");
-					break;
-				}
+		} else if (c == ')') {
+			inParen = false;
+		} else if (i == pos - 1) {
+			// We're at the end of the string and haven't closed a paren.
+			if (c != ')') {
+				line.insert(pos, ")");
+				break;
 			}
 		}
 	}
@@ -281,12 +309,12 @@ Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 */
 Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	// We have an equal with no open quote
-	size_t end = line.length() - 1;
+	size_t end = line.size() - 1;
 	for (size_t i = 0; i < end; i++) {
 		// Equal sign should be followed by a quote
-		if (line.at(1) == '='&& line.at(i + 1) != '"') {
+		if (line.at(1) == '=' && line.at(i + 1) != '"') {
 			line.insert(i + 1, "\"");
-			i++;//Our string got longer.
+			i++; // Our string got longer.
 			end++;
 		}
 
@@ -321,9 +349,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		}
 
 		// A close paren should be followed by a " or a space and a \>
-		if (i < end - 1 && line.at(i) == ')'&& line.at(i + 2) != '\\') {
+		if (i < end - 1 && line.at(i) == ')' && line.at(i + 2) != '\\') {
 			line.insert(i + 1, "\"");
-			i++;//Our string got longer.
+			i++; // Our string got longer.
 			end++;
 		}
 	}
@@ -464,46 +492,75 @@ Common::UString XMLFix::tripleQuoteFix(Common::UString line) {
 		if (pos != std::string::npos) {
 			line.erase(pos, 2);// Remove one quote.
 		}
+	} return line;
+}
+
+/*
+ * Change any instances of badStr to goodStr in line.
+ * If undo is true, change instances of badStr to goodStr.
+ */
+Common::UString XMLFix::replaceText(Common::UString line,
+		const Common::UString badStr, const Common::UString goodStr) {
+	int limit = (int)line.size(); // Failsafe countdown
+	
+	// Look for an instance of badStr
+	Common::UString::iterator startPos = line.findFirst(badStr);
+	while (startPos != line.end()) {
+		size_t pos = line.getPosition(startPos);
+		size_t width = badStr.size();
+		Common::UString::iterator endPos = line.getPosition(pos + width);
+		
+		// Remove the badStr instance
+		line.erase(startPos, endPos);
+		
+		// Regenerate iterator to avoid throwing an exception
+		startPos = line.getPosition(pos);
+		
+		// Replace badStr with goodStr
+		line.insert(startPos, goodStr);
+
+		// Look for another instance
+		startPos = line.findFirst(badStr);
+
+		// Check failsafe
+		if (--limit < 0)
+			throw Common::Exception("Stuck in a loop searching for '%s'", badStr.c_str());
 	}
 	return line;
 }
 
 /**
 * Some lines contain problematic phrases. (phrases that include
-* String literals with spaces or the > or / characters).
+* string literals with spaces or the > or / or , characters).
 * If left untouched, other functions will destroy these strings
-* Instead of fixing them.
+* instead of fixing them.
+*
 * Returns a safe string (devoid of problematic phrases) if undo is false, or
-* The original string, with problematic phrases restored if undo is true.
+* the original string, with problematic phrases restored if undo is true.
 */
 Common::UString XMLFix::escapeSpacedStrings(Common::UString line, bool undo) {
-	// Just used as containers.
-	// Might be an easier/cleaner way to do this, perhaps with some sort of map instead of two arrays.
-	string switchWordsFrom[] = { "portrait frame" , "0 / 0 MB", "->", ">>",
-		"capturemouseevents=false", "Speaker Name", " = ", "Player Chat" };
-	string switchWordsTo[] = { "portrait_frame" , "0_/_0_MB", "ReplaceMe1",
-		"ReplaceMe2","capturemouseevents=false ", "Speaker_Name", "=", "Player_Chat" };
-
-	// The arrays we actually reference
-	string * fromTemp = switchWordsFrom;
-	string * toTemp = switchWordsTo;
-	// Swap
-	// No need to switch the first time, but The second time we
-	// Call this, we want to switch from safe to original strings
-	if (undo) {
-		//Native array swap wasn't introduced until c++ 2011
-		//So we do this with pointers.	
-		string * swapTemp = fromTemp;
-		fromTemp = toTemp;
-		toTemp = swapTemp;
-	}
-	// Number of elements in the array.
-	int length = sizeof(switchWordsFrom) / sizeof(switchWordsFrom[0]);
-	// Do the actual replacement inline.	
-	for (int i = 0; i < length; i++) {
-		size_t pos = line.find(*(fromTemp + i));
-		if (pos != std::string::npos) {
-			line.replace(pos, (fromTemp + i)->length(), *(toTemp + i));
+	// Initialize the array of token/phrase pairs
+	const int rows = 9;
+	const Common::UString pair[rows][2] = {
+		{ "$01$", "portrait frame" },
+		{ "$02$", "0 / 0 MB" },
+		{ "$03$", "->" },
+		{ "$04$", ">>" },
+		{ "$05$", "capturemouseevents=false" },
+		{ "$06$", "Speaker Name" },
+		{ "$07$", " = " },
+		{ "$08$", "Player Chat" },
+		{ "$09$", "Entertainment, Inc" }
+	};
+	
+	// Loop through the array
+	for (int i = 0; i < rows; i++) {
+		if (undo) {
+			// Change the token instances back to the key phrase
+			line = replaceText(line, pair[i][0], pair[i][1] );
+		} else {
+			// Change the key phrase instances to the token
+			line = replaceText(line, pair[i][1], pair[i][0] );
 		}
 	}
 	return line;
