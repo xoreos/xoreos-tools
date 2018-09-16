@@ -40,7 +40,7 @@ namespace Aurora {
 class XMLFix { 
 
 public:
-	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream *xml);
+	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml);
 
 	// Temporarily public for testing because they're called from fix2xml
 	Common::UString fixXMLTag(Common::UString line);

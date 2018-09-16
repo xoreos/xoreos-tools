@@ -61,30 +61,29 @@ using std::string;
  * This filter converts the contents of an NWN2 XML
  * data stream into standardized XML.
  */
-Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream *xml) {
-	assert(xml);
-	
+Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml) {
+	Common::UString line;
+
 	// Initialize the internal tracking variables
 	comCount = 0;
 	inUIButton = false;
 	
+	// Check for a standard header
+	xml.seek(0);
+	line = Common::readStringLine(xml, Common::kEncodingUTF8);
+	if (line.find("<?xml") != 0) 
+		throw Common::Exception("Input stream does not have a proper XML header");
+	
 	// Create the output stream
 	Common::MemoryWriteStreamDynamic out;
-	out.reserve(xml->size());
-	
-	// Check for a standard header
-	xml->seek(0);
-	Common::UString line = Common::readStringLine(*xml, Common::kEncodingUTF8);
-	if (line.find("<?xml") != 0) {
-		throw Common::Exception("Input stream does not have a proper XML header");
-	}
+	out.reserve(xml.size());
 
 	try {
 		// Cycle through the input stream
-		xml->seek(0);
-		while (!xml->eos()) {
+		xml.seek(0);
+		while (!xml.eos()) {
 			// Read a line of text
-			Common::UString line = Common::readStringLine(*xml, Common::kEncodingUTF8);
+			line = Common::readStringLine(xml, Common::kEncodingUTF8);
 
 			// Fix the XML format
 			line = XMLFix::parseLine(line);
