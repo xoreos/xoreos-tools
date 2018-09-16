@@ -249,10 +249,18 @@ Common::UString XMLFix::fixXMLTag(Common::UString line) {
 	// Check for an xml tag
 	Common::UString::iterator pos = line.findFirst("<?xml");
 	if (pos != line.end()) {
-		// Ensure we close this properly.
 		line.trim();
-		if (line.at(line.size() - 2) != '?') {
-			pos = line.getPosition(line.size() - 1);
+
+		// Fix for SlimGUI fontFamily.xml
+		pos = line.findFirst("<?xml"); // Regenerate with changed string
+		if (line.getPosition(pos) > 0) {
+			line.erase(line.begin(), pos);
+		}
+
+		// Ensure we close this properly.
+		int n = (int)line.size() - 2;
+		if (n > -1 && line.at(n) != '?') {
+			pos = line.getPosition(n+1);
 			line.insert(pos, '?');
 		}
 
