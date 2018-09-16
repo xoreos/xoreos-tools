@@ -40,20 +40,22 @@ class XMLFix {
 public:
 	static Common::SeekableReadStream *fixXML(Common::SeekableReadStream *xml);
 
+	// Temporary public/static for testing because they're called from main()
+	Common::UString fixXMLTag(Common::UString line);
+	Common::UString parseLine(Common::UString line);
+
 private:
 	Common::UString fixLine(Common::UString line);
-	Common::UString parseLine(Common::UString line);
 	Common::UString trim(Common::UString line);
 	Common::UString fixOpenQuotes(Common::UString line);
 	Common::UString escapeInnerQuotes(Common::UString line);
 	Common::UString replaceString(Common::UString& origStr, Common::UString& oldText, Common::UString newText);
 	void replaceAll(Common::UString& str, const Common::UString& from, const Common::UString& to);
 	int countOccurances(Common::UString line, char find);
+	void countComments(std::string line);
 	Common::UString fixCopyright(Common::UString line);
-	Common::UString fixXMLTag(Common::UString line);
 	Common::UString doubleDashFix(Common::UString line);
 	Common::UString tripleQuoteFix(Common::UString line);
-	void countComments(std::string line);
 	Common::UString quotedCloseFix(Common::UString line);
 	Common::UString escapeSpacedStrings(Common::UString line, bool undo);
 	Common::UString fixMismatchedParen(Common::UString line);
