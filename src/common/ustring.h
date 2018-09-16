@@ -135,6 +135,9 @@ public:
 	bool contains(const UString &what) const;
 	bool contains(uint32 c) const;
 
+	/** Return the (utf8 encoded) character at the position index */
+	uint32 at(size_t pos) const;
+
 	void truncate(const iterator &it);
 	void truncate(size_t n);
 

@@ -310,6 +310,18 @@ src_erf_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/fix2xml
+src_fix2xml_SOURCES = \
+    src/fix2xml.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_fix2xml_LDADD = \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 # Subdirectories
 
 include src/version/rules.mk
