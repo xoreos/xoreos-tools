@@ -63,13 +63,18 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 	_fixedCopyright = false;
 	_inUIButton = false;
 	
+	// Loop until a non-blank line is found
+	xml.seek(0);
+	do {
+		line = Common::readStringLine(xml, Common::kEncodingLatin9);
+		line.trim();
+	} while (line.size() == 0);
+
 	/*
 	 * Check for a standard header line.
 	 * The input encoding is set to Common::kEncodingLatin9
 	 * so it doesn't throw an error on the copyright symbol.
 	 */
-	xml.seek(0);
-	line = Common::readStringLine(xml, Common::kEncodingLatin9);
 	Common::UString::iterator pos = line.findFirst("<?xml");
 	if (pos == line.end()) 
 		throw Common::Exception("Input stream does not have an XML header");
@@ -79,9 +84,14 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 	out.reserve(xml.size());
 
 	try {
-		// Fix the header
 		xml.seek(0);
-		line = Common::readStringLine(xml, Common::kEncodingLatin9);
+		// Loop until a non-blank line is found
+		do {
+			line = Common::readStringLine(xml, Common::kEncodingLatin9);
+			line.trim();
+		} while (line.size() == 0);
+		
+		// Fix the header
 		line = fixXMLTag(line) + "\n";
 		out.write(line.c_str(), line.size());
 
@@ -96,6 +106,15 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 
 			// Read a line of text
 			line = Common::readStringLine(xml, Common::kEncodingLatin9);
+
+			// Trim now for maximum performance benefit
+			if (priorTag) {
+				// Already in a wrap, so trim both ends
+				line.trim();
+			} else {
+				// Preseve the indent by only trimming the right end
+				line.trimRight();
+			}
 
 			// Fix the XML format
 			if (line.size() > 0)
@@ -112,20 +131,27 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 				}
 			} else {
 				// Check for a multi-line wrap
-				if (priorTag) {
+				if (buffer.size() > 0) {
 					// Finish wrapping the lines
 					line = buffer + " " + line;
-					buffer = ""; // Start over
+					buffer = "";
 				}
 				
 				// Write line to the output stream
 				line += "\n"; // Stripped by readStringLine
 				out.write(line.c_str(), line.size());
+
+				// Initialize for the next line
+				priorTag = false;
 			}
 		}
 
-		if (_openTag)
-			throw Common::Exception("XML ended on an open tag");
+		if (_openTag) {
+			// Print the final line and buffer
+			line = buffer + " " + line;
+			line += "\n"; // Stripped by readStringLine
+			out.write(line.c_str(), line.size());
+		}
 
 		// Insert end root element
 		const Common::UString endRoot = "</Root>\n";
@@ -157,16 +183,38 @@ Common::UString XMLFix::parseLine(Common::UString line) {
 			line = doubleDashFix(line);
 		}	
 	} else {
+		// Split off an appended comment (per fontfamily.xml)
+		Common::UString comment = "";
+		Common::UString::iterator it = line.findFirst("<!--");
+		if (it != line.end()) {
+			size_t pos = line.getPosition(it);
+			comment = line.substr(it, line.end());
+			if (pos > 0) {
+				// Remove the comment
+				it = line.getPosition(pos - 1);
+				line = line.substr(line.begin(), it);
+			} else {
+				// This should never happen
+				throw Common::Exception("Comment found where none expected: %s", line.c_str());
+			}
+		}
+
 		// Fix a non-comment line
+		line = fixKnownIssues(line);      // Do this first
 		line = fixUnclosedNodes(line);
-		line = escapeSpacedStrings(line, false); // Fix problematic strings (with spaces or special characters)
-		line = fixMismatchedParen(line);
+		line = tokenizeProblemPhrases(line, false); // Fix problematic strings (with spaces or special characters)
 		line = fixOpenQuotes(line);
+		line = escapeSpacedStrings(line); // Fix strings with spaces or special characters
+		line = fixMismatchedParen(line);
 		line = escapeInnerQuotes(line);
-		line = escapeSpacedStrings(line, true);  // Restore the problematic strings to their proper values.
+		line = tokenizeProblemPhrases(line, true);  // Restore the problematic strings to their proper values.
+
+		// Restore appended comment
+		if (comment.size() > 0) {
+			line += " " + comment;
+		}
 	} 
 	
-	// Remove extra padding
 	return line;
 }
 
@@ -250,8 +298,8 @@ Common::UString XMLFix::fixUnclosedNodes(Common::UString line) {
 }
 
 /**
-* Finds and escapes quotes in an element,
-* Returns a fixed line.
+* Finds and escapes quotes in an element by changing
+* them to an HTML tag. Returns a fixed line.
 * The only time we're seeing faulty quotes is
 * in the context open("FooBar"), so that's the only
 * case we look for right now.
@@ -336,8 +384,14 @@ Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 		} else if (i == pos - 1) {
 			// We're at the end of the string and haven't closed a paren.
 			if (c != ')') {
-				it = line.getPosition(pos);
-				line.insert(it, ")");
+				if (c == ' ' || c == '>') {
+					// Stick it before the space
+					it = line.getPosition(i);
+				} else {
+					// Stick it before the closing tag
+					it = line.getPosition(i + 1);
+				}
+				line.insert(it, ')');
 				break;
 			}
 		}
@@ -353,6 +407,7 @@ Common::UString XMLFix::fixMismatchedParen(Common::UString line) {
 Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	Common::UString::iterator pos;
 	int quoteCount = 0; // Count quote marks
+	uint c;
 
 	// We have an equal with no open quote
 	size_t end = line.size();
@@ -363,7 +418,7 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		// Track open and closed tags
 		if ((quoteCount % 2) == 0) {
 			// We're not in quotes
-			uint32 c = line.at(i);
+			c = line.at(i);
 			if (c == '<') {
 				_openTag = true;
 			} else if (c == '>') {
@@ -372,6 +427,13 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		}
 
 		if (line.at(i) == ')') {
+			// A close paren should be followed by: "
+			if (i < end - 1 && line.at(i + 1) != quote_mark) {
+				pos = line.getPosition(i + 1);
+				line.insert(pos, quote_mark);
+				end++;
+			}	
+
 			/* 
 			 * A closed paren should usually be preceeded by: "
 			 *
@@ -380,26 +442,26 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 			 *    parenthesis set. This is always a number.
 			 *    Example: ("elem="foo",local=5)
 			 *  - when we have () empty.
+			 *  - when the paren is preceded by a bare comma (1 case)
 			 */
 			if (i > 0) {
-				uint32 c = line.at(i - 1);
-				if (c != quote_mark && c != '(') {
+				c = line.at(i - 1);
+				if (c != quote_mark && c != '(' && c != ',') {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
 					quoteCount++; // Add quote
 					end++;
+
+					// Skip forward to avoid extra quotes
+					i++;
 				}
 			}
 			
-			// A close paren should be followed by: "
-			pos = line.getPosition(i + 1);
-			line.insert(pos, quote_mark);
-			end++;
 		}
 
 		// Close the quotes for an equals
 		if (quoteCount % 2) {
-			uint32 c = line.at(i);
+			c = line.at(i);
 			if (line.isSpace(c) || c == '/' || c == '>') {
 				// Check if a quote was added above
 				if (line.at(i - 1) != quote_mark) {
@@ -437,8 +499,8 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 			end++;
 		}
 
-		// No quote after a comma
-		if (line.at(i) == ',' && i < end - 1 && line.at(i + 1) != quote_mark) {
+		// No quote after a comma, so add it in unless there's a paren (1 case)
+		if (line.at(i) == ',' && i < end - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
 			end++;
@@ -446,7 +508,7 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	}
 
 	// Check for an open equals at the end of the line
-	if (quoteCount % 2) {
+	if ((quoteCount > 0) && (quoteCount % 2 != 0)) {
 		end = line.size();
 		line.insert(line.end(), quote_mark);
 	}
@@ -606,29 +668,78 @@ Common::UString XMLFix::replaceText(Common::UString line,
 }
 
 /**
+* Fix known issues with the stock XML files.
+*/
+Common::UString XMLFix::fixKnownIssues(Common::UString line) {
+	// Initialize the array of token/substr pairs
+	const int rows = 5;
+	const Common::UString pair[rows][2] = {
+		{ "=true fontFamily=", "=truefontfamily=" },	// Fix for examine.xml
+		{ "=181357", "=\"181357\"\"" },			// Fix for gfx_options.xml
+		{ ",ALIGN_LEFT)", ",ALIGN_LEFT\")" },		// Fix for ig_chargen_abilities.xml
+		{ "cter\" fontfamily=", "cter\"fontfamily=" },	// Fix for multiplayer_downloadsx2.xml
+		{ "=", " = " }					// Fix for playermenu_popup.xml
+	};
+
+	// Loop through the array
+	for (int i = 0; i < rows; i++) {
+		// Fix the substr
+		line = replaceText(line, pair[i][1], pair[i][0] );
+	}
+
+	return line;
+}
+
+/**
+* If a space or slash character is found inside a quote, this will convert
+* the character to an HTML tag. Doing so will prevent misplaced quotes.
+*/
+Common::UString XMLFix::escapeSpacedStrings(Common::UString line) {
+	// Escape any remaining spaces inside quotes
+	bool inQuote = false;
+	for (size_t i = 0; i < line.size(); i++) {
+		int c = line.at(i);
+		if (c == quote_mark) {
+			// Flip boolean
+			inQuote = !inQuote;
+		}
+
+		// Check for a space or slash inside quotes
+		if (inQuote && (line.isSpace(c) || c == '/')) {
+			// Replace space character with an HTML ASCII tag
+			Common::UString::iterator it = line.getPosition(i);
+			line.erase(it);
+			it = line.getPosition(i); // Avoid error throw
+			Common::UString s = line.format("&#%02d;", (int)c);
+			line.insert(it, s);
+		}
+	}
+	return line;
+}
+
+/**
 * Some lines contain problematic phrases. (phrases that include
-* string literals with spaces or the > or / or , characters).
+* / or , characters).
+*
 * If left untouched, other functions will destroy these strings
 * instead of fixing them.
 *
 * Returns a safe string (devoid of problematic phrases) if undo is false, or
 * the original string, with problematic phrases restored if undo is true.
 */
-Common::UString XMLFix::escapeSpacedStrings(Common::UString line, bool undo) {
+Common::UString XMLFix::tokenizeProblemPhrases(Common::UString line, bool undo) {
 	// Initialize the array of token/phrase pairs
-	const int rows = 9;
+	const int rows = 7;
 	const Common::UString pair[rows][2] = {
-		{ "$01$", "portrait frame" },
-		{ "$02$", "0 / 0 MB" },
-		{ "$03$", "->" },
-		{ "$04$", ">>" },
-		{ "$05$", "capturemouseevents=false" },
-		{ "$06$", "Speaker Name" },
-		{ "$07$", " = " },
-		{ "$08$", "Player Chat" },
-		{ "$09$", "Entertainment, Inc" }
+		{ "$01$", "->" },
+		{ "$02$", ">>" },
+		{ "$03$", " = " },
+		{ "$04$", "0 / 0 MB" },
+		{ "$05$", "portrait frame" },
+		{ "$06$", "Player Chat" },
+		{ "$07$", "Speaker Name" }
 	};
-	
+
 	// Loop through the array
 	for (int i = 0; i < rows; i++) {
 		if (undo) {
@@ -639,6 +750,7 @@ Common::UString XMLFix::escapeSpacedStrings(Common::UString line, bool undo) {
 			line = replaceText(line, pair[i][1], pair[i][0] );
 		}
 	}
+
 	return line;
 }
 
@@ -646,15 +758,24 @@ Common::UString XMLFix::escapeSpacedStrings(Common::UString line, bool undo) {
 * Track number of open and closed HTML comments, one per line
 */
 bool XMLFix::isCommentLine(Common::UString line) {
-	Common::UString::iterator pos;
+	Common::UString::iterator pos, tag;
 	bool isComment = false;
+
+	// Check for a line with no tag
+	tag = line.findFirst("<");
+	if (_comCount < 1 && tag == line.end())
+		return false;
 
 	// Start of a comment
 	pos = line.findFirst("<!--");
 	if (pos != line.end()) {
-		_comCount++;
+		// Check for an appended inline comment, per fontfamily.xml
+		if (line.getPosition(tag) < line.getPosition(pos)) {
+			return false; // Don't track appended comments
+		} else {
+			_comCount++;
+		}
 	}
-
 	if (_comCount > 0)
 		isComment = true;
 
@@ -667,7 +788,5 @@ bool XMLFix::isCommentLine(Common::UString line) {
 		if (_comCount < 0)
 			throw Common::Exception("Invalid closing comment tag in XML");
 	}
-
 	return isComment;
 }
-
