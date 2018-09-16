@@ -22,12 +22,6 @@
  * Command-line tool to fix broken, non-standard NWN2 XML files.
  */
 
-/*
- * TODO:
- * Use XMLFix::fixXMLStream for XML corrections
- * Remove need for 'trim' call
- */
-
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -35,18 +29,26 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "src/util.h"
+#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
 #include "src/common/cli.h"
+#include "src/common/readfile.h"
+#include "src/common/writefile.h"
+#include "src/common/filepath.h"
+#include "src/common/memreadstream.h"
 #include "src/aurora/xmlfix.h"
+
+const Common::UString OUTPUT_FILE_TAG = "_Fixed"; // Add tag if no output file specified
 
 // Prototypes
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile);
 
-void convert(const Common::UString &inFile, const Common::UString &outFile);
+void convert(Common::UString &inFile, Common::UString &outFile);
+void old_convert(const Common::UString &inFile, const Common::UString &outFile);
 
 std::string strim(std::string line);
 
@@ -86,92 +88,38 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 /*
- * Read in the input file, apply XML format corections, then write to output file.
+ * Read in the input file, apply XML format corrections, then write to output file.
  */
-void convert(const Common::UString &inFile, const Common::UString &outFile) {
-	using std::string;
-	
-	// Get the i/o file names	
-	std::string oldFileName = inFile.c_str();
-	std::string newFileName = outFile.c_str();
-	std::string sline;    // Input line
-	Common::UString line; // Conversion line for XMLFix class call
-	Aurora::XMLFix fixer; // Need a copy of the XML filter class
-	
-	if ( outFile == "" ) {
-		// Default to old file name
-		newFileName = oldFileName;
+void convert(Common::UString &inFile, Common::UString &outFile) {
+	Common::UString outFileName = outFile;
+
+	// If outFile is an empty string, use a default
+	if (outFile == "") {
+		// Default to input file name
+		outFileName = inFile;
 
 		// Find location of period in the file name.
-		size_t perLoc = oldFileName.find(".");
+		size_t perLoc = inFile.find(".");
 		if (perLoc != std::string::npos) {
-			// Found a period, so add 'Fixed' before the extension
-			newFileName.insert(perLoc, "Fixed");
+			// Found a period, so insert tag before the extension
+			outFileName.insert(perLoc, OUTPUT_FILE_TAG);
 		} else {
-			// Add 'Fixed' at the end of the file
-			newFileName = newFileName + "Fixed";
+			// Add tag at the end of the file
+			outFileName += OUTPUT_FILE_TAG;
 		}
 	}
 	
-	// Open the files
-	std::ifstream readFile(oldFileName, std::ios::in);
-	if (!readFile.is_open()) {
-		// We check twice so that we don't create files if garbage is passed in.
-		throw Common::Exception("Unable to open input file \"%s\" for read", inFile.c_str());
-	}
-	std::ofstream writeFile(newFileName, std::ios::out | std::ios::trunc); // Create or overwrite
-	if (!writeFile.is_open()) {
-		throw Common::Exception("Unable to open output file \"%s\" for write", newFileName.c_str());
-	}
-	
-	// Read in the first line
-	if (std::getline(readFile, sline)) {
-		// Convert to UString for XMLFix class function call
-		line = sline;
+	// Read the input file into memory
+	Common::ScopedPtr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
 
-		// Check for XML format
-		if (strim(sline).find("<?xml") == 0) {
-			// Filter the line then write to file
-			line = fixer.fixXMLTag(line);
-			writeFile << line.c_str() << "\n";
-		} else {
-			// Abort
-			throw Common::Exception("Input file is not a proper XML format file");
-		}
-	} else {
-		// Abort
-		throw Common::Exception("Error while reading input file \"%s\"", inFile.c_str());
-	}
+	// Filter the input
+	Aurora::XMLFix converter;
+	Common::SeekableReadStream *fixed = converter.fixXMLStream(*in);
 
-	// Insert the root element.
-	writeFile << "<Root>\n";
-	while (std::getline(readFile, sline)) {
-		// Convert to UString for class function call
-		line = sline;
-		line = fixer.parseLine(line);
-		writeFile << line.c_str() << "\n";
-	}
-	writeFile << "</Root>\n";
-	
-	// Close the files
-	readFile.close();
-	writeFile.close();
+	// Write converted XML to output file
+	Common::WriteFile out(outFileName);
+	out.writeStream(*fixed);
+	out.flush();
+	out.close();
 }
 
-
-// Temporarily copied from xmlfix.cpp
-/**
-* Remove leading and trailing whitespace.
-* Returns line without leading and trailing
-* Spaces.
-*/
-std::string strim(std::string line) {
-	std::string whitespace = " \t\n\v\f\r";
-	size_t lineBegin = line.find_first_not_of(whitespace);
-	if (lineBegin == std::string::npos) {
-		return ""; // empty string
-	}
-	int lineEnd = line.find_last_not_of(whitespace);
-	int lineRange = lineEnd - lineBegin + 1;
-	return line.substr(lineBegin, lineRange);
-}
