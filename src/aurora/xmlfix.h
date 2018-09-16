@@ -40,7 +40,7 @@ namespace Aurora {
 class XMLFix { 
 
 public:
-	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml, bool hideComments = false);
+	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml, bool hideComments = true);
 
 private:
 	int  _comCount;        	// Track the number of open/closed comments
