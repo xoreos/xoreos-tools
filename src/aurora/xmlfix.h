@@ -43,11 +43,11 @@ public:
 	Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &xml, bool hideComments = false);
 
 private:
-	int  _comCount = 0;        	// Track the number of open/closed comments
-	bool _openTag = false;          // True if a non-comment tag has not been closed on current line
-	bool _hideComments = false;     // If true, blank out any comment lines
-	bool _fixedCopyright = false;	// Track if the copyright character is fixed
-	bool _inUIButton = false; 	// Used to fix </UIButton> tags that were never opened
+	int  _comCount;        	// Track the number of open/closed comments
+	bool _openTag;          // True if a non-comment tag has not been closed on current line
+	bool _hideComments;     // If true, blank out any comment lines
+	bool _fixedCopyright;	// Track if the copyright character is fixed
+	bool _inUIButton; 	// Used to fix </UIButton> tags that were never opened
 
 	int countOccurances(Common::UString line, uint32 find);
 	bool isCommentLine(Common::UString line);
