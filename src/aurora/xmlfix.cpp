@@ -106,8 +106,8 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 			line = Common::readStringLine(xml, Common::kEncodingLatin9);
 
 			// Trim now for maximum performance benefit
-			if (priorTag) {
-				// Already in a wrap, so trim both ends
+			if (priorTag || _hideComments) {
+				// Compacting, or already in a wrap, so trim both ends
 				line.trim();
 			} else {
 				// Preseve the indent by only trimming the right end
@@ -123,8 +123,8 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 				if (!priorTag) {
 					// Starting a new buffer
 					buffer = line;
-				} else {
-					// Append line to the buffer
+				} else if (line.size() > 0) {
+					// Append line to the buffer with a space
 					buffer += " " + line;
 				}
 			} else {
@@ -135,9 +135,12 @@ Common::SeekableReadStream *XMLFix::fixXMLStream(Common::SeekableReadStream &xml
 					buffer = "";
 				}
 				
-				// Write line to the output stream
-				line += "\n"; // Stripped by readStringLine
-				out.write(line.c_str(), line.size());
+				// Unless we are both hiding comments and the line length is zero
+				if (!(_hideComments && line.size() == 0)) {
+					// Write line to the output stream
+					line += "\n"; // <CR> stripped by readStringLine
+					out.write(line.c_str(), line.size());
+				}
 
 				// Initialize for the next line
 				priorTag = false;
@@ -204,8 +207,8 @@ Common::UString XMLFix::parseLine(Common::UString line) {
 		line = fixOpenQuotes(line);
 		line = escapeInnerQuotes(line);
 
-		// Restore appended comment
-		if (comment.size() > 0) {
+		if (!_hideComments && comment.size() > 0) {
+			// Restore appended comment
 			line += " " + comment;
 		}
 	} 
