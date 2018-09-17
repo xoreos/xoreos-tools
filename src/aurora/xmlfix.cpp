@@ -525,9 +525,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 				// Read forward to look for an equals
 				for (size_t j = i + 1; j < line.size(); j++) {
 					uint32 d = line.at(j);
-					if (d == '=' || c == ',' ) {
+					if (d == '=' || c == ',' || c == '>') {
 						break;
-					} else if (d == quote_mark || d == '>') {
+					} else if (d == quote_mark) {
 						// Replace space character with an HTML ASCII tag
 						Common::UString::iterator it = line.getPosition(i);
 						line.erase(it);
