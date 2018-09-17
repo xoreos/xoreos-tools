@@ -414,6 +414,15 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	Common::UString::iterator pos;
 	int quoteCount = 0; // Count quote marks
 	uint32 c;
+bool test = false;
+pos = line.findFirst("UIFrame state=down");
+if (pos != line.end()) {
+	test=true;
+}
+test=false;
+if (test) {
+	printf("A: %s\n", line.c_str());
+}
 
 	// We have an equal with no open quote
 	for (size_t i = 0; i < line.size(); i++) {
@@ -425,6 +434,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 			if (i < line.size() - 1 && line.at(i + 1) != quote_mark) {
 				pos = line.getPosition(i + 1);
 				line.insert(pos, quote_mark);
+if (test) {
+	printf("B: %s\n", line.c_str());
+}
 			}	
 
 			/* 
@@ -443,6 +455,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
 					quoteCount++; // Add quote
+if (test) {
+	printf("C: %s\n", line.c_str());
+}
 
 					// Skip forward to avoid extra quotes
 					i++;
@@ -452,29 +467,43 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		}
 
 		// Close the quotes for an equals
-		if (quoteCount % 2) {
+		if (quoteCount % 2 && i > 0) {
 			c = line.at(i);
-			if (i > 0 && (c == ' ' || c == '\t' || c == '>' || c == '/')) {
-				// Look ahead for another space
-				bool needQuote = true;
+			bool needQuote = false;
+			if (c == ' ' || c == '\t' || c == '/') {
+				/*
+				 * Look ahead for a non-whitespace character
+				 * then look for an equals, comma, or '>'.
+				 */
 				for (size_t j = i + 1; j < line.size(); j++) {
-					c = line.at(j);
-					if (c == '=' || c == ',' || c == '>') {
-						// Past prior assignment
-						break;
-					} else if (c == ' ' || c == '\t' || c == quote_mark) {
-						// Another space or closing quotes
-						needQuote = false;
-						break;
+					uint32 d = line.at(j);
+					if (needQuote) {
+						// Check following non-space character
+						if (d == '=' || d == ',' || d == '>') {
+							// Past prior assignment
+							break;
+						} else if (d == ' ' || d == '\t' || d == quote_mark) {
+							// Another space or closing quotes
+							needQuote = false;
+							break;
+						}
+					} else if (d != ' ' && d != '\t') {
+						// Found a non-space character following the space
+						needQuote = true;
 					}
 				}
+			} else if (c == '>') {
+				needQuote = true;
+			}
 
-				// Check if a quote was added above
-				if (needQuote == 1 && line.at(i - 1) != quote_mark) {
-					pos = line.getPosition(i);
-					line.insert(pos, quote_mark);
-					quoteCount++; // Add quote
-				}
+			// Check if a quote was added earlier
+			if (needQuote && line.at(i - 1) != quote_mark) {
+				pos = line.getPosition(i);
+				line.insert(pos, quote_mark);
+				quoteCount++; // Add quote
+if (test) {
+	printf("D: %s\n", line.c_str());
+}
 			}
 		}
 
@@ -482,6 +511,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		if (line.at(i) == '=' && i < line.size() - 1 && line.at(i + 1) != quote_mark) {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
+if (test) {
+	printf("E: %s\n", line.c_str());
+}
 		}
 
 		/*
@@ -492,6 +524,9 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 		if (line.at(i) == '(' && i < line.size() - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
+if (test) {
+	printf("F: %s\n", line.c_str());
+}
 		}
 
 		// No quote before ',', so add it in.
@@ -499,23 +534,43 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 			pos = line.getPosition(i);
 			line.insert(pos, quote_mark);
 			quoteCount++; // Add quote
+if (test) {
+	printf("G: %s\n", line.c_str());
+}
 		}
 
 		// No quote after a comma, so add it in unless there's a paren (1 case)
 		if (line.at(i) == ',' && i < line.size() - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
+if (test) {
+	printf("H: %s\n", line.c_str());
+}
 		}
 
 		// Check for a space or slash inside quotes
 		c = line.at(i);
 		if (quoteCount % 2 && (line.isSpace(c) || c == '/')) {
-			// Replace space character with an HTML ASCII tag
-			Common::UString::iterator it = line.getPosition(i);
-			line.erase(it);
-			it = line.getPosition(i); // Avoid error throw
-			Common::UString s = line.format("&#%02d;", (int)c);
-			line.insert(it, s);
+			if (i < line.size() - 1) {
+				// Read forward to look for an equals
+				for (size_t j = i + 1; j < line.size(); j++) {
+					uint32 d = line.at(j);
+					if (d == '=' || c == ',' ) {
+						break;
+					} else if (d == quote_mark || d == '>') {
+						// Replace space character with an HTML ASCII tag
+						Common::UString::iterator it = line.getPosition(i);
+						line.erase(it);
+						it = line.getPosition(i); // Avoid error throw
+						Common::UString s = line.format("&#%02d;", (int)c);
+						line.insert(it, s);
+if (test) {
+	printf("I: %s\n", line.c_str());
+}
+						break;
+					}
+				}
+			}
 		}
 		
 		// Track open and closed tags
@@ -533,7 +588,13 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	// Check for an open equals at the end of the line
 	if ((quoteCount > 0) && (quoteCount % 2 != 0)) {
 		line.insert(line.end(), quote_mark);
+if (test) {
+	printf("J: %s\n", line.c_str());
+}
 	}
+if (test) {
+	printf("Z: %s\n", line.c_str());
+}
 
 	line = fixCloseBraceQuote(line);
 	line = fixUnevenQuotes(line);
@@ -706,12 +767,14 @@ Common::UString XMLFix::replaceText(Common::UString line,
 */
 Common::UString XMLFix::fixKnownIssues(Common::UString line) {
 	// Initialize the array of token/substr pairs
-	const int rows = 4;
-	const Common::UString pair[rows][2] = {
-		{ "=true fontFamily=", "=truefontfamily=" },	// Fix for examine.xml
-		{ "=181357", "=\"181357\"\"" },			// Fix for gfx_options.xml
-		{ ",ALIGN_LEFT)", ",ALIGN_LEFT\")" },		// Fix for ig_chargen_abilities.xml
-		{ "cter\" fontfamily=", "cter\"fontfamily=" },	// Fix for multiplayer_downloadsx2.xml
+	const int rows = 6;
+	const Common::UString pair[rows][2] = {			// Example file:
+		{ "=true fontFamily=", "=truefontfamily=" },	//  examine.xml
+		{ "=181357", "=\"181357\"\"" },			//  gfx_options.xml
+		{ ",ALIGN_LEFT)", ",ALIGN_LEFT\")" },		//  ig_chargen_abilities.xml
+		{ "cter\" fontfamily=", "cter\"fontfamily=" },	//  multiplayer_downloadsx2.xml
+		{ "=\"-&#62;\"", "=\"->\"" },                   //  gamespydetails.xml
+		{ "\"&#62;&#62;\"", "\">>\"" },                 //  internetbrowser.xml
 	};
 
 	// Loop through the array
