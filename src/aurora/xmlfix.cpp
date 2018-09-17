@@ -414,15 +414,6 @@ Common::UString XMLFix::fixOpenQuotes(Common::UString line) {
 	Common::UString::iterator pos;
 	int quoteCount = 0; // Count quote marks
 	uint32 c;
-bool test = false;
-pos = line.findFirst("UIFrame state=down");
-if (pos != line.end()) {
-	test=true;
-}
-test=false;
-if (test) {
-	printf("A: %s\n", line.c_str());
-}
 
 	// We have an equal with no open quote
 	for (size_t i = 0; i < line.size(); i++) {
@@ -434,9 +425,6 @@ if (test) {
 			if (i < line.size() - 1 && line.at(i + 1) != quote_mark) {
 				pos = line.getPosition(i + 1);
 				line.insert(pos, quote_mark);
-if (test) {
-	printf("B: %s\n", line.c_str());
-}
 			}	
 
 			/* 
@@ -455,9 +443,6 @@ if (test) {
 					pos = line.getPosition(i);
 					line.insert(pos, quote_mark);
 					quoteCount++; // Add quote
-if (test) {
-	printf("C: %s\n", line.c_str());
-}
 
 					// Skip forward to avoid extra quotes
 					i++;
@@ -501,9 +486,6 @@ if (test) {
 				pos = line.getPosition(i);
 				line.insert(pos, quote_mark);
 				quoteCount++; // Add quote
-if (test) {
-	printf("D: %s\n", line.c_str());
-}
 			}
 		}
 
@@ -511,9 +493,6 @@ if (test) {
 		if (line.at(i) == '=' && i < line.size() - 1 && line.at(i + 1) != quote_mark) {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-if (test) {
-	printf("E: %s\n", line.c_str());
-}
 		}
 
 		/*
@@ -524,9 +503,6 @@ if (test) {
 		if (line.at(i) == '(' && i < line.size() - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-if (test) {
-	printf("F: %s\n", line.c_str());
-}
 		}
 
 		// No quote before ',', so add it in.
@@ -534,18 +510,12 @@ if (test) {
 			pos = line.getPosition(i);
 			line.insert(pos, quote_mark);
 			quoteCount++; // Add quote
-if (test) {
-	printf("G: %s\n", line.c_str());
-}
 		}
 
 		// No quote after a comma, so add it in unless there's a paren (1 case)
 		if (line.at(i) == ',' && i < line.size() - 1 && line.at(i + 1) != quote_mark && line.at(i + 1) != ')') {
 			pos = line.getPosition(i + 1);
 			line.insert(pos, quote_mark);
-if (test) {
-	printf("H: %s\n", line.c_str());
-}
 		}
 
 		// Check for a space or slash inside quotes
@@ -564,9 +534,6 @@ if (test) {
 						it = line.getPosition(i); // Avoid error throw
 						Common::UString s = line.format("&#%02d;", (int)c);
 						line.insert(it, s);
-if (test) {
-	printf("I: %s\n", line.c_str());
-}
 						break;
 					}
 				}
@@ -588,13 +555,7 @@ if (test) {
 	// Check for an open equals at the end of the line
 	if ((quoteCount > 0) && (quoteCount % 2 != 0)) {
 		line.insert(line.end(), quote_mark);
-if (test) {
-	printf("J: %s\n", line.c_str());
-}
 	}
-if (test) {
-	printf("Z: %s\n", line.c_str());
-}
 
 	line = fixCloseBraceQuote(line);
 	line = fixUnevenQuotes(line);
