@@ -338,6 +338,13 @@ bool UString::contains(uint32 c) const {
 	return findFirst(c) != end();
 }
 
+uint32 UString::at(size_t pos) const {
+	if (pos < _size)
+		return _string.at(pos);
+	else
+		return 0;
+}
+
 void UString::truncate(const iterator &it) {
 	UString temp;
 
@@ -368,7 +375,7 @@ void UString::trim() {
 	iterator itEnd = --end();
 	for (; itEnd != begin(); --itEnd) {
 		uint32 c = *itEnd;
-		if ((c != '\0') && (c != ' ')) {
+		if (!isSpace(c) && (c != '\0')) {
 			++itEnd;
 			break;
 		}
@@ -376,14 +383,14 @@ void UString::trim() {
 
 	if (itEnd == begin()) {
 		uint32 c = *itEnd;
-		if ((c != '\0') && (c != ' '))
+		if (!isSpace(c) && (c != '\0'))
 			++itEnd;
 	}
 
 	// Find the first non-space
 	iterator itStart = begin();
 	for (; itStart != itEnd; ++itStart)
-		if (*itStart != ' ')
+		if (!isSpace(*itStart))
 			break;
 
 	_string = std::string(itStart.base(), itEnd.base());
@@ -398,7 +405,7 @@ void UString::trimLeft() {
 	// Find the first non-space
 	iterator itStart = begin();
 	for (; itStart != end(); ++itStart)
-		if (*itStart != ' ')
+		if (!isSpace(*itStart))
 			break;
 
 	_string = std::string(itStart.base(), end().base());
@@ -414,7 +421,7 @@ void UString::trimRight() {
 	iterator itEnd = --end();
 	for (; itEnd != begin(); --itEnd) {
 		uint32 c = *itEnd;
-		if ((c != '\0') && (c != ' ')) {
+		if (!isSpace(c) && (c != '\0')) {
 			++itEnd;
 			break;
 		}
@@ -422,7 +429,7 @@ void UString::trimRight() {
 
 	if (itEnd == begin()) {
 		uint32 c = *itEnd;
-		if ((c != '\0') && (c != ' '))
+		if (!isSpace(c) && (c != '\0'))
 			++itEnd;
 	}
 
