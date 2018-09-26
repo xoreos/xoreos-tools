@@ -68,10 +68,13 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Convert the input stream to a vector of elements.
  */
 void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
+	const Common::UString startComment = "<!--";
+	const Common::UString endComment = "-->";
 	Common::UString::iterator it1, it2;
 	Common::UString line, buffer;
 	bool openTag = false;
 	bool priorTag  = false;
+	bool inComment = false;
 
 	// Read in the header
 	readXMLHeader(in);
@@ -86,15 +89,40 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
 		line.trim(); // Trim now for maximum performance benefit
 
 		// Check for comment tags
-		it1 = line.findFirst("<!--");
-		it2 = line.findFirst("-->");
+		it1 = line.findFirst(startComment);
+		it2 = line.findFirst(endComment);
 		if (it1 != line.end() && it2 != line.end()) {
+			// Move iterator past close tag
+			size_t pos = line.getPosition(it2) + sizeof(endComment);
+			it2 = line.getPosition(pos);
+
 			// Remove appended comment
 			line.erase(it1, it2);
 			line.trimRight();
+		} else if (inComment) {
+			// End of a comment element
+			if (it2 != line.end()) {
+				// Move iterator past close tag
+				size_t pos = line.getPosition(it2) + sizeof(endComment);
+				it2 = line.getPosition(pos);
+
+				// Remove comment
+				line.erase(line.begin(), it2);
+				line.trimLeft();
+				inComment = false;
+			} else {
+				// Remove comment line
+				line = "";
+			}
+		} else if (it1 != line.end()) {
+			// Start of a comment element
+			inComment = true;
+
+			// Remove comment line
+			line = "";
 		}
 
-		// Check for an end tag
+		// Check for a non-comment end tag
 		openTag = !isTagClose(line);
 
 		/*
@@ -124,6 +152,7 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
 			}
 
 			// Initialize for the next line
+			inComment = false;
 			priorTag = false;
 		}
 	}
