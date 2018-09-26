@@ -68,8 +68,56 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Convert the input stream to a vector of elements.
  */
 void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
+	Common::UString::iterator it;
+	Common::UString line, buffer;
+	bool openTag = false;
+	bool priorTag  = false;
+
 	// Read in the header
 	readXMLHeader(in);
+
+	// Cycle through the remaining input stream
+	while (!in.eos()) {
+		// Track the previous state
+		priorTag = openTag;
+
+		// Read a line of text
+		line = Common::readStringLine(in, encoding);
+		line.trim(); // Trim now for maximum performance benefit
+
+		// Check for an end tag
+		openTag = !isTagClose(line);
+
+		/*
+		 * If current element is still open, add line to buffer.
+		 * Otherwise, add completed element to the vectors.
+		 */
+		if (openTag) {
+			// This is a multi-line wrap
+			if (!priorTag) {
+				// Starting a new buffer
+				buffer = line;
+			} else if (line.size() > 0) {
+				// Append line to the buffer with a space
+				buffer += " " + line;
+			}
+		} else {
+			// Check for a multi-line wrap
+			if (buffer.size() > 0) {
+				// Finish wrapping the lines
+				line = buffer + " " + line;
+				buffer = "";
+			}
+
+			// Only append if line has text
+			if (line.size() != 0) {
+				// Append to the vector
+			}
+
+			// Initialize for the next line
+			priorTag = false;
+		}
+	}
 }
 
 /**
@@ -98,6 +146,13 @@ void XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
 
 	// Extract header string
 	header = line.substr(it, line.end());
+}
+
+/**
+ * Return true if the line ends with a closing tag
+ */
+bool XMLFixer::isTagClose(Common::UString line) {
+	return true; // TODO
 }
 
 } // End of namespace AURORA

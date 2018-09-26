@@ -43,6 +43,7 @@ public:
 	static Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &in);
 
 private:
+	bool isTagClose(Common::UString line);
 	void readXMLStream(Common::SeekableReadStream &in);
 	void readXMLHeader(Common::SeekableReadStream &in);
 };
