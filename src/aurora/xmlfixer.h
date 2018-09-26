@@ -26,8 +26,12 @@
 #define AURORA_XMLFIX_H
 
 #include <iostream>
+#include <string>
+
+#include "src/common/ustring.h"
 
 namespace Common {
+	class UString;
 	class SeekableReadStream;
 }
 
@@ -37,6 +41,10 @@ class XMLFixer {
 
 public:
 	static Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &in);
+
+private:
+	void readXMLStream(Common::SeekableReadStream &in);
+	void readXMLHeader(Common::SeekableReadStream &in);
 };
 
 } // End of namespace Aurora
