@@ -323,6 +323,19 @@ src_untws_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/tws
+src_tws_SOURCES = \
+    src/tws.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_tws_LDADD = \
+    src/archives/libarchives.la \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 # Subdirectories
 
 include src/version/rules.mk
