@@ -68,7 +68,7 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Convert the input stream to a vector of elements.
  */
 void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
-	Common::UString::iterator it;
+	Common::UString::iterator it1, it2;
 	Common::UString line, buffer;
 	bool openTag = false;
 	bool priorTag  = false;
@@ -84,6 +84,15 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
 		// Read a line of text
 		line = Common::readStringLine(in, encoding);
 		line.trim(); // Trim now for maximum performance benefit
+
+		// Check for comment tags
+		it1 = line.findFirst("<!--");
+		it2 = line.findFirst("-->");
+		if (it1 != line.end() && it2 != line.end()) {
+			// Remove appended comment
+			line.erase(it1, it2);
+			line.trimRight();
+		}
 
 		// Check for an end tag
 		openTag = !isTagClose(line);
