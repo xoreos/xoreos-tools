@@ -27,7 +27,9 @@ Currently, the following tools are included:
 * unnsbtx: Extract Nintendo NSBTX textures into TGA images
 * unkeybif: Extract BioWare KEY/BIF archives
 * unobb: Extract Aspyr's OBB virtual filesystem
+* untws: Extract CDProjectRed's TheWitcherSave archives
 * erf: Create BioWare ERF archives
+* tws: Create CDProjectRed TheWitcherSave archives
 * desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
 * xoreostex2tga: Convert BioWare's texture formats into TGA
 * nbfs2tga: Convert Nintendo's raw NBFS images into TGA
