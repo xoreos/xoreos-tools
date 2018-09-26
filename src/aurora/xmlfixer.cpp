@@ -29,11 +29,16 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "src/common/ustring.h"
+#include "src/common/encoding.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
+#include "src/common/scopedptr.h"
 #include "src/common/error.h"
 #include "src/common/util.h"
 #include "src/aurora/xmlfixer.h"
+
+const Common::Encoding encoding = Common::kEncodingLatin9; // Encoding format for reading NWN2 XML
 
 namespace Aurora {
 
@@ -43,8 +48,12 @@ namespace Aurora {
  */
 Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &in) {
 	Common::MemoryWriteStreamDynamic out(true, in.size());
-
+	XMLFixer fixer;
+	
 	try {
+		// Read in the input stream
+		fixer.readXMLStream(in);
+
 	} catch (Common::Exception &e) {
 		e.add("Failed to fix XML stream");
 		throw e;
@@ -55,5 +64,40 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 	return new Common::MemoryReadStream(out.getData(), out.size(), true);
 }
 
+/**
+ * Convert the input stream to a vector of elements.
+ */
+void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
+	// Read in the header
+	readXMLHeader(in);
 }
 
+/**
+ * Read in the header and check the format.
+ */
+void XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
+	Common::UString line;
+	Common::UString header;
+
+	// Set to the stream start
+	in.seek(0);
+
+	// Loop until a non-blank line is found
+	do {
+		// Read a line
+		line = Common::readStringLine(in, encoding);
+
+		// Trim white space off the ends
+		line.trim();
+	} while (line.size() == 0);
+
+	// Check for an XML header line
+	Common::UString::iterator it = line.findFirst("<?xml");
+	if (it == line.end())
+		throw Common::Exception("Input stream does not have an XML header");
+
+	// Extract header string
+	header = line.substr(it, line.end());
+}
+
+} // End of namespace AURORA
