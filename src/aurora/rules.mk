@@ -58,6 +58,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/sacfile.h \
     src/aurora/thewitchersavefile.h \
     src/aurora/thewitchersavewriter.h \
+    src/aurora/xmlfixer.h \
     $(EMPTY)
 
 src_aurora_libaurora_la_SOURCES += \
@@ -92,4 +93,5 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/sacfile.cpp \
     src/aurora/thewitchersavefile.cpp \
     src/aurora/thewitchersavewriter.cpp \
+    src/aurora/xmlfixer.cpp \
     $(EMPTY)
