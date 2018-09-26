@@ -55,6 +55,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/nsbtxfile.h \
     src/aurora/erfwriter.h \
     src/aurora/sacfile.h \
+    src/aurora/xmlfixer.h \
     $(EMPTY)
 
 src_aurora_libaurora_la_SOURCES += \
@@ -86,4 +87,5 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/nsbtxfile.cpp \
     src/aurora/erfwriter.cpp \
     src/aurora/sacfile.cpp \
+    src/aurora/xmlfixer.cpp \
     $(EMPTY)
