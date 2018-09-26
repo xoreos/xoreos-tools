@@ -106,6 +106,7 @@ Makefile.in
 /src/ncsdis
 /src/erf
 /src/untws
+/src/tws
 
 # Windows binaries
 /src/gff2xml.exe
@@ -131,3 +132,4 @@ Makefile.in
 /src/ncsdis.exe
 /src/erf.exe
 /src/untws.exe
+/src/tws.exe
