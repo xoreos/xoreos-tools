@@ -177,6 +177,11 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 
 	// Bypass if line is empty
 	if (line.size() > 0) {
+		// Handle unique issues
+		if (isFixSpecialCase(&line))
+			return line;
+
+		// Check for a function
 		it = line.findFirst('(');
 		if (it != line.end())
 			line = fixFunction(line, it);
@@ -187,9 +192,38 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 }
 
 /**
+ * Address special issues found in specific NWN2 XML files
+ * by looking for exact matches to the problematic value
+ * strings then correcting the value on a match.
+ */
+bool XMLFixer::isFixSpecialCase(Common::UString *value) {
+	bool isFix = false;
+	const int rows = 2;
+	const Common::UString swap[rows][2] = {
+		{ "truefontfamily",
+		  "\"true\" fontfamily" },	// examine.xml
+		{ "Character\"fontfamily",
+		  "\"Character\" fontfamily" },	// multiplayer_downloadx2.xml
+	};
+
+	// Loop through the array
+	for (int i = 0; i < rows; i++) {
+		if (*value == swap[i][0]) {
+			// The strings match, so swap in the correction
+			*value = swap[i][1];
+			isFix = true;
+			break;
+		}
+	}
+
+	return isFix;
+}
+
+/**
  * Fix a function call
  */
-Common::UString XMLFixer::fixFunction(const Common::UString line, const Common::UString::iterator it) {
+Common::UString XMLFixer::fixFunction(const Common::UString value, const Common::UString::iterator it) {
+	Common::UString line = value;
 	return line; // TODO
 }
 
