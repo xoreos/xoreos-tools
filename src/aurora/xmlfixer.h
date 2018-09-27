@@ -49,6 +49,7 @@ private:
 
 	bool isTagClose(const Common::UString value);
 	bool isValidXMLHeader(Common::SeekableReadStream &in);
+	bool isFixSpecialCase(Common::UString *value);
 	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
 	Common::UString fixXMLElement(const Common::UString element);
 	Common::UString fixXMLValue(const Common::UString value);
