@@ -91,7 +91,7 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Bring the element into a valid XML form
  */
 Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
-	Common::UString line;
+	Common::UString line, name, value;
 	SegmentList segments;
 
 	// Split on the equals sign
@@ -105,16 +105,43 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 
 	// Cycle through the segments
 	line = "";
-	for (SegmentList::iterator it = segments.begin(); it != segments.end(); ++it) {
-		// Parse each segment for the last space character
+	for (SegmentList::iterator it1 = segments.begin(); it1 != segments.end(); ++it1) {
+		// Find the last space character
+		Common::UString::iterator it2 = it1->findLast(' ');
+		name = it1->substr(it2, it1->end());
+		value = it1->substr(it1->begin(), it2);
+
+		// Trim both parts
+		name.trim();
+		value.trim();
+
+		// Reassemble the line
 		if (line.size() == 0) {
-			// First segment should be the element type
-			line = *it;
+			// First segment should have the element type
+			if (value.size() > 0)
+				line = value + " " + name;
+			else
+				line = name;
 		} else {
+			// Fix the value segment
+			value = fixXMLValue(value);
+
 			// Subsequent segment
-			line += "=" + *it;
+			if (name.size() > 0)
+				line += "=" + value + " " + name;
+			else
+				line += "=" + value;
 		}
 	}
+
+	return line;
+}
+
+/*
+ * Fix the value to be valid XML
+ */
+Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
+	Common::UString line = value;
 
 	return line;
 }
