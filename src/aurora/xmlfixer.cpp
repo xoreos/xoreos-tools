@@ -142,34 +142,85 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
  */
 Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 	Common::UString line, tag;
-	Common::UString::iterator it1;
+	Common::UString::iterator it;
 	uint32 c;
+	size_t n;
 
 	// Initialization
 	line = value;
 	tag = ""; // For a closing tag
 
 	// Strip quotes from the ends
-	size_t n = line.size();
+	line = stripEndQuotes(line);
+
+	// Extract a closing tag
+	n = line.size();
 	if (n > 0) {
 		c = line.at(n - 1);
-		if (c == '\"') {
-			it1 = line.getPosition(n - 1);
-			line.erase(it1);
-		}
-
-		if (line.size() > 0) {
-			c = line.at(0);
-			if (c == '\"') {
-				it1 = line.getPosition(0);
-				line.erase(it1);
+		if (c == '>') {
+			if (n > 1 && line.at(n - 2) == '/') {
+				// Ends with '/>'
+				it = line.getPosition(n - 2);
+				line.erase(it, line.end());
+				tag = " />";
+			} else {
+				// Ends with '>'
+				it = line.getPosition(n - 1);
+				line.erase(it, line.end());
+				tag = " >";
 			}
 		}
+	}
 
+	// Remove extra quotes
+	line = stripEndQuotes(line);
+
+	// Bypass if line is empty
+	if (line.size() > 0) {
+		it = line.findFirst('(');
+		if (it != line.end())
+			line = fixFunction(line, it);
 	}
 
 	// Add quotes back to both ends
 	return "\"" + line + "\"" + tag;
+}
+
+/**
+ * Fix a function call
+ */
+Common::UString XMLFixer::fixFunction(const Common::UString line, const Common::UString::iterator it) {
+	return line; // TODO
+}
+
+/**
+ * Remove quote marks from either end of the line.
+ */
+Common::UString XMLFixer::stripEndQuotes(const Common::UString value) {
+	Common::UString line = value;
+	Common::UString::iterator it;
+	size_t n = line.size();
+	uint32 c;
+
+	// Skip if string is empty
+	if (line.size() == 0)
+		return line;
+
+	c = line.at(n - 1);
+	if (c == '\"') {
+		it = line.getPosition(n - 1);
+		line.erase(it);
+	}
+
+	if (line.size() > 0) {
+		c = line.at(0);
+		if (c == '\"') {
+			it = line.getPosition(0);
+			line.erase(it);
+		}
+	}
+
+	return line;
 }
 
 /**
@@ -295,8 +346,9 @@ bool XMLFixer::isValidXMLHeader(Common::SeekableReadStream &in) {
 /**
  * Return true if the line ends with a closing tag
  */
-bool XMLFixer::isTagClose(Common::UString line) {
+bool XMLFixer::isTagClose(const Common::UString value) {
 	Common::UString::iterator it1, it2;
+	Common::UString line = value;
 
 	// Skip blank lines
 	if (line.size() == 0)
