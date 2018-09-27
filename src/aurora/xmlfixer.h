@@ -49,6 +49,7 @@ private:
 	bool isTagClose(Common::UString line);
 	bool isValidXMLHeader(Common::SeekableReadStream &in);
 	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
+	Common::UString fixXMLElement(Common::UString element);
 };
 
 } // End of namespace Aurora
