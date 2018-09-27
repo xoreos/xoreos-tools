@@ -33,7 +33,6 @@
 #include "src/common/encoding.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
-#include "src/common/scopedptr.h"
 #include "src/common/error.h"
 #include "src/common/util.h"
 #include "src/aurora/xmlfixer.h"
@@ -116,7 +115,7 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 				it1->split(it2, value, name, true);
 				break;
 			}
-		} while(it2 != it1->begin());
+		} while (it2 != it1->begin());
 
 		// Trim both parts
 		name.trim();
@@ -147,14 +146,14 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
  * Fix the value to be valid XML
  */
 Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
-	Common::UString line, tag;
-	Common::UString::iterator it;
+	Common::UString line, tail;
+	Common::UString::iterator it, it2;
 	uint32 c;
 	size_t n;
 
 	// Initialization
 	line = value;
-	tag = ""; // For a closing tag
+	tail = ""; // For a closing tag
 
 	// Strip quotes from the ends
 	line = stripEndQuotes(line);
@@ -168,12 +167,12 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 				// Ends with '/>'
 				it = line.getPosition(n - 2);
 				line.erase(it, line.end());
-				tag = " />";
+				tail = "/>";
 			} else {
 				// Ends with '>'
 				it = line.getPosition(n - 1);
 				line.erase(it, line.end());
-				tag = " >";
+				tail = ">";
 			}
 		}
 	}
@@ -186,6 +185,9 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 		// Handle unique issues
 		if (isFixSpecialCase(&line))
 			return line;
+
+		// Check for a new element start in this value
+		splitNewElement(&line, &tail);
 
 		// Check for a function
 		it = line.findFirst('(');
@@ -201,7 +203,62 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 	}
 
 	// Add quotes back to both ends
-	return "\"" + line + "\"" + tag;
+	return "\"" + line + "\"" + tail;
+}
+
+/*
+ * Search the value for the start of a new element.
+ * If found, move that part of the text into the tail.
+ */
+void XMLFixer::splitNewElement(Common::UString *value, Common::UString *tail) {
+	Common::UString::iterator it1, it2;
+	Common::UString line = *value;
+	size_t n;
+	uint32 c;
+
+	// Cycle through the string
+	for (it1 = line.begin(); it1 != line.end(); ++it1) {
+		// Look for a potential end tag
+		n = line.getPosition(it1);
+		c = line.at(n);
+		if (c == '>') {
+			// Search forward for a start tag
+			it2 = it1;
+			++it2; // Move forward one character
+			while (it2 != line.end()) {
+				n = line.getPosition(it2);
+				c = line.at(n);
+				if (c == '<') {
+					// Check for a '/' prior to the '>'
+					n = line.getPosition(it1);
+					if (n > 1) {
+						// Shift the iterator back one character
+						c = line.at(n - 1);
+						if (c == '/')
+							--it1;
+					}
+
+					// Found a new start tag, so insert it in the tail
+					*tail = line.substr(it1, line.end()) + *tail;
+
+					// Build a new value from the sub-string
+					line.erase(it1, line.end());
+					line = stripEndQuotes(line);
+					*value = line;
+
+					// No need to continue
+					return;
+				} else if (!line.isSpace(c)) {
+					// Not a new element
+					it1 = it2;
+					break;
+				}
+
+				// Next character position
+				++it2;
+			}
+		}
+	}
 }
 
 /**
@@ -229,7 +286,12 @@ Common::UString XMLFixer::fixParams(const Common::UString params) {
 
 	// If there is only one segment, just return it
 	if (args.size() < 2) {
-		return "&quot;" + line + "&quot;";
+		if (line.size() > 0) {
+			return "&quot;" + line + "&quot;";
+		} else {
+			// No quotes needed
+			return line;
+		}
 	}
 
 	// Cycle through the segments
