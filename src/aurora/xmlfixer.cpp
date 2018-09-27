@@ -91,17 +91,15 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Bring the element into a valid XML form
  */
 Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
-	Common::UString line;
+	Common::UString line = element;
 	SegmentList segments;
 
 	// Split on the equals sign
-	line.split(element, (uint32)'=', segments);
+	line.split(line, (uint32)'=', segments);
 
 	// If there is only one segment, just return it
-	if (segments.size() < 2) {
-		line = element;
+	if (segments.size() < 2)
 		return line;
-	}
 
 	// Cycle through the segments
 	line = "";
@@ -142,7 +140,6 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 				line += "=" + value;
 		}
 	}
-
 	return line;
 }
 
@@ -394,7 +391,7 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elemen
 			}
 
 			// Only append if line has text
-			if (line.size() != 0) {
+			if (line.size() > 0) {
 				// Append to the list
 				elements->push_back(line);
 			}
@@ -443,7 +440,7 @@ bool XMLFixer::isTagClose(const Common::UString value) {
 
 	// Search for a close tag
 	it1 = line.findLast('>');
-	if (it1 == line.begin())
+	if (it1 == line.end())
 		return false;
 
 	// Search backwards for an equals, quote, or comma
