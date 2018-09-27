@@ -183,12 +183,64 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 
 		// Check for a function
 		it = line.findFirst('(');
-		if (it != line.end())
-			line = fixFunction(line, it);
+		if (it != line.end()) {
+			// Split on the '('
+			Common::UString function, params;
+			line.split(it, function, params, true);
+
+			// Fix the parameters
+			params = fixParams(params);
+			line = function + '(' + params + ')';
+		}
 	}
 
 	// Add quotes back to both ends
 	return "\"" + line + "\"" + tag;
+}
+
+/**
+ * Fix parameters for a function call
+ */
+Common::UString XMLFixer::fixParams(const Common::UString params) {
+	Common::UString::iterator it1;
+	Common::UString line = params;
+	SegmentList args;
+
+	// Remove a trailing ')', if any
+	size_t i = line.size();
+	uint32 c = line.at(i - 1);
+	if ( c == ')') {
+		it1 = line.end();
+		it1--;
+		line.erase(it1);
+	}
+
+	// Remove end quotes
+	line = stripEndQuotes(line);
+
+	// Split on the commas
+	line.split(line, (uint32)',', args);
+
+	// If there is only one segment, just return it
+	if (args.size() < 2) {
+		return "&quot;" + line + "&quot;";
+	}
+
+	// Cycle through the segments
+	line = "";
+	for (SegmentList::iterator it2 = args.begin(); it2 != args.end(); ++it2) {
+		// Remove the end quote marks, if any
+		Common::UString arg = stripEndQuotes(*it2);
+
+		// Reassemble the line
+		if (line.size() == 0) {
+			line = "&quot;" + arg + "&quot;";
+		} else {
+			line += ",&quot;" + arg + "&quot;";
+		}
+	}
+
+	return line;
 }
 
 /**
@@ -217,14 +269,6 @@ bool XMLFixer::isFixSpecialCase(Common::UString *value) {
 	}
 
 	return isFix;
-}
-
-/**
- * Fix a function call
- */
-Common::UString XMLFixer::fixFunction(const Common::UString value, const Common::UString::iterator it) {
-	Common::UString line = value;
-	return line; // TODO
 }
 
 /**
