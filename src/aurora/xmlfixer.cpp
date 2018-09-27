@@ -91,7 +91,7 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Bring the element into a valid XML form
  */
 Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
-	Common::UString line, name, value;
+	Common::UString line;
 	SegmentList segments;
 
 	// Split on the equals sign
@@ -106,10 +106,19 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 	// Cycle through the segments
 	line = "";
 	for (SegmentList::iterator it1 = segments.begin(); it1 != segments.end(); ++it1) {
-		// Find the last space character
-		Common::UString::iterator it2 = it1->findLast(' ');
-		name = it1->substr(it2, it1->end());
-		value = it1->substr(it1->begin(), it2);
+		Common::UString name, value;
+		name = "";
+		value = *it1;
+
+		// Find the last white space character
+		Common::UString::iterator it2 = it1->end();
+		do {
+			--it2;
+			if (it1->isSpace(*it2)) {
+				it1->split(it2, value, name, true);
+				break;
+			}
+		} while(it2 != it1->begin());
 
 		// Trim both parts
 		name.trim();
