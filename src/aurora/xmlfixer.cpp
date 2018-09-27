@@ -48,7 +48,6 @@ namespace Aurora {
  */
 Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &in) {
 	Common::MemoryWriteStreamDynamic out(true, in.size());
-	Common::UString line, header;
 	XMLFixer fixer;
 
 	try {
@@ -57,15 +56,19 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 		// Set to the stream start
 		in.seek(0);
 
-		// Read in the header
-		header = fixer.readXMLHeader(in);
+		// Check for a valid header
+		if (!fixer.isValidXMLHeader(in))
+			throw Common::Exception("Input stream does not have an XML header");
 
 		// Convert input stream to a list of elements
 		fixer.readXMLStream(in, &elements);
 
-		// Fix the header and write to output
-		line = fixer.fixXMLHeader(header) + '\n';
-		out.write(line.c_str(), line.size());
+		// Write a standard header
+		out.writeString("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+		out.writeString("<Root>\n");
+
+		// Write the footer
+		out.writeString("</Root>\n");
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to fix XML stream");
@@ -174,9 +177,9 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elemen
 }
 
 /**
- * Read in the header and check the format.
+ * Check for a valid header
  */
-Common::UString XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
+bool XMLFixer::isValidXMLHeader(Common::SeekableReadStream &in) {
 	Common::UString line;
 
 	// Loop until a non-blank line is found
@@ -191,17 +194,10 @@ Common::UString XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
 	// Check for an XML header line
 	Common::UString::iterator it = line.findFirst("<?xml");
 	if (it == line.end())
-		throw Common::Exception("Input stream does not have an XML header");
+		return false;
 
-	// Return the header string segment
-	return line.substr(it, line.end());
-}
-
-/**
- * Convert the XML header into standard format
- */
-Common::UString XMLFixer::fixXMLHeader(Common::UString header) {
-	return header; // TODO
+	// Valid header
+	return true;
 }
 
 /**

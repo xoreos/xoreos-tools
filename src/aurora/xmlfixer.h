@@ -33,6 +33,7 @@
 namespace Common {
 	class Ustring;
 	class SeekableReadStream;
+	class MemoryWriteStreamDynamic;
 }
 
 namespace Aurora {
@@ -46,8 +47,7 @@ private:
 	typedef std::vector<Common::UString>	ElementList;
 
 	bool isTagClose(Common::UString line);
-	Common::UString readXMLHeader(Common::SeekableReadStream &in);
-	Common::UString fixXMLHeader(Common::UString header);
+	bool isValidXMLHeader(Common::SeekableReadStream &in);
 	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
 };
 
