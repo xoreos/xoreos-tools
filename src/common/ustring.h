@@ -135,6 +135,8 @@ public:
 	bool contains(const UString &what) const;
 	bool contains(uint32 c) const;
 
+	uint32 at(size_t pos) const;
+
 	void truncate(const iterator &it);
 	void truncate(size_t n);
 
