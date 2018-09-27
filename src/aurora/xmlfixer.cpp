@@ -49,6 +49,7 @@ namespace Aurora {
 Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &in) {
 	Common::MemoryWriteStreamDynamic out(true, in.size());
 	XMLFixer fixer;
+	Common::UString line;
 
 	try {
 		ElementList elements;
@@ -67,7 +68,13 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 		out.writeString("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 		out.writeString("<Root>\n");
 
-		// Write the footer
+		// Fix each element and write to the output stream
+		for (ElementList::iterator it = elements.begin(); it != elements.end(); ++it) {
+			line = fixer.fixXMLElement(*it) + '\n';
+			out.writeString(line);
+		}
+
+		// Close the root element
 		out.writeString("</Root>\n");
 
 	} catch (Common::Exception &e) {
@@ -78,6 +85,15 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 	// Return the converted stream
 	out.setDisposable(false);
 	return new Common::MemoryReadStream(out.getData(), out.size(), true);
+}
+
+/**
+ * Bring the element into a valid XML form
+ */
+Common::UString XMLFixer::fixXMLElement(Common::UString element) {
+	Common::UString line = element;
+
+	return line;
 }
 
 /**
