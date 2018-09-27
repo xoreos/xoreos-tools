@@ -45,11 +45,12 @@ public:
 
 private:
 	typedef std::vector<Common::UString>	ElementList;
+	typedef std::vector<Common::UString>	SegmentList;
 
 	bool isTagClose(Common::UString line);
 	bool isValidXMLHeader(Common::SeekableReadStream &in);
 	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
-	Common::UString fixXMLElement(Common::UString element);
+	Common::UString fixXMLElement(const Common::UString element);
 };
 
 } // End of namespace Aurora

@@ -90,8 +90,31 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 /**
  * Bring the element into a valid XML form
  */
-Common::UString XMLFixer::fixXMLElement(Common::UString element) {
-	Common::UString line = element;
+Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
+	Common::UString line;
+	SegmentList segments;
+
+	// Split on the equals sign
+	line.split(element, (uint32)'=', segments);
+
+	// If there is only one segment, just return it
+	if (segments.size() < 2) {
+		line = element;
+		return line;
+	}
+
+	// Cycle through the segments
+	line = "";
+	for (SegmentList::iterator it = segments.begin(); it != segments.end(); ++it) {
+		// Parse each segment for the last space character
+		if (line.size() == 0) {
+			// First segment should be the element type
+			line = *it;
+		} else {
+			// Subsequent segment
+			line += "=" + *it;
+		}
+	}
 
 	return line;
 }
