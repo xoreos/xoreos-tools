@@ -141,9 +141,35 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
  * Fix the value to be valid XML
  */
 Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
-	Common::UString line = value;
+	Common::UString line, tag;
+	Common::UString::iterator it1;
+	uint32 c;
 
-	return line;
+	// Initialization
+	line = value;
+	tag = ""; // For a closing tag
+
+	// Strip quotes from the ends
+	size_t n = line.size();
+	if (n > 0) {
+		c = line.at(n - 1);
+		if (c == '\"') {
+			it1 = line.getPosition(n - 1);
+			line.erase(it1);
+		}
+
+		if (line.size() > 0) {
+			c = line.at(0);
+			if (c == '\"') {
+				it1 = line.getPosition(0);
+				line.erase(it1);
+			}
+		}
+
+	}
+
+	// Add quotes back to both ends
+	return "\"" + line + "\"" + tag;
 }
 
 /**
