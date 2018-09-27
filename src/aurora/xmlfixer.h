@@ -54,7 +54,7 @@ private:
 	Common::UString fixXMLElement(const Common::UString element);
 	Common::UString fixXMLValue(const Common::UString value);
 	Common::UString stripEndQuotes(const Common::UString value);
-	Common::UString fixFunction(const Common::UString function, const Common::UString::iterator it);
+	Common::UString fixParams(const Common::UString params);
 };
 
 } // End of namespace Aurora
