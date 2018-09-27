@@ -51,6 +51,7 @@ private:
 	bool isValidXMLHeader(Common::SeekableReadStream &in);
 	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
 	Common::UString fixXMLElement(const Common::UString element);
+	Common::UString fixXMLValue(const Common::UString value);
 };
 
 } // End of namespace Aurora
