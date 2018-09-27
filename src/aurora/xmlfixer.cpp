@@ -48,13 +48,24 @@ namespace Aurora {
  */
 Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &in) {
 	Common::MemoryWriteStreamDynamic out(true, in.size());
+	Common::UString line, header;
 	XMLFixer fixer;
 
 	try {
 		ElementList elements;
 
-		// Read in the input stream
+		// Set to the stream start
+		in.seek(0);
+
+		// Read in the header
+		header = fixer.readXMLHeader(in);
+
+		// Convert input stream to a list of elements
 		fixer.readXMLStream(in, &elements);
+
+		// Fix the header and write to output
+		line = fixer.fixXMLHeader(header) + '\n';
+		out.write(line.c_str(), line.size());
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to fix XML stream");
@@ -77,9 +88,6 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elemen
 	bool openTag = false;
 	bool priorTag  = false;
 	bool inComment = false;
-
-	// Read in the header
-	readXMLHeader(in);
 
 	// Cycle through the remaining input stream
 	while (!in.eos()) {
@@ -168,12 +176,8 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elemen
 /**
  * Read in the header and check the format.
  */
-void XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
+Common::UString XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
 	Common::UString line;
-	Common::UString header;
-
-	// Set to the stream start
-	in.seek(0);
 
 	// Loop until a non-blank line is found
 	do {
@@ -189,8 +193,15 @@ void XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
 	if (it == line.end())
 		throw Common::Exception("Input stream does not have an XML header");
 
-	// Extract header string
-	header = line.substr(it, line.end());
+	// Return the header string segment
+	return line.substr(it, line.end());
+}
+
+/**
+ * Convert the XML header into standard format
+ */
+Common::UString XMLFixer::fixXMLHeader(Common::UString header) {
+	return header; // TODO
 }
 
 /**
