@@ -43,8 +43,10 @@ public:
 	static Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &in);
 
 private:
+	typedef std::vector<Common::UString>	ElementList;
+
 	bool isTagClose(Common::UString line);
-	void readXMLStream(Common::SeekableReadStream &in);
+	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
 	void readXMLHeader(Common::SeekableReadStream &in);
 };
 

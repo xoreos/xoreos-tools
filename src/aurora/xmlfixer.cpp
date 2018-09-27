@@ -51,8 +51,10 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 	XMLFixer fixer;
 
 	try {
+		ElementList elements;
+
 		// Read in the input stream
-		fixer.readXMLStream(in);
+		fixer.readXMLStream(in, &elements);
 
 	} catch (Common::Exception &e) {
 		e.add("Failed to fix XML stream");
@@ -67,7 +69,7 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 /**
  * Convert the input stream to a vector of elements.
  */
-void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
+void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elements) {
 	const Common::UString startComment = "<!--";
 	const Common::UString endComment = "-->";
 	Common::UString::iterator it1, it2;
@@ -131,7 +133,7 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
 		 */
 		if (openTag) {
 			// This is a multi-line wrap
-			if (!priorTag) {
+			if (!priorTag || buffer.size() == 0) {
 				// Starting a new buffer
 				buffer = line;
 			} else if (line.size() > 0) {
@@ -142,13 +144,18 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
 			// Check for a multi-line wrap
 			if (buffer.size() > 0) {
 				// Finish wrapping the lines
-				line = buffer + " " + line;
+				if (line.size() > 0) {
+					line = buffer + " " + line;
+				} else {
+					line = buffer;
+				}
 				buffer = "";
 			}
 
 			// Only append if line has text
 			if (line.size() != 0) {
-				// Append to the vector
+				// Append to the list
+				elements->push_back(line);
 			}
 
 			// Initialize for the next line
@@ -190,7 +197,42 @@ void XMLFixer::readXMLHeader(Common::SeekableReadStream &in) {
  * Return true if the line ends with a closing tag
  */
 bool XMLFixer::isTagClose(Common::UString line) {
-	return true; // TODO
+	Common::UString::iterator it1, it2;
+
+	// Skip blank lines
+	if (line.size() == 0)
+		return false;
+
+	// Search for a close tag
+	it1 = line.findLast('>');
+	if (it1 == line.begin())
+		return false;
+
+	// Search backwards for an equals, quote, or comma
+	it2 = line.end();
+	do {
+		// Decrement the iterator
+		--it2;
+
+		// Found the close mark
+		if (it1 == it2)
+			return true;
+
+		// Get the character at this position
+		size_t i = line.getPosition(it2);
+		uint32 c = line.at(i);
+
+		/*
+		 * Look for an indication the '>' is within
+		 * the element, such as inside a quote.
+		 */
+		if (c == '\"' || c == '=' || c == ',')
+			return false;
+
+	} while (it2 != line.begin());
+
+	// Fail-safe
+	return true;
 }
 
 } // End of namespace AURORA
