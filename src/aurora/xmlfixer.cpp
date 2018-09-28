@@ -48,7 +48,9 @@ namespace Aurora {
 Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &in) {
 	Common::MemoryWriteStreamDynamic out(true, in.size());
 	XMLFixer fixer;
-	Common::UString line;
+
+	// Initialization
+	int buttonCount = 0;
 
 	try {
 		ElementList elements;
@@ -69,8 +71,19 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 
 		// Fix each element and write to the output stream
 		for (ElementList::iterator it = elements.begin(); it != elements.end(); ++it) {
-			line = fixer.fixXMLElement(*it) + '\n';
-			out.writeString(line);
+			// Fix the element
+			Common::UString line = fixer.fixXMLElement(*it);
+
+			// Check for a misplaced UIButton close tag
+			// An example is levelup_bfeats.xml
+			if (fixer.isBadUIButtonRange(line, &buttonCount)) {
+				// Comment out the line and update the count
+				line = "<!-- " + line + "-->";
+				buttonCount++;
+			}
+
+			// Write to output stream with an end of line marker
+			out.writeString(line + "\n");
 		}
 
 		// Close the root element
@@ -90,20 +103,16 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
  * Bring the element into a valid XML form
  */
 Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
-	Common::UString line = element;
+	Common::UString line = element, name = "", value = "";
 	SegmentList segments;
 
 	// Split on the equals sign
 	line.split(line, (uint32)'=', segments);
 
-	// If there is only one segment, just return it
-	if (segments.size() < 2)
-		return line;
-
 	// Cycle through the segments
 	line = "";
 	for (SegmentList::iterator it1 = segments.begin(); it1 != segments.end(); ++it1) {
-		Common::UString name, value;
+		// Initialization
 		name = "";
 		value = *it1;
 
@@ -124,10 +133,14 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 		// Reassemble the line
 		if (line.size() == 0) {
 			// First segment should have the element type
-			if (value.size() > 0)
-				line = value + " " + name;
-			else
-				line = name;
+			if (name.size() > 0) {
+				if (value.size() > 0)
+					line = value + " " + name;
+				else
+					line = name;
+			} else {
+				line = value;
+			}
 		} else {
 			// Fix the value segment
 			value = fixXMLValue(value);
@@ -139,7 +152,63 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 				line += "=" + value;
 		}
 	}
+
 	return line;
+}
+
+/*
+ * In internetfilters.xml, there is an extraneos UIButton
+ * close tag that causes the XML file to fail validation.
+ * This function counts UIButton open (+1) and close (-1)
+ * tags, then returns false if the count turns negative.
+ *
+ * Cases:
+ *
+ * <UIButton ... />	_button_count += 0
+ * <UIButton ... >	_button_count += 1
+ * ... </UIButton>	_button_count -= 1
+ */
+bool XMLFixer::isBadUIButtonRange(const Common::UString line, int *buttonCount) {
+	Common::UString::iterator it;
+	const Common::UString sKey = "<UIButton";
+	const Common::UString eKey = "</UIButton>";
+	const Common::UString eTag = "/>";
+	Common::UString text, subtext;
+	size_t sKeyLen = sKey.size();
+	size_t eKeyLen = eKey.size();
+	size_t eTagLen = eTag.size();
+	size_t len;
+
+	// Initialization
+	text = line;
+	len = text.size();
+
+	// Check for a starting UIButton
+	it = text.getPosition(sKeyLen);
+	subtext = text.substr(text.begin(), it);
+	if (subtext == sKey) {
+		// Open UIButton tag
+		*buttonCount += 1;
+
+		// Check for a tag close
+		it = text.getPosition(len - eTagLen);
+		subtext = text.substr(it, text.end());
+		if (subtext == eTag) {
+			// Closes the UIButton tag
+			*buttonCount -= 1;
+		}
+
+	}
+
+	// Look for a ending UIButton tag
+	it = text.getPosition(len - eKeyLen);
+	subtext = text.substr(it, text.end());
+	if (subtext == eKey) {
+		// Closing tag
+		*buttonCount -= 1;
+	}
+
+	return (*buttonCount < 0);
 }
 
 /*
