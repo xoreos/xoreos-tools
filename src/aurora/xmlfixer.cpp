@@ -158,6 +158,10 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 	// Strip quotes from the ends
 	line = stripEndQuotes(line);
 
+	// Handle special cases
+	if (line.size() > 0 && isFixSpecialCase(&line))
+		return line;
+
 	// Extract a closing tag
 	n = line.size();
 	if (n > 0) {
@@ -182,10 +186,6 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 
 	// Bypass if line is empty
 	if (line.size() > 0) {
-		// Handle unique issues
-		if (isFixSpecialCase(&line))
-			return line;
-
 		// Check for a new element start in this value
 		splitNewElement(&line, &tail);
 
@@ -318,12 +318,14 @@ Common::UString XMLFixer::fixParams(const Common::UString params) {
  */
 bool XMLFixer::isFixSpecialCase(Common::UString *value) {
 	bool isFix = false;
-	const int rows = 2;
+	const int rows = 4;
 	const Common::UString swap[rows][2] = {
 		{ "truefontfamily",
 		  "\"true\" fontfamily" },	// examine.xml
 		{ "Character\"fontfamily",
 		  "\"Character\" fontfamily" },	// multiplayer_downloadx2.xml
+		{ "->", "\"-&#62;\"" },		// gamespydetails.xml
+		{ ">>", "\"&#62;&#62;\"" },	// internetbrowser.xml
 	};
 
 	// Loop through the array
