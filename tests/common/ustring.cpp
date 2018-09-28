@@ -296,6 +296,22 @@ GTEST_TEST(UString, containsString) {
 	EXPECT_FALSE(str.contains("Qux"));
 }
 
+GTEST_TEST(UString, at) {
+	const Common::UString str("Foobar Barfoo");
+
+	uint32 f = str.at(0);
+	uint32 b = str.at(7);
+	uint32 r = str.at(9);
+	uint32 o = str.at(12);
+	uint32 e = str.at(13);
+
+	EXPECT_EQ(f, 'F');
+	EXPECT_EQ(b, 'B');
+	EXPECT_EQ(r, 'r');
+	EXPECT_EQ(o, 'o');
+	EXPECT_EQ(e, 0);
+}
+
 GTEST_TEST(UString, truncateInt) {
 	Common::UString str("Foobar Barfoo");
 
