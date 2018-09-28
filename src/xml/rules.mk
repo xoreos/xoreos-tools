@@ -33,6 +33,8 @@ src_xml_libxml_la_SOURCES += \
     src/xml/tlkcreator.h \
     src/xml/ssfdumper.h \
     src/xml/ssfcreator.h \
+    src/xml/gffcreator.h \
+    src/xml/gff3creator.h \
     $(EMPTY)
 
 src_xml_libxml_la_SOURCES += \
@@ -45,4 +47,6 @@ src_xml_libxml_la_SOURCES += \
     src/xml/tlkcreator.cpp \
     src/xml/ssfdumper.cpp \
     src/xml/ssfcreator.cpp \
+    src/xml/gffcreator.cpp \
+    src/xml/gff3creator.cpp \
     $(EMPTY)
