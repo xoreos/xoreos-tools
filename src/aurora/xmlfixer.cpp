@@ -391,8 +391,7 @@ Common::UString XMLFixer::fixParams(const Common::UString params) {
  */
 bool XMLFixer::isFixSpecialCase(Common::UString *value) {
 	bool isFix = false;
-	const int rows = 4;
-	const Common::UString swap[rows][2] = {
+	const Common::UString swap[4][2] = {
 		{ "truefontfamily",
 		  "\"true\" fontfamily" },	// examine.xml
 		{ "Character\"fontfamily",
@@ -400,6 +399,7 @@ bool XMLFixer::isFixSpecialCase(Common::UString *value) {
 		{ "->", "\"-&#62;\"" },		// gamespydetails.xml
 		{ ">>", "\"&#62;&#62;\"" },	// internetbrowser.xml
 	};
+	int rows = ARRAYSIZE(swap);
 
 	// Loop through the array
 	for (int i = 0; i < rows; i++) {
