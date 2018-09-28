@@ -113,18 +113,22 @@ Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
 	line = "";
 	for (SegmentList::iterator it1 = segments.begin(); it1 != segments.end(); ++it1) {
 		// Initialization
+		Common::UString segment = *it1;
 		name = "";
 		value = *it1;
 
+		// Correct for " = " in playermenu_popup.xml
+		segment.trim();
+
 		// Find the last white space character
-		Common::UString::iterator it2 = it1->end();
+		Common::UString::iterator it2 = segment.end();
 		do {
 			--it2;
-			if (it1->isSpace(*it2)) {
-				it1->split(it2, value, name, true);
+			if (segment.isSpace(*it2)) {
+				segment.split(it2, value, name, true);
 				break;
 			}
-		} while (it2 != it1->begin());
+		} while (it2 != segment.begin());
 
 		// Trim both parts
 		name.trim();

@@ -44,8 +44,8 @@ public:
 	static Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &in);
 
 private:
-	typedef std::vector<Common::UString>	ElementList;
-	typedef std::vector<Common::UString>	SegmentList;
+	typedef std::vector<Common::UString> ElementList;
+	typedef std::vector<Common::UString> SegmentList;
 
 	bool isTagClose(const Common::UString value);
 	bool isValidXMLHeader(Common::SeekableReadStream &in);
