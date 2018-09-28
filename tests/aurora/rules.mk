@@ -115,3 +115,8 @@ check_PROGRAMS                      += tests/aurora/test_erfwriter
 tests_aurora_test_erfwriter_SOURCES  = tests/aurora/erfwriter.cpp
 tests_aurora_test_erfwriter_LDADD    = $(aurora_LIBS)
 tests_aurora_test_erfwriter_CXXFLAGS = $(test_CXXFLAGS)
+
+check_PROGRAMS                      += tests/aurora/test_xmlfixer
+tests_aurora_test_xmlfixer_SOURCES   = tests/aurora/xmlfixer.cpp
+tests_aurora_test_xmlfixer_LDADD     = $(aurora_LIBS)
+tests_aurora_test_xmlfixer_CXXFLAGS  = $(test_CXXFLAGS)
