@@ -41,6 +41,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/obbfile.h \
     src/aurora/locstring.h \
     src/aurora/gff3file.h \
+    src/aurora/gff3writer.h \
     src/aurora/gff4file.h \
     src/aurora/gff4fields.h \
     src/aurora/talktable.h \
@@ -73,6 +74,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/obbfile.cpp \
     src/aurora/locstring.cpp \
     src/aurora/gff3file.cpp \
+    src/aurora/gff3writer.cpp \
     src/aurora/gff4file.cpp \
     src/aurora/talktable.cpp \
     src/aurora/talktable_tlk.cpp \
