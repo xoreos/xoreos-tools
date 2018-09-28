@@ -86,6 +86,7 @@ Makefile.in
 /src/gff2xml
 /src/tlk2xml
 /src/ssf2xml
+/src/xml2gff
 /src/xml2tlk
 /src/xml2ssf
 /src/convert2da
@@ -110,6 +111,7 @@ Makefile.in
 /src/gff2xml.exe
 /src/tlk2xml.exe
 /src/ssf2xml.exe
+/src/xml2gff.exe
 /src/xml2tlk.exe
 /src/xml2ssf.exe
 /src/convert2da.exe
