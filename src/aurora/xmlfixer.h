@@ -56,6 +56,7 @@ private:
 	Common::UString stripEndQuotes(const Common::UString value);
 	Common::UString fixParams(const Common::UString params);
 	void splitNewElement(Common::UString *value, Common::UString *tail);
+	bool isBadUIButtonRange(const Common::UString line, int *buttonCount);
 };
 
 } // End of namespace Aurora
