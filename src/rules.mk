@@ -336,6 +336,19 @@ src_tws_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/xml2gff
+src_xml2gff_SOURCES = \
+    src/xml2gff.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_xml2gff_LDADD = \
+    src/xml/libxml.la \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 # Subdirectories
 
 include src/version/rules.mk
