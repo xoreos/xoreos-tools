@@ -41,11 +41,14 @@
 #include "src/common/writefile.h"
 #include "src/common/filepath.h"
 #include "src/common/memreadstream.h"
+#include "src/common/stdoutstream.h"
 
 #include "src/aurora/xmlfixer.h"
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile);
+
+void convert(Common::UString &inFile, Common::UString &outFile);
 
 
 int main(int argc, char **argv) {
@@ -60,6 +63,8 @@ int main(int argc, char **argv) {
 
 		if (!parseCommandLine(args, returnValue, inFile, outFile))
 			return returnValue;
+
+		convert(inFile, outFile);
 	} catch (...) {
 		Common::exceptionDispatcherError();
 	}
@@ -79,4 +84,23 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	Parser parser(argv[0], "Convert NWN2 XML file to standard XML format", "", returnValue,
                       makeEndArgs(&inFileOpt, &outFileOpt));
 	return parser.process(argv);
+}
+
+/*
+ * Read in the input file, apply XML format corrections, then write to output file.
+ */
+void convert(Common::UString &inFile, Common::UString &outFile) {
+	// Read the input file into memory
+	Common::ScopedPtr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
+	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
+
+	// Filter the input
+	Common::ReadStream *fixed = Aurora::XMLFixer::fixXMLStream(*in);
+
+	// Write to output
+	out->writeStream(*fixed);
+	out->flush();
+
+	if (!outFile.empty())
+		status("Converted \"%s\" to \"%s\"", inFile.c_str(), outFile.c_str());
 }
