@@ -108,6 +108,7 @@ Makefile.in
 /src/erf
 /src/untws
 /src/tws
+/src/fixnwn2xml
 
 # Windows binaries
 /src/gff2xml.exe
@@ -135,3 +136,4 @@ Makefile.in
 /src/erf.exe
 /src/untws.exe
 /src/tws.exe
+/src/fixnwn2xml.exe
