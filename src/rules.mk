@@ -27,6 +27,18 @@ noinst_HEADERS += \
 
 # The individual tools
 
+bin_PROGRAMS += src/fixnwn2xml
+src_fixnwn2xml_SOURCES = \
+    src/fixnwn2xml.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_fixnwn2xml_LDADD = \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 bin_PROGRAMS += src/gff2xml
 src_gff2xml_SOURCES = \
     src/gff2xml.cpp \
