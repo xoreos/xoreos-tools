@@ -1,0 +1,52 @@
+.Dd September 27, 2018
+.Dt FIXNWN2XML 1
+.Os
+.Sh NAME
+.Nm fixnwn2xml
+.Nd Convert Obsidian NWN2 XML to valid XML
+.Sh SYNOPSIS
+.Nm fixnwn2xml
+.Op Ar options
+.Ar input_file
+.Op Ar output_file
+.Sh DESCRIPTION
+.Nm
+converts Obsidian's XML files for Neverwinter Nights 2 into
+validated XML that conforms to W3C specifications for XML 1.0.
+Any indentation and comments in the input file will be removed.
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.El
+.Bl -tag -width xxxx -compact
+.It Ar input_file
+The XML file to convert.
+.It Op Ar output_file
+The converted XML data will be written there.
+If no output file is specified, the converted XML data is
+written to standard output.
+The encoding of the XML output is always UTF-8.
+.El
+.Sh EXAMPLES
+Convert the NWN2 XML
+.Pa file1.xml
+into a valid XML file:
+.Pp
+.Dl $ fixnwn2xml file1.xml file2.xml
+.Pp
+.Sh SEE ALSO
+.Xr tlk2xml 1 ,
+.Xr ssf2xml 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.
