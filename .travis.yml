@@ -45,8 +45,25 @@ before_install:
   # Installing macOS dependencies, using brew
   - if eval [ $is_valid_osx ]; then brew install zlib xz libxml2; fi
   # Installing Linux dependencies, using apt-get
+  #
+  # Here, we're also installing a new gcc, for C++11 support.
+  # This is a bit of a complicated setup, because:
+  # 1) The C++ ABI change means we can't mix-n-match C++ stuff from
+  #    different sources
+  # 2) The dpkg version in Xenial added a new keyword that's used in
+  #    Artful packages, most prominently libc-bin
+  #
+  # So we do this in 3 steps:
+  # 1) We add the Xenial repos, and upgrade dpkg
+  # 2) We add the Artful repos, and upgrade the libc, gcc and binutils
+  # 3) We install our library dependencies
+  - if eval [ $is_valid_linux ]; then echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu xenial main universe restricted multiverse"; fi
   - if eval [ $is_valid_linux ]; then sudo apt-get update -qq; fi
-  - if eval [ $is_valid_linux ]; then sudo apt-get -qq install libboost-all-dev libxml2-dev; fi
+  - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install dpkg; fi
+  - if eval [ $is_valid_linux ]; then echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu artful main universe restricted multiverse"; fi
+  - if eval [ $is_valid_linux ]; then sudo apt-get update -qq; fi
+  - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install dpkg gcc g++ libc6-dev libc6 binutils binutils-dev; fi
+  - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install libboost-all-dev zlib1g-dev liblzma-dev libxml2-dev; fi
 
 script:
   # autotools build system: ./autogen.sh && ./configure && make && make check
