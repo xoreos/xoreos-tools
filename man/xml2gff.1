@@ -1,0 +1,138 @@
+.Dd October 13, 2018
+.Dt XML2GFF 1
+.Os
+.Sh NAME
+.Nm xml2gff
+.Nd XML to BioWare GFF converter
+.Sh SYNOPSIS
+.Nm xml2gff
+.Ar input_file
+.Op Ar output_file
+.Sh DESCRIPTION
+.Nm
+converts XML files created by the
+.Xr gff2xml 1
+tool back into the BioWare GFF3/GFF4 format.
+Also note that currently, only the GFF3.2 format is supported.
+.Pp
+The format of the input XML is rather simple, but has many different elements.
+.Bd -literal
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<gff3 type="ID">
+  <struct id="4294967295">
+    <list label="test_list">
+      <struct label="list_struct" id="0">
+        ...
+      </struct>
+    </list>
+    <struct label="nonlist_struct" id="0">
+      ...
+    </struct>
+    <byte label="value1">1</byte>
+    <char label="value2">A</char>
+    <sint16 label="value3">-1</sint16>
+    <sint32 label="value4">-1</sint32>
+    <sint64 label="value5">-1</sint64>
+    <uint16 label="value6">1</uint16>
+    <uint32 label="value7">1</uint32>
+    <uint64 label="value8">1</uint64>
+    <float label="value10">1.0</float>
+    <double label="value11">1.0</double>
+    <exostring label="value12">Test String</exostring>
+    <resref label="value13">test_resource</resref>
+    <locstring label="value14" strref="46">
+      <string language="0">Localized String</string>
+      ...
+    </locstring>
+    <void label="value15">...</void>
+    <orientation label="value16">
+      <double>1.0<double>
+      <double>1.0<double>
+      <double>1.0<double>
+      <double>1.0<double>
+    </orientation>
+    <vector label="value17">
+      <double>1.0<double>
+      <double>1.0<double>
+      <double>1.0<double>
+    </vector>
+    <strref label="value13" strref="12">
+  </struct>
+</gff3>
+.Ed
+.Pp
+The root element is either
+.Dq gff3
+or
+.Dq gff4
+which determines the GFF format to write (GFF4 is currently unsupported)
+and it must have a type property with a maximum of 4 letters. If more are
+written, they will be cut to 4 letters.
+.Pp
+The element under the gff tag always needs to be a
+.Dq struct
+tag with the id
+.Dq 4294967295
+after that all other tags which are childs of the root struct in the sample above are possible
+to use.
+.Pp
+The tags
+.Dq vector
+and
+.Dq orientation
+need to have 3 and 4 child
+.Dq double
+tags.
+.Dq locstring
+tags can have multiple
+.Dq string
+tags with a language property which combines language and gender.
+struct tags including the root one can only have
+.Dq byte ,
+.Dq char ,
+.Dq sint16 ,
+.Dq sint32 ,
+.Dq sint64 ,
+.Dq uint16 ,
+.Dq uint32 ,
+.Dq uint64 ,
+.Dq float ,
+.Dq double ,
+.Dq exostring ,
+.Dq resref ,
+.Dq locstring ,
+.Dq void ,
+.Dq orientation ,
+.Dq vector ,
+.Dq strref ,
+.Dq list
+and
+.Dq struct
+tags.
+The
+.Dq list
+accepts only struct child tags
+
+.Sh OPTIONS
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.El
+.Sh EXAMPLES
+Convert
+.Pa file1.xml
+into a V3.2 GFF file:
+.Pp
+.Dl $ xml2gff file1.xml file1.gff
+.Ed
+.Sh SEE ALSO
+.Xr gff2xml 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.
