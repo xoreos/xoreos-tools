@@ -55,6 +55,8 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/nsbtxfile.h \
     src/aurora/erfwriter.h \
     src/aurora/sacfile.h \
+    src/aurora/thewitchersavefile.h \
+    src/aurora/thewitchersavewriter.h \
     $(EMPTY)
 
 src_aurora_libaurora_la_SOURCES += \
@@ -86,4 +88,6 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/nsbtxfile.cpp \
     src/aurora/erfwriter.cpp \
     src/aurora/sacfile.cpp \
+    src/aurora/thewitchersavefile.cpp \
+    src/aurora/thewitchersavewriter.cpp \
     $(EMPTY)

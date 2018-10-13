@@ -1,0 +1,41 @@
+.Dd September 27, 2018
+.Dt UNTWS 1
+.Os
+.Sh NAME
+.Nm untws
+.Nd CDProjektRed TheWitcherSave archive packer
+.Sh SYNOPSIS
+.Nm untws
+.Ar area
+.Ar output_archive
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+packs together files into a CDProjectRed TheWitcherSave archive.
+.Pp
+TheWitcherSave files are custom archives containing files and having the areaname written into the header
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Ar area
+The area name which should be written in the header.
+.It Ar output_archive
+The TheWitcherSave archive to be written.
+.It Ar file
+One or more files to pack together.
+.El
+.Sh EXAMPLES
+Pack some files together into a TheWitcherSave archive:
+.Pp
+.Dl $ tws archive.thewitchersave file1.dat file2.dat file3.dat
+.Sh SEE ALSO
+.Xr untws 1
+.Xr erf 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.
