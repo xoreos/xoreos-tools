@@ -361,6 +361,18 @@ src_xml2gff_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/keybif
+src_keybif_SOURCES = \
+    src/keybif.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_keybif_LDADD = \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 # Subdirectories
 
 include src/version/rules.mk
