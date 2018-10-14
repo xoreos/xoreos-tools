@@ -130,3 +130,8 @@ check_PROGRAMS                      += tests/aurora/test_xmlfixer
 tests_aurora_test_xmlfixer_SOURCES   = tests/aurora/xmlfixer.cpp
 tests_aurora_test_xmlfixer_LDADD     = $(aurora_LIBS)
 tests_aurora_test_xmlfixer_CXXFLAGS  = $(test_CXXFLAGS)
+
+check_PROGRAMS                      += tests/aurora/test_keywriter
+tests_aurora_test_keywriter_SOURCES  = tests/aurora/keywriter.cpp
+tests_aurora_test_keywriter_LDADD    = $(aurora_LIBS)
+tests_aurora_test_keywriter_CXXFLAGS = $(test_CXXFLAGS)
