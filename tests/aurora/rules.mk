@@ -131,6 +131,11 @@ tests_aurora_test_xmlfixer_SOURCES   = tests/aurora/xmlfixer.cpp
 tests_aurora_test_xmlfixer_LDADD     = $(aurora_LIBS)
 tests_aurora_test_xmlfixer_CXXFLAGS  = $(test_CXXFLAGS)
 
+check_PROGRAMS                      += tests/aurora/test_bifwriter
+tests_aurora_test_bifwriter_SOURCES  = tests/aurora/bifwriter.cpp
+tests_aurora_test_bifwriter_LDADD    = $(aurora_LIBS)
+tests_aurora_test_bifwriter_CXXFLAGS = $(test_CXXFLAGS)
+
 check_PROGRAMS                      += tests/aurora/test_keywriter
 tests_aurora_test_keywriter_SOURCES  = tests/aurora/keywriter.cpp
 tests_aurora_test_keywriter_LDADD    = $(aurora_LIBS)
