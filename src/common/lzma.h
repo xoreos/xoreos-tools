@@ -58,6 +58,16 @@ byte *decompressLZMA1(const byte *data, size_t inputSize, size_t outputSize, boo
  */
 SeekableReadStream *decompressLZMA1(ReadStream &input, size_t inputSize, size_t outputSize, bool noEndMarker = false);
 
+/**
+ * Compress using the LZMA1 algorithm.
+ *
+ * @param input      the uncompressed input data.
+ * @param inputSize  the size of the input data to read in bytes.
+ * @param outputSize a reference which will be filled with the compressed size.
+ * @return A stream of the compressed data.
+ */
+SeekableReadStream *compressLZMA1(ReadStream &input, size_t inputSize);
+
 } // End of namespace Common
 
 #endif // COMMON_LZMA_H

@@ -32,6 +32,7 @@
 #include "src/common/scopedptr.h"
 #include "src/common/error.h"
 #include "src/common/memreadstream.h"
+#include "src/common/memwritestream.h"
 
 namespace Common {
 
@@ -128,6 +129,68 @@ SeekableReadStream *decompressLZMA1(ReadStream &input, size_t inputSize, size_t 
 	const byte *outputData = decompressLZMA1(inputData.get(), inputSize, outputSize, noEndMarker);
 
 	return new MemoryReadStream(outputData, outputSize, true);
+}
+
+SeekableReadStream * compressLZMA1(ReadStream &input, size_t inputSize) {
+	lzma_options_lzma opt_lzma;
+	lzma_lzma_preset(&opt_lzma, LZMA_PRESET_DEFAULT);
+
+	lzma_filter filters[2] = {
+		{ LZMA_FILTER_LZMA1, &opt_lzma },
+		{ LZMA_VLI_UNKNOWN , 0 }
+	};
+
+	if (!lzma_filter_encoder_is_supported(filters[0].id))
+		throw Exception("LZMA1 compression not supported");
+
+	uint32 propsSize;
+	if (lzma_properties_size(&propsSize, &filters[0]) != LZMA_OK)
+		throw Exception("Can't get LZMA1 properties size");
+
+	byte *properties = new byte[propsSize];
+	if (lzma_properties_encode(&filters[0], properties) != LZMA_OK)
+		throw Exception("Failed to decode LZMA1 properties");
+
+	MemoryWriteStreamDynamic writeStream;
+
+	writeStream.write(properties, propsSize);
+	delete[] properties;
+
+	lzma_stream strm = LZMA_STREAM_INIT;
+	BOOST_SCOPE_EXIT( (&strm) ) {
+		lzma_end(&strm);
+	} BOOST_SCOPE_EXIT_END
+
+	lzma_ret lzmaRet = LZMA_OK;
+
+	if ((lzmaRet = lzma_raw_encoder(&strm, filters)) != LZMA_OK)
+		throw Exception("Failed to create raw LZMA1 encode: %d", (int) lzmaRet);
+
+	byte *data = new byte[inputSize];
+	input.read(data, inputSize);
+
+	strm.avail_in = inputSize;
+	strm.next_in = data;
+
+	byte outputData[4096];
+	do {
+		strm.avail_out = 4096;
+		strm.next_out = outputData;
+
+		lzmaRet = lzma_code(&strm, LZMA_FINISH);
+
+		writeStream.write(outputData, 4096 - strm.avail_out);
+	} while (strm.avail_in != 0 && lzmaRet != LZMA_OK);
+
+	delete[] data;
+
+	if (lzmaRet == LZMA_OK)
+		throw Exception("Failed to compress LZMA1 data: premature end of output buffer");
+
+	if (strm.avail_in != 0)
+		throw Exception("Failed to compress LZMA1 data: input buffer not completely used");
+
+	return new MemoryReadStream(writeStream.getData(), writeStream.size(), true);
 }
 
 } // End of namespace Common
