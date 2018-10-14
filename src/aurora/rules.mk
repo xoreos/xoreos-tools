@@ -60,6 +60,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/thewitchersavewriter.h \
     src/aurora/xmlfixer.h \
     src/aurora/keywriter.h \
+    src/aurora/keydatawriter.h \
     $(EMPTY)
 
 src_aurora_libaurora_la_SOURCES += \
