@@ -62,6 +62,7 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/keywriter.h \
     src/aurora/keydatawriter.h \
     src/aurora/bifwriter.h \
+    src/aurora/bzfwriter.h \
     $(EMPTY)
 
 src_aurora_libaurora_la_SOURCES += \
@@ -99,4 +100,5 @@ src_aurora_libaurora_la_SOURCES += \
     src/aurora/xmlfixer.cpp \
     src/aurora/keywriter.cpp \
     src/aurora/bifwriter.cpp \
+    src/aurora/bzfwriter.cpp \
     $(EMPTY)
