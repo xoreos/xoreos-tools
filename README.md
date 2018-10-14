@@ -32,6 +32,7 @@ Currently, the following tools are included:
 * untws: Extract CDProjectRed's TheWitcherSave archives
 * erf: Create BioWare ERF archives
 * tws: Create CDProjectRed TheWitcherSave archives
+* keybif: Create BioWare KEY/BIF archives
 * desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
 * xoreostex2tga: Convert BioWare's texture formats into TGA
 * nbfs2tga: Convert Nintendo's raw NBFS images into TGA
