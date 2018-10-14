@@ -1,0 +1,49 @@
+.Dd October 14, 2018
+.Dt KEYBIF 1
+.Os
+.Sh NAME
+.Nm keybif
+.Nd BioWare ERF (.erf, .mod, .nwm, .sav) archive packer
+.Sh SYNOPSIS
+.Nm keybif
+.Ar keyfile
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+packs files together into a BioWare KEY/BIF archive, found in many
+BioWare Games as files with the extensions .key, .bif and .bzf, where .bzf is
+a compressed version of .bif.
+.Pp
+Unsupported Features:
+.Bl -bullet -compact
+.It
+Generation of V1.1 .key files.
+.El
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Ar keyfile
+The .key file to create
+.It Ar files
+One or more files to pack together. When a .bif/.bzf file occurs, the following
+sequence of files until the next .bif/.bzf file is put into the .bif/bzf file. The
+sequence has to start with a .bif/.bzf file.
+.El
+.Sh EXAMPLES
+Pack some files together into a bif archive indexed by a chitin.key:
+.Pp
+.Dl $ keybif chitin.key archive1.bif file1.dat file2.dat file3.dat
+.Pp
+Pack some files together into multiple mixed bif/bzf archive indexed by a chitin.key:
+.Pp
+.Dl $ keybif chitin.key archive1.bif file1.dat archive2.bzf file2.dat file3.dat
+.Sh SEE ALSO
+.Xr unkeybif 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.
