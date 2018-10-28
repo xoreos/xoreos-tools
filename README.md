@@ -21,6 +21,7 @@ Currently, the following tools are included:
 * xml2ssf: Convert XML back to BioWare SSF
 * convert2da: Convert BioWare 2DA/GDA to 2DA/CSV
 * fixpremiumgff: Repair BioWare GFF files in NWN premium module HAKs
+* fixnwn2xml: Convert Obsidian NWN2 XML to valid XML
 * unerf: Extract BioWare ERF archives
 * unherf: Extract BioWare HERF archives
 * unrim: Extract BioWare RIM archives
