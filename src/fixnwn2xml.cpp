@@ -95,7 +95,7 @@ void convert(Common::UString &inFile, Common::UString &outFile) {
 	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	// Filter the input
-	Common::ReadStream *fixed = Aurora::XMLFixer::fixXMLStream(*in);
+	Common::ScopedPtr<Common::SeekableReadStream> fixed(Aurora::XMLFixer::fixXMLStream(*in));
 
 	// Write to output
 	out->writeStream(*fixed);
