@@ -36,7 +36,10 @@ XMLWriter::XMLWriter(Common::WriteStream &stream) : _stream(&stream), _needInden
 }
 
 XMLWriter::~XMLWriter() {
-	flush();
+	try {
+		flush();
+	} catch (...) {
+	}
 }
 
 void XMLWriter::flush() {
