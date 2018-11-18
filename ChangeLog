@@ -1,10 +1,24 @@
 Someday, ????-??-?? (Version 0.0.6)
 	- Tools added:
 		- unobb
+		- tws
+		- untws
+		- keybif
+		- xml2gff
+		- fixnwn2xml
+	- BUILD:
+		- Bumped required C++ version to C++11
 	- AURORA:
 		- Fixed the encoding matrix for Jade Empire
 	- XOREOSTEX2TGA:
 		- Added support for swizzled Xbox SBM images
+	- GFF2XML:
+		- Added support for big-endian GFF4 files
+		- Added support for SAC files
+	- TLK2XML:
+		- Added support for big-endian GFF4'd TLK files
+	- UNERF:
+		- Added support for ERF V2.1
 
 Tuesday, 2018-07-03 (Version 0.0.5)
 	- Tools added:
