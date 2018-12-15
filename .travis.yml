@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: xenial
 
 language: cpp
 compiler:
@@ -47,19 +47,12 @@ before_install:
   # Installing Linux dependencies, using apt-get
   #
   # Here, we're also installing a new gcc, for C++11 support.
-  # This is a bit of a complicated setup, because:
-  # 1) The C++ ABI change means we can't mix-n-match C++ stuff from
-  #    different sources
-  # 2) The dpkg version in Xenial added a new keyword that's used in
-  #    Artful packages, most prominently libc-bin
+  # This is a bit of a complicated setup, because the C++ ABI change
+  # means we can't mix-n-match C++ stuff from different sources
   #
-  # So we do this in 3 steps:
-  # 1) We add the Xenial repos, and upgrade dpkg
-  # 2) We add the Artful repos, and upgrade the libc, gcc and binutils
-  # 3) We install our library dependencies
-  - if eval [ $is_valid_linux ]; then echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu xenial main universe restricted multiverse"; fi
-  - if eval [ $is_valid_linux ]; then sudo apt-get update -qq; fi
-  - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install dpkg; fi
+  # So we do this in 2 steps:
+  # 1) We add the Artful repos, and upgrade the libc, gcc and binutils
+  # 2) We install our library dependencies
   - if eval [ $is_valid_linux ]; then echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu artful main universe restricted multiverse"; fi
   - if eval [ $is_valid_linux ]; then sudo apt-get update -qq; fi
   - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install dpkg gcc g++ libc6-dev libc6 binutils binutils-dev; fi
