@@ -43,6 +43,7 @@ matrix:
 
 before_install:
   # Installing macOS dependencies, using brew
+  - if eval [ $is_valid_osx ]; then brew update; fi
   - if eval [ $is_valid_osx ]; then brew install zlib xz libxml2; fi
   # Installing Linux dependencies, using apt-get
   #
