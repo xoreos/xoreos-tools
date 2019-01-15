@@ -3,13 +3,13 @@
 pkgname=xoreos-tools-git
 _gitname=xoreos-tools
 pkgver=0.0.5.r0.g06f686c
-pkgrel=1
+pkgrel=2
 pkgdesc="Tools to help with xoreos development"
 arch=('i686' 'x86_64')
 url="https://xoreos.org/"
 license=('GPL3')
 depends=('zlib' 'libxml2' 'boost' 'boost-libs')
-makedepends=()
+makedepends=('git')
 source=('git://github.com/xoreos/xoreos-tools.git')
 md5sums=('SKIP')
 
