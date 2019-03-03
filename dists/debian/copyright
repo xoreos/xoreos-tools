@@ -83,8 +83,8 @@ Files: m4/ax_check_compiler_flags_var.m4
 Copyright: 2015 Sven Hesse <drmccoy@drmccoy.de>
 License: CC0-1.0
 
-Files: utf8cpp/utf8.h
-       utf8cpp/utf8/*.h
+Files: external/utf8cpp/utf8.h
+       external/utf8cpp/utf8/*.h
 Copyright: 2006 Nemanja Trifunovic
 License: BSL-1.0
  Permission is hereby granted, free of charge, to any person or organization

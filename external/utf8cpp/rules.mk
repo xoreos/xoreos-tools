@@ -20,13 +20,13 @@
 # UTF8-CPP (<http://utfcpp.sourceforge.net/>).
 
 noinst_HEADERS += \
-    utf8cpp/utf8.h \
-    utf8cpp/utf8/checked.h \
-    utf8cpp/utf8/core.h \
-    utf8cpp/utf8/unchecked.h \
+    external/utf8cpp/utf8.h \
+    external/utf8cpp/utf8/checked.h \
+    external/utf8cpp/utf8/core.h \
+    external/utf8cpp/utf8/unchecked.h \
     $(EMPTY)
 
 EXTRA_DIST += \
-    utf8cpp/README.xoreos \
-    utf8cpp/utf8cpp.patch \
+    external/utf8cpp/README.xoreos \
+    external/utf8cpp/utf8cpp.patch \
     $(EMPTY)
