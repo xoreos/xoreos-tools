@@ -25,38 +25,43 @@
 #ifndef AURORA_XMLFIX_H
 #define AURORA_XMLFIX_H
 
-#include <iostream>
-#include <string>
+#include <vector>
 
 #include "src/common/ustring.h"
 
 namespace Common {
-	class UString;
 	class SeekableReadStream;
-	class MemoryWriteStreamDynamic;
 }
 
 namespace Aurora {
 
 class XMLFixer {
-
 public:
+	/** Converts the contents of an NWN2 XML data stream into standardized XML.
+	 *
+	 *  @param  in The NWN2 XML to fix.
+	 *  @return A standard XML.
+	 */
 	static Common::SeekableReadStream *fixXMLStream(Common::SeekableReadStream &in);
 
 private:
 	typedef std::vector<Common::UString> ElementList;
-	typedef std::vector<Common::UString> SegmentList;
 
-	bool isTagClose(const Common::UString value);
-	bool isValidXMLHeader(Common::SeekableReadStream &in);
-	bool isFixSpecialCase(Common::UString *value);
-	void readXMLStream(Common::SeekableReadStream &in, ElementList *elements);
-	Common::UString fixXMLElement(const Common::UString element);
-	Common::UString fixXMLValue(const Common::UString value);
-	Common::UString stripEndQuotes(const Common::UString value);
-	Common::UString fixParams(const Common::UString params);
-	void splitNewElement(Common::UString *value, Common::UString *tail);
-	bool isBadUIButtonRange(const Common::UString line, int *buttonCount);
+	static ElementList readXMLStream(Common::SeekableReadStream &in);
+
+	static bool endsWithTagCloser(const Common::UString &line);
+
+	static bool isValidXMLHeader(Common::SeekableReadStream &in);
+	static bool isFixSpecialCase(Common::UString &value);
+
+	static Common::UString fixXMLElement(const Common::UString &element);
+	static Common::UString fixXMLValue(const Common::UString &value);
+	static Common::UString stripEndQuotes(Common::UString value);
+	static Common::UString fixParams(Common::UString params);
+
+	static void splitNewElement(Common::UString &value, Common::UString &tail);
+
+	static int updateUIButtonCount(const Common::UString &line, int buttonCount);
 };
 
 } // End of namespace Aurora

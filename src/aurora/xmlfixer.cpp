@@ -22,68 +22,55 @@
  *  Fix broken, non-standard NWN2 XML files.
  */
 
-#include <iostream>
-#include <string>
-#include <fstream>
 #include <algorithm>
-#include <stdio.h>
-#include <ctype.h>
 
-#include "src/common/ustring.h"
 #include "src/common/encoding.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
 #include "src/common/error.h"
 #include "src/common/util.h"
+
 #include "src/aurora/xmlfixer.h"
 
-const Common::Encoding encoding = Common::kEncodingLatin9; // Encoding format for reading NWN2 XML
+/** Encoding format for reading NWN2 XML. */
+static constexpr Common::Encoding encoding = Common::kEncodingLatin9;
 
 namespace Aurora {
 
-/**
- * This filter converts the contents of an NWN2 XML data stream 'in'
- * into standardized XML and returned the result as a new data stream.
- */
 Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &in) {
 	Common::MemoryWriteStreamDynamic out(true, in.size());
-	XMLFixer fixer;
-
-	// Initialization
-	int buttonCount = 0;
 
 	try {
-		ElementList elements;
-
 		// Set to the stream start
 		in.seek(0);
 
 		// Check for a valid header
-		if (!fixer.isValidXMLHeader(in))
+		if (!isValidXMLHeader(in))
 			throw Common::Exception("Input stream does not have an XML header");
 
 		// Convert input stream to a list of elements
-		fixer.readXMLStream(in, &elements);
+		const ElementList elements = readXMLStream(in);
 
 		// Write a standard header
 		out.writeString("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 		out.writeString("<Root>\n");
 
-		// Fix each element and write to the output stream
-		for (ElementList::iterator it = elements.begin(); it != elements.end(); ++it) {
-			// Fix the element
-			Common::UString line = fixer.fixXMLElement(*it);
+		int buttonCount = 0;
 
-			// Check for a misplaced UIButton close tag
-			// An example is levelup_bfeats.xml
-			if (fixer.isBadUIButtonRange(line, &buttonCount)) {
+		// Fix each element and write to the output stream
+		for (const Common::UString &element : elements) {
+			Common::UString fixedElement = fixXMLElement(element);
+
+			buttonCount = updateUIButtonCount(fixedElement, buttonCount);
+			if (buttonCount < 0) {
 				// Comment out the line and update the count
-				line = "<!-- " + line + "-->";
+				fixedElement = "<!-- " + fixedElement + "-->";
+
 				buttonCount++;
 			}
 
 			// Write to output stream with an end of line marker
-			out.writeString(line + "\n");
+			out.writeString(fixedElement + "\n");
 		}
 
 		// Close the root element
@@ -99,156 +86,128 @@ Common::SeekableReadStream *XMLFixer::fixXMLStream(Common::SeekableReadStream &i
 	return new Common::MemoryReadStream(out.getData(), out.size(), true);
 }
 
-/**
- * Bring the element into a valid XML form
- */
-Common::UString XMLFixer::fixXMLElement(const Common::UString element) {
-	Common::UString line = element, name = "", value = "";
-	SegmentList segments;
-
+/** Bring the element into a valid XML form. */
+Common::UString XMLFixer::fixXMLElement(const Common::UString &element) {
 	// Split on the equals sign
-	line.split(line, (uint32)'=', segments);
+	std::vector<Common::UString> segments;
+	Common::UString::split(element, static_cast<uint32>('='), segments);
 
 	// Cycle through the segments
-	line = "";
-	for (SegmentList::iterator it1 = segments.begin(); it1 != segments.end(); ++it1) {
-		// Initialization
-		Common::UString segment = *it1;
-		name = "";
-		value = *it1;
-
+	Common::UString line;
+	for (Common::UString segment : segments) {
 		// Correct for " = " in playermenu_popup.xml
 		segment.trim();
 
 		// Find the last white space character
-		Common::UString::iterator it2 = segment.end();
-		do {
-			--it2;
-			if (segment.isSpace(*it2)) {
-				segment.split(it2, value, name, true);
-				break;
+		Common::UString name, value = segment;
+		if (!segment.empty()) {
+			for (Common::UString::iterator it2 = --segment.end(); it2 != segment.begin(); --it2) {
+				if (Common::UString::isSpace(*it2)) {
+					segment.split(it2, value, name, true);
+					break;
+				}
 			}
-		} while (it2 != segment.begin());
+		}
 
 		// Trim both parts
 		name.trim();
 		value.trim();
 
-		// Reassemble the line
-		if (line.size() == 0) {
+		if (line.empty()) {
 			// First segment should have the element type
-			if (name.size() > 0) {
-				if (value.size() > 0)
+			if (!name.empty()) {
+				if (!value.empty())
 					line = value + " " + name;
 				else
 					line = name;
 			} else {
 				line = value;
 			}
-		} else {
-			// Fix the value segment
-			value = fixXMLValue(value);
 
-			// Subsequent segment
-			if (name.size() > 0)
-				line += "=" + value + " " + name;
-			else
-				line += "=" + value;
+			continue;
 		}
+
+		// Subsequent segment
+		value = fixXMLValue(value);
+
+		line += "=" + value;
+		if (!name.empty())
+			line += " " + name;
 	}
 
 	return line;
 }
 
-/*
- * In internetfilters.xml, there is an extraneos UIButton
- * close tag that causes the XML file to fail validation.
- * This function counts UIButton open (+1) and close (-1)
- * tags, then returns false if the count turns negative.
+/** Count UIButton open (+1) and close (-1) tags, returning true if the total is negative.
  *
- * Cases:
- *
- * <UIButton ... />	_button_count += 0
- * <UIButton ... >	_button_count += 1
- * ... </UIButton>	_button_count -= 1
+ *  Examples: internetfilters.xml, levelup_bfeats.xml
  */
-bool XMLFixer::isBadUIButtonRange(const Common::UString line, int *buttonCount) {
-	Common::UString::iterator it;
-	const Common::UString sKey = "<UIButton";
-	const Common::UString eKey = "</UIButton>";
-	const Common::UString eTag = "/>";
-	Common::UString text, subtext;
-	size_t sKeyLen = sKey.size();
-	size_t eKeyLen = eKey.size();
-	size_t eTagLen = eTag.size();
-	size_t len;
+int XMLFixer::updateUIButtonCount(const Common::UString &line, int buttonCount) {
+	static const Common::UString kTagStart   = "<UIButton";
+	static const Common::UString kTagEnd     = "</UIButton>";
+	static const Common::UString kSelfCloser = "/>";
 
-	// Initialization
-	text = line;
-	len = text.size();
+	Common::UString::iterator it;
+	Common::UString subtext;
 
 	// Check for a starting UIButton
-	it = text.getPosition(sKeyLen);
-	subtext = text.substr(text.begin(), it);
-	if (subtext == sKey) {
+	it = line.getPosition(kTagStart.size());
+	subtext = line.substr(line.begin(), it);
+	if (subtext == kTagStart) {
 		// Open UIButton tag
-		*buttonCount += 1;
+		buttonCount += 1;
 
 		// Check for a tag close
-		it = text.getPosition(len - eTagLen);
-		subtext = text.substr(it, text.end());
-		if (subtext == eTag) {
+		it = line.getPosition(line.size() - kSelfCloser.size());
+		subtext = line.substr(it, line.end());
+		if (subtext == kSelfCloser) {
 			// Closes the UIButton tag
-			*buttonCount -= 1;
+			buttonCount -= 1;
 		}
-
 	}
 
 	// Look for a ending UIButton tag
-	it = text.getPosition(len - eKeyLen);
-	subtext = text.substr(it, text.end());
-	if (subtext == eKey) {
+	it = line.getPosition(line.size() - kTagEnd.size());
+	subtext = line.substr(it, line.end());
+	if (subtext == kTagEnd) {
 		// Closing tag
-		*buttonCount -= 1;
+		buttonCount -= 1;
 	}
 
-	return (*buttonCount < 0);
+	return buttonCount;
 }
 
-/*
- * Fix the value to be valid XML
- */
-Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
-	Common::UString line, tail;
-	Common::UString::iterator it, it2;
-	uint32 c;
-	size_t n;
-
-	// Initialization
-	line = value;
-	tail = ""; // For a closing tag
-
+/** Fix the value to be valid XML. */
+Common::UString XMLFixer::fixXMLValue(const Common::UString &value) {
 	// Strip quotes from the ends
-	line = stripEndQuotes(line);
+	Common::UString line = stripEndQuotes(value);
 
 	// Handle special cases
-	if (line.size() > 0 && isFixSpecialCase(&line))
+	if (!line.empty() && isFixSpecialCase(line))
 		return line;
 
+	Common::UString tail;
+
 	// Extract a closing tag
-	n = line.size();
-	if (n > 0) {
-		c = line.at(n - 1);
-		if (c == '>') {
-			if (n > 1 && line.at(n - 2) == '/') {
-				// Ends with '/>'
-				it = line.getPosition(n - 2);
-				line.erase(it, line.end());
-				tail = "/>";
-			} else {
+	if (!line.empty()) {
+		const Common::UString::iterator end = --line.end();
+
+		if (*end == '>') {
+			if (end != line.begin()) {
+				Common::UString::iterator beforeEnd = end;
+				--beforeEnd;
+
+				if (*beforeEnd == '/') {
+					// Ends with '/>'
+
+					line.erase(beforeEnd, line.end());
+					tail = "/>";
+				}
+			}
+
+			if (tail.empty()) {
 				// Ends with '>'
-				it = line.getPosition(n - 1);
-				line.erase(it, line.end());
+				line.erase(end, line.end());
 				tail = ">";
 			}
 		}
@@ -258,16 +217,16 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 	line = stripEndQuotes(line);
 
 	// Bypass if line is empty
-	if (line.size() > 0) {
+	if (!line.empty()) {
 		// Check for a new element start in this value
-		splitNewElement(&line, &tail);
+		splitNewElement(line, tail);
 
 		// Check for a function
-		it = line.findFirst('(');
-		if (it != line.end()) {
+		Common::UString::iterator funcStart = line.findFirst('(');
+		if (funcStart != line.end()) {
 			// Split on the '('
 			Common::UString function, params;
-			line.split(it, function, params, true);
+			line.split(funcStart, function, params, true);
 
 			// Fix the parameters
 			params = fixParams(params);
@@ -279,182 +238,127 @@ Common::UString XMLFixer::fixXMLValue(const Common::UString value) {
 	return "\"" + line + "\"" + tail;
 }
 
-/*
- * Search the value for the start of a new element.
- * If found, move that part of the text into the tail.
- */
-void XMLFixer::splitNewElement(Common::UString *value, Common::UString *tail) {
-	Common::UString::iterator it1, it2;
-	Common::UString line = *value;
-	size_t n;
-	uint32 c;
+/** Search the value for the start of a new element. If found, move that part of the text into the tail. */
+void XMLFixer::splitNewElement(Common::UString &value, Common::UString &tail) {
+	Common::UString line = value;
 
 	// Cycle through the string
-	for (it1 = line.begin(); it1 != line.end(); ++it1) {
+	for (Common::UString::iterator it1 = line.begin(); it1 != line.end(); ++it1) {
 		// Look for a potential end tag
-		n = line.getPosition(it1);
-		c = line.at(n);
-		if (c == '>') {
-			// Search forward for a start tag
-			it2 = it1;
-			++it2; // Move forward one character
-			while (it2 != line.end()) {
-				n = line.getPosition(it2);
-				c = line.at(n);
-				if (c == '<') {
-					// Check for a '/' prior to the '>'
-					n = line.getPosition(it1);
-					if (n > 1) {
-						// Shift the iterator back one character
-						c = line.at(n - 1);
-						if (c == '/')
-							--it1;
-					}
+		if (*it1 != '>')
+			continue;
 
-					// Found a new start tag, so insert it in the tail
-					*tail = line.substr(it1, line.end()) + *tail;
+		Common::UString::iterator it2 = it1;
+		for (++it2; it2 != line.end(); ++it2) {
+			if (*it2 == '<') {
+				// Check for a '/' prior to the '>'
+				if (it1 != line.begin()) {
+					Common::UString::iterator slash = it1;
+					--slash;
 
-					// Build a new value from the sub-string
-					line.erase(it1, line.end());
-					line = stripEndQuotes(line);
-					*value = line;
-
-					// No need to continue
-					return;
-				} else if (!line.isSpace(c)) {
-					// Not a new element
-					it1 = it2;
-					break;
+					if (*slash == '/')
+						it1 = slash;
 				}
 
-				// Next character position
-				++it2;
+				// Found a new start tag, so insert it in the tail
+				tail = line.substr(it1, line.end()) + tail;
+
+				// Build a new value from the sub-string
+				line.erase(it1, line.end());
+				line = stripEndQuotes(line);
+				value = line;
+
+				// No need to continue
+				return;
+			}
+
+			if (!Common::UString::isSpace(*it2)) {
+				// Not a new element
+				it1 = it2;
+
+				break;
 			}
 		}
 	}
 }
 
-/**
- * Fix parameters for a function call
- */
-Common::UString XMLFixer::fixParams(const Common::UString params) {
-	Common::UString::iterator it1;
-	Common::UString line = params;
-	SegmentList args;
+/** Fix parameters for a function call. */
+Common::UString XMLFixer::fixParams(Common::UString params) {
+	// Remove end quotes
+	params = stripEndQuotes(params);
 
 	// Remove a trailing ')', if any
-	size_t i = line.size();
-	uint32 c = line.at(i - 1);
-	if ( c == ')') {
-		it1 = line.end();
-		it1--;
-		line.erase(it1);
-	}
+	if (!params.empty() && (*--params.end() == ')'))
+		params.erase(--params.end());
 
-	// Remove end quotes
-	line = stripEndQuotes(line);
+	if (params.empty())
+		return "";
 
 	// Split on the commas
-	line.split(line, (uint32)',', args);
+	std::vector<Common::UString> args;
+	params.split(params, static_cast<uint32>(','), args);
 
 	// If there is only one segment, just return it
-	if (args.size() < 2) {
-		if (line.size() > 0) {
-			return "&quot;" + line + "&quot;";
-		} else {
-			// No quotes needed
-			return line;
-		}
+	if (args.size() < 2)
+		return "&quot;" + params + "&quot;";
+
+	// Reassemble the arguments, with quotes
+	params.clear();
+	for (const Common::UString &arg : args) {
+		if (!params.empty())
+			params += ",";
+
+		params += "&quot;" + stripEndQuotes(arg) + "&quot;";
 	}
 
-	// Cycle through the segments
-	line = "";
-	for (SegmentList::iterator it2 = args.begin(); it2 != args.end(); ++it2) {
-		// Remove the end quote marks, if any
-		Common::UString arg = stripEndQuotes(*it2);
-
-		// Reassemble the line
-		if (line.size() == 0) {
-			line = "&quot;" + arg + "&quot;";
-		} else {
-			line += ",&quot;" + arg + "&quot;";
-		}
-	}
-
-	return line;
+	return params;
 }
 
-/**
- * Address special issues found in specific NWN2 XML files
- * by looking for exact matches to the problematic value
- * strings then correcting the value on a match.
- */
-bool XMLFixer::isFixSpecialCase(Common::UString *value) {
-	bool isFix = false;
-	const Common::UString swap[4][2] = {
-		{ "truefontfamily",
-		  "\"true\" fontfamily" },	// examine.xml
-		{ "Character\"fontfamily",
-		  "\"Character\" fontfamily" },	// multiplayer_downloadx2.xml
-		{ "->", "\"-&#62;\"" },		// gamespydetails.xml
-		{ ">>", "\"&#62;&#62;\"" },	// internetbrowser.xml
+/** Fix specific cases that turn up in certain NWN2 XML files. */
+bool XMLFixer::isFixSpecialCase(Common::UString &value) {
+	static const Common::UString kSpecialCases[4][2] = {
+		{ "truefontfamily"       , "\"true\" fontfamily"      }, // examine.xml
+		{ "Character\"fontfamily", "\"Character\" fontfamily" }, // multiplayer_downloadx2.xml
+		{ "->"                   , "\"-&#62;\""               }, // gamespydetails.xml
+		{ ">>"                   , "\"&#62;&#62;\""           }, // internetbrowser.xml
 	};
-	int rows = ARRAYSIZE(swap);
 
-	// Loop through the array
-	for (int i = 0; i < rows; i++) {
-		if (*value == swap[i][0]) {
-			// The strings match, so swap in the correction
-			*value = swap[i][1];
-			isFix = true;
-			break;
+	// Replace bad strings with fixed versions
+	for (auto &specialCase : kSpecialCases) {
+		if (value == specialCase[0]) {
+			value = specialCase[1];
+
+			return true;
 		}
 	}
 
-	return isFix;
+	return false;
 }
 
-/**
- * Remove quote marks from either end of the line.
- */
-Common::UString XMLFixer::stripEndQuotes(const Common::UString value) {
-	Common::UString line = value;
-	Common::UString::iterator it;
-	size_t n = line.size();
-	uint32 c;
+/** Remove quote marks from either end of the line. */
+Common::UString XMLFixer::stripEndQuotes(Common::UString value) {
+	// Remove quotes at the end
+	if (!value.empty() && (*--value.end() == '\"'))
+		value.erase(--value.end());
 
-	// Skip if string is empty
-	if (line.size() == 0)
-		return line;
+	// Remove quotes at the start
+	if (!value.empty() && (*value.begin() == '\"'))
+		value.erase(value.begin());
 
-	c = line.at(n - 1);
-	if (c == '\"') {
-		it = line.getPosition(n - 1);
-		line.erase(it);
-	}
-
-	if (line.size() > 0) {
-		c = line.at(0);
-		if (c == '\"') {
-			it = line.getPosition(0);
-			line.erase(it);
-		}
-	}
-
-	return line;
+	return value;
 }
 
-/**
- * Convert the input stream to a vector of elements.
- */
-void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elements) {
-	const Common::UString startComment = "<!--";
-	const Common::UString endComment = "-->";
-	Common::UString::iterator it1, it2;
-	Common::UString line, buffer;
-	bool openTag = false;
+/** Convert the input stream to a vector of elements. */
+XMLFixer::ElementList XMLFixer::readXMLStream(Common::SeekableReadStream &in) {
+	static const Common::UString kStartComment = "<!--";
+	static const Common::UString kEndComment   = "-->";
+
+	bool openTag   = false;
 	bool priorTag  = false;
 	bool inComment = false;
+
+	Common::UString buffer;
+	ElementList elements;
 
 	// Cycle through the remaining input stream
 	while (!in.eos()) {
@@ -462,149 +366,119 @@ void XMLFixer::readXMLStream(Common::SeekableReadStream &in, ElementList *elemen
 		priorTag = openTag;
 
 		// Read a line of text
-		line = Common::readStringLine(in, encoding);
+		Common::UString line = Common::readStringLine(in, encoding);
 		line.trim(); // Trim now for maximum performance benefit
 
 		// Check for comment tags
-		it1 = line.findFirst(startComment);
-		it2 = line.findFirst(endComment);
-		if (it1 != line.end() && it2 != line.end()) {
-			// Move iterator past close tag
-			size_t pos = line.getPosition(it2) + sizeof(endComment);
-			it2 = line.getPosition(pos);
+		const Common::UString::iterator startComment = line.findFirst(kStartComment);
+		Common::UString::iterator endComment = line.findFirst(kEndComment);
 
-			// Remove appended comment
-			line.erase(it1, it2);
+		if (startComment != line.end() && endComment != line.end()) {
+			// Remove comment
+
+			std::advance(endComment, kEndComment.size());
+
+			line.erase(startComment, endComment);
 			line.trimRight();
+
 		} else if (inComment) {
 			// End of a comment element
-			if (it2 != line.end()) {
-				// Move iterator past close tag
-				size_t pos = line.getPosition(it2) + sizeof(endComment);
-				it2 = line.getPosition(pos);
 
+			if (endComment != line.end()) {
 				// Remove comment
-				line.erase(line.begin(), it2);
+
+				std::advance(endComment, kEndComment.size());
+
+				line.erase(line.begin(), endComment);
 				line.trimLeft();
 				inComment = false;
+
 			} else {
-				// Remove comment line
-				line = "";
+				// Remove whole comment line
+				line.clear();
 			}
-		} else if (it1 != line.end()) {
+
+		} else if (startComment != line.end()) {
 			// Start of a comment element
 			inComment = true;
 
 			// Remove comment line
-			line = "";
+			line.clear();
 		}
 
 		// Check for a non-comment end tag
-		openTag = !isTagClose(line);
+		openTag = !endsWithTagCloser(line);
 
-		/*
-		 * If current element is still open, add line to buffer.
-		 * Otherwise, add completed element to the vectors.
-		 */
+		// If current element is still open, add line to buffer
 		if (openTag) {
 			// This is a multi-line wrap
-			if (!priorTag || buffer.size() == 0) {
+			if (!priorTag || buffer.empty()) {
 				// Starting a new buffer
 				buffer = line;
-			} else if (line.size() > 0) {
+			} else if (!line.empty()) {
 				// Append line to the buffer with a space
 				buffer += " " + line;
 			}
-		} else {
-			// Check for a multi-line wrap
-			if (buffer.size() > 0) {
-				// Finish wrapping the lines
-				if (line.size() > 0) {
-					line = buffer + " " + line;
-				} else {
-					line = buffer;
-				}
-				buffer = "";
-			}
 
-			// Only append if line has text
-			if (line.size() > 0) {
-				// Append to the list
-				elements->push_back(line);
-			}
-
-			// Initialize for the next line
-			inComment = false;
-			priorTag = false;
+			continue;
 		}
+
+		// Otherwise, add completed element to the vectors
+
+		// Finish wrapping
+		if (!buffer.empty()) {
+			if (!line.empty()) {
+				line = buffer + " " + line;
+			} else {
+				line = buffer;
+			}
+
+			buffer.clear();
+		}
+
+		if (!line.empty())
+			elements.push_back(line);
+
+		// Initialize for the next line
+		inComment = false;
+		priorTag = false;
 	}
+
+	return elements;
 }
 
-/**
- * Check for a valid header
- */
+/** Check for a valid header. */
 bool XMLFixer::isValidXMLHeader(Common::SeekableReadStream &in) {
 	Common::UString line;
 
 	// Loop until a non-blank line is found
-	do {
-		// Read a line
+	while (line.empty()) {
 		line = Common::readStringLine(in, encoding);
 
-		// Trim white space off the ends
 		line.trim();
-	} while (line.size() == 0);
+	}
 
-	// Check for an XML header line
-	Common::UString::iterator it = line.findFirst("<?xml");
-	if (it == line.end())
-		return false;
-
-	// Valid header
-	return true;
+	// Check for an XML header
+	return line.findFirst("<?xml") != line.end();
 }
 
-/**
- * Return true if the line ends with a closing tag
- */
-bool XMLFixer::isTagClose(const Common::UString value) {
-	Common::UString::iterator it1, it2;
-	Common::UString line = value;
-
-	// Skip blank lines
-	if (line.size() == 0)
+/** Return true if the line ends with a closing tag. */
+bool XMLFixer::endsWithTagCloser(const Common::UString &line) {
+	if (line.empty())
 		return false;
 
 	// Search for a close tag
-	it1 = line.findLast('>');
-	if (it1 == line.end())
+	const Common::UString::iterator closer = line.findLast('>');
+	if (closer == line.end())
 		return false;
 
 	// Search backwards for an equals, quote, or comma
-	it2 = line.end();
-	do {
-		// Decrement the iterator
-		--it2;
+	auto it = std::find_if(--line.end(), closer, [](uint32 c) {
+		return c == '\"' || c == '=' || c == ',';
+	});
 
-		// Found the close mark
-		if (it1 == it2)
-			return true;
-
-		// Get the character at this position
-		size_t i = line.getPosition(it2);
-		uint32 c = line.at(i);
-
-		/*
-		 * Look for an indication the '>' is within
-		 * the element, such as inside a quote.
-		 */
-		if (c == '\"' || c == '=' || c == ',')
-			return false;
-
-	} while (it2 != line.begin());
-
-	// Fail-safe
-	return true;
+	// If we reached the closer, we didn't find any of the other characters
+	return it == closer;
 }
 
 } // End of namespace AURORA
