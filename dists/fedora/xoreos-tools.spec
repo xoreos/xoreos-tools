@@ -25,7 +25,7 @@ BuildRequires:  zlib-devel, libxml2-devel
 BuildRequires:  libtool, gettext
 
 # Boost dependencies.
-BuildRequires:  boost-devel, boost-system, boost-filesystem, boost-atomic,
+BuildRequires:  boost-devel, boost-system, boost-filesystem
 BuildRequires:  boost-regex, boost-locale
 
 #Requires:

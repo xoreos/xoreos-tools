@@ -18,6 +18,5 @@ Build-time library dependencies
   - Boost.Uuid
   - Boost.Smart_Ptr
   - Boost.ScopeExit
-  - Boost.Atomic
   - Boost.Locale
 
