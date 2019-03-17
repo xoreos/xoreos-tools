@@ -19,6 +19,8 @@ Someday, ????-??-?? (Version 0.0.6)
 		- Added support for big-endian GFF4'd TLK files
 	- UNERF:
 		- Added support for ERF V2.1
+	- MISC:
+		- Moved third-party code into external/
 
 Tuesday, 2018-07-03 (Version 0.0.5)
 	- Tools added:
