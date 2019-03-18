@@ -29,6 +29,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/variant.hpp>
 
 #include "src/aurora/gff3file.h"
 #include "src/aurora/locstring.h"
@@ -53,6 +54,41 @@ public:
 	void write(Common::WriteStream &stream);
 
 private:
+	struct Vector4 {
+		float x, y, z, w;
+
+		Vector4(float rx = 0.0f, float ry = 0.0f, float rz = 0.0f, float rw = 0.0f) : x(rx), y(ry), z(rz), w(rw) {
+		}
+
+		bool operator==(const Vector4 &v)  const {
+			return x == v.x && y == v.y && z == v.z && w == v.w;
+		}
+
+		bool operator<(const Vector4 &v) const {
+			if (x < v.x)
+				return true;
+			if (x > v.x)
+				return false;
+
+			if (y < v.y)
+				return true;
+			if (y > v.y)
+				return false;
+
+			if (z < v.z)
+				return true;
+			if (z > v.z)
+				return false;
+
+			if (w < v.w)
+				return true;
+			if (w > v.w)
+				return false;
+
+			return false;
+		}
+	};
+
 	/** A special struct type for representing void data. */
 	struct VoidData {
 		Common::ScopedArray<byte> data;
@@ -86,29 +122,54 @@ private:
 		}
 	};
 
+	/** A variant containing all possible types of GFF data. */
+	typedef boost::variant<
+		uint32,
+		uint64,
+		int32,
+		int64,
+		float,
+		double,
+		Vector4,
+		Common::UString,
+		LocString,
+		VoidData
+	> ValueData;
+
+	class ValueDataLess : public boost::static_visitor<bool> {
+	public:
+		template<typename T, typename U> bool operator()(const T &UNUSED(v1), const U &UNUSED(v2)) const { return false; }
+
+		template<typename T> bool operator()(const T &v1, const T &v2) const { return v1 < v2; }
+	};
+
+	/** A value holds a type and data. */
+	struct Value {
+		GFF3Struct::FieldType type;
+		ValueData data;
+
+		/** Equality operator for std::find. */
+		bool operator==(const Value &rhs) const {
+			return type == rhs.type &&
+			       data == rhs.data;
+		}
+
+		/** Relational operator for map find. */
+		bool operator<(const Value &rhs) const {
+			if (type != rhs.type) {
+				return type < rhs.type;
+			} else if (data.which() != rhs.data.which()) {
+				return data.which() < rhs.data.which();
+			} else {
+				return boost::apply_visitor(ValueDataLess(), data, rhs.data);
+			}
+		}
+	};
+
 	/** An implementation for a field. */
 	struct Field : boost::noncopyable {
-		GFF3Struct::FieldType type;
 		uint32 labelIndex;
-
-		uint32 uint32Value;
-		uint64 uint64Value;
-
-		int32 int32Value;
-		int64 int64Value;
-
-		float floatValue;
-		double doubleValue;
-
-		struct {
-			float x, y, z, w;
-		} vectorValue;
-
-		Common::UString stringValue;
-
-		LocString locStringValue;
-
-		VoidData voidValue;
+		Value value;
 	};
 
 	typedef boost::shared_ptr<Field> FieldPtr;
@@ -128,7 +189,7 @@ private:
 	/** Adds a label to the writer and returns the corresponding index. */
 	uint32 addLabel(const Common::UString &label);
 	/** Get the actual size of the field. */
-	static uint32 getFieldDataSize(FieldPtr field);
+	static uint32 getFieldDataSize(Value field);
 
 	size_t createField(GFF3Struct::FieldType type, const Common::UString &label);
 };
