@@ -109,6 +109,7 @@ Makefile.in
 /src/cbgt2tga
 /src/cdpth2tga
 /src/ncsdis
+/src/ncsdecomp
 /src/erf
 /src/untws
 /src/tws
@@ -138,6 +139,7 @@ Makefile.in
 /src/cbgt2tga.exe
 /src/cdpth2tga.exe
 /src/ncsdis.exe
+/src/ncsdecomp.exe
 /src/erf.exe
 /src/untws.exe
 /src/tws.exe
