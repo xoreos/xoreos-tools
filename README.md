@@ -40,6 +40,7 @@ Currently, the following tools are included:
 * cbgt2tga: Convert CBGT images into TGA
 * cdpth2tga: Convert CDPTH depth images into TGA
 * ncsdis: Disassemble NWScript bytecode
+* ncsdecomp: Decompile NWScript bytecode
 
 TLK language IDs and encodings
 ------------------------------
