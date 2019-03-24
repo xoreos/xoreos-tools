@@ -33,6 +33,8 @@
 #include "src/nwscript/ncsfile.h"
 #include "src/nwscript/util.h"
 #include "src/nwscript/game.h"
+#include "disassembler.h"
+
 
 namespace NWScript {
 
@@ -131,6 +133,26 @@ void Disassembler::createDot(Common::WriteStream &out, bool printControlTypes) {
 	writeDotBlockEdges     (out);
 
 	out.writeString("}\n");
+}
+
+void Disassembler::createNSS(Common::WriteStream &out) {
+	out.writeString("// Decompiled using ncsdis");
+
+	const Stack &stack = _ncs->getGlobals();
+
+	out.writeString("\n\n");
+	for (const auto &global : stack) {
+		out.writeString(getVariableTypeName(global.variable->type, _ncs->getGame()));
+		out.writeString(" " + formatVariableName(global.variable));
+		out.writeString(Common::composeString(global.variable->id));
+		out.writeString("\n");
+	}
+
+	const SubRoutines &subRoutines = _ncs->getSubRoutines();
+
+	for (const auto &subRoutine : subRoutines) {
+		writeNSSSubRoutine(out, subRoutine);
+	}
 }
 
 void Disassembler::writeDotClusteredBlocks(Common::WriteStream &out, bool printControlTypes) {
@@ -444,6 +466,307 @@ Common::UString Disassembler::getSignature(const Instruction &instr) {
 		return "";
 
 	return getSignature(*instr.block->subRoutine);
+}
+
+void Disassembler::writeNSSSubRoutine(Common::WriteStream &out, const SubRoutine &subRoutine) {
+	out.writeString("\n\n");
+	out.writeString(formatSignature(subRoutine, _ncs->getGame(), true));
+	out.writeString(" {\n");
+
+	assert(subRoutine.returns.size() <=1);
+
+	writeNSSBlock(out, subRoutine.blocks[0], 1);
+
+	out.writeString("}");
+}
+
+void Disassembler::writeNSSBlock(Common::WriteStream &out, const Block *block, size_t indent) {
+	for (const auto instruction : block->instructions) {
+		writeNSSInstruction(out, instruction, indent);
+	}
+
+	VariableSpace variables = _ncs->getVariables();
+
+	for (const auto &childType : block->childrenTypes) {
+		if (isSubRoutineCall(childType)) {
+			writeNSSIndent(out, indent);
+			const Instruction *instruction = block->instructions.back();
+
+
+			out.writeString(formatJumpLabelName(*instruction->branches[0]));
+			out.writeString("(");
+
+			for (size_t i = 0; i < instruction->variables.size(); ++i) {
+				out.writeString(formatVariableName(instruction->variables[i]));
+				if (i < instruction->variables.size() - 1)
+					out.writeString(", ");
+			}
+
+			out.writeString(");\n");
+
+			writeNSSBlock(out, block->children[1], indent);
+		}
+	}
+
+	for (const auto &control : block->controls) {
+		if (control.type == kControlTypeReturn) {
+			writeNSSIndent(out, indent);
+
+			if (control.retn->instructions.size() > 0) {
+				if (control.retn->instructions.back()->stack.size() == 0) {
+					out.writeString("return;\n");
+					continue;
+				}
+
+				out.writeString("return ");
+
+				out.writeString(formatVariableName(control.retn->instructions[0]->variables[0]));
+
+				out.writeString(";\n");
+			} else {
+				out.writeString("return;\n");
+			}
+		} else if (control.type == kControlTypeIfCond) {
+			writeNSSIfBlock(out, control, indent);
+		}
+
+		// TODO: While loop
+	}
+}
+
+void Disassembler::writeNSSIfBlock(Common::WriteStream &out, const ControlStructure &control, size_t indent) {
+	writeNSSIndent(out, indent);
+
+	const Variable *cond = control.ifCond->instructions.back()->variables[0];
+	out.writeString("if (");
+	out.writeString(formatVariableName(cond));
+	out.writeString(") {\n");
+
+	if (control.ifTrue)
+		writeNSSBlock(out, control.ifTrue, indent + 1);
+
+	writeNSSIndent(out, indent);
+	out.writeString("}");
+
+	if (control.ifElse) {
+		out.writeString(" else {\n");
+		writeNSSBlock(out, control.ifElse, indent + 1);
+
+		writeNSSIndent(out, indent);
+		out.writeString("}");
+	}
+	out.writeString("\n");
+
+	if (control.ifNext)
+		writeNSSBlock(out, control.ifNext, indent);
+}
+
+void Disassembler::writeNSSInstruction(Common::WriteStream &out, const Instruction *instruction, size_t indent) {
+	switch (instruction->opcode) {
+		case kOpcodeCONST: {
+			const Variable *v = instruction->variables[0];
+			writeNSSIndent(out, indent);
+			out.writeString(getVariableTypeName(v->type) + " " + formatVariableName(v) + " = " + formatInstructionData(*instruction) + ";\n");
+
+			break;
+		}
+
+		case kOpcodeACTION: {
+			unsigned int paramCount = instruction->args[1];
+
+			writeNSSIndent(out, indent);
+
+			if (instruction->variables.size() > paramCount) {
+				const Variable *ret = instruction->variables.back();
+				out.writeString(getVariableTypeName(ret->type, _ncs->getGame()) + " " + formatVariableName(ret) + " = ");
+			}
+
+			out.writeString(getFunctionName(_ncs->getGame(), instruction->args[0]));
+			out.writeString("(");
+			for (unsigned int i = 0; i < paramCount; ++i) {
+				out.writeString(formatVariableName(instruction->variables[i]));
+				if (i < paramCount - 1)
+					out.writeString(", ");
+			}
+			out.writeString(");\n");
+
+			break;
+		}
+
+		case kOpcodeCPDOWNBP:
+		case kOpcodeCPDOWNSP:
+		case kOpcodeCPTOPBP:
+		case kOpcodeCPTOPSP: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+
+			writeNSSIndent(out, indent);
+			out.writeString(getVariableTypeName(v2->type, _ncs->getGame()) + " " + formatVariableName(v2) + " = " + formatVariableName(v1) + ";\n");
+
+			break;
+		}
+
+		case kOpcodeLOGAND: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " && " + formatVariableName(v2) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeLOGOR: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " || " + formatVariableName(v2) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeEQ: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " == " + formatVariableName(v2) + ";\n"
+			);
+
+
+			break;
+		}
+
+		case kOpcodeLEQ: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " <= " + formatVariableName(v2) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeLT: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " < " + formatVariableName(v2) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeGEQ: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " >= " + formatVariableName(v2) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeGT: {
+			const Variable *v1 = instruction->variables[0];
+			const Variable *v2 = instruction->variables[1];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					formatVariableName(v1) + " > " + formatVariableName(v2) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeNOT: {
+			const Variable *v = instruction->variables[0];
+			const Variable *result = instruction->variables[2];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(result->type, _ncs->getGame()) + " " +
+					formatVariableName(result) + " = " +
+					"!" + formatVariableName(v) + ";\n"
+			);
+
+			break;
+		}
+
+		case kOpcodeRSADD: {
+			const Variable *v = instruction->variables[0];
+
+			writeNSSIndent(out, indent);
+			out.writeString(
+					getVariableTypeName(v->type, _ncs->getGame()) + " " +
+					formatVariableName(v) + " = "
+			);
+
+			switch (v->type) {
+				case kTypeString:
+					out.writeString("\"\"");
+					break;
+				case kTypeInt:
+					out.writeString("0");
+					break;
+				case kTypeFloat:
+					out.writeString("0.0");
+					break;
+
+				default:
+					// TODO: No idea how empty objects or engine types are intialized.
+					out.writeString("0");
+					break;
+			}
+
+			out.writeString(";\n");
+
+			break;
+		}
+
+		// TODO: Not all necessary instruction are implemented here
+
+		default:
+			break;
+	}
+}
+
+void Disassembler::writeNSSIndent(Common::WriteStream &out, size_t indent) {
+	for (size_t i = 0; i < indent; ++i)
+		out.writeString("\t");
 }
 
 } // End of namespace NWScript

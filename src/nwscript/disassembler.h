@@ -65,6 +65,8 @@ public:
 	void createAssembly(Common::WriteStream &out, bool printStack = false);
 	/** Create a graphviz dot file that can be plotted into a control flow graph. */
 	void createDot     (Common::WriteStream &out, bool printControlTypes = false);
+	/** Create a decompiled nss file. */
+	void createNSS     (Common::WriteStream &out);
 
 
 private:
@@ -83,6 +85,12 @@ private:
 	void writeDotBlocks         (Common::WriteStream &out, bool printControlTypes,
 	                             const std::vector<const Block *> &blocks);
 	void writeDotBlockEdges     (Common::WriteStream &out);
+
+	void writeNSSSubRoutine(Common::WriteStream &out, const SubRoutine &subRoutine);
+	void writeNSSBlock(Common::WriteStream &out, const Block *block, size_t indent);
+	void writeNSSIfBlock(Common::WriteStream &out, const NWScript::ControlStructure &control, size_t indent);
+	void writeNSSInstruction(Common::WriteStream &out, const Instruction *instruction, size_t indent);
+	void writeNSSIndent(Common::WriteStream &out, size_t indent);
 };
 
 } // End of namespace NWScript
