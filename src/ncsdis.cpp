@@ -51,6 +51,7 @@ enum Command {
 	kCommandListing  =  0,
 	kCommandAssembly =  1,
 	kCommandDot      =  2,
+	kCommandNSS      =  3,
 	kCommandMAX
 };
 
@@ -117,6 +118,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	                 makeAssigners(new ValAssigner<Command>(kCommandAssembly, command)));
 	parser.addOption("dot", "Create a graphviz dot file", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Command>(kCommandDot, command)));
+	parser.addOption("nss", "Create a nwscript source file", kContinueParsing,
+					 makeAssigners(new ValAssigner<Command>(kCommandNSS, command)));
 	parser.addSpace();
 	parser.addOption("nwn", "This is a Neverwinter Nights script", kContinueParsing,
 	                 makeAssigners(new ValAssigner<GameID>(Aurora::kGameIDNWN, game)));
@@ -187,6 +190,11 @@ void disNCS(const Common::UString &inFile, const Common::UString &outFile,
 		case kCommandNone:
 			disassembler.createListing(*out, printStack);
 			break;
+
+		case kCommandNSS:
+			disassembler.createNSS(*out);
+			break;
+
 		default:
 			throw Common::Exception("Invalid command %u", (uint)command);
 	}
