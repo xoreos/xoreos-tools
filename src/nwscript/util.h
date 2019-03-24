@@ -227,6 +227,10 @@ Common::UString formatReturn(const std::vector<const Variable *> &returns,
 Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game = Aurora::kGameIDUnknown,
                                 bool names = false);
 
+Common::UString formatVariableName(const Variable *variable);
+
+Common::UString formatInstructionData(const Instruction &instruction);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H
