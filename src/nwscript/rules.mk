@@ -41,6 +41,7 @@ src_nwscript_libnwscript_la_SOURCES += \
     src/nwscript/game_dragonage2.h \
     src/nwscript/controlflow.h \
     src/nwscript/disassembler.h \
+    src/nwscript/decompiler.h \
     $(EMPTY)
 
 src_nwscript_libnwscript_la_SOURCES += \
@@ -54,4 +55,5 @@ src_nwscript_libnwscript_la_SOURCES += \
     src/nwscript/game.cpp \
     src/nwscript/controlflow.cpp \
     src/nwscript/disassembler.cpp \
+    src/nwscript/decompiler.cpp \
     $(EMPTY)
