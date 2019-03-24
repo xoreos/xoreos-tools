@@ -227,6 +227,21 @@ Common::UString formatReturn(const std::vector<const Variable *> &returns,
 Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game = Aurora::kGameIDUnknown,
                                 bool names = false);
 
+/** Generate a variable name containing the usage of the variable (argument, global, local, ...)
+ *  and its number. The resulting string would be something like global_142.
+ *
+ *  @param variable The variable to generate the name for
+ *  @return The generated name of the variable
+ */
+Common::UString formatVariableName(const Variable *variable);
+
+/** Generate a proper string for the data of an instruction.
+ *
+ *  @param instruction The instruction to generate its data
+ *  @return The generated value string of the instruction
+ */
+Common::UString formatInstructionData(const Instruction &instruction);
+
 } // End of namespace NWScript
 
 #endif // NWSCRIPT_UTIL_H
