@@ -656,4 +656,53 @@ Common::UString formatSignature(const SubRoutine &sub, Aurora::GameID game, bool
 	       "(" + formatParameters(sub.params, game, names) + ")";
 }
 
+Common::UString formatVariableName(const Variable *variable) {
+	Common::UString v;
+
+	switch (variable->use) {
+		case VariableUse::kVariableUseGlobal:
+			v += "global_";
+			break;
+		case VariableUse::kVariableUseLocal:
+			v += "local_";
+			break;
+		case VariableUse::kVariableUseParameter:
+			v += "arg_";
+			break;
+		case VariableUse::kVariableUseReturn:
+			v += "return_";
+			break;
+		default:
+			v += "unknown_";
+			break;
+	}
+
+	v += Common::composeString(variable->id);
+
+	return v;
+}
+
+Common::UString formatInstructionData(const Instruction &instruction) {
+	Common::UString str;
+	switch (instruction.type) {
+		case kInstTypeInt:
+			str += Common::UString::format("%d", instruction.constValueInt);
+			break;
+
+		case kInstTypeFloat:
+			str += Common::UString::format("%f", instruction.constValueFloat);
+			break;
+		case kInstTypeString:
+		case kInstTypeResource:
+			str += Common::UString::format("\"%s\"", instruction.constValueString.c_str());
+			break;
+		case kInstTypeObject:
+			str += Common::UString::format("%d", instruction.constValueObject);
+			break;
+		default:
+			break;
+	}
+	return str;
+}
+
 } // End of namespace NWScript
