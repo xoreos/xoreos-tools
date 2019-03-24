@@ -53,6 +53,8 @@ To keep the resulting image small,
 set a small font and font size when calling GraphViz,
 and decrease the nodesep and ranksep values.
 .Pp
+An experimental decompiler which translates ncs files back into nss files is also contained.
+.Pp
 Since there is no way to automatically detect for which game this
 script is, this information must be provided on the command.
 If no game is specified, the ACTION opcode that call an engine function,
@@ -78,6 +80,8 @@ Useful for modifying and extending the script.
 .It Fl Fl dot
 Create a flow control graph in the dot language, to be plotted by
 the GraphViz suite.
+.It Fl Fl nss
+Try to recreate the original nss source code
 .It Fl Fl stack
 Print the stack frame for each instruction.
 Only available in list or assembly mode, not in dot mode.
@@ -154,6 +158,13 @@ $ ncsdis --dot --nwn file.ncs | dot -Gnodesep=0.1 -Granksep=0.1 \e
   -Gfontname="Courier New" -Nfontname="Courier New" -Gfontsize=10 \e
   -Nfontsize=8 -Earrowsize=0.5 -Tpng > file.png
 .Ed
+.Pp
+Decompile
+.Pa file.ncs
+into the nwscript source code
+.Pa file.nss
+.Pp
+.Dl $ ncsdis --nss file.ncs file.nss
 .Sh SEE ALSO
 .Xr dot 1 ,
 .Xr nwnnsscomp 1
