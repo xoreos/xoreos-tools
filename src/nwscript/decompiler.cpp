@@ -62,7 +62,8 @@ void Decompiler::writeSubRoutine(Common::WriteStream &out, const NWScript::SubRo
 
 	// TODO: local sub routine variables
 
-	writeBlock(out, subRoutine.blocks.front(), 1);
+	if (!subRoutine.blocks.empty())
+		writeBlock(out, subRoutine.blocks.front(), 1);
 
 	out.writeString("}\n");
 }
