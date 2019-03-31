@@ -55,7 +55,7 @@ void Decompiler::createNSS(Common::WriteStream &out) {
 	}
 }
 
-void Decompiler::writeSubRoutine(Common::WriteStream &out, NWScript::SubRoutine subRoutine) {
+void Decompiler::writeSubRoutine(Common::WriteStream &out, const NWScript::SubRoutine &subRoutine) {
 	out.writeString("\n");
 	out.writeString(formatSignature(subRoutine, _ncs->getGame(), true));
 	out.writeString(" {\n");

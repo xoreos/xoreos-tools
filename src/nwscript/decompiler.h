@@ -40,7 +40,7 @@ public:
 	void createNSS(Common::WriteStream &out);
 
 private:
-	void writeSubRoutine(Common::WriteStream &out, NWScript::SubRoutine subRoutine);
+	void writeSubRoutine(Common::WriteStream &out, const NWScript::SubRoutine &subRoutine);
 	void writeBlock(Common::WriteStream &out, const Block *block, size_t indent);
 	void writeIfControl(Common::WriteStream &out, const ControlStructure &control, size_t indent);
 	void writeInstruction(Common::WriteStream &out, const Instruction *instruction, size_t indent);
