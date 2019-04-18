@@ -288,7 +288,7 @@ void Decompiler::writeInstruction(Common::WriteStream &out, const Instruction* i
 
 		case kOpcodeNOT: {
 			const Variable *v = instruction->variables[0];
-			const Variable *result = instruction->variables[2];
+			const Variable *result = instruction->variables[1];
 
 			writeIndent(out, indent);
 			out.writeString(
