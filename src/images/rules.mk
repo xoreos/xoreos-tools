@@ -40,6 +40,8 @@ src_images_libimages_la_SOURCES += \
     src/images/ncgr.h \
     src/images/cbgt.h \
     src/images/cdpth.h \
+    src/images/txi.h \
+    src/images/txitypes.h \
     $(EMPTY)
 
 src_images_libimages_la_SOURCES += \
@@ -58,4 +60,6 @@ src_images_libimages_la_SOURCES += \
     src/images/ncgr.cpp \
     src/images/cbgt.cpp \
     src/images/cdpth.cpp \
+    src/images/txi.cpp \
+    src/images/txitypes.cpp \
     $(EMPTY)
