@@ -30,6 +30,7 @@
 #include "src/common/memreadstream.h"
 
 #include "src/images/tpc.h"
+#include "src/images/txi.h"
 #include "src/images/util.h"
 
 static const byte kEncodingGray         = 0x01;
@@ -53,7 +54,6 @@ void TPC::load(Common::SeekableReadStream &tpc) {
 
 		readHeader (tpc, encoding);
 		readData   (tpc, encoding);
-		readTXIData(tpc);
 
 		fixupCubeMap();
 
@@ -93,6 +93,14 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	size_t mipMapCount = tpc.readByte();
 
 	tpc.skip(114); // Reserved
+
+	tpc.skip(dataSize);
+	readTXIData(tpc);
+
+	_layerCount = 2;
+	_isAnimated = checkAnimated(width, height, dataSize);
+
+	tpc.seek(128);
 
 	uint32 minDataSize = 0;
 	if (dataSize == 0) {
@@ -142,7 +150,7 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 
 		checkCubeMap(width, height);
 
-		if (dataSize != ((width * height) / 2))
+		if (dataSize != ((width * height) / 2) && !_isAnimated)
 			throw Common::Exception("Invalid data size for a texture of %ux%u pixels and format %u",
 			                        width, height, encoding);
 
@@ -155,12 +163,15 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 
 		checkCubeMap(width, height);
 
-		if (dataSize != (width * height))
+		if (dataSize != (width * height) && !_isAnimated)
 			throw Common::Exception("Invalid data size for a texture of %ux%u pixels and format %u",
 			                        width, height, encoding);
 
 	} else
 		throw Common::Exception("Unknown TPC encoding: %d (%d)", encoding, dataSize);
+
+	// Offset between the images.
+	_offset = dataSize - getDataSize(_format, width, height);
 
 	if (!hasValidDimensions(_format, width, height))
 		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
@@ -171,13 +182,19 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	if (fullDataSize < (_layerCount * fullImageDataSize))
 		throw Common::Exception("Image wouldn't fit into data");
 
-	_mipMaps.reserve(mipMapCount * _layerCount);
+	_mipMaps.reserve(mipMapCount);
 
 	size_t layerCount;
+	uint combinedSize = 0;
 	for (layerCount = 0; layerCount < _layerCount; layerCount++) {
 		uint32 layerWidth  = width;
 		uint32 layerHeight = height;
-		uint32 layerSize   = dataSize;
+
+		uint32 layerSize;
+		if (_isAnimated)
+			layerSize = getDataSize(_format, layerWidth, layerHeight);
+		else
+			layerSize = dataSize;
 
 		for (size_t i = 0; i < mipMapCount; i++) {
 			Common::ScopedPtr<MipMap> mipMap(new MipMap);
@@ -194,6 +211,7 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 				break;
 
 			fullDataSize -= mipMap->size;
+			combinedSize += mipMap->size;
 
 			_mipMaps.push_back(mipMap.release());
 
@@ -249,6 +267,28 @@ bool TPC::checkCubeMap(uint32 &width, uint32 &height) {
 	return true;
 }
 
+bool TPC::checkAnimated(uint32 &width, uint32 &height, uint32 &dataSize) {
+	Common::ScopedPtr<Common::SeekableReadStream> txiStream(getTXI());
+	TXI txi(*txiStream);
+
+	if (txi.getFeatures().procedureType != "cycle" ||
+	    txi.getFeatures().numX == 0 ||
+	    txi.getFeatures().numY == 0 ||
+	    txi.getFeatures().fps == 0) {
+
+		return false;
+	}
+
+	_layerCount = txi.getFeatures().numX * txi.getFeatures().numY;
+
+	width  /= txi.getFeatures().numX;
+	height /= txi.getFeatures().numY;
+
+	dataSize /= _layerCount;
+
+	return true;
+}
+
 void TPC::deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height) {
 	for (uint32 y = 0; y < height; y++) {
 		for (uint32 x = 0; x < width; x++) {
@@ -282,6 +322,8 @@ void TPC::readData(Common::SeekableReadStream &tpc, byte encoding) {
 		} else {
 			if (tpc.read((*mipMap)->data.get(), (*mipMap)->size) != (*mipMap)->size)
 				throw Common::Exception(Common::kReadError);
+
+			tpc.skip(_offset);
 
 			// Unpacking 8bpp grayscale data into RGB
 			if (encoding == kEncodingGray) {

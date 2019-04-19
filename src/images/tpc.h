@@ -53,12 +53,16 @@ private:
 	Common::ScopedArray<byte> _txiData;
 	size_t _txiDataSize;
 
+	uint32 _offset;
+	bool _isAnimated;
+
 	// Loading helpers
 	void load(Common::SeekableReadStream &tpc);
 	void readHeader(Common::SeekableReadStream &tpc, byte &encoding);
 	void readData(Common::SeekableReadStream &tpc, byte encoding);
 	void readTXIData(Common::SeekableReadStream &tpc);
 
+	bool checkAnimated(uint32 &width, uint32 &height, uint32 &dataSize);
 	bool checkCubeMap(uint32 &width, uint32 &height);
 	void fixupCubeMap();
 
