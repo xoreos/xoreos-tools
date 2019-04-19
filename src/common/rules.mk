@@ -62,6 +62,7 @@ src_common_libcommon_la_SOURCES += \
     src/common/zipfile.h \
     src/common/binsearch.h \
     src/common/cli.h \
+    src/common/stringmap.h \
     $(EMPTY)
 
 src_common_libcommon_la_SOURCES += \
@@ -89,4 +90,5 @@ src_common_libcommon_la_SOURCES += \
     src/common/filepath.cpp \
     src/common/zipfile.cpp \
     src/common/cli.cpp \
+    src/common/stringmap.cpp \
     $(EMPTY)
