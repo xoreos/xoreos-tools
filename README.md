@@ -31,6 +31,7 @@ Currently, the following tools are included:
 * unobb: Extract Aspyr's OBB virtual filesystem
 * untws: Extract CDProjectRed's TheWitcherSave archives
 * erf: Create BioWare ERF archives
+* rim: Create BioWare RIM archives
 * tws: Create CDProjectRed TheWitcherSave archives
 * keybif: Create BioWare KEY/BIF archives
 * desmall: Decompress "small" (Nintendo DS LZSS, types 0x00 and 0x10) files
