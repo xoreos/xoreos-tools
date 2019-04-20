@@ -145,3 +145,8 @@ check_PROGRAMS                      += tests/aurora/test_keywriter
 tests_aurora_test_keywriter_SOURCES  = tests/aurora/keywriter.cpp
 tests_aurora_test_keywriter_LDADD    = $(aurora_LIBS)
 tests_aurora_test_keywriter_CXXFLAGS = $(test_CXXFLAGS)
+
+check_PROGRAMS                      += tests/aurora/test_rimwriter
+tests_aurora_test_rimwriter_SOURCES  = tests/aurora/rimwriter.cpp
+tests_aurora_test_rimwriter_LDADD    = $(aurora_LIBS)
+tests_aurora_test_rimwriter_CXXFLAGS = $(test_CXXFLAGS)
