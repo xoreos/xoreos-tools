@@ -1,0 +1,58 @@
+.Dd April 29, 2019
+.Dt ERF 1
+.Os
+.Sh NAME
+.Nm rim
+.Nd BioWare RIM archive packer
+.Sh SYNOPSIS
+.Nm rim
+.Op Ar options
+.Ar output_archive
+.Op Ar
+.Sh DESCRIPTION
+.Nm
+packs files together into a BioWare RIM archive, found in many
+BioWare Games as files with the extension .rim.
+.Pp
+This tool supports version V1.0, as used by
+.Em Knights of the Old Republic ,
+.Em Knights of the Old Republic II ,
+and
+.Em Jade Empire
+.Sh OPTIONS
+.Bl -tag -width xxxx -compact
+.It Fl h
+.It Fl Fl help
+Show a help text and exit.
+.It Fl Fl version
+Show version information and exit.
+.It Fl Fl jade
+Unalias file types according to
+.Em Jade Empire
+rules.
+.Pp
+.Em Jade Empire
+reuses a few file extension IDs differently than other BioWare games.
+To correctly write Jade Empire RIM archives, use this flag.
+.It Ar output_archive
+The RIM archive to be written.
+.It Ar files
+One or more files to pack together.
+.El
+.Sh EXAMPLES
+Pack some files together into a RIM archive:
+.Pp
+.Dl $ rim archive.rim file1.dat file2.dat file3.dat
+.Sh SEE ALSO
+.Xr erf 1 ,
+.Xr keybif 1 ,
+.Xr tws 1
+.Pp
+More information about the xoreos project can be found on
+.Lk https://xoreos.org/ "its website" .
+.Sh AUTHORS
+This program is part of the xoreos-tools package, which in turn is
+part of the xoreos project, and was written by the xoreos team.
+Please see the
+.Pa AUTHORS
+file for details.
