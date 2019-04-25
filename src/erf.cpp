@@ -40,8 +40,8 @@ static const uint32 kHAKID = MKTAG('H', 'A', 'K', ' ');
 static const uint32 kSAVID = MKTAG('S', 'A', 'V', ' ');
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &archive, std::set<Common::UString> &files, uint32 id,
-                      Aurora::GameID &game);
+                      Common::UString &archive, std::set<Common::UString> &files,
+                      Aurora::ERFWriter::Version &version, uint32 id, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -55,15 +55,16 @@ int main(int argc, char **argv) {
 		int returnValue = 1;
 		uint32 id = kERFID;
 		Common::UString archive;
+		Aurora::ERFWriter::Version version = Aurora::ERFWriter::kERFVersion10;
 		std::set<Common::UString> files;
 
-		if (!parseCommandLine(args, returnValue, archive, files, id, game))
+		if (!parseCommandLine(args, returnValue, archive, files, version, id, game))
 			return returnValue;
 
 		Common::WriteFile writeFile(archive);
 
 		size_t i = 1;
-		Aurora::ERFWriter erfWriter(id, files.size(), writeFile);
+		Aurora::ERFWriter erfWriter(id, files.size(), writeFile, version);
 		for (std::set<Common::UString>::const_iterator iter = files.begin(); iter != files.end(); ++iter, ++i) {
 			std::printf("Packing %u/%u: %s ... ", (uint)i, (uint)files.size(), iter->c_str());
 			std::fflush(stdout);
@@ -84,8 +85,8 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      Common::UString &archive, std::set<Common::UString> &files, uint32 id,
-                      Aurora::GameID &game) {
+                      Common::UString &archive, std::set<Common::UString> &files,
+                      Aurora::ERFWriter::Version &version, uint32 id, Aurora::GameID &game) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -117,6 +118,13 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addOption("sav", "Set SAV as archive id",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<uint32>(kSAVID, id)));
+	parser.addSpace();
+	parser.addOption("v10", "Generate a V1.0 ERF file (default)",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::ERFWriter::Version>(Aurora::ERFWriter::kERFVersion10, version)));
+	parser.addOption("v20", "Generate a V2.0 ERF file",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::ERFWriter::Version>(Aurora::ERFWriter::kERFVersion20, version)));
 	parser.addSpace();
 	parser.addOption("jade", "Unalias file types according to Jade Empire rules",
 	                 kContinueParsing,
