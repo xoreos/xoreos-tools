@@ -1,4 +1,4 @@
-.Dd June 27, 2018
+.Dd April 26, 2019
 .Dt ERF 1
 .Os
 .Sh NAME
@@ -16,13 +16,15 @@ BioWare Games as files with the extension .erf, .mod, .nwm or .sav.
 Moreover, in some games, a .rim file might be an ERF instead of a RIM.
 .Pp
 There's several different versions of ERFs.
-This tool supports only version V1.0, as used by
+This tool supports version V1.0, as used by
 .Em Neverwinter Nights ,
 .Em Knights of the Old Republic ,
 .Em Knights of the Old Republic II ,
 .Em Jade Empire
 and
-.Em The Witcher .
+.Em The Witcher
+and version V2.0 as used by
+.Em Dragon Age: Origins .
 .Pp
 Unsupported Features:
 .Bl -bullet -compact
@@ -54,6 +56,10 @@ Set archive ID to MOD.
 Set archive ID to HAK.
 .It Fl Fl sav
 Set archive ID to SAV.
+.It Fl Fl v10
+Generate a V1.0 ERF file
+.It Fl Fl v20
+Generate a V2.0 ERF file
 .It Fl Fl jade
 Unalias file types according to
 .Em Jade Empire
@@ -75,6 +81,10 @@ Pack some files together into an ERF archive:
 Pack some files together into a SAV archive:
 .Pp
 .Dl $ erf --sav archive.sav file1.dat file2.dat file3.dat
+.Pp
+Pack some files together into a V2.0 archive:
+.Pp
+.Dl $ erf --v20 archive.sav file1.dat file2.dat file3.dat
 .Sh SEE ALSO
 .Xr unerf 1 ,
 .Xr unherf 1
