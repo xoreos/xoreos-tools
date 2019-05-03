@@ -249,7 +249,7 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 list(APPEND XOREOSTOOLS_LIBRARIES ${ZLIB_LIBRARIES})
 
-find_package(Boost COMPONENTS system filesystem regex locale REQUIRED)
+find_package(Boost COMPONENTS system filesystem locale REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
