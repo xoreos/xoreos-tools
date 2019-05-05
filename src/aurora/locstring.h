@@ -50,8 +50,8 @@ public:
 		SubLocString(uint32 l = 0, const Common::UString &s = "") : language(l), str(s) { }
 	};
 
-	LocString();
-	~LocString();
+	LocString() = default;
+	~LocString() = default;
 
 	void clear();
 
@@ -109,7 +109,7 @@ public:
 private:
 	typedef std::map<uint32, Common::UString> StringMap;
 
-	uint32 _id; ///< The string's ID / StrRef.
+	uint32 _id { kStrRefInvalid }; ///< The string's ID / StrRef.
 
 	StringMap _strings;
 

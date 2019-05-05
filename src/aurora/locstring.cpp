@@ -36,12 +36,6 @@
 
 namespace Aurora {
 
-LocString::LocString() : _id(kStrRefInvalid) {
-}
-
-LocString::~LocString() {
-}
-
 void LocString::clear() {
 	_id = kStrRefInvalid;
 
