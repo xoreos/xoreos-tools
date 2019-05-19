@@ -97,8 +97,19 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	tpc.skip(dataSize);
 	readTXIData(tpc);
 
-	_layerCount = 2;
 	_isAnimated = checkAnimated(width, height, dataSize);
+
+	if (_isAnimated) {
+		uint32 w = width;
+		uint32 h = height;
+		mipMapCount = 0;
+
+		while (w > 0 && h > 0) {
+			w /= 2;
+			h /= 2;
+			mipMapCount++;
+		}
+	}
 
 	tpc.seek(128);
 
@@ -170,9 +181,6 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	} else
 		throw Common::Exception("Unknown TPC encoding: %d (%d)", encoding, dataSize);
 
-	// Offset between the images.
-	_offset = dataSize - getDataSize(_format, width, height);
-
 	if (!hasValidDimensions(_format, width, height))
 		throw Common::Exception("Invalid dimensions (%dx%d) for format %d", width, height, _format);
 
@@ -217,7 +225,7 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 
 			layerWidth  >>= 1;
 			layerHeight >>= 1;
-			layerSize   >>= 2;
+			layerSize = getDataSize(_format, layerWidth, layerHeight);
 
 			if ((layerWidth < 1) && (layerHeight < 1))
 				break;
@@ -322,8 +330,6 @@ void TPC::readData(Common::SeekableReadStream &tpc, byte encoding) {
 		} else {
 			if (tpc.read((*mipMap)->data.get(), (*mipMap)->size) != (*mipMap)->size)
 				throw Common::Exception(Common::kReadError);
-
-			tpc.skip(_offset);
 
 			// Unpacking 8bpp grayscale data into RGB
 			if (encoding == kEncodingGray) {
