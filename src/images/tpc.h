@@ -53,7 +53,6 @@ private:
 	Common::ScopedArray<byte> _txiData;
 	size_t _txiDataSize;
 
-	uint32 _offset;
 	bool _isAnimated;
 
 	// Loading helpers
