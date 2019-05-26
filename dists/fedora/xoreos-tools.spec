@@ -26,7 +26,7 @@ BuildRequires:  libtool, gettext
 
 # Boost dependencies.
 BuildRequires:  boost-devel, boost-system, boost-filesystem
-BuildRequires:  boost-regex, boost-locale
+BuildRequires:  boost-locale
 
 #Requires:
 
