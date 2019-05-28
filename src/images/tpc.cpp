@@ -94,24 +94,27 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 
 	tpc.skip(114); // Reserved
 
-	tpc.skip(dataSize);
-	readTXIData(tpc);
+	if (mipMapCount == 1) {
+    	tpc.skip(dataSize);
 
-	_isAnimated = checkAnimated(width, height, dataSize);
+    	readTXIData(tpc);
 
-	if (_isAnimated) {
-		uint32 w = width;
-		uint32 h = height;
-		mipMapCount = 0;
+    	_isAnimated = checkAnimated(width, height, dataSize);
 
-		while (w > 0 && h > 0) {
-			w /= 2;
-			h /= 2;
-			mipMapCount++;
-		}
-	}
+    	if (_isAnimated) {
+    		uint32 w = width;
+    		uint32 h = height;
+    		mipMapCount = 0;
 
-	tpc.seek(128);
+    		while (w > 0 && h > 0) {
+    			w /= 2;
+    			h /= 2;
+    			mipMapCount++;
+    		}
+    	}
+
+    	tpc.seek(128);
+    }
 
 	uint32 minDataSize = 0;
 	if (dataSize == 0) {
