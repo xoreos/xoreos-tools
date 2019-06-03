@@ -61,6 +61,9 @@ private:
 	void readData(Common::SeekableReadStream &tpc, byte encoding);
 	void readTXIData(Common::SeekableReadStream &tpc);
 
+	uint32 getMinDataSize(bool uncompressed, byte encoding);
+	PixelFormat getPixelFormat(bool uncompressed, byte encoding);
+
 	bool checkAnimated(uint32 &width, uint32 &height, uint32 &dataSize);
 	bool checkCubeMap(uint32 &width, uint32 &height);
 	void fixupCubeMap();
