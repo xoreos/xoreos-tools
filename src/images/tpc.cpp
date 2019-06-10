@@ -273,7 +273,7 @@ bool TPC::checkAnimated(uint32 &width, uint32 &height, uint32 &dataSize) {
 	if (txi.getFeatures().procedureType != "cycle" ||
 	    txi.getFeatures().numX == 0 ||
 	    txi.getFeatures().numY == 0 ||
-	    txi.getFeatures().fps == 0) {
+	    txi.getFeatures().fps == 0.0f) {
 
 		return false;
 	}
