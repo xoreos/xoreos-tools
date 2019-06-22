@@ -22,6 +22,8 @@
  *  Tool to pack RIM archives.
  */
 
+#include <set>
+
 #include "src/common/error.h"
 #include "src/common/platform.h"
 #include "src/common/cli.h"

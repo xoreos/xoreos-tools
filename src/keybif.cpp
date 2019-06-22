@@ -22,6 +22,8 @@
  *  Tool to pack KEY/BIF archives.
  */
 
+#include <set>
+
 #include "src/aurora/keydatafile.h"
 #include "src/common/error.h"
 #include "src/common/platform.h"
