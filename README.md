@@ -16,6 +16,7 @@ Currently, the following tools are included:
 * gff2xml: Convert BioWare GFF to XML
 * tlk2xml: Convert BioWare TLK to XML
 * ssf2xml: Convert BioWare SSF to XML
+* fev2xml: Convert FMOD FEV to XML
 * xml2gff: Convert XML back to BioWare GFF
 * xml2tlk: Convert XML back to BioWare TLK
 * xml2ssf: Convert XML back to BioWare SSF
