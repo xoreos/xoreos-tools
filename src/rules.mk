@@ -398,6 +398,20 @@ src_rim_LDADD = \
     $(LDADD) \
     $(EMPTY)
 
+bin_PROGRAMS += src/fev2xml
+src_fev2xml_SOURCES = \
+    src/fev2xml.cpp \
+    src/util.cpp \
+    $(EMPTY)
+src_fev2xml_LDADD = \
+    src/xml/libxml.la \
+    src/sound/libsound.la \
+    src/aurora/libaurora.la \
+    src/common/libcommon.la \
+    src/version/libversion.la \
+    $(LDADD) \
+    $(EMPTY)
+
 # Subdirectories
 
 include src/version/rules.mk
