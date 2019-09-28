@@ -47,4 +47,5 @@ dist_man1_MANS += \
     man/keybif.1 \
     man/ncsdecomp.1 \
     man/rim.1 \
+    man/fev2xml.1 \
     $(EMPTY)
