@@ -116,6 +116,7 @@ Makefile.in
 /src/fixnwn2xml
 /src/keybif
 /src/rim
+/src/fev2xml
 
 # Windows binaries
 /src/gff2xml.exe
@@ -147,3 +148,4 @@ Makefile.in
 /src/fixnwn2xml.exe
 /src/keybif.exe
 /src/rim.exe
+/src/fev2xml.exe
