@@ -43,4 +43,8 @@ dist_man1_MANS += \
     man/erf.1 \
     man/untws.1 \
     man/tws.1 \
+    man/xml2gff.1 \
+    man/keybif.1 \
+    man/ncsdecomp.1 \
+    man/rim.1 \
     $(EMPTY)
