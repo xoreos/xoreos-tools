@@ -406,4 +406,5 @@ include src/aurora/rules.mk
 include src/archives/rules.mk
 include src/nwscript/rules.mk
 include src/images/rules.mk
+include src/sound/rules.mk
 include src/xml/rules.mk
