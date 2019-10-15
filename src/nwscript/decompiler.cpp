@@ -301,6 +301,12 @@ void Decompiler::writeInstruction(Common::WriteStream &out, const Instruction* i
 		}
 
 		case kOpcodeRSADD: {
+			if (instruction->variables.empty()) {
+				writeIndent(out, indent);
+				out.writeString("// RSADD not interpretable\n");
+				break;
+			}
+
 			const Variable *v = instruction->variables[0];
 
 			writeIndent(out, indent);
