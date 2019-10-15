@@ -301,6 +301,12 @@ void Decompiler::writeInstruction(Common::WriteStream &out, const Instruction* i
 		}
 
 		case kOpcodeRSADD: {
+			if (instruction->variables.empty()) {
+				writeIndent(out, indent);
+				out.writeString("// TODO: Add analyzation of RSADD in start\n");
+				break;
+			}
+
 			const Variable *v = instruction->variables[0];
 
 			writeIndent(out, indent);
