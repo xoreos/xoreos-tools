@@ -62,6 +62,9 @@ int main(int argc, char **argv) {
 		if (!parseCommandLine(args, returnValue, inFile, outFile, game))
 			return returnValue;
 
+		if (game == Aurora::kGameIDUnknown)
+			throw Common::Exception("No game id specified");
+
 		decNCS(inFile, outFile, game);
 	} catch (...) {
 		Common::exceptionDispatcherError();
