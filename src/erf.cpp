@@ -43,7 +43,8 @@ static const uint32 kSAVID = MKTAG('S', 'A', 'V', ' ');
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &archive, std::set<Common::UString> &files,
-                      Aurora::ERFWriter::Version &version, uint32 id, Aurora::GameID &game);
+                      Aurora::ERFWriter::Version &version, Aurora::ERFWriter::Compression &compression,
+                      uint32 id, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -58,15 +59,19 @@ int main(int argc, char **argv) {
 		uint32 id = kERFID;
 		Common::UString archive;
 		Aurora::ERFWriter::Version version = Aurora::ERFWriter::kERFVersion10;
+		Aurora::ERFWriter::Compression compression = Aurora::ERFWriter::kCompressionNone;
 		std::set<Common::UString> files;
 
-		if (!parseCommandLine(args, returnValue, archive, files, version, id, game))
+		if (!parseCommandLine(args, returnValue, archive, files, version, compression, id, game))
 			return returnValue;
+
+		if (compression != Aurora::ERFWriter::kCompressionNone && version != Aurora::ERFWriter::kERFVersion22)
+			throw Common::Exception("Compression is only allowed in ERF V2.2");
 
 		Common::WriteFile writeFile(archive);
 
 		size_t i = 1;
-		Aurora::ERFWriter erfWriter(id, files.size(), writeFile, version);
+		Aurora::ERFWriter erfWriter(id, files.size(), writeFile, version, compression);
 		for (std::set<Common::UString>::const_iterator iter = files.begin(); iter != files.end(); ++iter, ++i) {
 			std::printf("Packing %u/%u: %s ... ", (uint)i, (uint)files.size(), iter->c_str());
 			std::fflush(stdout);
@@ -88,7 +93,8 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &archive, std::set<Common::UString> &files,
-                      Aurora::ERFWriter::Version &version, uint32 id, Aurora::GameID &game) {
+                      Aurora::ERFWriter::Version &version, Aurora::ERFWriter::Compression &compression,
+                      uint32 id, Aurora::GameID &game) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -127,6 +133,16 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addOption("v20", "Generate a V2.0 ERF file",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<Aurora::ERFWriter::Version>(Aurora::ERFWriter::kERFVersion20, version)));
+	parser.addOption("v22", "Generate a V2.2 ERF file",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::ERFWriter::Version>(Aurora::ERFWriter::kERFVersion22, version)));
+	parser.addSpace();
+	parser.addOption("bzlib", "Compress using BioWare zlib method",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::ERFWriter::Compression>(Aurora::ERFWriter::kCompressionBiowareZlib, compression)));
+	parser.addOption("zlib", "Compress using headerless zlib method",
+	                 kContinueParsing,
+	                 makeAssigners(new ValAssigner<Aurora::ERFWriter::Compression>(Aurora::ERFWriter::kCompressionHeaderlessZlib, compression)));
 	parser.addSpace();
 	parser.addOption("jade", "Unalias file types according to Jade Empire rules",
 	                 kContinueParsing,
