@@ -1,4 +1,4 @@
-.Dd April 26, 2019
+.Dd October 20, 2019
 .Dt ERF 1
 .Os
 .Sh NAME
@@ -24,14 +24,16 @@ This tool supports version V1.0, as used by
 and
 .Em The Witcher
 and version V2.0 as used by
-.Em Dragon Age: Origins .
+.Em Dragon Age: Origins
+and version V2.2 as used by
+.Em Dragon Age: Origins
+and
+.Em Dragon Age 2
 .Pp
 Unsupported Features:
 .Bl -bullet -compact
 .It
 Generation of archives with stripped filenames.
-.It
-Generation of zlib-compressed archives.
 .It
 Generation of Blowfish-encrypted archives.
 .It
@@ -60,6 +62,12 @@ Set archive ID to SAV.
 Generate a V1.0 ERF file
 .It Fl Fl v20
 Generate a V2.0 ERF file
+.It Fl Fl v22
+Generate a V2.2 ERF file
+.It Fl Fl bzlib
+Compress using BioWare zlib method
+.It Fl Fl zlib
+Compress using headerless zlib method
 .It Fl Fl jade
 Unalias file types according to
 .Em Jade Empire
@@ -85,6 +93,10 @@ Pack some files together into a SAV archive:
 Pack some files together into a V2.0 archive:
 .Pp
 .Dl $ erf --v20 archive.sav file1.dat file2.dat file3.dat
+.Pp
+Pack some files together into a V2.2 archive with headerless zlib compression:
+.Pp
+.Dl $ erf --v22 --zlib archive.sav file1.dat file2.dat file3.dat
 .Sh SEE ALSO
 .Xr unerf 1 ,
 .Xr unherf 1
