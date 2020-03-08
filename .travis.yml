@@ -19,7 +19,7 @@ env:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     #   via the "travis encrypt" command using the project repo's public key
     - secure: "PY2nEbgPiLlKzs5bojGmDE1KFjTQws504ZoEBh3O9AAJWfkEMQvhwfkO6wfp3hYXsQ4fZUfJM03CsJFxXiGk1oxXqBQ/lB1eKhf7GN8AY2giD+Ei6dD3hKbUwlmsbCk1YXryWsffrGwY/++0sRkgcYqAKHvQ1Z5POTNHNGMcg9M="
-    - coverity_scan_run_condition='\( "$CC" = "gcc" \) -a \( $USECMAKE -eq 0 \) -a \( "$TRAVIS_OS_NAME" = "linux" \)' -a \( "$(uname -i)" = "x86_64" \)'
+    - coverity_scan_run_condition='\( "$CC" = "gcc" \) -a \( $USECMAKE -eq 0 \) -a \( "$TRAVIS_OS_NAME" = "linux" \) -a \( "$(uname -i)" = "x86_64" \)'
     - coverity_scan_script_test_mode=false
     # Various conditions where the Travis CI scripts should behave differently
     - is_coverity_branch='\( "$TRAVIS_BRANCH" = "coverity_scan" \)'
