@@ -60,7 +60,7 @@ before_install:
   # means we can't mix-n-match C++ stuff from different sources
   #
   # So we do this in 3 steps:
-  # 1) We add the Bionic repos, and upgrade the libc, gcc and binutils
+  # 1) We add the Bionic repos, and upgrade the libc, gcc, clang and binutils
   # 2) We remove libgl1-mesa-glx and libgl1-mesa-dev, because Ubuntu moved the packages around
   # 3) We install our library dependencies
   - if eval [ $is_valid_linux -a $is_amd64 ]; then echo "yes" | sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu bionic main universe restricted multiverse"; fi
@@ -70,7 +70,7 @@ before_install:
   - if eval [ $is_valid_linux ]; then sudo apt-get update -qq; fi
   - if eval [ $is_valid_linux -a $is_arm64 ]; then echo "yes" | sudo apt-get -y remove udev; fi
   - if eval [ $is_valid_linux -a $is_arm64 ]; then echo "yes" | sudo apt-get -y autoremove; fi
-  - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install build-essential libcurl4 make autoconf automake cmake libtool dpkg dpkg-dev gcc g++ libc6-dev libc6 binutils binutils-dev; fi
+  - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install build-essential libcurl4 make autoconf automake cmake libtool dpkg dpkg-dev gcc g++ libc6-dev libc6 binutils binutils-dev clang; fi
   - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 remove libgl1-mesa-glx libgl1-mesa-dev; fi
   - if eval [ $is_valid_linux ]; then sudo apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" -o APT::Force-LoopBreak=1 install libboost-all-dev zlib1g-dev liblzma-dev libxml2-dev; fi
 
