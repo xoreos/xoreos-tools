@@ -13,7 +13,6 @@ Build-time library dependencies
   - Boost.Filesystem
   - Boost.Hash
   - Boost.Function
-  - Boost.Bind
   - Boost.Uuid
   - Boost.Smart_Ptr
   - Boost.ScopeExit
