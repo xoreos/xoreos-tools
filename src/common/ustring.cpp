@@ -25,6 +25,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cctype>
+#include <cstring>
 
 #include "src/common/ustring.h"
 #include "src/common/error.h"
