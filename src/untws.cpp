@@ -22,6 +22,8 @@
  *  Tool to extract TheWitcherSave archives.
  */
 
+#include <cstring>
+
 #include "src/version/version.h"
 
 #include "src/common/ustring.h"
