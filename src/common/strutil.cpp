@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 
 #include "src/common/system.h"
 #include "src/common/strutil.h"
