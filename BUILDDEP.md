@@ -11,7 +11,6 @@ Build-time library dependencies
   - Boost.StringAlgo
   - Boost.System
   - Boost.Filesystem
-  - Boost.Hash
   - Boost.Uuid
   - Boost.Smart_Ptr
   - Boost.ScopeExit
