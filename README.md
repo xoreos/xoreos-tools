@@ -44,6 +44,36 @@ Currently, the following tools are included:
 * ncsdis: Disassemble NWScript bytecode
 * ncsdecomp: Decompile NWScript bytecode
 
+
+Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
+------
+
+
+Getting xoreos-tools
+--------------------
+
+You can get xoreos-tools in multiple ways:
+
+You can download an archive with a binary of the latest release from our
+[downloads page](https://xoreos.org/downloads/index.html). This includes
+binaries for Microsoft Windows, Mac OS X and GNU/Linux, as well as packages
+for various GNU/Linux distributions. All of them are available for both 32-
+and 64-bit x86 architectures.
+
+Or, if you're running Arch Linux, you can install xoreos-tools directly from the
+[AUR](https://aur.archlinux.org/packages/xoreos-tools/).
+
+Or, if you're running Gentoo Linux, you can install xoreos-tools directly from our
+[overlay](https://github.com/xoreos/gentoo-overlay).
+
+Lastly, you can compile xoreos-tools yourself; either from a release source package,
+found on our [downloads page](https://xoreos.org/downloads/index.html), or a
+fresh [repository](https://github.com/xoreos/xoreos-tools) checkout. For details
+on how to compile xoreos on various operating system, please read the
+[Compiling xoreos-tools](https://wiki.xoreos.org/index.php?title=Compiling_xoreos-tools)
+page on our wiki.
+
+
 TLK language IDs and encodings
 ------------------------------
 
@@ -134,8 +164,15 @@ Dragon Age: Origins, Dragon Age II:
 |           9 | Korean                | UTF-16LE |
 |          10 | Japanese              | UTF-16LE |
 
-Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
-------
+
+Links
+-----
+
+- [xoreos website](https://xoreos.org/)
+- [xoreos wiki](https://wiki.xoreos.org/)
+- [Main source repository](https://github.com/xoreos/xoreos-tools)
+- [All xoreos repositories](https://github.com/xoreos/)
+
 
 Contact
 -------
