@@ -24,6 +24,8 @@
 
 #include <ctime>
 
+#include <memory>
+
 #include "src/common/deflate.h"
 #include "src/common/memwritestream.h"
 
