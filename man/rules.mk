@@ -48,4 +48,6 @@ dist_man1_MANS += \
     man/ncsdecomp.1 \
     man/rim.1 \
     man/fev2xml.1 \
+    man/fixnwn2xml.1 \
+    man/unobb.1 \
     $(EMPTY)
