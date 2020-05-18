@@ -25,7 +25,7 @@
 #ifndef XML_FEVDUMPER_H
 #define XML_FEVDUMPER_H
 
-#include <boost/core/noncopyable.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "src/sound/fmodeventfile.h"
 
