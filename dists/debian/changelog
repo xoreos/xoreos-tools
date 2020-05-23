@@ -1,6 +1,7 @@
 xoreos-tools (0.0.5-1) unstable; urgency=low
 
   * New upstream release
+  * First Debian upload (closes: #920919)
 
  -- Sven Hesse <drmccoy@drmccoy.de>  Tue, 03 Jul 2018 00:00:00 +0200
 
