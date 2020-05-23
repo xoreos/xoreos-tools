@@ -95,5 +95,6 @@ Libraries
    people working for the following libraries and organizations. Many thanks!
    - libiconv <https://www.gnu.org/software/libiconv/>
    - zlib <https://zlib.net/>
+   - liblzma <https://tukaani.org/xz/>
    - libxml2 <http://www.xmlsoft.org/>
    - Boost <https://www.boost.org/>
