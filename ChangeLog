@@ -6,12 +6,17 @@ Someday, ????-??-?? (Version 0.0.6)
 		- keybif
 		- xml2gff
 		- fixnwn2xml
+		- ncsdecomp
+		- rim
+		- fev2xml
 	- BUILD:
 		- Bumped required C++ version to C++11
+		- Replaced a few Boost libraries with C++11 features
 	- AURORA:
 		- Fixed the encoding matrix for Jade Empire
 	- XOREOSTEX2TGA:
 		- Added support for swizzled Xbox SBM images
+		- Added support for animated TPC files
 	- GFF2XML:
 		- Added support for big-endian GFF4 files
 		- Added support for SAC files
@@ -19,6 +24,9 @@ Someday, ????-??-?? (Version 0.0.6)
 		- Added support for big-endian GFF4'd TLK files
 	- UNERF:
 		- Added support for ERF V2.1
+	- ERF:
+		- Added support for ERF V2.0
+		- Added support for ERF V2.2
 	- MISC:
 		- Moved third-party code into external/
 
