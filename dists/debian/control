@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Sven Hesse <drmccoy@drmccoy.de>
 Uploaders: Eike Sauer <eike@debian.org>
 Changed-By: Eike Sauer <eike@debian.org>
-Build-Depends: debhelper (>= 9), dh-autoreconf, autotools-dev, autoconf (>= 2.65), gettext, zlib1g-dev (>= 1:1.2.3.4), libxml2-dev (>= 2.8.0), libboost-dev (>= 1.53), libboost-filesystem-dev (>= 1.53), libboost-locale-dev (>= 1.53), libboost-system-dev (>= 1.53)
+Build-Depends: debhelper (>= 9), dh-autoreconf, autotools-dev, autoconf (>= 2.65), gettext, zlib1g-dev (>= 1:1.2.3.4), liblzma-dev (>= 5.0.5), libxml2-dev (>= 2.8.0), libboost-dev (>= 1.53), libboost-filesystem-dev (>= 1.53), libboost-locale-dev (>= 1.53), libboost-system-dev (>= 1.53)
 Standards-Version: 4.5.0
 Homepage: https://xoreos.org/
 
