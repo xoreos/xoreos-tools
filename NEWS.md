@@ -1,3 +1,48 @@
+Changes in xoreos-tools version 0.0.6
+=====================================
+
+This release of the xoreos-tools package features nine new tools:
+unobb, untws, rim, keybif, tws, fixnwn2xml, xml2gff, fev2xml and ncsdecomp.
+
+The first two new tools, unobb and untws, are new archive unpackers. unobb
+extracts "obb" files found in Aspyr's Android and iOS ports of the BioWare
+games, which can be either plain ZIP files or, more interesting, a virtual
+filesystem. untws extracts save files from The Witcher.
+
+The next three tools, rim, keybif and tws are archive packers. rim is the
+counterpart to unrim, creating RIM archives. keybif is the counterpart to
+unkeybif, creating KEY/BIF archives (and lzma-compressed KEY/BZF archives found
+in Aspyr's mobile ports). However, V1.1 files for The Witcher are not yet
+supported. And lastly, tws, is the counterpart to the new untws tool, creating
+save files for The Witcher.
+
+Next up, fixnwn2xml takes the non-standard XML files in NWN2 and turns them into
+valid, standards-compliant XML files.
+
+xml2gff is the counterpart to gff2xml, taking an XML file and turning it back
+into a GFF. Only GFF3 (GFF V3.2/V3.3) are supported for now, so neither Sonic
+nor the Dragon Age games (which use GFF V4.0/V4.1) are supported at the moment.
+
+Another work-in-progress tool is fev2xml, which reads the FMOD event file format
+FEV and creates a human-readable XML file. Only the FEV1 version is supported
+and only a fraction of its features at that.
+
+Likewise, ncsdecomp is the start of an NWScript bytecode compiler, built on the
+foundations of our NWScript bytecode disassembler. It's highly experimental and
+we give no guarantees that it works correctly at all.
+
+In addition to these new tools, there are some new minor features and bugfixes:
+- unerf can now extract ERF V2.1
+- erf can now create ERF V2.0 and V2.2
+- xoreostex2tga now supports animated TPCs and swizzled Xbox SBMs
+- gff2xml now supports SAC files and big-endian GFF4s
+- tlk2xml now supports big-endian GFF4s
+- The character encoding matrix for Jade Empire is now correct
+
+In an attempt to modernize a bit, xoreos-tools now requires a C++11-capable
+compiler. This should hopefully not be a huge problem.
+
+
 Changes in xoreos-tools version 0.0.5
 =====================================
 
