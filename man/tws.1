@@ -3,7 +3,7 @@
 .Os
 .Sh NAME
 .Nm untws
-.Nd CDProjektRed TheWitcherSave archive packer
+.Nd CD Projekt Red TheWitcherSave archive packer
 .Sh SYNOPSIS
 .Nm untws
 .Ar area
@@ -11,13 +11,13 @@
 .Op Ar
 .Sh DESCRIPTION
 .Nm
-packs together files into a CDProjectRed TheWitcherSave archive.
+packs together files into a CD Projekt Red TheWitcherSave archive.
 .Pp
-TheWitcherSave files are custom archives containing files and having the areaname written into the header
+TheWitcherSave files are custom archives that contain both files and the name of the area.
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Ar area
-The area name which should be written in the header.
+The area name which should be written into the header.
 .It Ar output_archive
 The TheWitcherSave archive to be written.
 .It Ar file
@@ -28,7 +28,7 @@ Pack some files together into a TheWitcherSave archive:
 .Pp
 .Dl $ tws archive.thewitchersave file1.dat file2.dat file3.dat
 .Sh SEE ALSO
-.Xr untws 1
+.Xr untws 1 ,
 .Xr erf 1
 .Pp
 More information about the xoreos project can be found on

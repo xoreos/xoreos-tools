@@ -3,7 +3,7 @@
 .Os
 .Sh NAME
 .Nm untws
-.Nd CDProjektRed TheWitcherSave archive extractor
+.Nd CD Projekt Red TheWitcherSave archive extractor
 .Sh SYNOPSIS
 .Nm untws
 .Ar command
@@ -11,9 +11,9 @@
 .Op Ar
 .Sh DESCRIPTION
 .Nm
-extracts CDProjectRed TheWitcherSave archives, found in The Witcher.
+extracts CD Projekt Red TheWitcherSave archives, found in The Witcher.
 .Pp
-TheWitcherSave files are custom archives containing files and having the areaname written into the header
+TheWitcherSave files are custom archives that contain both files and the name of the area.
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Ar command
@@ -24,7 +24,7 @@ List filesystem contents
 Extract files to current directory, stripping directories
 .El
 .It Ar archive
-The TheWitcherSave archive to extractq
+The TheWitcherSave archive to extract
 .It Ar file
 One or more files to extract.
 If none are given, the whole archive is extracted.
@@ -38,10 +38,10 @@ List all files contained in the archive
 Extract all files from the archive
 .Pa archive.thewitchersave :
 .Pp
-.Dl $ untws e archive.rim
+.Dl $ untws e archive.thewitchersave
 .Sh SEE ALSO
-.Xr tws 1
-.Xr unerf 1
+.Xr tws 1 ,
+.Xr unerf 1 ,
 .Xr unrim 1
 .Pp
 More information about the xoreos project can be found on
