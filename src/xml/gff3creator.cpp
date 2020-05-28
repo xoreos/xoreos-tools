@@ -55,7 +55,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addByte(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "char") {
-			char value = *strctNode->getContent().getPosition(0);
+			char value = *strctNode->findChild("text")->getContent().getPosition(0);
 			strctPtr->addChar(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "sint16") {
 			int16 value;
