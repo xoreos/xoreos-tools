@@ -116,15 +116,16 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 				throw Common::Exception("GFF3Creator::readStructContents() Invalid size of vector components");
 
 			XMLNode::Children::const_iterator iter = strctNode->getChildren().begin();
-			Common::UString xValue = (*iter)->getContent();
-			++iter;
-			Common::UString yValue = (*iter)->getContent();
-			++iter;
-			Common::UString zValue = (*iter)->getContent();
+			const XMLNode *xValue = (*iter++)->findChild("text");
+			const XMLNode *yValue = (*iter++)->findChild("text");
+			const XMLNode *zValue = (*iter++)->findChild("text");
 
-			Common::parseString(xValue, x);
-			Common::parseString(yValue, y);
-			Common::parseString(zValue, z);
+			if (!xValue || !yValue || !zValue)
+				throw Common::Exception("GFF3Creator::readStructContents() Vector components empty");
+
+			Common::parseString(xValue->getContent(), x);
+			Common::parseString(yValue->getContent(), y);
+			Common::parseString(zValue->getContent(), z);
 
 			strctPtr->addVector(strctNode->getProperty("label"), x, y, z);
 		} else if (strctNode->getName() == "orientation") {
