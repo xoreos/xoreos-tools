@@ -116,6 +116,11 @@ tests_aurora_test_erfwriter_SOURCES  = tests/aurora/erfwriter.cpp
 tests_aurora_test_erfwriter_LDADD    = $(aurora_LIBS)
 tests_aurora_test_erfwriter_CXXFLAGS = $(test_CXXFLAGS)
 
+check_PROGRAMS                       += tests/aurora/test_gff3writer
+tests_aurora_test_gff3writer_SOURCES  = tests/aurora/gff3writer.cpp
+tests_aurora_test_gff3writer_LDADD    = $(aurora_LIBS)
+tests_aurora_test_gff3writer_CXXFLAGS = $(test_CXXFLAGS)
+
 check_PROGRAMS                               += tests/aurora/test_thewitchersavefile
 tests_aurora_test_thewitchersavefile_SOURCES  = tests/aurora/thewitchersavefile.cpp
 tests_aurora_test_thewitchersavefile_LDADD    = $(aurora_LIBS)
