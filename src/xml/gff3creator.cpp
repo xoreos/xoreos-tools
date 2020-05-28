@@ -160,12 +160,14 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 					if (child->getName() != "string")
 						throw Common::Exception("GFF3Creator::readStructContents() Invalid LocString string");
 
+					const XMLNode *text = child->findChild("text");
+
 					uint32 id;
 					Common::parseString(child->getProperty("language"), id);
 					locString.setString(
 						LangMan.getLanguage(id),
 						LangMan.getLanguageGender(id),
-						strctNode->findChild("text")->getContent()
+						text ? text->getContent() : ""
 					);
 				}
 			}
