@@ -201,6 +201,8 @@ public:
 
 	/** Add a new struct to the list. */
 	GFF3WriterStructPtr addStruct(const Common::UString &label = "");
+	/** Add a new struct to the list. */
+	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32 id);
 
 	size_t getSize() const;
 
@@ -227,6 +229,8 @@ public:
 
 	/** Create a new struct. */
 	GFF3WriterStructPtr addStruct(const Common::UString &label);
+	/** Create a new struct. */
+	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32 id);
 	/** Create a new list. */
 	GFF3WriterListPtr addList(const Common::UString &label);
 

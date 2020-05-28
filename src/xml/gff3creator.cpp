@@ -175,7 +175,16 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 
 			strctPtr->addLocString(strctNode->getProperty("label"), locString);
 		} else if (strctNode->getName() == "struct") {
-			Aurora::GFF3WriterStructPtr strct = strctPtr->addStruct(strctNode->getProperty("label"));
+			Common::UString idText = strctNode->getProperty("id");
+
+			Aurora::GFF3WriterStructPtr strct = nullptr;
+			if (!idText.empty()) {
+				uint32 id;
+				Common::parseString(idText, id);
+				strct = strctPtr->addStruct(strctNode->getProperty("label"), id);
+			} else
+				strct = strctPtr->addStruct(strctNode->getProperty("label"));
+
 			readStructContents(strctNode->getChildren(), strct);
 		} else if (strctNode->getName() == "list") {
 			Aurora::GFF3WriterListPtr list = strctPtr->addList(strctNode->getProperty("label"));
@@ -189,7 +198,16 @@ void GFF3Creator::readListContents(const XMLNode::Children &listNodes, Aurora::G
 		if (node->getName() != "struct")
 			throw Common::Exception("GFF3Creator::readListContents() Invalid element in list");
 
-		Aurora::GFF3WriterStructPtr strct = listPtr->addStruct(node->getProperty("label"));
+		Common::UString idText = node->getProperty("id");
+
+		Aurora::GFF3WriterStructPtr strct = nullptr;
+		if (!idText.empty()) {
+			uint32 id;
+			Common::parseString(idText, id);
+			strct = listPtr->addStruct(node->getProperty("label"), id);
+		} else
+			strct = listPtr->addStruct(node->getProperty("label"));
+
 		readStructContents(node->getChildren(), strct);
 	}
 }
