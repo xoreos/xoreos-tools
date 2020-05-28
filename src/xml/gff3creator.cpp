@@ -165,11 +165,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 
 					uint32 id;
 					Common::parseString(child->getProperty("language"), id);
-					locString.setString(
-						LangMan.getLanguage(id),
-						LangMan.getLanguageGender(id),
-						text ? text->getContent() : ""
-					);
+					locString.setStringRawLanguageID(id, text ? text->getContent() : "");
 				}
 			}
 
