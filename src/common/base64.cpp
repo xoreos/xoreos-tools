@@ -141,6 +141,9 @@ static void decodeBase64(WriteStream &data, const UString &base64, UString &over
 	assert(overhang.size() < 4);
 
 	for (UString::iterator c = base64.begin(); c != base64.end(); ++c) {
+		if ((*c != '=') && ((*c >= 128) || (kBase64Values[*c] > 0x3F)))
+			continue;
+
 		overhang += *c;
 
 		if (overhang.size() == 4) {
