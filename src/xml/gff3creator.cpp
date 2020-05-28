@@ -23,6 +23,7 @@
  */
 
 #include "src/common/strutil.h"
+#include "src/common/base64.h"
 
 #include "src/xml/gff3creator.h"
 
@@ -90,19 +91,43 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addUint64(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "exostring") {
-			if (strctNode->findChild("text") == 0)
+			const XMLNode *text = strctNode->findChild("text");
+			if (text) {
+				bool base64 = false;
+				Common::parseString(strctNode->getProperty("base64"), base64, true);
+
+				const Common::UString contents = text->getContent();
+				if (base64) {
+					Common::SeekableReadStream *debase64 = Common::decodeBase64(contents);
+					strctPtr->addExoString(strctNode->getProperty("label"), debase64);
+
+				} else
+					strctPtr->addExoString(strctNode->getProperty("label"), contents);
+
+			} else
 				strctPtr->addExoString(strctNode->getProperty("label"), "");
-			else
-				strctPtr->addExoString(strctNode->getProperty("label"), strctNode->findChild("text")->getContent());
+
 		} else if (strctNode->getName() == "strref") {
 			uint32 value;
 			Common::parseString(strctNode->getProperty("strref"), value);
 			strctPtr->addStrRef(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "resref") {
-			if (strctNode->findChild("text") == 0)
+			const XMLNode *text = strctNode->findChild("text");
+			if (text) {
+				bool base64 = false;
+				Common::parseString(strctNode->getProperty("base64"), base64, true);
+
+				const Common::UString contents = text->getContent();
+				if (base64) {
+					Common::SeekableReadStream *debase64 = Common::decodeBase64(contents);
+					strctPtr->addResRef(strctNode->getProperty("label"), debase64);
+
+				} else
+					strctPtr->addResRef(strctNode->getProperty("label"), contents);
+
+			} else
 				strctPtr->addResRef(strctNode->getProperty("label"), "");
-			else
-				strctPtr->addResRef(strctNode->getProperty("label"), strctNode->findChild("text")->getContent());
+
 		} else if (strctNode->getName() == "void") {
 			strctPtr->addVoid(
 				strctNode->getProperty("label"),

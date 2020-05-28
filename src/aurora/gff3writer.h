@@ -26,10 +26,14 @@
 #define AURORA_GFF3WRITER_H
 
 #include <list>
+#include <functional>
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/variant.hpp>
+
+#include "src/common/readstream.h"
+#include "src/common/memwritestream.h"
 
 #include "src/aurora/gff3file.h"
 #include "src/aurora/locstring.h"
@@ -91,34 +95,23 @@ private:
 
 	/** A special struct type for representing void data. */
 	struct VoidData {
-		Common::ScopedArray<byte> data;
-		uint32 size;
+		Common::ScopedPtr<Common::SeekableReadStream> data;
 
-		VoidData() : size(0) {
-		}
+		VoidData() { }
 
-		VoidData(const VoidData &voidData) : data(new byte[voidData.size]), size(voidData.size) {
-			std::memcpy(data.get(), voidData.data.get(), voidData.size);
-		}
+		VoidData(Common::SeekableReadStream *stream);
+		VoidData(const byte *bytes, size_t size);
 
-		VoidData &operator=(const VoidData &rhs) {
-			data.reset(new byte[rhs.size]);
-			std::memcpy(data.get(), rhs.data.get(), rhs.size);
-			return *this;
-		}
+		VoidData(const VoidData &voidData) { *this = voidData; }
+
+		VoidData &operator=(const VoidData &rhs);
 
 		bool operator==(const VoidData &rhs) const {
-			if (size != rhs.size)
-				return false;
-
-			return std::memcmp(data.get(), rhs.data.get(), size) == 0;
+			return data.get() == rhs.data.get();
 		}
 
 		bool operator<(const VoidData &rhs) const {
-			if (size != rhs.size)
-				return size < rhs.size;
-			else
-				return std::memcmp(data.get(), rhs.data.get(), size) < 0;
+			return std::less<Common::SeekableReadStream*>{}(data.get(), rhs.data.get());
 		}
 	};
 
@@ -147,6 +140,7 @@ private:
 	struct Value {
 		GFF3Struct::FieldType type;
 		ValueData data;
+		bool isRaw { false };
 
 		/** Equality operator for std::find. */
 		bool operator==(const Value &rhs) const {
@@ -256,10 +250,14 @@ public:
 	void addSint64(const Common::UString &label, int64 value);
 	/** Add a new ExoString. */
 	void addExoString(const Common::UString &label, const Common::UString &value);
+	/** Add a new ExoString. */
+	void addExoString(const Common::UString &label, Common::SeekableReadStream *value);
 	/** Add a new String reference. */
 	void addStrRef(const Common::UString &label, uint32 value);
 	/** Add a new Resource reference. */
 	void addResRef(const Common::UString &label, const Common::UString &value);
+	/** Add a new Resource reference. */
+	void addResRef(const Common::UString &label, Common::SeekableReadStream *value);
 	/** Add new void data. Data will be copied. */
 	void addVoid(const Common::UString &label, const byte *data, uint32 size);
 	/** Add a new Vector. */
