@@ -135,18 +135,18 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 				throw Common::Exception("GFF3Creator::readStructContents() Invalid size of orientation components");
 
 			XMLNode::Children::const_iterator iter = strctNode->getChildren().begin();
-			Common::UString xValue = (*iter)->getContent();
-			++iter;
-			Common::UString yValue = (*iter)->getContent();
-			++iter;
-			Common::UString zValue = (*iter)->getContent();
-			++iter;
-			Common::UString wValue = (*iter)->getContent();
+			const XMLNode *xValue = (*iter++)->findChild("text");
+			const XMLNode *yValue = (*iter++)->findChild("text");
+			const XMLNode *zValue = (*iter++)->findChild("text");
+			const XMLNode *wValue = (*iter++)->findChild("text");
 
-			Common::parseString(xValue, x);
-			Common::parseString(yValue, y);
-			Common::parseString(zValue, z);
-			Common::parseString(wValue, w);
+			if (!xValue || !yValue || !zValue)
+				throw Common::Exception("GFF3Creator::readStructContents() Orientation components empty");
+
+			Common::parseString(xValue->getContent(), x);
+			Common::parseString(yValue->getContent(), y);
+			Common::parseString(zValue->getContent(), z);
+			Common::parseString(wValue->getContent(), w);
 
 			strctPtr->addOrientation(strctNode->getProperty("label"), x, y, z, w);
 		} else if (strctNode->getName() == "locstring") {
