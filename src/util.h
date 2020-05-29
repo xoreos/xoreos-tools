@@ -36,6 +36,9 @@ void initPlatform();
 
 void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileName);
 
+/** Does this filename represent a stdin/stdout stream? */
+bool isFileStd(const Common::UString &file);
+
 Common::WriteStream *openFileOrStdOut(const Common::UString &file);
 Common::ReadStream  *openFileOrStdIn (const Common::UString &file);
 

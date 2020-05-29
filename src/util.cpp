@@ -52,15 +52,19 @@ void dumpStream(Common::SeekableReadStream &stream, const Common::UString &fileN
 	file.close();
 }
 
+bool isFileStd(const Common::UString &file) {
+	return file.empty() || file == "-";
+}
+
 Common::WriteStream *openFileOrStdOut(const Common::UString &file) {
-	if (!file.empty())
+	if (!isFileStd(file))
 		return new Common::WriteFile(file);
 
 	return new Common::StdOutStream;
 }
 
 Common::ReadStream *openFileOrStdIn(const Common::UString &file) {
-	if (!file.empty())
+	if (!isFileStd(file))
 		return new Common::ReadFile(file);
 
 	return new Common::StdInStream;
