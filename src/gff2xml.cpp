@@ -130,8 +130,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	using Common::CLI::makeAssigners;
 	using Aurora::GameID;
 
-	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input files"));
-	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
+	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
+	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output file"));
 	Parser parser(argv[0], "BioWare GFF to XML converter",
 	              "If no output file is given, the output is written to stdout.\n\n"
 	              "Depending on the game, LocStrings in GFF files might be encoded in various\n"
