@@ -459,7 +459,7 @@ void GFF3WriterStruct::addByte(const Common::UString &label, byte value) {
 	createField(GFF3Struct::kFieldTypeByte, label)->value.data = static_cast<uint32>(value);
 }
 
-void GFF3WriterStruct::addChar(const Common::UString &label, char value) {
+void GFF3WriterStruct::addChar(const Common::UString &label, uint8 value) {
 	createField(GFF3Struct::kFieldTypeChar, label)->value.data = value;
 }
 
