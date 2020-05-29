@@ -110,7 +110,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 
 		} else if (strctNode->getName() == "strref") {
 			uint32 value;
-			Common::parseString(strctNode->getProperty("strref"), value);
+			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addStrRef(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "resref") {
 			const XMLNode *text = strctNode->findChild("text");
