@@ -128,12 +128,12 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 			} else
 				strctPtr->addResRef(strctNode->getProperty("label"), "");
 
-		} else if (strctNode->getName() == "void") {
-			strctPtr->addVoid(
-				strctNode->getProperty("label"),
-				reinterpret_cast<const byte*>(strctNode->findChild("text")->getContent().c_str()),
-				strctNode->findChild("text")->getContent().size()
-			);
+		} else if (strctNode->getName() == "data") {
+			const XMLNode *textNode = strctNode->findChild("text");
+			Common::UString text = textNode ? textNode->getContent() : "";
+
+			Common::SeekableReadStream *debase64 = Common::decodeBase64(text);
+			strctPtr->addVoid(strctNode->getProperty("label"), debase64);
 		} else if (strctNode->getName() == "vector") {
 			float x, y, z;
 
