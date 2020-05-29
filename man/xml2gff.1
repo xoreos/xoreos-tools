@@ -1,4 +1,4 @@
-.Dd October 13, 2018
+.Dd May 30, 2020
 .Dt XML2GFF 1
 .Os
 .Sh NAME
@@ -66,8 +66,8 @@ The root element is either
 or
 .Dq gff4
 which determines the GFF format to write (GFF4 is currently unsupported)
-and it must have a type property with a maximum of 4 letters. If more are
-written, they will be cut to 4 letters.
+and it must have a type property with a maximum of 4 characters. If there
+are more than 4, only the first 4 will be used.
 .Pp
 The element under the gff tag always needs to be a
 .Dq struct
@@ -101,7 +101,7 @@ struct tags including the root one can only have
 .Dq exostring ,
 .Dq resref ,
 .Dq locstring ,
-.Dq void ,
+.Dq data ,
 .Dq orientation ,
 .Dq vector ,
 .Dq strref ,
@@ -117,13 +117,63 @@ accepts only struct child tags
 .It Fl h
 .It Fl Fl help
 Show a help text and exit.
+.It Fl Fl nwn
+Read LocStrings in an encoding appropriate for
+.Em Neverwinter Nights .
+.It Fl Fl nwn2
+Read LocStrings in an encoding appropriate for
+.Em Neverwinter Nights 2 .
+.It Fl Fl kotor
+Read LocStrings in an encoding appropriate for
+.Em Knights of the Old Republic .
+.It Fl Fl kotor2
+Read LocStrings in an encoding appropriate for
+.Em Knights of the Old Republic II .
+.It Fl Fl jade
+Read LocStrings in an encoding appropriate for
+.Em Jade Empire .
+.It Fl Fl witcher
+Read LocStrings in an encoding appropriate for
+.Em The Witcher .
+.It Fl Fl dragonage
+Read LocStrings in an encoding appropriate for
+.Em Dragon Age: Origins .
+.It Fl Fl dragonage2
+Read LocStrings in an encoding appropriate for
+.Em Dragon Age II .
+.It Fl Fl encoding Ar str
+Override an encoding.
+The string has to be of the form n=encoding, for example 0=cp-1252
+to override the encoding of the (ungendered) language ID 0 to be
+Windows codepage 1252.
+To override several encodings, specify the --encoding parameter
+multiple times.
 .El
 .Sh EXAMPLES
 Convert
 .Pa file1.xml
 into a V3.2 GFF file:
 .Pp
-.Dl $ xml2gff file1.xml file1.gff
+.Dl $ xml2gff file1.xml file2.gff
+.Pp
+Convert stdin
+into a V3.2 GFF file:
+.Pp
+.Dl $ xml2gff - file1.gff
+.Pp
+Convert
+.Pa file1.xml
+into a V3.2 GFF file, using
+.Em Neverwinter Nights
+encoding tables:
+.Pp
+.Dl $ xml2gff file1.xml file2.gff
+.Pp
+Convert
+.Pa file1.xml
+into a V3.2 GFF file, and encode language ID 0 in LocStrings
+as Windows CP-1250:
+.Dl $ gff2xml --encoding 0=cp1250 file1.xml file2.gff
 .Sh SEE ALSO
 .Xr gff2xml 1
 .Pp
