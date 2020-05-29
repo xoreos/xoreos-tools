@@ -36,7 +36,14 @@ namespace XML {
 
 class GFFCreator {
 public:
-	static void create(Common::WriteStream &output, Common::ReadStream &input, const Common::UString &inputFileName);
+	enum class GFF3Version {
+		Unknown,
+
+		V3_2,
+		V3_3
+	};
+
+	static void create(Common::WriteStream &output, Common::ReadStream &input, const Common::UString &inputFileName, GFF3Version gff3Version);
 };
 
 } // End of namespace XML

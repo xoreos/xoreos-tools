@@ -47,11 +47,12 @@ typedef std::map<uint32, Common::Encoding> EncodingOverrides;
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game, EncodingOverrides &encOverrides);
+                      Aurora::GameID &game, EncodingOverrides &encOverrides,
+                      XML::GFFCreator::GFF3Version &gff3Version);
 
 bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOverrides);
 
-void createGFF(const Common::UString &inFile, const Common::UString &outFile);
+void createGFF(const Common::UString &inFile, const Common::UString &outFile, XML::GFFCreator::GFF3Version gff3Version);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -62,11 +63,12 @@ int main(int argc, char **argv) {
 
 		Aurora::GameID game = Aurora::kGameIDUnknown;
 		EncodingOverrides encOverrides;
+		XML::GFFCreator::GFF3Version gff3Version = XML::GFFCreator::GFF3Version::Unknown;
 
 		int returnValue = 1;
 		Common::UString inFile, outFile;
 
-		if (!parseCommandLine(args, returnValue, inFile, outFile, game, encOverrides))
+		if (!parseCommandLine(args, returnValue, inFile, outFile, game, encOverrides, gff3Version))
 			return returnValue;
 
 		LangMan.declareLanguages(game);
@@ -74,7 +76,14 @@ int main(int argc, char **argv) {
 		for (EncodingOverrides::const_iterator e = encOverrides.begin(); e != encOverrides.end(); ++e)
 			LangMan.overrideEncoding(e->first, e->second);
 
-		createGFF(inFile, outFile);
+		if (gff3Version == XML::GFFCreator::GFF3Version::Unknown) {
+			if (game == Aurora::kGameIDWitcher)
+				gff3Version = XML::GFFCreator::GFF3Version::V3_3;
+			else
+				gff3Version = XML::GFFCreator::GFF3Version::V3_2;
+		}
+
+		createGFF(inFile, outFile, gff3Version);
 	} catch (...) {
 		Common::exceptionDispatcherError();
 	}
@@ -108,7 +117,8 @@ bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOve
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
-                      Aurora::GameID &game, EncodingOverrides &encOverrides) {
+                      Aurora::GameID &game, EncodingOverrides &encOverrides,
+                      XML::GFFCreator::GFF3Version &gff3Version) {
 
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
@@ -119,6 +129,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	using Common::CLI::makeEndArgs;
 	using Common::CLI::makeAssigners;
 	using Aurora::GameID;
+	using XML::GFFCreator;
 
 	std::vector<Common::UString> args;
 	NoOption inFileOpt(false, new ValGetter<Common::UString &>(inFile, "input file"));
@@ -160,15 +171,20 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addSpace();
 	parser.addOption("encoding", "Override an encoding", kContinueParsing,
 	                 new Callback<EncodingOverrides &>("str", parseEncodingOverride, encOverrides));
+	parser.addSpace();
+	parser.addOption("v32", "Create GFF3 V3.2 file (default)", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GFFCreator::GFF3Version>(GFFCreator::GFF3Version::V3_2, gff3Version)));
+	parser.addOption("v33", "Create GFF3 V3.3 file (default for The Witcher)", kContinueParsing,
+	                 makeAssigners(new ValAssigner<GFFCreator::GFF3Version>(GFFCreator::GFF3Version::V3_3, gff3Version)));
 
 	return parser.process(argv);
 }
 
-void createGFF(const Common::UString &inFile, const Common::UString &outFile) {
+void createGFF(const Common::UString &inFile, const Common::UString &outFile, XML::GFFCreator::GFF3Version gff3Version) {
 	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 	Common::ScopedPtr<Common::WriteStream> gff(openFileOrStdOut(outFile));
 
-	XML::GFFCreator::create(*gff, *xml, inFile);
+	XML::GFFCreator::create(*gff, *xml, inFile, gff3Version);
 
 	gff->flush();
 }

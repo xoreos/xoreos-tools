@@ -29,8 +29,8 @@
 
 namespace XML {
 
-void GFF3Creator::create(const XML::XMLNode &root, uint32 id, Common::WriteStream &file) {
-	Aurora::GFF3Writer gff3(id);
+void GFF3Creator::create(const XML::XMLNode &root, uint32 id, Common::WriteStream &file, uint32 version) {
+	Aurora::GFF3Writer gff3(id, version);
 
 	if (root.getChildren().size() > 1)
 		throw Common::Exception("GFF3Creator::create() More than one root struct");

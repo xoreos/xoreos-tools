@@ -30,7 +30,19 @@
 
 namespace XML {
 
-void GFFCreator::create(Common::WriteStream &output, Common::ReadStream &input, const Common::UString &inputFileName) {
+static uint32 getGFF3Version(GFFCreator::GFF3Version v) {
+	switch (v) {
+		default:
+		case GFFCreator::GFF3Version::V3_2:
+			return MKTAG('V', '3', '.', '2');
+		case GFFCreator::GFF3Version::V3_3:
+			return MKTAG('V', '3', '.', '3');
+	}
+}
+
+void GFFCreator::create(Common::WriteStream &output, Common::ReadStream &input, const Common::UString &inputFileName,
+		GFF3Version gff3Version) {
+
 	XMLParser xml(input, true, inputFileName);
 
 	const XMLNode &xmlRoot = xml.getRoot();
@@ -39,7 +51,7 @@ void GFFCreator::create(Common::WriteStream &output, Common::ReadStream &input, 
 	const uint32 typeId = MKTAG(*type.getPosition(0), *type.getPosition(1), *type.getPosition(2), *type.getPosition(3));
 
 	if (xmlRoot.getName() == "gff3") {
-		XML::GFF3Creator::create(xmlRoot, typeId, output);
+		XML::GFF3Creator::create(xmlRoot, typeId, output, getGFF3Version(gff3Version));
 	} else if (xmlRoot.getName() == "gff4") {
 		throw Common::Exception("TODO: Add GFF4 writer support");
 	} else {

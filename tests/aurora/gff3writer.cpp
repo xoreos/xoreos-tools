@@ -52,7 +52,7 @@ GTEST_TEST(GFF3Writer, WriteEmptyStruct) {
 }
 
 GTEST_TEST(GFF3Writer, WriteMultipleEmptyStructs) {
-	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '));
+	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '), MKTAG('V', '3', '.', '2'));
 	writer.getTopLevel()->addStruct("EmptyStruct1");
 	writer.getTopLevel()->addStruct("EmptyStruct2");
 	Aurora::GFF3WriterStructPtr strct = writer.getTopLevel()->addStruct("EmptyStruct3");
@@ -79,7 +79,7 @@ GTEST_TEST(GFF3Writer, WriteSingleStruct) {
 	LangMan.addLanguage(Aurora::kLanguageEnglish, 0, Common::kEncodingASCII);
 	LangMan.addLanguage(Aurora::kLanguageGerman, 1, Common::kEncodingASCII);
 
-	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '));
+	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '), MKTAG('V', '3', '.', '2'));
 	writer.getTopLevel()->addByte("FieldByte", 8);
 	writer.getTopLevel()->addChar("FieldChar", 'C');
 	writer.getTopLevel()->addUint16("FieldUint16", 16);
@@ -168,7 +168,7 @@ GTEST_TEST(GFF3Writer, WriteSingleStruct) {
 }
 
 GTEST_TEST(GFF3Writer, WriteList) {
-	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '));
+	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '), MKTAG('V', '3', '.', '2'));
 	Aurora::GFF3WriterListPtr list1 = writer.getTopLevel()->addList("FieldList1");
 	list1->addStruct("EmptyStruct1");
 	list1->addStruct("EmptyStruct2");
@@ -193,7 +193,7 @@ GTEST_TEST(GFF3Writer, WriteList) {
 }
 
 GTEST_TEST(GFF3Writer, WriteNestedStructs) {
-	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '));
+	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '), MKTAG('V', '3', '.', '2'));
 	Aurora::GFF3WriterStructPtr struct1 = writer.getTopLevel()->addStruct("Struct1");
 	Aurora::GFF3WriterStructPtr struct2 = writer.getTopLevel()->addStruct("Struct2");
 	Aurora::GFF3WriterStructPtr struct3 = struct2->addStruct("Struct3");
@@ -238,7 +238,7 @@ GTEST_TEST(GFF3Writer, WriteNestedStructs) {
 GTEST_TEST(GFF3Writer, WriteEquivalentValues) {
 	static const byte vData[8] = { '!', '[', 'D', 'A', 'T', 'A', ']', '!' };
 
-	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '));
+	Aurora::GFF3Writer writer(MKTAG('G', 'F', 'F', ' '), MKTAG('V', '3', '.', '2'));
 	Aurora::GFF3WriterStructPtr strct = writer.getTopLevel();
 
 	strct->addUint64("FieldUint64_1", 230194124);

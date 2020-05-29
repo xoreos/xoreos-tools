@@ -49,7 +49,7 @@ typedef boost::shared_ptr<GFF3WriterList> GFF3WriterListPtr;
 class GFF3Writer : boost::noncopyable {
 public:
 	// TODO: Add a constructor consuming a GFF3File object.
-	GFF3Writer(uint32 id, uint32 version = MKTAG('V', '3', '.', '2'));
+	GFF3Writer(uint32 id, uint32 version);
 
 	/** Get the top-level struct. */
 	GFF3WriterStructPtr getTopLevel();
