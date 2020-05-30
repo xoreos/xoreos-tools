@@ -12,10 +12,17 @@
 .Nm
 converts XML files created by the
 .Xr gff2xml 1
-tool back into the BioWare GFF3/GFF4 format.
-Also note that currently, only the GFF3.2 format is supported.
+tool back into the BioWare GFF3 format.
 .Pp
-The format of the input XML is rather simple, but has many different elements.
+Unsupported Features:
+.Bl -bullet -compact
+.It
+GFF4 (V4.0/V4.1)
+.It
+Color codes in strings
+.El
+.Pp
+The format of the input XML is rather simple, but there are many different elements.
 .Bd -literal
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <gff3 type="ID">
@@ -111,7 +118,7 @@ and
 tags.
 The
 .Dq list
-accepts only struct child tags
+accepts only struct child tags.
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Fl h
