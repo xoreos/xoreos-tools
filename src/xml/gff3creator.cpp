@@ -52,11 +52,11 @@ void GFF3Creator::create(const XML::XMLNode &root, uint32 id, Common::WriteStrea
 void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora::GFF3WriterStructPtr strctPtr) {
 	for (const auto &strctNode : strctNodes) {
 		if (strctNode->getName() == "byte") {
-			byte value;
+			uint8 value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addByte(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "char") {
-			uint8 value;
+			int8 value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addChar(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "sint16") {
