@@ -94,7 +94,7 @@ void LanguageManager::addLanguages(const Declaration *languageDeclarations, size
 		addLanguage(*languageDeclarations++);
 }
 
-static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] = {
+static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][16] = {
 	{ // Neverwinter Nights
 		{ kLanguageEnglish           ,                0, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
 		{ kLanguageFrench            ,                1, Common::kEncodingCP1252 , Common::kEncodingCP1252  },
@@ -156,7 +156,9 @@ static const LanguageManager::Declaration kLanguageDeclarations[kGameIDMAX][14] 
 		{ kLanguageRussian           ,              132, Common::kEncodingUTF8   , Common::kEncodingCP1251  },
 		{ kLanguageInvalid           , kLanguageInvalid, Common::kEncodingInvalid, Common::kEncodingInvalid }
 	}, { // The Witcher
-		{ kLanguageDebug             ,                0, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageDebug1            ,                0, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageDebug2            ,                1, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
+		{ kLanguageDebug3            ,                2, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguageEnglish           ,                3, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguagePolish            ,                5, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
 		{ kLanguageGerman            ,               10, Common::kEncodingUTF8   , Common::kEncodingUTF8    },
