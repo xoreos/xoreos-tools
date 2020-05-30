@@ -7,7 +7,7 @@
 .Sh SYNOPSIS
 .Nm xml2gff
 .Ar input_file
-.Op Ar output_file
+.Ar output_file
 .Sh DESCRIPTION
 .Nm
 converts XML files created by the
@@ -117,6 +117,9 @@ accepts only struct child tags
 .It Fl h
 .It Fl Fl help
 Show a help text and exit.
+.El
+.Pp
+.Bl -tag -width xxxx -compact
 .It Fl Fl nwn
 Read LocStrings in an encoding appropriate for
 .Em Neverwinter Nights .
@@ -148,6 +151,24 @@ to override the encoding of the (ungendered) language ID 0 to be
 Windows codepage 1252.
 To override several encodings, specify the --encoding parameter
 multiple times.
+.El
+.Pp
+.Bl -tag -width xxxx -compact
+.It Fl Fl v32
+Create a GFF3 V3.2. This is the default for all games except
+.Em The Witcher .
+.It Fl Fl v33
+Create a GFF3 V3.3. This is the default for
+.Em The Witcher .
+.El
+.Pp
+.Bl -tag -width xxxx -compact
+.It Ar input_file
+The XML file to convert.
+If the input is -, the XML data is read from
+.Dv stdin .
+.It Ar output_file
+The GFF file will be written there.
 .El
 .Sh EXAMPLES
 Convert
