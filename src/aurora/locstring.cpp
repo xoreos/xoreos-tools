@@ -231,6 +231,11 @@ bool LocString::operator<(const LocString &rhs) const {
 		return false;
 
 	for (auto lhsStr = _strings.begin(), rhsStr = rhs._strings.begin(); lhsStr != _strings.end() && rhsStr != rhs._strings.end(); ++lhsStr, ++rhsStr) {
+		if (lhsStr->first < rhsStr->first)
+			return true;
+		if (lhsStr->first > rhsStr->first)
+			return false;
+
 		if (lhsStr->second < rhsStr->second)
 			return true;
 		if (lhsStr->second > rhsStr->second)
