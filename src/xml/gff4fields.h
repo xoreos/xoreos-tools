@@ -544,6 +544,10 @@ static const GFF4FieldName kGFF4FieldName[] = {
 	{   5020, "CutsceneShadowRadius"                            },
 	{   5021, "CutsceneLightOcclusion"                          },
 
+	{   5231, "CutscenePlotGuid"                                },
+	{   5232, "CutscenePlotFlag"                                },
+	{   5233, "CutscenePlotTest"                                },
+
 	{   5050, "CutsceneHenchmanTag"                             },
 	{   5051, "CutsceneHenchmanActions"                         },
 
