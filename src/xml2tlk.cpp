@@ -102,15 +102,16 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption outFileOpt(true, new ValGetter<Common::UString &>(outFile, "output files"));
 	Parser parser(argv[0], "XML to BioWare TLK converter",
 	              "If no input file is given, the input is read from stdin.\n\n"
-	              "One of --version* to specify the version of TLK to write is mandatory,\n"
-	              "as is one of the flags for the encoding. If the XML file provides a\n"
-	              "language ID, the --language flag is optional.\n\n"
-	              "There is no way to autodetect the encoding of strings in TLK files,\n"
-	              "so an encoding must be specified. Alternatively, the game this TLK\n"
-	              "is from can be given, and an appropriate encoding according to that\n"
-	              "game and the language ID is used.\n",
+	              "One of the flags to identify the game this TLK is to be used is mandatory,\n"
+	              "as is a language ID unless the XML file specifies one (in which case, the\n"
+	              "--language parameter can be used to override it).\n\n"
+	              "By default, the version of TLK fitting for the specified game and the\n"
+	              "encoding fitting for the game and language is used. These choice can be\n"
+	              "overwritten by using the appropriate encoding and --version flags.\n",
 	              returnValue, makeEndArgs(&inFileOpt, &outFileOpt));
 
+	encoding = Common::kEncodingInvalid;
+	game     = Aurora::kGameIDUnknown;
 	version  = XML::TLKCreator::kVersionInvalid;
 	language = Aurora::kLanguageInvalid;
 
@@ -126,34 +127,34 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	                 new ValGetter<uint32_t &>(language, "id"));
 
 	parser.addSpace();
-	parser.addOption("cp1250", "Read TLK strings as Windows CP-1250", kContinueParsing,
+	parser.addOption("cp1250", "Write TLK strings as Windows CP-1250", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1250, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("cp1251", "Read TLK strings as Windows CP-1251", kContinueParsing,
+	parser.addOption("cp1251", "Write TLK strings as Windows CP-1251", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1251, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("cp1252", "Read TLK strings as Windows CP-1252", kContinueParsing,
+	parser.addOption("cp1252", "Write TLK strings as Windows CP-1252", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP1252, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("cp932", "Read TLK strings as Windows CP-932", kContinueParsing,
+	parser.addOption("cp932", "Write TLK strings as Windows CP-932", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP932, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("cp936", "Read TLK strings as Windows CP-936", kContinueParsing,
+	parser.addOption("cp936", "Write TLK strings as Windows CP-936", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP936, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("cp949", "Read TLK strings as Windows CP-949", kContinueParsing,
+	parser.addOption("cp949", "Write TLK strings as Windows CP-949", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP949, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("cp950", "Read TLK strings as Windows CP-950", kContinueParsing,
+	parser.addOption("cp950", "Write TLK strings as Windows CP-950", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingCP950, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("utf8", "Read TLK strings as UTF-8", kContinueParsing,
+	parser.addOption("utf8", "Write TLK strings as UTF-8", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF8, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("utf16le", "Read TLK strings as little-endian UTF-16", kContinueParsing,
+	parser.addOption("utf16le", "Write TLK strings as little-endian UTF-16", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16LE, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
-	parser.addOption("utf16be", "Read TLK strings as big-endian UTF-16", kContinueParsing,
+	parser.addOption("utf16be", "Write TLK strings as big-endian UTF-16", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingUTF16BE, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDUnknown, game)));
 	parser.addSpace();
@@ -181,7 +182,41 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addOption("dragonage2", "Use Dragon Age II encodings", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Encoding>(Common::kEncodingInvalid, encoding),
 	                 new ValAssigner<GameID>(Aurora::kGameIDDragonAge2, game)));
-	return parser.process(argv);
+
+	if (!parser.process(argv))
+		return false;
+
+	if (game == Aurora::kGameIDUnknown) {
+		parser.usage();
+		returnValue = Common::CLI::kEndFail;
+		return false;
+	}
+
+	if (version == XML::TLKCreator::kVersionInvalid) {
+		switch (game) {
+			case Aurora::kGameIDNWN:     XOREOS_FALLTHROUGH;
+			case Aurora::kGameIDNWN2:    XOREOS_FALLTHROUGH;
+			case Aurora::kGameIDKotOR:   XOREOS_FALLTHROUGH;
+			case Aurora::kGameIDKotOR2:  XOREOS_FALLTHROUGH;
+			case Aurora::kGameIDWitcher:
+				version = XML::TLKCreator::kVersion30;
+				break;
+			case Aurora::kGameIDJade:
+				version = XML::TLKCreator::kVersion40;
+				break;
+			case Aurora::kGameIDSonic:
+			case Aurora::kGameIDDragonAge:
+			case Aurora::kGameIDDragonAge2:
+				std::printf("Specified game uses unsupported TLK version.\n");
+				returnValue = Common::CLI::kEndFail;
+				return false;
+
+			default:
+				break;
+		}
+	}
+
+	return true;
 }
 
 void createTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding,

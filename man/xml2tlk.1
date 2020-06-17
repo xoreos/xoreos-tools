@@ -1,4 +1,4 @@
-.Dd July 23, 2015
+.Dd June 17, 2020
 .Dt XML2TLK 1
 .Os
 .Sh NAME
@@ -88,13 +88,25 @@ files found in the Nintendo DS game
 To manually select the encoding, this tool provides a wide range
 command line options for various encodings.
 .Pp
-Alternatively, the game this TLK is from can be specified and
+To start, the game this TLK is for needs to be specified. If the
+XML file contains a language ID (which is the case for XML created
+from TLK files of every game except
+.Em Sonic Chronicles: The Dark Brotherhood ) ,
 .Nm
-will write the strings in an appropriate encoding for that
-game and the language ID.
-Please note that this does not work for the game
+then writes strings in the encoding fitting for that game with this
+language. Alternatively, the language can be overwritten as well
+as the encoding itself.
+.Pp
+Likewise, the version of TLK file to create is by default taken from
+the game parameter, i.e. a TLK file that can be used with this particular
+game is written. This can also be overwritten with the appropriate flag.
+Please note that as of yet, the versions used by the games
 .Em Sonic Chronicles: The Dark Brotherhood ,
-since its TLK files do not provide a language ID.
+.Em Dragon Age: Origins
+and
+.Em Dragon Age II
+are not supported. There, a version flag needs to be given (but the
+created file will not be readable by the game itself).
 .Sh OPTIONS
 .Bl -tag -width xxxx -compact
 .It Fl h
