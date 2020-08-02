@@ -21,6 +21,7 @@ License:        GPLv3
 URL:            https://xoreos.org/
 Source0:        https://github.com/xoreos/xoreos-tools/releases/download/%{version}/%{name}-%{version}.tar.gz
 
+BuildRequires:  gcc-c++, make
 BuildRequires:  zlib-devel, xz-devel, libxml2-devel
 BuildRequires:  libtool, gettext
 
