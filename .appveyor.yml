@@ -1,0 +1,73 @@
+version: 0.0.6+AppVeyor.{build}
+os: Visual Studio 2019
+clone_depth: 1
+
+matrix:
+  fast_finish: true
+
+platform: x64
+configuration: Debug
+
+environment:
+  global:
+    BOOST_ROOT: C:\Libraries\boost_1_73_0
+    BOOST_INCLUDEDIR: C:\Libraries\boost_1_73_0
+
+    AUTORECONF_CMD: WANT_AUTOMAKE=latest AUTOMAKE='automake --foreign' autoreconf -fi
+    CONFIGURE_CMD: CC=cl CXX=cl ./configure --prefix=/
+    INSTALL_CMD: make install
+
+    APPVEYOR_SAVE_CACHE_ON_ERROR: true
+
+  matrix:
+    - CMAKE_GENERATOR: Visual Studio 16 2019
+      MSVC_ARCH: amd64_x64
+      MSBUILD_PLATFORM: Win32
+      PROGRAM_FILES_DIR: C:\Program Files
+
+      BOOST_LIBRARYDIR: C:\Libraries\boost_1_73_0\lib64-msvc-14.2
+
+      VCPKG_INC_DIR: C:\tools\vcpkg\installed\x64-windows\include
+      VCPKG_LIB_DIR: C:\tools\vcpkg\installed\x64-windows\lib
+      VCPKG_BIN_DIR: C:\tools\vcpkg\installed\x64-windows\bin
+
+install:
+  - set PATH=C:\msys64\usr\bin;%VCPKG_BIN_DIR%;%PATH%
+
+  # Updating vcpkg, because 2020.06.15-nohash has broken zlib
+  # (see https://github.com/microsoft/vcpkg/issues/12775)
+  - vcpkg version
+  - cd C:\Tools\vcpkg
+  - git pull
+  - .\bootstrap-vcpkg.bat -disableMetrics
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - vcpkg version
+
+  # Install library dependencies
+  - vcpkg install libiconv:x64-windows
+  - vcpkg install zlib:x64-windows
+  - vcpkg install liblzma:x64-windows
+  - vcpkg install libxml2:x64-windows
+
+build_script:
+  # Set up environment
+  - set PATH=%VCPKG_BIN_DIR%;%PATH%
+  - set PROGRAMFILES=%PROGRAM_FILES_DIR%
+
+  # Generate build files
+  - cmake -Bbuild -H. -G"%CMAKE_GENERATOR%"
+          -DCMAKE_TOOLCHAIN_FILE=c:\tools\vcpkg\scripts\buildsystems\vcpkg.cmake
+          -DBOOST_LIBRARYDIR=%BOOST_LIBRARYDIR%
+
+  # Compile
+  - cmake --build build
+
+  # Copy dependency DLLs
+  - copy /y %BOOST_LIBRARYDIR%\*.dll build\bin\Debug
+  - copy /y %VCPKG_BIN_DIR%\*.dll build\bin\Debug
+
+  # Build and run unit tests
+  - cmake --build build --target check
+
+cache:
+  - C:\tools\vcpkg\installed
