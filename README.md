@@ -45,7 +45,7 @@ Currently, the following tools are included:
 * ncsdecomp: Decompile NWScript bytecode
 
 
-Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
+Status [![Build Status](https://travis-ci.org/xoreos/xoreos-tools.svg?branch=master)](https://travis-ci.org/xoreos/xoreos-tools) [![Build status (AppVeyor)](https://ci.appveyor.com/api/projects/status/yaw9e79y8ffpqijo?svg=true)](https://ci.appveyor.com/project/DrMcCoy/xoreos-tools/branch/master) [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
 ------
 
 
