@@ -22,13 +22,14 @@
  *  Compress (deflate) and decompress (inflate) using zlib's DEFLATE algorithm.
  */
 
+#include <memory>
+
 #include <zlib.h>
 
 #include <boost/scope_exit.hpp>
 
 #include "src/common/deflate.h"
 #include "src/common/error.h"
-#include "src/common/scopedptr.h"
 #include "src/common/ptrvector.h"
 #include "src/common/memreadstream.h"
 
@@ -85,7 +86,7 @@ static void initDeflateZStream(z_stream &strm, int windowBits, size_t size, cons
 byte *decompressDeflate(const byte *data, size_t inputSize,
                         size_t outputSize, int windowBits) {
 
-	ScopedArray<byte> decompressedData(new byte[outputSize]);
+	std::unique_ptr<byte[]> decompressedData = std::make_unique<byte[]>(outputSize);
 
 	z_stream strm;
 	BOOST_SCOPE_EXIT( (&strm) ) {
@@ -143,7 +144,7 @@ byte *decompressDeflateWithoutOutputSize(const byte *data, size_t inputSize, siz
 	if (zResult != Z_STREAM_END)
 		throw Exception("Failed to inflate: %s (%d)", zError(zResult), zResult);
 
-	ScopedArray<byte> decompressedData(new byte[strm.total_out]);
+	std::unique_ptr<byte[]> decompressedData = std::make_unique<byte[]>(strm.total_out);
 	for (size_t i = 0; i < buffers.size(); ++i) {
 		if (i == buffers.size() - 1)
 			std::memcpy(decompressedData.get() + i * frameSize, buffers[i], strm.total_out % frameSize);
@@ -158,7 +159,7 @@ byte *decompressDeflateWithoutOutputSize(const byte *data, size_t inputSize, siz
 SeekableReadStream *decompressDeflate(ReadStream &input, size_t inputSize,
                                       size_t outputSize, int windowBits) {
 
-	ScopedArray<byte> compressedData(new byte[inputSize]);
+	std::unique_ptr<byte[]> compressedData = std::make_unique<byte[]>(inputSize);
 	if (input.read(compressedData.get(), inputSize) != inputSize)
 		throw Exception(kReadError);
 
@@ -169,7 +170,7 @@ SeekableReadStream *decompressDeflate(ReadStream &input, size_t inputSize,
 
 SeekableReadStream *decompressDeflateWithoutOutputSize(ReadStream &input, size_t inputSize,
                                                        int windowBits, unsigned int frameSize) {
-	ScopedArray<byte> compressedData(new byte[inputSize]);
+	std::unique_ptr<byte[]> compressedData = std::make_unique<byte[]>(inputSize);
 	if (input.read(compressedData.get(), inputSize) != inputSize)
 		throw Exception(kReadError);
 
@@ -192,7 +193,7 @@ size_t decompressDeflateChunk(SeekableReadStream &input, int windowBits,
 	strm.avail_out = outputSize;
 	strm.next_out  = output;
 
-	ScopedArray<byte> inputData(new byte[frameSize]);
+	std::unique_ptr<byte[]> inputData = std::make_unique<byte[]>(frameSize);
 
 	/* As long as the zlib stream has not ended, the chunk end was not reached.
 	 * Read a frame from the input buffer and decompress. */
@@ -249,7 +250,7 @@ byte *compressDeflate(const byte *data, size_t inputSize, size_t &outputSize, in
 			throw Exception("Failed to deflate: %s (%d)", zError(zResult), zResult);
 	} while (strm.avail_in != 0);
 
-	ScopedArray<byte> compressedData(new byte[strm.total_out]);
+	std::unique_ptr<byte[]> compressedData = std::make_unique<byte[]>(strm.total_out);
 	for (size_t i = 0; i < buffers.size(); ++i) {
 		if (i == buffers.size() - 1)
 			std::memcpy(compressedData.get() + i * frameSize, buffers[i], strm.total_out % frameSize);
@@ -263,7 +264,7 @@ byte *compressDeflate(const byte *data, size_t inputSize, size_t &outputSize, in
 }
 
 SeekableReadStream *compressDeflate(ReadStream &input, size_t inputSize, int windowBits, unsigned int frameSize) {
-	ScopedArray<byte> uncompressedData(new byte[inputSize]);
+	std::unique_ptr<byte[]> uncompressedData = std::make_unique<byte[]>(inputSize);
 	if (input.read(uncompressedData.get(), inputSize) != inputSize)
 		throw Exception(kReadError);
 

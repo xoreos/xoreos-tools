@@ -24,8 +24,9 @@
 
 #include <cassert>
 
+#include <memory>
+
 #include "src/common/base64.h"
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -209,7 +210,7 @@ void encodeBase64(ReadStream &data, std::list<UString> &base64, size_t lineLengt
 
 SeekableReadStream *decodeBase64(const UString &base64) {
 	const size_t dataLength = (countLength(base64) / 4) * 3;
-	ScopedArray<byte> data(new byte[dataLength]);
+	std::unique_ptr<byte[]> data = std::make_unique<byte[]>(dataLength);
 
 	MemoryWriteStream output(data.get(), dataLength);
 
@@ -221,7 +222,7 @@ SeekableReadStream *decodeBase64(const UString &base64) {
 
 SeekableReadStream *decodeBase64(const std::list<UString> &base64) {
 	const size_t dataLength = (countLength(base64) / 4) * 3;
-	ScopedArray<byte> data(new byte[dataLength]);
+	std::unique_ptr<byte[]> data = std::make_unique<byte[]>(dataLength);
 
 	MemoryWriteStream output(data.get(), dataLength);
 

@@ -30,12 +30,13 @@
 #include <cstring>
 #include <cassert>
 
+#include <memory>
+
 #include "src/common/system.h"
 #include "src/common/strutil.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/ustring.h"
-#include "src/common/scopedptr.h"
 #include "src/common/memreadstream.h"
 #include "src/common/memwritestream.h"
 
@@ -381,7 +382,7 @@ size_t searchBackwards(SeekableReadStream &haystack, const byte *needle, size_t 
 	const size_t sizeFile = haystack.size();
 	const size_t maxBack  = MIN<size_t>(maxReadBack, sizeFile);
 
-	ScopedArray<byte> buf(new byte[kReadBufferSize + needleSize]);
+	std::unique_ptr<byte[]> buf = std::make_unique<byte[]>(kReadBufferSize + needleSize);
 
 	size_t backRead = needleSize;
 	while (backRead < maxBack) {
