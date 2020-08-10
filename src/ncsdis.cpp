@@ -27,10 +27,10 @@
 #include <cstdio>
 
 #include <vector>
+#include <memory>
 
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
@@ -149,8 +149,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void disNCS(const Common::UString &inFile, const Common::UString &outFile,
             Aurora::GameID &game, Command &command, bool printStack, bool printControlTypes) {
 
-	Common::ScopedPtr<Common::SeekableReadStream> ncs(new Common::ReadFile(inFile));
-	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
+	std::unique_ptr<Common::SeekableReadStream> ncs = std::make_unique<Common::ReadFile>(inFile);
+	std::unique_ptr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	status("Disassembling script...");
 	NWScript::Disassembler disassembler(*ncs, game);

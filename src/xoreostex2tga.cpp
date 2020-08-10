@@ -25,9 +25,10 @@
 #include <cstring>
 #include <cstdio>
 
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -188,7 +189,7 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
 		}
 	}
 
-	Common::ScopedPtr<Images::Decoder> image(openImage(in, type, deswizzle));
+	std::unique_ptr<Images::Decoder> image(openImage(in, type, deswizzle));
 	if (flip)
 		image->flipVertically();
 

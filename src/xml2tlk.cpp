@@ -25,9 +25,10 @@
 #include <cstring>
 #include <cstdio>
 
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -223,7 +224,7 @@ void createTLK(const Common::UString &inFile, const Common::UString &outFile, Co
                XML::TLKCreator::Version &version, uint32 &language) {
 
 	Common::WriteFile tlk(outFile);
-	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
+	std::unique_ptr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 
 	XML::TLKCreator::create(tlk, *xml, version, encoding, inFile, language);
 

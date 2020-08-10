@@ -25,9 +25,10 @@
 #include <cstring>
 #include <cstdio>
 
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -185,11 +186,11 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 void dumpGFF(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding, bool nwnPremium,
              bool sacFile) {
 
-	Common::ScopedPtr<Common::SeekableReadStream> gff(new Common::ReadFile(inFile));
+	std::unique_ptr<Common::SeekableReadStream> gff = std::make_unique<Common::ReadFile>(inFile);
 
-	Common::ScopedPtr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium, sacFile));
+	std::unique_ptr<XML::GFFDumper> dumper(XML::GFFDumper::identify(*gff, nwnPremium, sacFile));
 
-	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
+	std::unique_ptr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	dumper->dump(*out, gff.release(), encoding, nwnPremium);
 

@@ -25,6 +25,7 @@
 #include <cstring>
 
 #include <set>
+#include <memory>
 
 #include "src/version/version.h"
 
@@ -33,7 +34,6 @@
 #include "src/common/platform.h"
 #include "src/common/cli.h"
 #include "src/common/readfile.h"
-#include "src/common/scopedptr.h"
 
 #include "src/aurora/obbfile.h"
 #include "src/aurora/zipfile.h"
@@ -73,13 +73,13 @@ int main(int argc, char **argv) {
 		if (!parseCommandLine(args, returnValue, command, archive, files))
 			return returnValue;
 
-		Common::ScopedPtr<Common::SeekableReadStream> stream(new Common::ReadFile(archive));
+		std::unique_ptr<Common::SeekableReadStream> stream = std::make_unique<Common::ReadFile>(archive);
 
-		Common::ScopedPtr<Aurora::Archive> arc;
+		std::unique_ptr<Aurora::Archive> arc;
 		if (isPKZIP(*stream))
-			arc.reset(new Aurora::ZIPFile(stream.release()));
+			arc = std::make_unique<Aurora::ZIPFile>(stream.release());
 		else
-			arc.reset(new Aurora::OBBFile(stream.release()));
+			arc = std::make_unique<Aurora::OBBFile>(stream.release());
 
 		files = Archives::fixPathSeparator(files);
 

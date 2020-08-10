@@ -27,10 +27,10 @@
 #include <cstdio>
 
 #include <vector>
+#include <memory>
 
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
@@ -112,7 +112,7 @@ void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::US
 	if (id.size() > 4)
 		throw Common::Exception("\"%s\" is not a valid GFF id", id.c_str());
 
-	Common::ScopedPtr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
+	std::unique_ptr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
 
 	const uint32 inID      = in->readUint32BE();
 	const uint32 inVersion = in->readUint32BE();

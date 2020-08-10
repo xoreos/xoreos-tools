@@ -22,9 +22,10 @@
  *  Tool to convert XML files back into GFF.
  */
 
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -181,8 +182,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 void createGFF(const Common::UString &inFile, const Common::UString &outFile, XML::GFFCreator::GFF3Version gff3Version) {
-	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
-	Common::ScopedPtr<Common::WriteStream> gff(openFileOrStdOut(outFile));
+	std::unique_ptr<Common::ReadStream> xml(openFileOrStdIn(inFile));
+	std::unique_ptr<Common::WriteStream> gff(openFileOrStdOut(outFile));
 
 	XML::GFFCreator::create(*gff, *xml, inFile, gff3Version);
 

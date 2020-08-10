@@ -25,9 +25,10 @@
 #include <cstring>
 #include <cstdio>
 
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -127,7 +128,7 @@ static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
 static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
 void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
-	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
+	std::unique_ptr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	if      (format == kFormat2DA)
 		twoDA.writeASCII(*out);
@@ -140,7 +141,7 @@ void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format f
 }
 
 Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
-	Common::ScopedPtr<Common::SeekableReadStream> fStream(stream);
+	std::unique_ptr<Common::SeekableReadStream> fStream(stream);
 
 	const uint32 id = Aurora::AuroraFile::readHeaderID(*fStream);
 	fStream->seek(0);
@@ -158,7 +159,7 @@ Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
 }
 
 void convert2DA(const Common::UString &file, const Common::UString &outFile, Format format) {
-	Common::ScopedPtr<Aurora::TwoDAFile> twoDA(get2DAGDA(new Common::ReadFile(file)));
+	std::unique_ptr<Aurora::TwoDAFile> twoDA(get2DAGDA(new Common::ReadFile(file)));
 
 	write2DA(*twoDA, outFile, format);
 }

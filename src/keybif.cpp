@@ -82,12 +82,12 @@ int main(int argc, char **argv) {
 			std::printf("Packing %s ... \n", group.name.c_str());
 
 			Common::WriteFile writeBIFFile(group.name);
-			Common::ScopedPtr<Aurora::KEYDataWriter> dataFile;
+			std::unique_ptr<Aurora::KEYDataWriter> dataFile;
 
 			if (group.name.endsWith(".bzf"))
-				dataFile.reset(new Aurora::BZFWriter(group.files.size(), writeBIFFile));
+				dataFile = std::make_unique<Aurora::BZFWriter>(group.files.size(), writeBIFFile);
 			else
-				dataFile.reset(new Aurora::BIFWriter(group.files.size(), writeBIFFile));
+				dataFile = std::make_unique<Aurora::BIFWriter>(group.files.size(), writeBIFFile);
 
 			size_t i = 1;
 			for (const auto& file : group.files) {

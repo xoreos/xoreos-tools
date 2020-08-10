@@ -22,16 +22,17 @@
  * Command-line tool to fix broken, non-standard NWN2 XML files.
  */
 
+#include <cstdio>
+#include <cctype>
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <algorithm>
-#include <stdio.h>
-#include <ctype.h>
+#include <memory>
 
 #include "src/util.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
@@ -91,11 +92,11 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
  */
 void convert(Common::UString &inFile, Common::UString &outFile) {
 	// Read the input file into memory
-	Common::ScopedPtr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
-	Common::ScopedPtr<Common::WriteStream> out(openFileOrStdOut(outFile));
+	std::unique_ptr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
+	std::unique_ptr<Common::WriteStream> out(openFileOrStdOut(outFile));
 
 	// Filter the input
-	Common::ScopedPtr<Common::SeekableReadStream> fixed(Aurora::XMLFixer::fixXMLStream(*in));
+	std::unique_ptr<Common::SeekableReadStream> fixed(Aurora::XMLFixer::fixXMLStream(*in));
 
 	// Write to output
 	out->writeStream(*fixed);

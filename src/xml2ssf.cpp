@@ -25,9 +25,10 @@
 #include <cstring>
 #include <cstdio>
 
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -130,7 +131,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 
 void createSSF(const Common::UString &inFile, const Common::UString &outFile, Aurora::GameID game) {
 	Common::WriteFile ssf(outFile);
-	Common::ScopedPtr<Common::ReadStream> xml(openFileOrStdIn(inFile));
+	std::unique_ptr<Common::ReadStream> xml(openFileOrStdIn(inFile));
 
 	XML::SSFCreator::create(ssf, *xml, game, inFile);
 
