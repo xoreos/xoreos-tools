@@ -25,7 +25,8 @@
 #ifndef NWSCRIPT_DECOMPILER_H
 #define NWSCRIPT_DECOMPILER_H
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/writestream.h"
 
 #include "src/nwscript/ncsfile.h"
@@ -46,7 +47,7 @@ private:
 	void writeInstruction(Common::WriteStream &out, const Instruction *instruction, size_t indent);
 	void writeIndent(Common::WriteStream &out, size_t indent);
 
-	Common::ScopedPtr<NCSFile> _ncs;
+	std::unique_ptr<NCSFile> _ncs;
 };
 
 } // End of namespace NWScript

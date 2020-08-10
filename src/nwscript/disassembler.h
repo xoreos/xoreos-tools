@@ -26,11 +26,11 @@
 #define NWSCRIPT_DISASSEMBLER_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/noncopyable.hpp>
 
 #include "src/common/types.h"
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -68,7 +68,7 @@ public:
 
 
 private:
-	Common::ScopedPtr<NCSFile> _ncs;
+	std::unique_ptr<NCSFile> _ncs;
 
 
 	void writeInfo       (Common::WriteStream &out);

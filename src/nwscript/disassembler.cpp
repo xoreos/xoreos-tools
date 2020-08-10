@@ -53,7 +53,7 @@ static Common::UString quoteString(const Common::UString &str) {
 
 
 Disassembler::Disassembler(Common::SeekableReadStream &ncs, Aurora::GameID game) {
-	_ncs.reset(new NCSFile(ncs, game));
+	_ncs = std::make_unique<NCSFile>(ncs, game);
 }
 
 Disassembler::Disassembler(NCSFile *ncs) : _ncs(ncs) {

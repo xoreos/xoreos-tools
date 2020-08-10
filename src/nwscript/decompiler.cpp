@@ -31,7 +31,7 @@
 namespace NWScript {
 
 Decompiler::Decompiler(Common::SeekableReadStream &ncs, Aurora::GameID game) {
-	_ncs.reset(new NCSFile(ncs, game));
+	_ncs = std::make_unique<NCSFile>(ncs, game);
 }
 
 void Decompiler::createNSS(Common::WriteStream &out) {
