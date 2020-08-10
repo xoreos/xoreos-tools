@@ -426,7 +426,7 @@ GTEST_TEST(BZFWriter, writeFile) {
 	EXPECT_EQ(bifFile.getResourceSize(0), strlen(kFileData) + 1);
 
 	Common::SeekableReadStream *txtStream = bifFile.getResource(0);
-	Common::ScopedArray<char> txt(new char[txtStream->size()]);
+	std::unique_ptr<char[]> txt = std::make_unique<char[]>(txtStream->size());
 	txtStream->read(txt.get(), txtStream->size());
 
 	EXPECT_STREQ(txt.get(), kFileData);
@@ -460,21 +460,21 @@ GTEST_TEST(BZFWriter, writeMultipleFiles) {
 	EXPECT_EQ(bzfFile.getResourceSize(2), kLogoDataSize);
 
 	Common::SeekableReadStream *dataStream = bzfFile.getResource(0);
-	Common::ScopedArray<char> txt(new char[dataStream->size()]);
+	std::unique_ptr<char[]> txt = std::make_unique<char[]>(dataStream->size());
 	dataStream->read(txt.get(), dataStream->size());
 
 	EXPECT_STREQ(txt.get(), kFileData);
 	delete dataStream;
 
 	dataStream = bzfFile.getResource(1);
-	txt.reset(new char[dataStream->size()]);
+	txt = std::make_unique<char[]>(dataStream->size());
 	dataStream->read(txt.get(), dataStream->size());
 
 	EXPECT_STREQ(txt.get(), kFileData);
 	delete dataStream;
 
 	dataStream = bzfFile.getResource(2);
-	Common::ScopedArray<byte> logoData(new byte[dataStream->size()]);
+	std::unique_ptr<byte[]> logoData = std::make_unique<byte[]>(dataStream->size());
 	dataStream->read(logoData.get(), dataStream->size());
 	for (size_t i = 0; i < ARRAYSIZE(kLogoData); ++i) {
 		EXPECT_EQ(logoData[i], kLogoData[i]);
