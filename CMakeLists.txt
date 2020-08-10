@@ -65,7 +65,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
-if(CMAKE_HOST_WIN32 AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC"))
+if(CMAKE_HOST_WIN32 AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
   # Needed by _wfopen in src/common/platform.cpp for mingw32 (but technically not for mingw-w64)
   set(CMAKE_CXX_EXTENSIONS ON)
 endif()
