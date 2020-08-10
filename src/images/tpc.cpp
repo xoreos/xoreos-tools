@@ -192,7 +192,7 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 			layerSize = dataSize;
 
 		for (size_t i = 0; i < mipMapCount; i++) {
-			Common::ScopedPtr<MipMap> mipMap(new MipMap);
+			std::unique_ptr<MipMap> mipMap = std::make_unique<MipMap>();
 
 			mipMap->width  = MAX<uint32>(layerWidth,  1);
 			mipMap->height = MAX<uint32>(layerHeight, 1);
@@ -263,7 +263,7 @@ bool TPC::checkCubeMap(uint32 &width, uint32 &height) {
 }
 
 bool TPC::checkAnimated(uint32 &width, uint32 &height, uint32 &dataSize) {
-	Common::ScopedPtr<Common::SeekableReadStream> txiStream(getTXI());
+	std::unique_ptr<Common::SeekableReadStream> txiStream(getTXI());
 
 	// If there is no TXI data, it cannot be animated
 	if (!txiStream)
@@ -309,7 +309,7 @@ void TPC::readData(Common::SeekableReadStream &tpc, byte encoding) {
 		const bool widthPOT = ((*mipMap)->width & ((*mipMap)->width - 1)) == 0;
 		const bool swizzled = (encoding == kEncodingSwizzledBGRA) && widthPOT;
 
-		(*mipMap)->data.reset(new byte[(*mipMap)->size]);
+		(*mipMap)->data = std::make_unique<byte[]>((*mipMap)->size);
 
 		if (swizzled) {
 			std::vector<byte> tmp((*mipMap)->size);
@@ -325,10 +325,10 @@ void TPC::readData(Common::SeekableReadStream &tpc, byte encoding) {
 
 			// Unpacking 8bpp grayscale data into RGB
 			if (encoding == kEncodingGray) {
-				Common::ScopedArray<byte> dataGray((*mipMap)->data.release());
+				std::unique_ptr<byte[]> dataGray((*mipMap)->data.release());
 
 				(*mipMap)->size = (*mipMap)->width * (*mipMap)->height * 3;
-				(*mipMap)->data.reset(new byte[(*mipMap)->size]);
+				(*mipMap)->data = std::make_unique<byte[]>((*mipMap)->size);
 
 				for (int i = 0; i < ((*mipMap)->width * (*mipMap)->height); i++)
 					std::memset((*mipMap)->data.get() + i * 3, dataGray[i], 3);
@@ -345,7 +345,7 @@ void TPC::readTXIData(Common::SeekableReadStream &tpc) {
 	if (_txiDataSize == 0)
 		return;
 
-	_txiData.reset(new byte[_txiDataSize]);
+	_txiData = std::make_unique<byte[]>(_txiDataSize);
 
 	if (tpc.read(_txiData.get(), _txiDataSize) != _txiDataSize)
 		throw Common::Exception(Common::kReadError);

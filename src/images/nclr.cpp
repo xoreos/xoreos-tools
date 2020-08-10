@@ -49,7 +49,8 @@
 
 #include <cstring>
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/readstream.h"
@@ -63,8 +64,8 @@ static const uint32 kPLTTID = MKTAG('P', 'L', 'T', 'T');
 namespace Images {
 
 const byte *NCLR::load(Common::SeekableReadStream &nclr) {
-	Common::ScopedPtr<Common::SeekableSubReadStreamEndian> nclrEndian;
-	Common::ScopedArray<const byte> palette;
+	std::unique_ptr<Common::SeekableSubReadStreamEndian> nclrEndian;
+	std::unique_ptr<const byte[]> palette;
 
 	try {
 		nclrEndian.reset(open(nclr));
@@ -138,7 +139,7 @@ const byte *NCLR::readPalette(Common::SeekableSubReadStreamEndian &nclr) {
 
 	nclr.seek(startOffset);
 
-	Common::ScopedArray<byte> palette(new byte[colorCount * 3]);
+	std::unique_ptr<byte[]> palette = std::make_unique<byte[]>(colorCount * 3);
 
 	for (uint32 i = 0; i < colorCount; i += 3) {
 		const uint16 color = nclr.readUint16();

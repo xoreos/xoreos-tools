@@ -26,11 +26,11 @@
 #define IMAGES_DECODER_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/noncopyable.hpp>
 
 #include "src/common/types.h"
-#include "src/common/scopedptr.h"
 #include "src/common/ptrvector.h"
 
 #include "src/images/types.h"
@@ -51,7 +51,7 @@ public:
 		int    height; ///< The mip map's height.
 		uint32 size;   ///< The mip map's size in bytes.
 
-		Common::ScopedArray<byte> data; ///< The mip map's data.
+		std::unique_ptr<byte[]> data; ///< The mip map's data.
 
 		MipMap();
 		MipMap(const MipMap &mipMap);

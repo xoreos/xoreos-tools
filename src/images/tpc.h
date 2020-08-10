@@ -25,7 +25,7 @@
 #ifndef IMAGES_TPC_H
 #define IMAGES_TPC_H
 
-#include "src/common/scopedptr.h"
+#include <memory>
 
 #include "src/images/decoder.h"
 
@@ -50,7 +50,7 @@ public:
 	Common::SeekableReadStream *getTXI() const;
 
 private:
-	Common::ScopedArray<byte> _txiData;
+	std::unique_ptr<byte[]> _txiData;
 	size_t _txiDataSize;
 
 	bool _isAnimated;

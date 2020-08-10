@@ -22,7 +22,8 @@
  *  DDS texture (DirectDraw Surface or BioWare's own format) loading).
  */
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
@@ -138,7 +139,7 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds, DataType &dataType
 
 	_mipMaps.reserve(mipMapCount);
 	for (uint32 i = 0; i < mipMapCount; i++) {
-		MipMap *mipMap = new MipMap;
+		std::unique_ptr<MipMap> mipMap = std::make_unique<MipMap>();
 
 		mipMap->width  = MAX<uint32>(width , 1);
 		mipMap->height = MAX<uint32>(height, 1);
@@ -148,7 +149,7 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds, DataType &dataType
 		width  >>= 1;
 		height >>= 1;
 
-		_mipMaps.push_back(mipMap);
+		_mipMaps.push_back(mipMap.release());
 	}
 
 }
@@ -195,7 +196,7 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds, DataType &dataType)
 
 	// Detect how many mip maps are in the DDS
 	do {
-		Common::ScopedPtr<MipMap> mipMap(new MipMap);
+		std::unique_ptr<MipMap> mipMap = std::make_unique<MipMap>();
 
 		mipMap->width  = MAX<uint32>(width,  1);
 		mipMap->height = MAX<uint32>(height, 1);
@@ -224,7 +225,7 @@ void DDS::setSize(MipMap &mipMap) {
 
 void DDS::readData(Common::SeekableReadStream &dds, DataType dataType) {
 	for (MipMaps::iterator mipMap = _mipMaps.begin(); mipMap != _mipMaps.end(); ++mipMap) {
-		(*mipMap)->data.reset(new byte[(*mipMap)->size]);
+		(*mipMap)->data = std::make_unique<byte[]>((*mipMap)->size);
 
 		if (dataType == kDataType4444) {
 

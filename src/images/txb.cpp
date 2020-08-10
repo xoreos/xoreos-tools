@@ -143,7 +143,7 @@ void TXB::readHeader(Common::SeekableReadStream &txb, byte &encoding) {
 
 	_mipMaps.reserve(mipMapCount);
 	for (uint32 i = 0; i < mipMapCount; i++) {
-		Common::ScopedPtr<MipMap> mipMap(new MipMap);
+		std::unique_ptr<MipMap> mipMap = std::make_unique<MipMap>();
 
 		mipMap->width  = width;
 		mipMap->height = height;
@@ -178,7 +178,7 @@ void TXB::readData(Common::SeekableReadStream &txb, byte encoding) {
 		const bool widthPOT = ((*mipMap)->width & ((*mipMap)->width - 1)) == 0;
 		const bool swizzled = needDeSwizzle && widthPOT;
 
-		(*mipMap)->data.reset(new byte[(*mipMap)->size]);
+		(*mipMap)->data = std::make_unique<byte[]>((*mipMap)->size);
 		if (txb.read((*mipMap)->data.get(), (*mipMap)->size) != (*mipMap)->size)
 			throw Common::Exception(Common::kReadError);
 
@@ -188,12 +188,12 @@ void TXB::readData(Common::SeekableReadStream &txb, byte encoding) {
 			const uint32 oldSize = (*mipMap)->size;
 			const uint32 newSize = (*mipMap)->size * 3;
 
-			Common::ScopedArray<byte> tmp1(new byte[newSize]);
+			std::unique_ptr<byte[]> tmp1 = std::make_unique<byte[]>(newSize);
 			for (uint32 i = 0; i < oldSize; i++)
 				tmp1[i * 3 + 0] = tmp1[i * 3 + 1] = tmp1[i * 3 + 2] = (*mipMap)->data[i];
 
 			if (swizzled) {
-				Common::ScopedArray<byte> tmp2(new byte[newSize]);
+				std::unique_ptr<byte[]> tmp2 = std::make_unique<byte[]>(newSize);
 				deSwizzle(tmp2.get(), tmp1.get(), (*mipMap)->width, (*mipMap)->height, 3);
 
 				tmp1.swap(tmp2);
@@ -203,7 +203,7 @@ void TXB::readData(Common::SeekableReadStream &txb, byte encoding) {
 			(*mipMap)->size = newSize;
 
 		} else if (swizzled) {
-			Common::ScopedArray<byte> tmp(new byte[(*mipMap)->size]);
+			std::unique_ptr<byte[]> tmp = std::make_unique<byte[]>((*mipMap)->size);
 
 			deSwizzle(tmp.get(), (*mipMap)->data.get(), (*mipMap)->width, (*mipMap)->height, 4);
 
@@ -220,7 +220,7 @@ void TXB::readTXIData(Common::SeekableReadStream &txb) {
 	if (_txiDataSize == 0)
 		return;
 
-	_txiData.reset(new byte[_txiDataSize]);
+	_txiData = std::make_unique<byte[]>(_txiDataSize);
 
 	if (txb.read(_txiData.get(), _txiDataSize) != _txiDataSize)
 		throw Common::Exception(Common::kReadError);

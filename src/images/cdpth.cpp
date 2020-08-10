@@ -121,7 +121,7 @@ void CDPTH::createImage(uint32 width, uint32 height) {
 	_mipMaps.back()->height = height;
 	_mipMaps.back()->size   = width * height * 2;
 
-	_mipMaps.back()->data.reset(new byte[_mipMaps.back()->size]);
+	_mipMaps.back()->data = std::make_unique<byte[]>(_mipMaps.back()->size);
 	std::memset(_mipMaps.back()->data.get(), 0xFF, _mipMaps.back()->size);
 }
 

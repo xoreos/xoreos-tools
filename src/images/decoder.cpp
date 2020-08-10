@@ -24,7 +24,8 @@
 
 #include <cassert>
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/memreadstream.h"
@@ -54,7 +55,7 @@ Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
 	height = mipMap.height;
 	size   = mipMap.size;
 
-	data.reset(new byte[size]);
+	data = std::make_unique<byte[]>(size);
 
 	std::memcpy(data.get(), mipMap.data.get(), size);
 
@@ -151,9 +152,9 @@ void Decoder::decompress(MipMap &out, const MipMap &in, PixelFormat format) {
 	out.height = in.height;
 	out.size   = MAX(out.width * out.height * 4, 64);
 
-	out.data.reset(new byte[out.size]);
+	out.data = std::make_unique<byte[]>(out.size);
 
-	Common::ScopedPtr<Common::MemoryReadStream> stream(new Common::MemoryReadStream(in.data.get(), in.size));
+	std::unique_ptr<Common::MemoryReadStream> stream = std::make_unique<Common::MemoryReadStream>(in.data.get(), in.size);
 
 	if      (format == kPixelFormatDXT1)
 		decompressDXT1(out.data.get(), *stream, out.width, out.height, out.width * 4);

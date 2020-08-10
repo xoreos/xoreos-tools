@@ -24,7 +24,8 @@
 
 #include <cstdio>
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/error.h"
 #include "src/common/ustring.h"
 #include "src/common/writefile.h"
@@ -86,7 +87,7 @@ static void writePixel(Common::WriteStream &file, const byte *&data, PixelFormat
 }
 
 static Common::WriteStream *openTGA(const Common::UString &fileName, int width, int height) {
-	Common::WriteFile *file = new Common::WriteFile(fileName);
+	std::unique_ptr<Common::WriteFile> file = std::make_unique<Common::WriteFile>(fileName);
 
 	file->writeByte(0);     // ID Length
 	file->writeByte(0);     // Palette size
@@ -103,7 +104,7 @@ static Common::WriteStream *openTGA(const Common::UString &fileName, int width, 
 
 	file->writeByte(0);
 
-	return file;
+	return file.release();
 }
 
 static void writeMipMap(Common::WriteStream &stream, const Decoder::MipMap &mipMap, PixelFormat format) {
@@ -130,7 +131,7 @@ void dumpTGA(const Common::UString &fileName, const Decoder &image) {
 		height += mipMap.height;
 	}
 
-	Common::ScopedPtr<Common::WriteStream> file(openTGA(fileName, width, height));
+	std::unique_ptr<Common::WriteStream> file(openTGA(fileName, width, height));
 
 	for (size_t i = 0; i < image.getLayerCount(); i++)
 		writeMipMap(*file, image.getMipMap(0, i), image.getFormat());
