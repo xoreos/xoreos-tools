@@ -25,12 +25,12 @@
 #include <cstdio>
 
 #include <vector>
+#include <memory>
 
 #include "src/common/util.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/hash.h"
-#include "src/common/scopedptr.h"
 #include "src/common/filepath.h"
 #include "src/common/readstream.h"
 #include "src/common/writefile.h"
@@ -222,7 +222,7 @@ void extractFiles(const Aurora::Archive &archive, Aurora::GameID game, bool dire
 		std::fflush(stdout);
 
 		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(archive.getResource(r->index));
+			std::unique_ptr<Common::SeekableReadStream> stream(archive.getResource(r->index));
 
 			dumpStream(*stream, name);
 
@@ -254,7 +254,7 @@ void extractFiles(const Aurora::NSBTXFile &nsbtx, const std::set<Common::UString
 		std::fflush(stdout);
 
 		try {
-			Common::ScopedPtr<Common::SeekableReadStream> stream(nsbtx.getResource(r->index));
+			std::unique_ptr<Common::SeekableReadStream> stream(nsbtx.getResource(r->index));
 
 			dumper(*stream, name);
 
