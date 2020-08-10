@@ -109,7 +109,7 @@ void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
 	assert(tlk);
 
 	try {
-		_gff.reset(new GFF4File(tlk, kTLKID));
+		_gff = std::make_unique<GFF4File>(tlk, kTLKID);
 
 		const GFF4Struct &top = _gff->getTopLevel();
 
@@ -144,7 +144,7 @@ void TalkTable_GFF::load02(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		Common::ScopedPtr<Entry> entry(new Entry(*s));
+		std::unique_ptr<Entry> entry = std::make_unique<Entry>(*s);
 
 		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, entry.get()));
 		if (result.second)
@@ -170,7 +170,7 @@ void TalkTable_GFF::load05(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		Common::ScopedPtr<Entry> entry(new Entry(*s));
+		std::unique_ptr<Entry> entry = std::make_unique<Entry>(*s);
 
 		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, entry.get()));
 		if (result.second)
@@ -205,7 +205,7 @@ Common::UString TalkTable_GFF::readString02(const Entry &entry) const {
 }
 
 Common::UString TalkTable_GFF::readString05(const Entry &entry, bool bigEndian) const {
-	Common::ScopedPtr<Common::SeekableReadStream>
+	std::unique_ptr<Common::SeekableReadStream>
 		huffTree (_gff->getTopLevel().getData(kGFF4HuffTalkStringHuffTree)),
 		bitStream(_gff->getTopLevel().getData(kGFF4HuffTalkStringBitStream));
 

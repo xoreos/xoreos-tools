@@ -28,8 +28,9 @@
 
 #include <cassert>
 
-#include "src/common/scopedptr.h"
+#include <memory>
 #include "src/common/readstream.h"
+
 #include "src/common/writestream.h"
 #include "src/common/writefile.h"
 #include "src/common/util.h"

@@ -22,8 +22,9 @@
  *  Base class for BioWare's talk tables.
  */
 
+#include <memory>
+
 #include "src/common/util.h"
-#include "src/common/scopedptr.h"
 #include "src/common/readstream.h"
 
 #include "src/aurora/aurorafile.h"
@@ -51,7 +52,7 @@ void TalkTable::setLanguageID(uint32 UNUSED(id)) {
 }
 
 TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding encoding) {
-	Common::ScopedPtr<Common::SeekableReadStream> tlkStream(tlk);
+	std::unique_ptr<Common::SeekableReadStream> tlkStream(tlk);
 	if (!tlkStream)
 		return 0;
 

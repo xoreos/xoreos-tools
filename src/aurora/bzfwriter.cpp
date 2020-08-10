@@ -23,7 +23,8 @@
  * A writer for BZF (lzma compressed BIF) archive files.
  */
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/lzma.h"
 
 #include "src/aurora/bzfwriter.h"
@@ -56,7 +57,7 @@ void BZFWriter::add(Common::SeekableReadStream &data, Aurora::FileType type) {
 
 	_writer.seek(0, Common::SeekableWriteStream::kOriginEnd);
 
-	Common::ScopedPtr<Common::SeekableReadStream> stream(Common::compressLZMA1(data, length));
+	std::unique_ptr<Common::SeekableReadStream> stream(Common::compressLZMA1(data, length));
 	_writer.writeStream(*stream);
 
 	_writer.seek(20 + _currentFiles * 16);

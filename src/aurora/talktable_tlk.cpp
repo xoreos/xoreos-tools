@@ -52,7 +52,7 @@ TalkTable_TLK::Entry::Entry() : offset(0xFFFFFFFF), length(0xFFFFFFFF),
 
 
 TalkTable_TLK::TalkTable_TLK(Common::Encoding encoding, uint32 languageID) :
-	TalkTable(encoding), _tlk(0), _languageID(languageID) {
+	TalkTable(encoding), _languageID(languageID) {
 
 }
 
@@ -159,8 +159,8 @@ Common::UString TalkTable_TLK::readString(const Entry &entry) const {
 	if (length == 0)
 		return "";
 
-	Common::ScopedPtr<Common::MemoryReadStream> data(_tlk->readStream(length));
-	Common::ScopedPtr<Common::MemoryReadStream> parsed(LangMan.preParseColorCodes(*data));
+	std::unique_ptr<Common::MemoryReadStream> data(_tlk->readStream(length));
+	std::unique_ptr<Common::MemoryReadStream> parsed(LangMan.preParseColorCodes(*data));
 
 	return Common::readString(*parsed, _encoding);
 }
@@ -292,7 +292,7 @@ void TalkTable_TLK::write30(Common::WriteStream &out) const {
 	out.writeUint32LE(_languageID);
 
 	Entries entries;
-	Common::ScopedPtr<Common::SeekableReadStream> data(collectEntries(entries));
+	std::unique_ptr<Common::SeekableReadStream> data(collectEntries(entries));
 
 	const uint32 stringsOffset = 20 + entries.size() * 40;
 
@@ -322,7 +322,7 @@ void TalkTable_TLK::write40(Common::WriteStream &out) const {
 	out.writeUint32LE(_languageID);
 
 	Entries entries;
-	Common::ScopedPtr<Common::SeekableReadStream> data(collectEntries(entries));
+	std::unique_ptr<Common::SeekableReadStream> data(collectEntries(entries));
 
 	const uint32 stringsOffset = 32 + entries.size() * 10;
 
