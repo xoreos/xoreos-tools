@@ -27,10 +27,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include <boost/noncopyable.hpp>
 
-#include "src/common/scopedptr.h"
 #include "src/common/ptrlist.h"
 #include "src/common/ustring.h"
 
@@ -61,11 +61,13 @@ public:
 	const XMLNode &getRoot() const;
 
 private:
-	Common::ScopedPtr<XMLNode> _rootNode;
+	std::unique_ptr<XMLNode> _rootNode;
 };
 
 class XMLNode : boost::noncopyable {
 public:
+	~XMLNode();
+
 	typedef std::map<Common::UString, Common::UString> Properties;
 	typedef Common::PtrList<const XMLNode> Children;
 
@@ -102,7 +104,6 @@ private:
 
 
 	XMLNode(_xmlNode &node, bool makeLower = false, XMLNode *parent = 0);
-	~XMLNode();
 
 	void load(_xmlNode &node, bool makeLower);
 

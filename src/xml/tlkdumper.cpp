@@ -22,7 +22,8 @@
  *  Dump TLKs into XML files.
  */
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/strutil.h"
 #include "src/common/readstream.h"
 #include "src/common/writestream.h"
@@ -38,7 +39,7 @@ namespace XML {
 void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *input,
                      Common::Encoding encoding) {
 
-	Common::ScopedPtr<Aurora::TalkTable> tlk(Aurora::TalkTable::load(input, encoding));
+	std::unique_ptr<Aurora::TalkTable> tlk(Aurora::TalkTable::load(input, encoding));
 	if (!tlk)
 		return;
 

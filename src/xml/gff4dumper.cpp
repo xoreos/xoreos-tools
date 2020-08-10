@@ -70,8 +70,8 @@ void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *i
 		_xml.reset();
 	} BOOST_SCOPE_EXIT_END
 
-	_gff4.reset(new Aurora::GFF4File(input));
-	_xml.reset(new XMLWriter(output));
+	_gff4 = std::make_unique<Aurora::GFF4File>(input);
+	_xml = std::make_unique<XMLWriter>(output);
 
 	if (_encoding == Common::kEncodingInvalid)
 			_encoding = _gff4->getNativeEncoding();

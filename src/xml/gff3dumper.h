@@ -25,7 +25,8 @@
 #ifndef XML_GFF3DUMPER_H
 #define XML_GFF3DUMPER_H
 
-#include "src/common/scopedptr.h"
+#include <memory>
+
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -53,8 +54,8 @@ public:
 private:
 	bool _sacFile;
 
-	Common::ScopedPtr<Aurora::GFF3File> _gff3;
-	Common::ScopedPtr<XMLWriter> _xml;
+	std::unique_ptr<Aurora::GFF3File> _gff3;
+	std::unique_ptr<XMLWriter> _xml;
 
 	void dumpLocString(const Aurora::LocString &locString);
 	void dumpField(const Aurora::GFF3Struct &strct, const Common::UString &field);

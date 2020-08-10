@@ -27,8 +27,8 @@
 
 #include <set>
 #include <map>
+#include <memory>
 
-#include "src/common/scopedptr.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/gff4file.h"
@@ -68,8 +68,8 @@ private:
 
 	FieldNames _fieldNames;
 
-	Common::ScopedPtr<Aurora::GFF4File> _gff4;
-	Common::ScopedPtr<XMLWriter> _xml;
+	std::unique_ptr<Aurora::GFF4File> _gff4;
+	std::unique_ptr<XMLWriter> _xml;
 
 	Common::Encoding _encoding;
 

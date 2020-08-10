@@ -25,7 +25,7 @@
 #ifndef XML_GFF3CREATOR_H
 #define XML_GFF3CREATOR_H
 
-#include "src/common/scopedptr.h"
+#include <memory>
 
 #include "src/aurora/gff3writer.h"
 

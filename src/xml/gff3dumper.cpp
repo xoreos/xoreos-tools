@@ -54,12 +54,12 @@ void GFF3Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *i
 	} BOOST_SCOPE_EXIT_END
 
 	if (_sacFile) {
-		_gff3.reset(new Aurora::SACFile(input));
+		_gff3 = std::make_unique<Aurora::SACFile>(input);
 	} else {
-		_gff3.reset(new Aurora::GFF3File(input, 0xFFFFFFFF, allowNWNPremium));
+		_gff3 = std::make_unique<Aurora::GFF3File>(input, 0xFFFFFFFF, allowNWNPremium);
 	}
 
-	_xml.reset(new XMLWriter(output));
+	_xml = std::make_unique<XMLWriter>(output);
 
 	_xml->openTag("gff3");
 	_xml->addProperty("type", Common::tagToString(_gff3->getType(), true));
@@ -163,7 +163,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 			} catch (...) {
 				_xml->addProperty("base64", "true");
 
-				Common::ScopedPtr<Common::SeekableReadStream> data(strct.getData(field));
+				std::unique_ptr<Common::SeekableReadStream> data(strct.getData(field));
 				_xml->setContents(*data);
 			}
 			break;
@@ -181,7 +181,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 		case Aurora::GFF3Struct::kFieldTypeVoid:
 			{
-				Common::ScopedPtr<Common::SeekableReadStream> data(strct.getData(field));
+				std::unique_ptr<Common::SeekableReadStream> data(strct.getData(field));
 				_xml->setContents(*data);
 			}
 			break;
