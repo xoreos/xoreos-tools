@@ -90,8 +90,8 @@ Decoder &Decoder::operator=(const Decoder &decoder) {
 	_mipMaps.clear();
 	_mipMaps.reserve(decoder._mipMaps.size());
 
-	for (MipMaps::const_iterator m = decoder._mipMaps.begin(); m != decoder._mipMaps.end(); ++m)
-		_mipMaps.push_back(new MipMap(**m));
+	for (const auto &mipMap : decoder._mipMaps)
+		_mipMaps.emplace_back(std::make_unique<MipMap>(*mipMap));
 
 	return *this;
 }

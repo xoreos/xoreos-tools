@@ -84,14 +84,14 @@ void CDPTH::readCells(ReadContext &ctx) {
 			if (offset < 0x4000)
 				break;
 
-			ctx.cells.push_back(0);
+			ctx.cells.emplace_back(nullptr);
 			if (size == 0)
 				continue;
 
 			uint32_t pos = ctx.cdpth->pos();
 
 			Common::SeekableSubReadStream cellData(ctx.cdpth, offset, offset + size);
-			ctx.cells.back() = Aurora::Small::decompress(cellData);
+			ctx.cells.back().reset(Aurora::Small::decompress(cellData));
 
 			if (ctx.cells.back()->size() != 8192)
 				throw Common::Exception("Invalid size for cell %u: %u", (uint)i, (uint)ctx.cells.back()->size());
@@ -116,7 +116,7 @@ void CDPTH::checkConsistency(ReadContext &ctx) {
 void CDPTH::createImage(uint32_t width, uint32_t height) {
 	_format = kPixelFormatDepth16;
 
-	_mipMaps.push_back(new MipMap);
+	_mipMaps.emplace_back(std::make_unique<MipMap>());
 	_mipMaps.back()->width  = width;
 	_mipMaps.back()->height = height;
 	_mipMaps.back()->size   = width * height * 2;
@@ -136,7 +136,7 @@ void CDPTH::drawImage(ReadContext &ctx) {
 
 	uint16_t *data = reinterpret_cast<uint16_t *>(_mipMaps.back()->data.get());
 	for (size_t i = 0; i < ctx.cells.size(); i++) {
-		Common::SeekableReadStream *cell = ctx.cells[i];
+		Common::SeekableReadStream *cell = ctx.cells[i].get();
 		if (!cell)
 			continue;
 

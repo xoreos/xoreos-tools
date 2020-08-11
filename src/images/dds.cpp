@@ -149,7 +149,7 @@ void DDS::readStandardHeader(Common::SeekableReadStream &dds, DataType &dataType
 		width  >>= 1;
 		height >>= 1;
 
-		_mipMaps.push_back(mipMap.release());
+		_mipMaps.emplace_back(mipMap.release());
 	}
 
 }
@@ -209,7 +209,7 @@ void DDS::readBioWareHeader(Common::SeekableReadStream &dds, DataType &dataType)
 
 		fullDataSize -= mipMap->size;
 
-		_mipMaps.push_back(mipMap.release());
+		_mipMaps.emplace_back(mipMap.release());
 
 		width  >>= 1;
 		height >>= 1;

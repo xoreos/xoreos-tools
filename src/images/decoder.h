@@ -31,7 +31,6 @@
 #include <boost/noncopyable.hpp>
 
 #include "src/common/types.h"
-#include "src/common/ptrvector.h"
 
 #include "src/images/types.h"
 
@@ -94,7 +93,7 @@ public:
 	void flipVertically();
 
 protected:
-	typedef Common::PtrVector<MipMap> MipMaps;
+	typedef std::vector<std::unique_ptr<MipMap>> MipMaps;
 
 	PixelFormat _format;
 

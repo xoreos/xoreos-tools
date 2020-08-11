@@ -97,7 +97,7 @@ void TGA::readHeader(Common::SeekableReadStream &tga, ImageType &imageType, byte
 	// Color map specifications + X + Y
 	tga.skip(5 + 2 + 2);
 
-	_mipMaps.push_back(new MipMap);
+	_mipMaps.emplace_back(std::make_unique<MipMap>());
 
 	// Image dimensions
 	_mipMaps[0]->width  = tga.readUint16LE();

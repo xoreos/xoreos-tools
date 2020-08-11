@@ -253,7 +253,7 @@ void NCGR::draw(ReadContext &ctx) {
 
 	_format = kPixelFormatB8G8R8A8;
 
-	_mipMaps.push_back(new MipMap);
+	_mipMaps.emplace_back(std::make_unique<MipMap>());
 
 	_mipMaps.back()->width  = imageWidth;
 	_mipMaps.back()->height = imageHeight;

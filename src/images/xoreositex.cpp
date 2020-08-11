@@ -84,12 +84,12 @@ void XEOSITEX::readHeader(Common::SeekableReadStream &xeositex) {
 	xeositex.skip(1); // Filter
 
 	const uint32_t mipMaps = xeositex.readUint32LE();
-	_mipMaps.resize(mipMaps, 0);
+	_mipMaps.resize(mipMaps);
 }
 
 void XEOSITEX::readMipMaps(Common::SeekableReadStream &xeositex) {
 	for (size_t i = 0; i < _mipMaps.size(); i++) {
-		_mipMaps[i] = new MipMap;
+		_mipMaps[i] = std::make_unique<MipMap>();
 
 		_mipMaps[i]->width  = xeositex.readUint32LE();
 		_mipMaps[i]->height = xeositex.readUint32LE();

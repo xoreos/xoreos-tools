@@ -26,8 +26,7 @@
 #define IMAGES_CDPTH_H
 
 #include <vector>
-
-#include "src/common/ptrvector.h"
+#include <memory>
 
 #include "src/images/decoder.h"
 
@@ -57,7 +56,7 @@ public:
 	~CDPTH();
 
 private:
-	typedef Common::PtrVector<Common::SeekableReadStream> Cells;
+	typedef std::vector<std::unique_ptr<Common::SeekableReadStream>> Cells;
 
 	struct ReadContext {
 		Common::SeekableReadStream *cdpth;
