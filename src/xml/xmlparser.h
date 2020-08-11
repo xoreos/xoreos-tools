@@ -31,7 +31,6 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "src/common/ptrlist.h"
 #include "src/common/ustring.h"
 
 struct _xmlNode;
@@ -69,7 +68,7 @@ public:
 	~XMLNode();
 
 	typedef std::map<Common::UString, Common::UString> Properties;
-	typedef Common::PtrList<const XMLNode> Children;
+	typedef std::list<std::unique_ptr<const XMLNode>> Children;
 
 	const Common::UString &getName() const;
 	const Common::UString &getContent() const;
@@ -109,9 +108,6 @@ private:
 
 
 	friend class XMLParser;
-
-	template<typename T>
-	friend void Common::DeallocatorDefault::destroy(T *);
 };
 
 } // End of namespace XML
