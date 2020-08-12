@@ -26,6 +26,7 @@
 #include "src/version/version.h"
 
 #include "src/common/cli.h"
+#include "src/common/string.h"
 
 namespace Common {
 
@@ -66,7 +67,7 @@ int ValGetter<uint32_t &>::get(const std::vector<UString> &args, int i, int) {
 	const char *str = args[i].c_str();
 
 	for (int j = 0;j < str[j]; ++j) {
-		if (!UString::isDigit(str[j]))
+		if (!String::isDigit(str[j]))
 			return -1;
 	}
 	_val = atoi(str);
@@ -81,7 +82,7 @@ int ValGetter<int32_t &>::get(const std::vector<UString> &args, int i, int) {
 	if (str[0] == '-')
 		++j;
 	for (;j < str[j]; ++j) {
-		if (!UString::isDigit(str[j]))
+		if (!String::isDigit(str[j]))
 			return -1;
 	}
 	_val = atoi(str);
