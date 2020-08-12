@@ -23,6 +23,7 @@
  */
 
 #include "src/common/util.h"
+#include "src/common/string.h"
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 
@@ -438,44 +439,44 @@ size_t getDirectArgumentCount(Opcode op) {
 }
 
 Common::UString formatBytes(const Instruction &instr) {
-	Common::UString str = Common::UString::format("%02X %02X", (uint8_t)instr.opcode, (uint8_t)instr.type);
+	Common::UString str = Common::String::format("%02X %02X", (uint8_t)instr.opcode, (uint8_t)instr.type);
 
 	for (size_t i = 0; i < instr.argCount; i++) {
 		switch (instr.argTypes[i]) {
 			case kOpcodeArgUint8:
-				str += Common::UString::format(" %02X", (uint8_t)instr.args[i]);
+				str += Common::String::format(" %02X", (uint8_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgUint16:
-				str += Common::UString::format(" %04X", (uint16_t)instr.args[i]);
+				str += Common::String::format(" %04X", (uint16_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgSint16:
-				str += Common::UString::format(" %04X", (uint16_t)(int16_t)instr.args[i]);
+				str += Common::String::format(" %04X", (uint16_t)(int16_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgSint32:
 			case kOpcodeArgUint32:
-				str += Common::UString::format(" %08X", (uint32_t)instr.args[i]);
+				str += Common::String::format(" %08X", (uint32_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgVariable:
 				switch (instr.type) {
 					case kInstTypeInt:
-						str += Common::UString::format(" %08X", (uint32_t)instr.constValueInt);
+						str += Common::String::format(" %08X", (uint32_t)instr.constValueInt);
 						break;
 
 					case kInstTypeFloat:
-						str += Common::UString::format(" %08X", convertIEEEFloat(instr.constValueFloat));
+						str += Common::String::format(" %08X", convertIEEEFloat(instr.constValueFloat));
 						break;
 
 					case kInstTypeString:
 					case kInstTypeResource:
-						str += Common::UString::format(" str");
+						str += Common::String::format(" str");
 						break;
 
 					case kInstTypeObject:
-						str += Common::UString::format(" %08X", instr.constValueObject);
+						str += Common::String::format(" %08X", instr.constValueObject);
 						break;
 
 					default:
@@ -492,7 +493,7 @@ Common::UString formatBytes(const Instruction &instr) {
 }
 
 Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game) {
-	Common::UString str = Common::UString::format("%s%s", getOpcodeName(instr.opcode).c_str(),
+	Common::UString str = Common::String::format("%s%s", getOpcodeName(instr.opcode).c_str(),
 	                                                      getInstTypeName(instr.type).c_str());
 
 	/* If this is a jump instruction, print the address of the destination
@@ -508,7 +509,7 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 
 		Common::UString parameters;
 		if ((instr.opcode == kOpcodeSTORESTATE) && (instr.argCount == 3))
-			parameters = Common::UString::format(" %d %d", instr.args[1], instr.args[2]);
+			parameters = Common::String::format(" %d %d", instr.args[1], instr.args[2]);
 
 		return str + " " + jumpLabel + parameters;
 	}
@@ -516,9 +517,9 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 	if ((instr.opcode == kOpcodeACTION) && (instr.argCount == 2)) {
 		Common::UString functionName = getFunctionName(game, instr.args[0]);
 		if (functionName.empty())
-			functionName = Common::UString::format("InvalidFunction%d", instr.args[0]);
+			functionName = Common::String::format("InvalidFunction%d", instr.args[0]);
 
-		return str + " " + functionName + Common::UString::format(" %d", instr.args[1]);
+		return str + " " + functionName + Common::String::format(" %d", instr.args[1]);
 	}
 
 	for (size_t i = 0; i < instr.argCount; i++) {
@@ -527,30 +528,30 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 			case kOpcodeArgUint16:
 			case kOpcodeArgSint16:
 			case kOpcodeArgSint32:
-				str += Common::UString::format(" %d", instr.args[i]);
+				str += Common::String::format(" %d", instr.args[i]);
 				break;
 
 			case kOpcodeArgUint32:
-				str += Common::UString::format(" %u", (uint32_t)instr.args[i]);
+				str += Common::String::format(" %u", (uint32_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgVariable:
 				switch (instr.type) {
 					case kInstTypeInt:
-						str += Common::UString::format(" %d", instr.constValueInt);
+						str += Common::String::format(" %d", instr.constValueInt);
 						break;
 
 					case kInstTypeFloat:
-						str += Common::UString::format(" %f", instr.constValueFloat);
+						str += Common::String::format(" %f", instr.constValueFloat);
 						break;
 
 					case kInstTypeString:
 					case kInstTypeResource:
-						str += Common::UString::format(" \"%s\"", instr.constValueString.c_str());
+						str += Common::String::format(" \"%s\"", instr.constValueString.c_str());
 						break;
 
 					case kInstTypeObject:
-						str += Common::UString::format(" %d", instr.constValueObject);
+						str += Common::String::format(" %d", instr.constValueObject);
 						break;
 
 					default:
@@ -567,15 +568,15 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 }
 
 Common::UString formatSubRoutine(uint32_t address) {
-	return Common::UString::format("sub_%08X", address);
+	return Common::String::format("sub_%08X", address);
 }
 
 Common::UString formatStoreState(uint32_t address) {
-	return Common::UString::format("sta_%08X", address);
+	return Common::String::format("sta_%08X", address);
 }
 
 Common::UString formatJumpDestination(uint32_t address) {
-	return Common::UString::format("loc_%08X", address);
+	return Common::String::format("loc_%08X", address);
 }
 
 Common::UString formatJumpLabel(const Instruction &instr) {
@@ -686,18 +687,18 @@ Common::UString formatInstructionData(const Instruction &instruction) {
 	Common::UString str;
 	switch (instruction.type) {
 		case kInstTypeInt:
-			str += Common::UString::format("%d", instruction.constValueInt);
+			str += Common::String::format("%d", instruction.constValueInt);
 			break;
 
 		case kInstTypeFloat:
-			str += Common::UString::format("%f", instruction.constValueFloat);
+			str += Common::String::format("%f", instruction.constValueFloat);
 			break;
 		case kInstTypeString:
 		case kInstTypeResource:
-			str += Common::UString::format("\"%s\"", instruction.constValueString.c_str());
+			str += Common::String::format("\"%s\"", instruction.constValueString.c_str());
 			break;
 		case kInstTypeObject:
-			str += Common::UString::format("%d", instruction.constValueObject);
+			str += Common::String::format("%d", instruction.constValueObject);
 			break;
 		default:
 			break;

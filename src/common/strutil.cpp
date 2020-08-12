@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "src/common/system.h"
+#include "src/common/string.h"
 #include "src/common/strutil.h"
 #include "src/common/util.h"
 #include "src/common/error.h"
@@ -123,7 +124,7 @@ static bool tagToString(uint32_t tag, bool trim, UString &str) {
 	if (!std::isprint(tS[0]) || !std::isprint(tS[1]) || !std::isprint(tS[2]) || !std::isprint(tS[3]))
 		return false;
 
-	str = UString::format("%c%c%c%c", tS[0], tS[1], tS[2], tS[3]);
+	str = String::format("%c%c%c%c", tS[0], tS[1], tS[2], tS[3]);
 	if (trim)
 		str.trim();
 
@@ -135,15 +136,15 @@ UString tagToString(uint32_t tag, bool trim) {
 	if (tagToString(tag, trim, str))
 		return str;
 
-	return UString::format("0x%08X", FROM_BE_32(tag));
+	return String::format("0x%08X", FROM_BE_32(tag));
 }
 
 UString debugTag(uint32_t tag, bool trim) {
 	UString str;
 	if (tagToString(tag, trim, str))
-		return UString::format("0x%08X ('%s')", FROM_BE_32(tag), str.c_str());
+		return String::format("0x%08X ('%s')", FROM_BE_32(tag), str.c_str());
 
-	return UString::format("0x%08X", FROM_BE_32(tag));
+	return String::format("0x%08X", FROM_BE_32(tag));
 }
 
 // Helper functions for parseString()
@@ -352,11 +353,11 @@ template<> UString composeString(bool value) {
 }
 
 template<> UString composeString(float value) {
-	return UString::format("%f", value);
+	return String::format("%f", value);
 }
 
 template<> UString composeString(double value) {
-	return UString::format("%lf", value);
+	return String::format("%lf", value);
 }
 
 template UString composeString<  signed char     >(  signed char      value);

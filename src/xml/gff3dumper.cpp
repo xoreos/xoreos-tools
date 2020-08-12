@@ -28,6 +28,7 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
+#include "src/common/string.h"
 #include "src/common/writestream.h"
 
 #include "src/aurora/locstring.h"
@@ -149,7 +150,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 
 		case Aurora::GFF3Struct::kFieldTypeFloat:
 		case Aurora::GFF3Struct::kFieldTypeDouble:
-			_xml->setContents(Common::UString::format("%.6f", strct.getDouble(field)));
+			_xml->setContents(Common::String::format("%.6f", strct.getDouble(field)));
 			break;
 
 		case Aurora::GFF3Struct::kFieldTypeStrRef:
@@ -203,22 +204,22 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", a));
+				_xml->setContents(Common::String::format("%.6f", a));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", b));
+				_xml->setContents(Common::String::format("%.6f", b));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", c));
+				_xml->setContents(Common::String::format("%.6f", c));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", d));
+				_xml->setContents(Common::String::format("%.6f", d));
 				_xml->closeTag();
 				_xml->breakLine();
 			}
@@ -233,17 +234,17 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", x));
+				_xml->setContents(Common::String::format("%.6f", x));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", y));
+				_xml->setContents(Common::String::format("%.6f", y));
 				_xml->closeTag();
 				_xml->breakLine();
 
 				_xml->openTag("double");
-				_xml->setContents(Common::UString::format("%.6f", z));
+				_xml->setContents(Common::String::format("%.6f", z));
 				_xml->closeTag();
 				_xml->breakLine();
 			}
