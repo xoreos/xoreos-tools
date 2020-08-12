@@ -58,6 +58,7 @@ src_common_libcommon_la_SOURCES += \
     src/common/binsearch.h \
     src/common/cli.h \
     src/common/stringmap.h \
+    src/common/string.h \
     $(EMPTY)
 
 src_common_libcommon_la_SOURCES += \
@@ -86,4 +87,5 @@ src_common_libcommon_la_SOURCES += \
     src/common/zipfile.cpp \
     src/common/cli.cpp \
     src/common/stringmap.cpp \
+    src/common/string.cpp \
     $(EMPTY)
