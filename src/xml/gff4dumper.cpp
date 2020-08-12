@@ -28,6 +28,7 @@
 #include "src/common/strutil.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
+#include "src/common/string.h"
 #include "src/common/writestream.h"
 
 #include "src/xml/xmlwriter.h"
@@ -171,7 +172,7 @@ Common::UString GFF4Dumper::getFieldTypeName(uint32_t type, bool isList) const {
 	else if (type < ARRAYSIZE(kGFF4FieldTypeNames))
 		typeString = kGFF4FieldTypeNames[type];
 
-	return Common::UString::format("%s%s", typeString, listString);
+	return Common::String::format("%s%s", typeString, listString);
 }
 
 void GFF4Dumper::openFieldTag(uint32_t type, bool typeList, bool hasLabel, uint32_t label,
@@ -242,7 +243,7 @@ void GFF4Dumper::dumpFieldDouble(const GFF4Field &field, bool isGenericElement) 
 
 	for (size_t i = 0; i < values.size(); i++) {
 		openFieldTag(field.type, false, !field.isList, field.label, field.isList, i, isGenericElement);
-		_xml->setContents(Common::UString::format("%.6f", values[i]));
+		_xml->setContents(Common::String::format("%.6f", values[i]));
 		closeFieldTag();
 	}
 }
@@ -302,7 +303,7 @@ void GFF4Dumper::dumpFieldVector(const GFF4Field &field, bool isGenericElement) 
 		for (size_t j = 0; j < values[i].size(); j++) {
 
 			openFieldTag(Aurora::GFF4Struct::kFieldTypeFloat32, false, false, 0, false, 0);
-			_xml->setContents(Common::UString::format("%.6f", values[i][j]));
+			_xml->setContents(Common::String::format("%.6f", values[i][j]));
 			closeFieldTag(false);
 
 			if ((j == (values[i].size() - 1)) || ((j % 4) == 3))

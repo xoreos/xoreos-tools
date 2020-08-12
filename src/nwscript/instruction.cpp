@@ -27,6 +27,7 @@
 #include "src/common/util.h"
 #include "src/common/error.h"
 #include "src/common/readstream.h"
+#include "src/common/string.h"
 
 #include "src/nwscript/instruction.h"
 #include "src/nwscript/util.h"
@@ -165,7 +166,7 @@ static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t
 		else if (c == '\\')
 			str += "\\\\";
 		else if (c < 32 || c > 126)
-			str += Common::UString::format("\\x%02X", c);
+			str += Common::String::format("\\x%02X", c);
 		else
 			str += (uint32_t) c;
 	}
