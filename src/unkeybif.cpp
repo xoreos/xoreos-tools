@@ -27,10 +27,10 @@
 
 #include <list>
 #include <vector>
+#include <memory>
 
 #include "src/version/version.h"
 
-#include "src/common/ptrvector.h"
 #include "src/common/util.h"
 #include "src/common/ustring.h"
 #include "src/common/strutil.h"
@@ -66,14 +66,14 @@ uint32_t getFileID(const Common::UString &fileName);
 void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::UString> &keyFiles,
                    std::vector<Common::UString> &bifFiles);
 
-void openKEYs(const std::vector<Common::UString> &keyFiles, Common::PtrVector<Aurora::KEYFile> &keys);
-void openKEYDataFiles(const std::vector<Common::UString> &dataFiles, Common::PtrVector<Aurora::KEYDataFile> &keyData);
+void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<std::unique_ptr<Aurora::KEYFile>> &keys);
+void openKEYDataFiles(const std::vector<Common::UString> &dataFiles, std::vector<std::unique_ptr<Aurora::KEYDataFile>> &keyData);
 
-void mergeKEYDataFiles(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aurora::KEYDataFile> &keyData,
+void mergeKEYDataFiles(std::vector<std::unique_ptr<Aurora::KEYFile>> &keys, std::vector<std::unique_ptr<Aurora::KEYDataFile>> &keyData,
                        const std::vector<Common::UString> &dataFiles);
 
-void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
-void extractFiles(const Common::PtrVector<Aurora::KEYDataFile> &keyData, const std::vector<Common::UString> &dataFiles, Aurora::GameID game);
+void listFiles(const std::vector<std::unique_ptr<Aurora::KEYFile>> &keys, const std::vector<Common::UString> &keyFiles, Aurora::GameID game);
+void extractFiles(const std::vector<std::unique_ptr<Aurora::KEYDataFile>> &keyData, const std::vector<Common::UString> &dataFiles, Aurora::GameID game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
 		std::vector<Common::UString> keyFiles, dataFiles;
 		identifyFiles(files, keyFiles, dataFiles);
 
-		Common::PtrVector<Aurora::KEYFile> keys;
-		Common::PtrVector<Aurora::KEYDataFile> keyData;
+		std::vector<std::unique_ptr<Aurora::KEYFile>> keys;
+		std::vector<std::unique_ptr<Aurora::KEYDataFile>> keyData;
 
 		openKEYs(keyFiles, keys);
 		openKEYDataFiles(dataFiles, keyData);
@@ -177,56 +177,57 @@ void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::
 	keyFiles.reserve(files.size());
 	dataFiles.reserve(files.size());
 
-	for (std::list<Common::UString>::const_iterator f = files.begin(); f != files.end(); ++f) {
-		uint32_t id = getFileID(*f);
+	for (const auto &file : files) {
+		uint32_t id = getFileID(file);
 
 		if      (id == MKTAG('K', 'E', 'Y', ' '))
-			keyFiles.push_back(*f);
+			keyFiles.push_back(file);
 		else if (id == MKTAG('B', 'I', 'F', 'F'))
-			dataFiles.push_back(*f);
+			dataFiles.push_back(file);
 		else
-			throw Common::Exception("File \"%s\" is neither a KEY nor a BIF/BZF", f->c_str());
+			throw Common::Exception("File \"%s\" is neither a KEY nor a BIF/BZF", file.c_str());
 	}
 }
 
-void openKEYs(const std::vector<Common::UString> &keyFiles, Common::PtrVector<Aurora::KEYFile> &keys) {
+void openKEYs(const std::vector<Common::UString> &keyFiles, std::vector<std::unique_ptr<Aurora::KEYFile>> &keys) {
 	keys.reserve(keyFiles.size());
 
-	for (std::vector<Common::UString>::const_iterator f = keyFiles.begin(); f != keyFiles.end(); ++f) {
-		Common::ReadFile key(*f);
+	for (const auto &keyFile : keyFiles) {
+		Common::ReadFile key(keyFile);
 
-		keys.push_back(new Aurora::KEYFile(key));
+		keys.emplace_back(std::make_unique<Aurora::KEYFile>(key));
 	}
 }
 
-void openKEYDataFiles(const std::vector<Common::UString> &dataFiles, Common::PtrVector<Aurora::KEYDataFile> &keyData) {
+void openKEYDataFiles(const std::vector<Common::UString> &dataFiles, std::vector<std::unique_ptr<Aurora::KEYDataFile>> &keyData) {
 	keyData.reserve(dataFiles.size());
 
-	for (std::vector<Common::UString>::const_iterator f = dataFiles.begin(); f != dataFiles.end(); ++f) {
-		if (Common::FilePath::getExtension(*f).equalsIgnoreCase(".bzf"))
-			keyData.push_back(new Aurora::BZFFile(new Common::ReadFile(*f)));
+	for (const auto &dataFile : dataFiles) {
+		if (Common::FilePath::getExtension(dataFile).equalsIgnoreCase(".bzf"))
+			keyData.emplace_back(std::make_unique<Aurora::BZFFile>(new Common::ReadFile(dataFile)));
 		else
-			keyData.push_back(new Aurora::BIFFile(new Common::ReadFile(*f)));
+			keyData.emplace_back(std::make_unique<Aurora::BIFFile>(new Common::ReadFile(dataFile)));
 	}
 }
 
-void mergeKEYDataFiles(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVector<Aurora::KEYDataFile> &keyData,
+void mergeKEYDataFiles(std::vector<std::unique_ptr<Aurora::KEYFile>> &keys, std::vector<std::unique_ptr<Aurora::KEYDataFile>> &keyData,
                        const std::vector<Common::UString> &dataFiles) {
 
 	// Go over all KEYs
-	for (Common::PtrVector<Aurora::KEYFile>::iterator k = keys.begin(); k != keys.end(); ++k) {
+	for (auto &key : keys) {
 
 		// Go over all BIFs/BZFs handled by the KEY
-		const Aurora::KEYFile::BIFList &keyBifs = (*k)->getBIFs();
-		for (size_t kb = 0; kb < keyBifs.size(); kb++) {
+		const Aurora::KEYFile::BIFList &keyBifs = key->getBIFs();
+		for (size_t keyBIFIndex = 0; keyBIFIndex < keyBifs.size(); keyBIFIndex++) {
+			const Common::UString &keyBIF = keyBifs[keyBIFIndex];
 
 			// Go over all BIFs
-			for (size_t b = 0; b < dataFiles.size(); b++) {
+			for (size_t dataFileIndex = 0; dataFileIndex < dataFiles.size(); dataFileIndex++) {
+				const Common::UString &dataFileName = dataFiles[dataFileIndex];
+				Aurora::KEYDataFile &dataFile = *keyData[dataFileIndex];
 
-				// If they match, merge
-				if (Common::FilePath::getStem(keyBifs[kb]).equalsIgnoreCase(Common::FilePath::getStem(dataFiles[b])))
-					keyData[b]->mergeKEY(**k, kb);
-
+				if (Common::FilePath::getStem(keyBIF).equalsIgnoreCase(Common::FilePath::getStem(dataFileName)))
+					dataFile.mergeKEY(*key, keyBIFIndex);
 			}
 
 		}
@@ -235,7 +236,7 @@ void mergeKEYDataFiles(Common::PtrVector<Aurora::KEYFile> &keys, Common::PtrVect
 
 }
 
-void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys,
+void listFiles(const std::vector<std::unique_ptr<Aurora::KEYFile>> &keys,
                const std::vector<Common::UString> &keyFiles, Aurora::GameID game) {
 
 	for (size_t i = 0; i < keys.size(); i++) {
@@ -246,7 +247,7 @@ void listFiles(const Common::PtrVector<Aurora::KEYFile> &keys,
 	}
 }
 
-void extractFiles(const Common::PtrVector<Aurora::KEYDataFile> &keyData,
+void extractFiles(const std::vector<std::unique_ptr<Aurora::KEYDataFile>> &keyData,
                   const std::vector<Common::UString> &dataFiles, Aurora::GameID game) {
 
 	for (size_t i = 0; i < keyData.size(); i++) {

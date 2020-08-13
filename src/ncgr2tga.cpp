@@ -26,9 +26,11 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <vector>
+#include <memory>
+
 #include "src/version/version.h"
 
-#include "src/common/ptrvector.h"
 #include "src/common/ustring.h"
 #include "src/common/util.h"
 #include "src/common/strutil.h"
@@ -123,19 +125,30 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	return true;
 }
 
+template<typename T>
+std::vector<T *> getRawPointers(std::vector<std::unique_ptr<T>> &vec) {
+	std::vector<T *> raw;
+	raw.reserve(vec.size());
+
+	for (auto &v : vec)
+		raw.push_back(v.get());
+
+	return raw;
+}
+
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
              Common::UString &outFile, uint32_t width, uint32_t height) {
 
 	Common::ReadFile nclr(nclrFile);
 
-	Common::PtrVector<Common::SeekableReadStream> ncgrs;
-	ncgrs.resize(ncgrFiles.size(), 0);
+	std::vector<std::unique_ptr<Common::SeekableReadStream>> ncgrs;
+	ncgrs.resize(ncgrFiles.size());
 
 	for (size_t i = 0; i < ncgrFiles.size(); i++)
 		if (!ncgrFiles[i].empty() && (ncgrFiles[i] != "\"\"") && (ncgrFiles[i] != "\'\'"))
-			ncgrs[i] = new Common::ReadFile(ncgrFiles[i]);
+			ncgrs[i] = std::make_unique<Common::ReadFile>(ncgrFiles[i]);
 
-	Images::NCGR image(ncgrs, width, height, nclr);
+	Images::NCGR image(getRawPointers(ncgrs), width, height, nclr);
 
 	image.flipVertically();
 
