@@ -63,9 +63,9 @@ Decoder::MipMap &Decoder::MipMap::operator=(const MipMap &mipMap) {
 }
 
 void Decoder::MipMap::swap(MipMap &right) {
-	SWAP(width , right.width );
-	SWAP(height, right.height);
-	SWAP(size  , right.size  );
+	std::swap(width , right.width );
+	std::swap(height, right.height);
+	std::swap(size  , right.size  );
 
 	data.swap(right.data);
 }
