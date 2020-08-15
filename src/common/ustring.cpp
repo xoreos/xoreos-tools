@@ -87,19 +87,19 @@ UString &UString::operator=(const char *str) {
 }
 
 bool UString::operator==(const UString &str) const {
-	return strcmp(str) == 0;
+	return _string == str._string;
 }
 
 bool UString::operator!=(const UString &str) const {
-	return strcmp(str) != 0;
+	return !(*this == str);
 }
 
 bool UString::operator<(const UString &str) const {
-	return strcmp(str) < 0;
+	return _string < str._string;
 }
 
 bool UString::operator>(const UString &str) const {
-	return strcmp(str) > 0;
+	return !(*this < str);
 }
 
 UString UString::operator+(const UString &str) const {
@@ -166,64 +166,20 @@ UString &UString::operator+=(uint32_t c) {
 	return *this;
 }
 
-int UString::strcmp(const UString &str) const {
-	UString::iterator it1 = begin();
-	UString::iterator it2 = str.begin();
-	for (; (it1 != end()) && (it2 != str.end()); ++it1, ++it2) {
-		uint32_t c1 = *it1;
-		uint32_t c2 = *it2;
-
-		if (c1 < c2)
-			return -1;
-		if (c1 > c2)
-			return  1;
-	}
-
-	if ((it1 == end()) && (it2 == str.end()))
-		return 0;
-
-	if (it1 == end())
-		return -1;
-
-	return 1;
-}
-
-int UString::stricmp(const UString &str) const {
-	UString::iterator it1 = begin();
-	UString::iterator it2 = str.begin();
-	for (; (it1 != end()) && (it2 != str.end()); ++it1, ++it2) {
-		uint32_t c1 = String::toLower(*it1);
-		uint32_t c2 = String::toLower(*it2);
-
-		if (c1 < c2)
-			return -1;
-		if (c1 > c2)
-			return  1;
-	}
-
-	if ((it1 == end()) && (it2 == str.end()))
-		return 0;
-
-	if (it1 == end())
-		return -1;
-
-	return 1;
-}
-
 bool UString::equals(const UString &str) const {
-	return strcmp(str) == 0;
+	return *this == str;
 }
 
 bool UString::equalsIgnoreCase(const UString &str) const {
-	return stricmp(str) == 0;
+	return String::equalsIgnoreCase(_string, str._string);
 }
 
 bool UString::less(const UString &str) const {
-	return strcmp(str) < 0;
+	return *this < str;
 }
 
 bool UString::lessIgnoreCase(const UString &str) const {
-	return stricmp(str) < 0;
+	return String::compareIgnoreCase(_string, str._string) < 0;
 }
 
 void UString::swap(UString &str) {
