@@ -49,7 +49,7 @@ typedef boost::shared_ptr<GFF3WriterList> GFF3WriterListPtr;
 class GFF3Writer : boost::noncopyable {
 public:
 	// TODO: Add a constructor consuming a GFF3File object.
-	GFF3Writer(uint32 id, uint32 version);
+	GFF3Writer(uint32_t id, uint32_t version);
 
 	/** Get the top-level struct. */
 	GFF3WriterStructPtr getTopLevel();
@@ -116,10 +116,10 @@ private:
 
 	/** A variant containing all possible types of GFF data. */
 	typedef boost::variant<
-		uint32,
-		uint64,
-		int32,
-		int64,
+		uint32_t,
+		uint64_t,
+		int32_t,
+		int64_t,
 		float,
 		double,
 		Vector4,
@@ -161,14 +161,14 @@ private:
 
 	/** An implementation for a field. */
 	struct Field : boost::noncopyable {
-		uint32 labelIndex;
+		uint32_t labelIndex;
 		Value value;
 	};
 
 	typedef boost::shared_ptr<Field> FieldPtr;
 
-	uint32 _id;
-	uint32 _version;
+	uint32_t _id;
+	uint32_t _version;
 
 	std::vector<GFF3WriterStructPtr> _structs;
 	std::vector<GFF3WriterListPtr> _lists;
@@ -180,9 +180,9 @@ private:
 	friend class GFF3WriterStruct;
 
 	/** Adds a label to the writer and returns the corresponding index. */
-	uint32 addLabel(const Common::UString &label);
+	uint32_t addLabel(const Common::UString &label);
 	/** Get the actual size of the field. */
-	static uint32 getFieldDataSize(Value field);
+	static uint32_t getFieldDataSize(Value field);
 
 	size_t createField(GFF3Struct::FieldType type, const Common::UString &label);
 };
@@ -195,7 +195,7 @@ public:
 	/** Add a new struct to the list. */
 	GFF3WriterStructPtr addStruct(const Common::UString &label = "");
 	/** Add a new struct to the list. */
-	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32 id);
+	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32_t id);
 
 	size_t getSize() const;
 
@@ -213,46 +213,46 @@ private:
  */
 class GFF3WriterStruct : boost::noncopyable {
 public:
-	GFF3WriterStruct(GFF3Writer *parent, uint32 id = 0xFFFFFFFF);
+	GFF3WriterStruct(GFF3Writer *parent, uint32_t id = 0xFFFFFFFF);
 
 	/** Get ID of the struct. */
-	uint32 getID() const;
+	uint32_t getID() const;
 	/** Get the count of fields. */
 	size_t getFieldCount() const;
 
 	/** Create a new struct. */
 	GFF3WriterStructPtr addStruct(const Common::UString &label);
 	/** Create a new struct. */
-	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32 id);
+	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32_t id);
 	/** Create a new list. */
 	GFF3WriterListPtr addList(const Common::UString &label);
 
 	/** Add a new byte. */
-	void addByte(const Common::UString &label, uint8 value);
+	void addByte(const Common::UString &label, uint8_t value);
 	/** Add a new char. */
-	void addChar(const Common::UString &label, int8 value);
+	void addChar(const Common::UString &label, int8_t value);
 	/** Add a new float. */
 	void addFloat(const Common::UString &label, float value);
 	/** Add a new double. */
 	void addDouble(const Common::UString &label, double value);
-	/** Add a new uint16. */
-	void addUint16(const Common::UString &label, uint16 value);
-	/** Add a new uint32. */
-	void addUint32(const Common::UString &label, uint32 value);
-	/** Add a new uint64. */
-	void addUint64(const Common::UString &label, uint64 value);
+	/** Add a new uint16_t. */
+	void addUint16(const Common::UString &label, uint16_t value);
+	/** Add a new uint32_t. */
+	void addUint32(const Common::UString &label, uint32_t value);
+	/** Add a new uint64_t. */
+	void addUint64(const Common::UString &label, uint64_t value);
 	/** Add a new sint16. */
-	void addSint16(const Common::UString &label, int16 value);
+	void addSint16(const Common::UString &label, int16_t value);
 	/** Add a new sint32. */
-	void addSint32(const Common::UString &label, int32 value);
+	void addSint32(const Common::UString &label, int32_t value);
 	/** Add a new sint64. */
-	void addSint64(const Common::UString &label, int64 value);
+	void addSint64(const Common::UString &label, int64_t value);
 	/** Add a new ExoString. */
 	void addExoString(const Common::UString &label, const Common::UString &value);
 	/** Add a new ExoString. */
 	void addExoString(const Common::UString &label, Common::SeekableReadStream *value);
 	/** Add a new String reference. */
-	void addStrRef(const Common::UString &label, uint32 value);
+	void addStrRef(const Common::UString &label, uint32_t value);
 	/** Add a new Resource reference. */
 	void addResRef(const Common::UString &label, const Common::UString &value);
 	/** Add a new Resource reference. */
@@ -269,7 +269,7 @@ public:
 private:
 	GFF3Writer::FieldPtr createField(GFF3Struct::FieldType type, const Common::UString &label);
 
-	uint32 _id;
+	uint32_t _id;
 	GFF3Writer *_parent;
 	std::vector<size_t> _fieldIndices;
 

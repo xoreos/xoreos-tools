@@ -37,16 +37,16 @@ namespace Aurora {
  */
 class BZFWriter : public KEYDataWriter {
 public:
-	BZFWriter(uint32 fileCount, Common::SeekableWriteStream &writeStream);
+	BZFWriter(uint32_t fileCount, Common::SeekableWriteStream &writeStream);
 
 	void add(Common::SeekableReadStream &data, Aurora::FileType type);
 
-	uint32 size();
+	uint32_t size();
 
 private:
-	const uint32 _maxFiles;
-	uint32 _currentFiles;
-	uint32 _dataOffset;
+	const uint32_t _maxFiles;
+	uint32_t _currentFiles;
+	uint32_t _dataOffset;
 	Common::SeekableWriteStream &_writer;
 };
 

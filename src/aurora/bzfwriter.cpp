@@ -29,12 +29,12 @@
 
 #include "src/aurora/bzfwriter.h"
 
-static const uint32 kBIFFID = MKTAG('B', 'I', 'F', 'F');
-static const uint32 kV1ID  = MKTAG('V', '1', ' ', ' ');
+static const uint32_t kBIFFID = MKTAG('B', 'I', 'F', 'F');
+static const uint32_t kV1ID  = MKTAG('V', '1', ' ', ' ');
 
 namespace Aurora {
 
-BZFWriter::BZFWriter(uint32 fileCount, Common::SeekableWriteStream &writeStream) :
+BZFWriter::BZFWriter(uint32_t fileCount, Common::SeekableWriteStream &writeStream) :
 		_maxFiles(fileCount), _currentFiles(0), _dataOffset(0), _writer(writeStream) {
 	writeStream.writeUint32BE(kBIFFID);
 	writeStream.writeUint32BE(kV1ID);
@@ -71,7 +71,7 @@ void BZFWriter::add(Common::SeekableReadStream &data, Aurora::FileType type) {
 	_dataOffset += stream->size();
 }
 
-uint32 BZFWriter::size() {
+uint32_t BZFWriter::size() {
 	_writer.seek(0, Common::SeekableWriteStream::kOriginEnd);
 	return _writer.pos();
 }

@@ -26,12 +26,12 @@
 #include "src/aurora/bifwriter.h"
 #include "src/aurora/types.h"
 
-static const uint32 kBIFFID = MKTAG('B', 'I', 'F', 'F');
-static const uint32 kV1ID  = MKTAG('V', '1', ' ', ' ');
+static const uint32_t kBIFFID = MKTAG('B', 'I', 'F', 'F');
+static const uint32_t kV1ID  = MKTAG('V', '1', ' ', ' ');
 
 namespace Aurora {
 
-BIFWriter::BIFWriter(uint32 fileCount, Common::SeekableWriteStream &writeStream) :
+BIFWriter::BIFWriter(uint32_t fileCount, Common::SeekableWriteStream &writeStream) :
 		_maxFiles(fileCount), _currentFiles(0), _dataOffset(0), _writer(writeStream) {
 	// Write id and version.
 	writeStream.writeUint32BE(kBIFFID);
@@ -44,7 +44,7 @@ BIFWriter::BIFWriter(uint32 fileCount, Common::SeekableWriteStream &writeStream)
 	writeStream.writeZeros(fileCount * 16);
 }
 
-uint32 BIFWriter::size() {
+uint32_t BIFWriter::size() {
 	_writer.seek(0, Common::SeekableWriteStream::kOriginEnd);
 	return _writer.pos();
 }

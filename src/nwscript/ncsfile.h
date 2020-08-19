@@ -112,7 +112,7 @@ public:
 	const SubRoutine *getMainSubRoutine() const;
 
 	/** Find an instruction by address. */
-	const Instruction *findInstruction(uint32 address) const;
+	const Instruction *findInstruction(uint32_t address) const;
 
 	/** Return all the variables we found while analyzing this script. */
 	const VariableSpace &getVariables() const;

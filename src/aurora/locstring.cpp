@@ -53,15 +53,15 @@ void LocString::swap(LocString &str) {
 	_strings.swap(str._strings);
 }
 
-uint32 LocString::getNumStrings() const {
+uint32_t LocString::getNumStrings() const {
 	return _strings.size();
 }
 
-uint32 LocString::getID() const {
+uint32_t LocString::getID() const {
 	return _id;
 }
 
-void LocString::setID(uint32 id) {
+void LocString::setID(uint32_t id) {
 	_id = id;
 }
 
@@ -69,7 +69,7 @@ bool LocString::hasString(Language language, LanguageGender gender) const {
 	return hasString(LangMan.getLanguageID(language, gender));
 }
 
-bool LocString::hasString(uint32 languageID) const {
+bool LocString::hasString(uint32_t languageID) const {
 	return _strings.find(languageID) != _strings.end();
 }
 
@@ -78,7 +78,7 @@ const Common::UString &LocString::getString(Language language, LanguageGender ge
 }
 
 static const Common::UString kEmpty;
-const Common::UString &LocString::getString(uint32 languageID) const {
+const Common::UString &LocString::getString(uint32_t languageID) const {
 	StringMap::const_iterator s = _strings.find(languageID);
 	if (s == _strings.end())
 		return kEmpty;
@@ -95,11 +95,11 @@ void LocString::setString(Language language, const Common::UString &str) {
 	setString(language, kLanguageGenderFemale, str);
 }
 
-void LocString::setStringRawLanguageID(uint32 language, const Common::UString &str) {
+void LocString::setStringRawLanguageID(uint32_t language, const Common::UString &str) {
 	return setString(language, str);
 }
 
-void LocString::setString(uint32 languageID, const Common::UString &str) {
+void LocString::setString(uint32_t languageID, const Common::UString &str) {
 	_strings[languageID] = str;
 }
 
@@ -119,7 +119,7 @@ const Common::UString &LocString::getFirstString() const {
 }
 
 const Common::UString &LocString::getString() const {
-	uint32 languageID = LangMan.getLanguageID(LangMan.getCurrentLanguageText(), LangMan.getCurrentGender());
+	uint32_t languageID = LangMan.getLanguageID(LangMan.getCurrentLanguageText(), LangMan.getCurrentGender());
 
 	// Look whether we have an internal localized string
 	if (hasString(languageID))
@@ -143,8 +143,8 @@ void LocString::getStrings(std::vector<SubLocString> &str) const {
 		str.push_back(SubLocString(s->first, s->second));
 }
 
-void LocString::readString(uint32 languageID, Common::SeekableReadStream &stream) {
-	uint32 length = stream.readUint32LE();
+void LocString::readString(uint32_t languageID, Common::SeekableReadStream &stream) {
+	uint32_t length = stream.readUint32LE();
 
 	std::pair<StringMap::iterator, bool> s = _strings.insert(std::make_pair(languageID, ""));
 	if (length == 0)
@@ -168,12 +168,12 @@ void LocString::readString(uint32 languageID, Common::SeekableReadStream &stream
 }
 
 void LocString::readLocSubString(Common::SeekableReadStream &stream) {
-	uint32 languageID = stream.readUint32LE();
+	uint32_t languageID = stream.readUint32LE();
 
 	readString(languageID, stream);
 }
 
-void LocString::readLocString(Common::SeekableReadStream &stream, uint32 id, uint32 count) {
+void LocString::readLocString(Common::SeekableReadStream &stream, uint32_t id, uint32_t count) {
 	_id = id;
 
 	while (count-- > 0)
@@ -181,13 +181,13 @@ void LocString::readLocString(Common::SeekableReadStream &stream, uint32 id, uin
 }
 
 void LocString::readLocString(Common::SeekableReadStream &stream) {
-	uint32 id    = stream.readUint32LE();
-	uint32 count = stream.readUint32LE();
+	uint32_t id    = stream.readUint32LE();
+	uint32_t count = stream.readUint32LE();
 
 	readLocString(stream, id, count);
 }
 
-static Common::SeekableReadStream *convertString(const Common::UString &str, uint32 languageID, bool terminateString) {
+static Common::SeekableReadStream *convertString(const Common::UString &str, uint32_t languageID, bool terminateString) {
 	Common::Encoding encoding = LangMan.getEncodingLocString(LangMan.getLanguageGendered(languageID));
 	if (encoding == Common::kEncodingInvalid)
 		encoding = Common::kEncodingASCII;
@@ -195,8 +195,8 @@ static Common::SeekableReadStream *convertString(const Common::UString &str, uin
 	return Common::convertString(str, encoding, terminateString);
 }
 
-uint32 LocString::getWrittenSize(bool withNullTerminate) const {
-	uint32 size = 0;
+uint32_t LocString::getWrittenSize(bool withNullTerminate) const {
+	uint32_t size = 0;
 	for (StringMap::const_iterator iter = _strings.begin(); iter != _strings.end() ; iter++) {
 		std::unique_ptr<Common::SeekableReadStream> str(convertString(iter->second, iter->first, withNullTerminate));
 

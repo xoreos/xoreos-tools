@@ -93,11 +93,11 @@ void GFF3Dumper::dumpLocString(const Aurora::LocString &locString) {
 static const char * const kGFF3FieldTypeNames[] = {
 	"byte",
 	"char",
-	"uint16",
+	"uint16_t",
 	"sint16",
-	"uint32",
+	"uint32_t",
 	"sint32",
-	"uint64",
+	"uint64_t",
 	"sint64",
 	"float",
 	"double",
@@ -119,7 +119,7 @@ void GFF3Dumper::dumpField(const Aurora::GFF3Struct &strct, const Common::UStrin
 	if (((size_t) type) < ARRAYSIZE(kGFF3FieldTypeNames))
 		typeName = kGFF3FieldTypeNames[(int)type];
 	else
-		typeName = "filetype" + Common::composeString((uint64) type);
+		typeName = "filetype" + Common::composeString((uint64_t) type);
 
 	Common::UString label = field;
 

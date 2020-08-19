@@ -37,7 +37,7 @@ static const char kTestStringUpper1[] = "FOOBAR BARFOO";
 
 // Foobar, o and a with diaereses
 static const byte   kTestStringUTF8 [10] = { 'F', 0xC3, 0xB6, 0xC3, 0xB6, 'b', 0xC3, 0xA4, 'r', 0 };
-static const uint32 kTestStringUTF32[ 7] = { 'F', 0xF6,       0xF6,       'b', 0xE4,       'r', 0 };
+static const uint32_t kTestStringUTF32[ 7] = { 'F', 0xF6,       0xF6,       'b', 0xE4,       'r', 0 };
 
 // FOOBAR, O and A with diaereses
 static const byte kTestStringUpperUTF8[10] = { 'F', 0xC3, 0x96, 0xC3, 0x96, 'B', 0xC3, 0x84, 'R', 0 };
@@ -299,11 +299,11 @@ GTEST_TEST(UString, containsString) {
 GTEST_TEST(UString, at) {
 	const Common::UString str("Foobar Barfoo");
 
-	uint32 f = str.at(0);
-	uint32 b = str.at(7);
-	uint32 r = str.at(9);
-	uint32 o = str.at(12);
-	uint32 e = str.at(13);
+	uint32_t f = str.at(0);
+	uint32_t b = str.at(7);
+	uint32_t r = str.at(9);
+	uint32_t o = str.at(12);
+	uint32_t e = str.at(13);
 
 	EXPECT_EQ(f, 'F');
 	EXPECT_EQ(b, 'B');

@@ -211,7 +211,7 @@ static bool isTopStackJumper(const Block &block, const Block *child = 0, size_t 
 	return true;
 }
 
-static bool hasLinearPathInternal(std::set<uint32> &visited, const Block &block1, const Block &block2) {
+static bool hasLinearPathInternal(std::set<uint32_t> &visited, const Block &block1, const Block &block2) {
 	/* Checks that a linear path exists between two blocks, by recursively
 	 * descending into the children of the earlier block, until we either
 	 * reached the later block (which means there is a path), or moved
@@ -351,7 +351,7 @@ bool isSubRoutineCall(BlockEdgeType type) {
 }
 
 bool hasLinearPath(const Block &block1, const Block &block2) {
-	std::set<uint32> visited;
+	std::set<uint32_t> visited;
 
 	// Correctly order the two blocks we want to check
 	if (block1.address < block2.address)

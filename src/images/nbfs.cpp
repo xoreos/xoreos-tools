@@ -35,7 +35,7 @@
 namespace Images {
 
 NBFS::NBFS(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nbfp,
-           uint32 width, uint32 height) {
+           uint32_t width, uint32_t height) {
 
 	load(nbfs, nbfp, width, height);
 }
@@ -43,9 +43,9 @@ NBFS::NBFS(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nbfp,
 NBFS::~NBFS() {
 }
 
-static uint32 guessDimension(uint32 size, uint32 dim1) {
+static uint32_t guessDimension(uint32_t size, uint32_t dim1) {
 
-	uint32 dim2 = size / dim1;
+	uint32_t dim2 = size / dim1;
 	if (size == (dim1 * dim2))
 		return dim2;
 
@@ -53,7 +53,7 @@ static uint32 guessDimension(uint32 size, uint32 dim1) {
 }
 
 void NBFS::load(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nbfp,
-                uint32 width, uint32 height) {
+                uint32_t width, uint32_t height) {
 
 	try {
 
@@ -104,7 +104,7 @@ const byte *NBFS::readPalette(Common::SeekableReadStream &nbfp) {
 
 	const size_t count = MIN<size_t>(nbfp.size() / 2, 256) * 3;
 	for (size_t i = 0; i < count; i += 3) {
-		const uint16 color = nbfp.readUint16LE();
+		const uint16_t color = nbfp.readUint16LE();
 
 		palette[i + 0] = ((color >> 10) & 0x1F) << 3;
 		palette[i + 1] = ((color >>  5) & 0x1F) << 3;
@@ -115,7 +115,7 @@ const byte *NBFS::readPalette(Common::SeekableReadStream &nbfp) {
 }
 
 void NBFS::readImage(Common::SeekableReadStream &nbfs, const byte *palette,
-                     uint32 width, uint32 height) {
+                     uint32_t width, uint32_t height) {
 
 	_format = kPixelFormatB8G8R8A8;
 
@@ -130,8 +130,8 @@ void NBFS::readImage(Common::SeekableReadStream &nbfs, const byte *palette,
 	bool is0Transp = (palette[0] == 0xF8) && (palette[1] == 0x00) && (palette[2] == 0xF8);
 
 	byte *data = _mipMaps.back()->data.get();
-	for (uint32 i = 0; i < (width * height); i++, data += 4) {
-		uint8 pixel = nbfs.readByte();
+	for (uint32_t i = 0; i < (width * height); i++, data += 4) {
+		uint8_t pixel = nbfs.readByte();
 
 		data[0] = palette[pixel * 3 + 0];
 		data[1] = palette[pixel * 3 + 1];

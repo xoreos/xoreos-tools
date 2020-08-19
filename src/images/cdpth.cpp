@@ -34,13 +34,13 @@
 
 namespace Images {
 
-CDPTH::ReadContext::ReadContext(Common::SeekableReadStream &c, uint32 w, uint32 h) :
+CDPTH::ReadContext::ReadContext(Common::SeekableReadStream &c, uint32_t w, uint32_t h) :
 	cdpth(&c), width(w), height(h) {
 
 }
 
 
-CDPTH::CDPTH(Common::SeekableReadStream &cdpth, uint32 width, uint32 height) {
+CDPTH::CDPTH(Common::SeekableReadStream &cdpth, uint32_t width, uint32_t height) {
 	ReadContext ctx(cdpth, width, height);
 
 	try {
@@ -78,8 +78,8 @@ void CDPTH::readCells(ReadContext &ctx) {
 	try {
 		// Read the cell offset and sizes
 		for (size_t i = 0; i < 4096; i++) {
-			const uint32 size   = ctx.cdpth->readUint16LE();
-			const uint32 offset = ctx.cdpth->readUint16LE() * 512;
+			const uint32_t size   = ctx.cdpth->readUint16LE();
+			const uint32_t offset = ctx.cdpth->readUint16LE() * 512;
 
 			if (offset < 0x4000)
 				break;
@@ -88,7 +88,7 @@ void CDPTH::readCells(ReadContext &ctx) {
 			if (size == 0)
 				continue;
 
-			uint32 pos = ctx.cdpth->pos();
+			uint32_t pos = ctx.cdpth->pos();
 
 			Common::SeekableSubReadStream cellData(ctx.cdpth, offset, offset + size);
 			ctx.cells.back() = Aurora::Small::decompress(cellData);
@@ -113,7 +113,7 @@ void CDPTH::checkConsistency(ReadContext &ctx) {
 		throw Common::Exception("%u cells for an image of %ux%u", (uint)ctx.cells.size(), ctx.width, ctx.height);
 }
 
-void CDPTH::createImage(uint32 width, uint32 height) {
+void CDPTH::createImage(uint32_t width, uint32_t height) {
 	_format = kPixelFormatDepth16;
 
 	_mipMaps.push_back(new MipMap);
@@ -130,26 +130,26 @@ void CDPTH::drawImage(ReadContext &ctx) {
 
 	createImage(ctx.width, ctx.height);
 
-	const uint32 cellWidth  = 64;
-	const uint32 cellHeight = 64;
-	const uint32 cellsX     = ctx.width  / cellWidth;
+	const uint32_t cellWidth  = 64;
+	const uint32_t cellHeight = 64;
+	const uint32_t cellsX     = ctx.width  / cellWidth;
 
-	uint16 *data = reinterpret_cast<uint16 *>(_mipMaps.back()->data.get());
+	uint16_t *data = reinterpret_cast<uint16_t *>(_mipMaps.back()->data.get());
 	for (size_t i = 0; i < ctx.cells.size(); i++) {
 		Common::SeekableReadStream *cell = ctx.cells[i];
 		if (!cell)
 			continue;
 
-		const uint32 xC = i % cellsX;
-		const uint32 yC = i / cellsX;
+		const uint32_t xC = i % cellsX;
+		const uint32_t yC = i / cellsX;
 
 		// Pixel position of this cell within the big image
-		const uint32 imagePos = yC * cellHeight * ctx.width + xC * cellWidth;
+		const uint32_t imagePos = yC * cellHeight * ctx.width + xC * cellWidth;
 
-		for (uint32 y = 0; y < cellHeight; y++) {
-			for (uint32 x = 0; x < cellWidth; x++) {
-				const uint32 pos   = imagePos + y * ctx.width + x;
-				const uint16 pixel = cell->readUint16LE();
+		for (uint32_t y = 0; y < cellHeight; y++) {
+			for (uint32_t x = 0; x < cellWidth; x++) {
+				const uint32_t pos   = imagePos + y * ctx.width + x;
+				const uint16_t pixel = cell->readUint16LE();
 
 				if (pos > (ctx.width * ctx.height))
 					continue;

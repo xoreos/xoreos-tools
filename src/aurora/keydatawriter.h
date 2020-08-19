@@ -41,7 +41,7 @@ public:
 	 * KEY file.
 	 * @return the total size of this data file
 	 */
-	virtual uint32 size() = 0;
+	virtual uint32_t size() = 0;
 
 	/**
 	 * Add a stream of the specified type to the data writer.

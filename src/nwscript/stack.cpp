@@ -694,8 +694,8 @@ static void analyzeStackRETN(AnalyzeStackContext &ctx) {
 static void analyzeStackCPTOPSP(AnalyzeStackContext &ctx) {
 	/* A CPTOPSP instruction, duplicating a stack elements onto the top of the stack. */
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size < 0) || ((size % 4) != 0) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackCPTOPSP(): @%08X: Invalid arguments %d, %d",
@@ -717,8 +717,8 @@ static void analyzeStackCPTOPSP(AnalyzeStackContext &ctx) {
 static void analyzeStackCPDOWNSP(AnalyzeStackContext &ctx) {
 	/* A CPDOWNSP instruction, copying the value of stack elements down. */
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size < 0) || ((size % 4) != 0) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackCPDOWNSP(): @%08X: Invalid arguments %d, %d",
@@ -772,8 +772,8 @@ static void analyzeStackCPDOWNSP(AnalyzeStackContext &ctx) {
 static void analyzeStackCPTOPBP(AnalyzeStackContext &ctx) {
 	/* A CPTOPBP instruction, duplicating a global variable onto the top of the stack. */
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size < 0) || ((size % 4) != 0) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackCPTOPBP(): @%08X: Invalid arguments %d, %d",
@@ -802,8 +802,8 @@ static void analyzeStackCPTOPBP(AnalyzeStackContext &ctx) {
 static void analyzeStackCPDOWNBP(AnalyzeStackContext &ctx) {
 	/* A CPDOWNBP instruction, copying the value of stack elements into the global variables. */
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size < 0) || ((size % 4) != 0) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackCPDOWNBP(): @%08X: Invalid arguments %d, %d",
@@ -840,8 +840,8 @@ static void analyzeStackCPDOWNBP(AnalyzeStackContext &ctx) {
 static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 	/* An ACTION instruction, calling a game-specific engine function. */
 
-	const int32 function   = ctx.instruction->args[0];
-	const int32 paramCount = ctx.instruction->args[1];
+	const int32_t function   = ctx.instruction->args[0];
+	const int32_t paramCount = ctx.instruction->args[1];
 
 	if ((function < 0) || (paramCount < 0))
 		throw Common::Exception("analyzeStackACTION(): @%08X: Invalid arguments %d, %d",
@@ -856,7 +856,7 @@ static void analyzeStackACTION(AnalyzeStackContext &ctx) {
 		                        ctx.instruction->address, (uint)funcParamCount, (uint)paramCount);
 
 	const VariableType *types = getFunctionParameters(ctx.game, function);
-	for (int32 i = 0; i < paramCount; i++) {
+	for (int32_t i = 0; i < paramCount; i++) {
 		const VariableType type = (types[i] == kTypeVector) ? kTypeFloat : types[i];
 		size_t n = (types[i] == kTypeVector) ? 3 : 1;
 
@@ -1109,9 +1109,9 @@ static void analyzeStackCond(AnalyzeStackContext &ctx) {
 static void analyzeStackDestruct(AnalyzeStackContext &ctx) {
 	/* A DESTRUCT instruction, clearing elements from the stack. */
 
-	int16 stackSize        = ctx.instruction->args[0];
-	int16 dontRemoveOffset = ctx.instruction->args[1];
-	int16 dontRemoveSize   = ctx.instruction->args[2];
+	int16_t stackSize        = ctx.instruction->args[0];
+	int16_t dontRemoveOffset = ctx.instruction->args[1];
+	int16_t dontRemoveSize   = ctx.instruction->args[2];
 
 	if (((stackSize % 4) != 0) || ((dontRemoveOffset % 4) != 0) || ((dontRemoveSize % 4) != 0) ||
 	     (stackSize < 0)       ||  (dontRemoveOffset < 0)       ||  (dontRemoveSize < 0))
@@ -1187,7 +1187,7 @@ static void analyzeStackRESTOREBP(AnalyzeStackContext &ctx) {
 static void analyzeStackModifySP(AnalyzeStackContext &ctx) {
 	/* An instruction that directly modifies a stack variable. DECSP or INCSP. */
 
-	int32 offset = ctx.instruction->args[0];
+	int32_t offset = ctx.instruction->args[0];
 
 	if ((offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackModifySP(): @%08X: Invalid argument %d",
@@ -1214,7 +1214,7 @@ static void analyzeStackModifyBP(AnalyzeStackContext &ctx) {
 	if (!ctx.globals)
 		throw Common::Exception("analyzeStackModifyBP(): @%08X: No context globals", ctx.instruction->address);
 
-	int32 offset = ctx.instruction->args[0];
+	int32_t offset = ctx.instruction->args[0];
 
 	if ((offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackModifyBP(): @%08X: Invalid argument %d",
@@ -1237,8 +1237,8 @@ static void analyzeStackREADARRAY(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Invalid instruction type",
 		                        ctx.instruction->address);
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size != 4) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackREADARRAY(): @%08X: Invalid arguments %d, %d",
@@ -1267,8 +1267,8 @@ static void analyzeStackWRITEARRAY(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackWRITEARRAY(): @%08X: Invalid instruction type",
 		                        ctx.instruction->address);
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size != 4) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackWRITEARRAY(): @%08X: Invalid arguments %d, %d",
@@ -1306,8 +1306,8 @@ static void analyzeStackGETREF(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackGETREF(): @%08X: Invalid instruction type",
 		                        ctx.instruction->address);
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size != 4) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackGETREF(): @%08X: Invalid arguments %d, %d",
@@ -1331,8 +1331,8 @@ static void analyzeStackGETREFARRAY(AnalyzeStackContext &ctx) {
 		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Invalid instruction type",
 		                        ctx.instruction->address);
 
-	int32 offset = ctx.instruction->args[0];
-	int32 size   = ctx.instruction->args[1];
+	int32_t offset = ctx.instruction->args[0];
+	int32_t size   = ctx.instruction->args[1];
 
 	if ((size != 4) || (offset > -4) || ((offset % 4) != 0))
 		throw Common::Exception("analyzeStackGETREFARRAY(): @%08X: Invalid arguments %d, %d",

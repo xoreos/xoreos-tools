@@ -26,12 +26,12 @@
 
 #include "src/aurora/rimwriter.h"
 
-static const uint32 kRIMID     = MKTAG('R', 'I', 'M', ' ');
-static const uint32 kVersion1  = MKTAG('V', '1', '.', '0');
+static const uint32_t kRIMID     = MKTAG('R', 'I', 'M', ' ');
+static const uint32_t kVersion1  = MKTAG('V', '1', '.', '0');
 
 namespace Aurora {
 
-RIMWriter::RIMWriter(uint32 fileCount, Common::SeekableWriteStream &stream) :
+RIMWriter::RIMWriter(uint32_t fileCount, Common::SeekableWriteStream &stream) :
 	_fileCount(fileCount), _currentFileCount(0), _stream(stream) {
 
 	// Write magic id
@@ -67,7 +67,7 @@ void RIMWriter::add(const Common::UString &resRef, FileType resType, Common::Rea
 	// Write resource data
 	_stream.seek(_offsetToResourceData);
 
-	uint32 size = _stream.writeStream(stream);
+	uint32_t size = _stream.writeStream(stream);
 
 	// Write resource table entry
 	_stream.seek(_offsetToResourceTable);

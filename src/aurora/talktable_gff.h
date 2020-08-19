@@ -63,16 +63,16 @@ public:
 	TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_GFF();
 
-	const std::list<uint32> &getStrRefs() const;
-	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
+	const std::list<uint32_t> &getStrRefs() const;
+	bool getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const;
 
-	bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
-	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
-	              uint32 &soundID) const;
+	bool getEntry(uint32_t strRef, Common::UString &string, Common::UString &soundResRef,
+	              uint32_t &volumeVariance, uint32_t &pitchVariance, float &soundLength,
+	              uint32_t &soundID) const;
 
-	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
-	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
-	              uint32 soundID);
+	void setEntry(uint32_t strRef, const Common::UString &string, const Common::UString &soundResRef,
+	              uint32_t volumeVariance, uint32_t pitchVariance, float soundLength,
+	              uint32_t soundID);
 
 
 private:
@@ -84,12 +84,12 @@ private:
 		Entry(const GFF4Struct *s = 0) : strct(s) { }
 	};
 
-	typedef Common::PtrMap<uint32, Entry> Entries;
+	typedef Common::PtrMap<uint32_t, Entry> Entries;
 
 
 	std::unique_ptr<GFF4File> _gff;
 
-	std::list<uint32> _strRefs;
+	std::list<uint32_t> _strRefs;
 
 	Entries _entries;
 

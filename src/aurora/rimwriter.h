@@ -38,17 +38,17 @@ public:
 	 *  @param fileCount the number of files to pack in this RIM file.
 	 *  @param stream the stream to write this RIM file to.
 	 */
-	RIMWriter(uint32 fileCount, Common::SeekableWriteStream &stream);
+	RIMWriter(uint32_t fileCount, Common::SeekableWriteStream &stream);
 
 	/** Add a new stream to this archive to be packed. */
 	void add(const Common::UString &resRef, FileType resType, Common::ReadStream &stream);
 
 private:
-	const uint32 _fileCount;
-	uint32 _currentFileCount;
+	const uint32_t _fileCount;
+	uint32_t _currentFileCount;
 
-	uint32 _offsetToResourceTable;
-	uint32 _offsetToResourceData;
+	uint32_t _offsetToResourceTable;
+	uint32_t _offsetToResourceData;
 
 	Common::SeekableWriteStream &_stream;
 };

@@ -438,31 +438,31 @@ size_t getDirectArgumentCount(Opcode op) {
 }
 
 Common::UString formatBytes(const Instruction &instr) {
-	Common::UString str = Common::UString::format("%02X %02X", (uint8)instr.opcode, (uint8)instr.type);
+	Common::UString str = Common::UString::format("%02X %02X", (uint8_t)instr.opcode, (uint8_t)instr.type);
 
 	for (size_t i = 0; i < instr.argCount; i++) {
 		switch (instr.argTypes[i]) {
 			case kOpcodeArgUint8:
-				str += Common::UString::format(" %02X", (uint8)instr.args[i]);
+				str += Common::UString::format(" %02X", (uint8_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgUint16:
-				str += Common::UString::format(" %04X", (uint16)instr.args[i]);
+				str += Common::UString::format(" %04X", (uint16_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgSint16:
-				str += Common::UString::format(" %04X", (uint16)(int16)instr.args[i]);
+				str += Common::UString::format(" %04X", (uint16_t)(int16_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgSint32:
 			case kOpcodeArgUint32:
-				str += Common::UString::format(" %08X", (uint32)instr.args[i]);
+				str += Common::UString::format(" %08X", (uint32_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgVariable:
 				switch (instr.type) {
 					case kInstTypeInt:
-						str += Common::UString::format(" %08X", (uint32)instr.constValueInt);
+						str += Common::UString::format(" %08X", (uint32_t)instr.constValueInt);
 						break;
 
 					case kInstTypeFloat:
@@ -531,7 +531,7 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 				break;
 
 			case kOpcodeArgUint32:
-				str += Common::UString::format(" %u", (uint32)instr.args[i]);
+				str += Common::UString::format(" %u", (uint32_t)instr.args[i]);
 				break;
 
 			case kOpcodeArgVariable:
@@ -566,15 +566,15 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game)
 	return str;
 }
 
-Common::UString formatSubRoutine(uint32 address) {
+Common::UString formatSubRoutine(uint32_t address) {
 	return Common::UString::format("sub_%08X", address);
 }
 
-Common::UString formatStoreState(uint32 address) {
+Common::UString formatStoreState(uint32_t address) {
 	return Common::UString::format("sta_%08X", address);
 }
 
-Common::UString formatJumpDestination(uint32 address) {
+Common::UString formatJumpDestination(uint32_t address) {
 	return Common::UString::format("loc_%08X", address);
 }
 

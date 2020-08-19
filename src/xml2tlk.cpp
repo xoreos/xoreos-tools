@@ -50,10 +50,10 @@
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Common::Encoding &encoding, Aurora::GameID &game,
-                      XML::TLKCreator::Version &version, uint32 &language);
+                      XML::TLKCreator::Version &version, uint32_t &language);
 
 void createTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding,
-               XML::TLKCreator::Version &version, uint32 &language);
+               XML::TLKCreator::Version &version, uint32_t &language);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 		Aurora::GameID   game     = Aurora::kGameIDUnknown;
 
 		XML::TLKCreator::Version version = XML::TLKCreator::kVersionInvalid;
-		uint32 language = Aurora::kLanguageInvalid;
+		uint32_t language = Aurora::kLanguageInvalid;
 
 		int returnValue = 1;
 		Common::UString inFile, outFile;
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
                       Common::Encoding &encoding, Aurora::GameID &game,
-                      XML::TLKCreator::Version &version, uint32 &language) {
+                      XML::TLKCreator::Version &version, uint32_t &language) {
 
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
@@ -221,7 +221,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 void createTLK(const Common::UString &inFile, const Common::UString &outFile, Common::Encoding encoding,
-               XML::TLKCreator::Version &version, uint32 &language) {
+               XML::TLKCreator::Version &version, uint32_t &language) {
 
 	Common::WriteFile tlk(outFile);
 	std::unique_ptr<Common::ReadStream> xml(openFileOrStdIn(inFile));

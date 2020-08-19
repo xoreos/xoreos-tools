@@ -38,7 +38,7 @@ namespace XML {
 
 void TLKCreator::create(Common::WriteStream &output, Common::ReadStream &input,
                         Version &version, Common::Encoding encoding,
-                        const Common::UString &inputFileName, uint32 languageID) {
+                        const Common::UString &inputFileName, uint32_t languageID) {
 
 	if ((version != kVersion30) && (version != kVersion40))
 		throw Common::Exception("Invalid TLK version");
@@ -71,7 +71,7 @@ void TLKCreator::create(Common::WriteStream &output, Common::ReadStream &input,
 
 	// Look at the ID of the last string entry, and create a dummy entry to speed up re-allocation
 	if (!strings.empty()) {
-		uint32 lastID = 0xFFFFFFFF;
+		uint32_t lastID = 0xFFFFFFFF;
 
 		XMLNode::Children::const_iterator last = --strings.end();
 		Common::parseString((*last)->getProperty("id"), lastID, true);
@@ -88,7 +88,7 @@ void TLKCreator::create(Common::WriteStream &output, Common::ReadStream &input,
 		if (xmlID.empty())
 			throw Common::Exception("XML property \"id\" expected");
 
-		uint32 strRef = 0xFFFFFFFF;
+		uint32_t strRef = 0xFFFFFFFF;
 		Common::parseString(xmlID, strRef, false);
 
 		Common::UString string;
@@ -98,7 +98,7 @@ void TLKCreator::create(Common::WriteStream &output, Common::ReadStream &input,
 
 		const Common::UString soundResRef = (*s)->getProperty("sound");
 
-		uint32 volumeVariance = 0, pitchVariance = 0, soundID = 0xFFFFFFFF;
+		uint32_t volumeVariance = 0, pitchVariance = 0, soundID = 0xFFFFFFFF;
 		Common::parseString((*s)->getProperty("volumevariance"), volumeVariance, true);
 		Common::parseString((*s)->getProperty("pitchvariance" ), pitchVariance , true);
 		Common::parseString((*s)->getProperty("soundid"       ), soundID       , true);

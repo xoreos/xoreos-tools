@@ -175,7 +175,7 @@ enum AddressType {
 struct Instruction {
 	static const size_t kOpcodeMaxArgumentCount = 3;
 
-	uint32 address; ///< The address of this instruction with the NCS file.
+	uint32_t address; ///< The address of this instruction with the NCS file.
 
 	Opcode opcode;        ///< The opcode of this instruction.
 	InstructionType type; ///< The type of this instruction.
@@ -183,16 +183,16 @@ struct Instruction {
 	/** The number of direct arguments this instruction has (0-3). */
 	size_t argCount;
 	/** The direct arguments of this instruction. */
-	int32 args[kOpcodeMaxArgumentCount];
+	int32_t args[kOpcodeMaxArgumentCount];
 	/** The types of the direct arguments of this instruction. */
 	OpcodeArgument argTypes[kOpcodeMaxArgumentCount];
 
 	/** Parameter for kOpcodeCONST + kInstTypeInt. */
-	int32 constValueInt;
+	int32_t constValueInt;
 	/** Parameter for kOpcodeCONST + kInstTypeFloat. */
 	float constValueFloat;
 	/** Parameter for kOpcodeCONST + kInstTypeObject. */
-	uint32 constValueObject;
+	uint32_t constValueObject;
 	/** Parameter for kOpcodeCONST + kInstTypeString or kInstTypeResource. */
 	Common::UString constValueString;
 
@@ -233,7 +233,7 @@ struct Instruction {
 	std::vector<const Variable *> variables;
 
 
-	Instruction(uint32 addr = 0) : address(addr),
+	Instruction(uint32_t addr = 0) : address(addr),
 		opcode(kOpcodeMAX), type(kInstTypeInstTypeMAX), argCount(0),
 		constValueInt(0), constValueFloat(0.0f), constValueObject(0),
 		addressType(kAddressTypeNone), follower(0), block(0) {
@@ -249,7 +249,7 @@ struct Instruction {
 		return address < right.address;
 	}
 
-	bool operator<(uint32 right) const {
+	bool operator<(uint32_t right) const {
 		return address < right;
 	}
 };

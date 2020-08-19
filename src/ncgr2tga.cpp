@@ -46,11 +46,11 @@
 #include "src/util.h"
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      uint32 &width, uint32 &height, std::vector<Common::UString> &ncgrFiles,
+                      uint32_t &width, uint32_t &height, std::vector<Common::UString> &ncgrFiles,
                       Common::UString &nclrFile, Common::UString &outFile);
 
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
-             Common::UString &outFile, uint32 width, uint32 height);
+             Common::UString &outFile, uint32_t width, uint32_t height);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 		Common::Platform::getParameters(argc, argv, args);
 
 		int returnValue = 1;
-		uint32 width, height;
+		uint32_t width, height;
 		std::vector<Common::UString> ncgrFiles;
 		Common::UString nclrFile, outFile;
 
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 }
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
-                      uint32 &width, uint32 &height, std::vector<Common::UString> &ncgrFiles,
+                      uint32_t &width, uint32_t &height, std::vector<Common::UString> &ncgrFiles,
                       Common::UString &nclrFile, Common::UString &outFile) {
 
 	std::vector<Common::UString> args;
@@ -114,7 +114,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	}
 
 	ncgrFiles.resize(width * height);
-	for (uint32 i = 0; i < (width * height); i++)
+	for (uint32_t i = 0; i < (width * height); i++)
 		ncgrFiles[i] = args[i + 2];
 
 	nclrFile = args[2 + width * height];
@@ -124,7 +124,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 void convert(std::vector<Common::UString> &ncgrFiles, Common::UString &nclrFile,
-             Common::UString &outFile, uint32 width, uint32 height) {
+             Common::UString &outFile, uint32_t width, uint32_t height) {
 
 	Common::ReadFile nclr(nclrFile);
 

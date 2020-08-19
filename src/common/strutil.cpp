@@ -50,12 +50,12 @@ void printDataHex(SeekableReadStream &stream, size_t size) {
 	if (size == 0)
 		return;
 
-	uint32 offset = 0;
+	uint32_t offset = 0;
 	byte rowData[16];
 
 	while (size > 0) {
 		// At max 16 bytes printed per row
-		uint32 n = MIN<size_t>(size, 16);
+		uint32_t n = MIN<size_t>(size, 16);
 		if (stream.read(rowData, n) != n)
 			throw Exception(kReadError);
 
@@ -63,9 +63,9 @@ void printDataHex(SeekableReadStream &stream, size_t size) {
 		std::fprintf(stderr, "%08X  ", offset);
 
 		// 2 "blobs" of each 8 bytes per row
-		for (uint32 i = 0; i < 2; i++) {
-			for (uint32 j = 0; j < 8; j++) {
-				uint32 m = i * 8 + j;
+		for (uint32_t i = 0; i < 2; i++) {
+			for (uint32_t j = 0; j < 8; j++) {
+				uint32_t m = i * 8 + j;
 
 				if (m < n)
 					// Print the data
@@ -82,7 +82,7 @@ void printDataHex(SeekableReadStream &stream, size_t size) {
 		std::fprintf(stderr, "|");
 
 		// If the data byte is a printable character, print it. If not, substitute a '.'
-		for (uint32 i = 0; i < n; i++)
+		for (uint32_t i = 0; i < n; i++)
 			std::fprintf(stderr, "%c", std::isprint(rowData[i]) ? rowData[i] : '.');
 
 		std::fprintf(stderr, "|\n");
@@ -104,7 +104,7 @@ void printDataHex(const byte *data, size_t size) {
 }
 
 void printStream(SeekableReadStream &stream) {
-	uint32 c;
+	uint32_t c;
 	while ((c = stream.readChar()) != ReadStream::kEOF)
 		std::printf("%c", (char) c);
 }
@@ -115,7 +115,7 @@ void printStream(MemoryWriteStreamDynamic &stream) {
 	printStream(readStream);
 }
 
-static bool tagToString(uint32 tag, bool trim, UString &str) {
+static bool tagToString(uint32_t tag, bool trim, UString &str) {
 	tag = TO_BE_32(tag);
 
 	const char *tS = reinterpret_cast<const char *>(&tag);
@@ -129,7 +129,7 @@ static bool tagToString(uint32 tag, bool trim, UString &str) {
 	return true;
 }
 
-UString tagToString(uint32 tag, bool trim) {
+UString tagToString(uint32_t tag, bool trim) {
 	UString str;
 	if (tagToString(tag, trim, str))
 		return str;
@@ -137,7 +137,7 @@ UString tagToString(uint32 tag, bool trim) {
 	return UString::format("0x%08X", FROM_BE_32(tag));
 }
 
-UString debugTag(uint32 tag, bool trim) {
+UString debugTag(uint32_t tag, bool trim) {
 	UString str;
 	if (tagToString(tag, trim, str))
 		return UString::format("0x%08X ('%s')", FROM_BE_32(tag), str.c_str());

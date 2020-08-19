@@ -33,7 +33,7 @@
 #include "src/xml/gff3dumper.h"
 #include "src/xml/gff4dumper.h"
 
-static const uint32 kGFFTypes[] = {
+static const uint32_t kGFFTypes[] = {
 	MKTAG('A', 'R', 'E', ' '),
 	MKTAG('B', 'I', 'C', ' '),
 	MKTAG('B', 'T', 'C', ' '),
@@ -97,10 +97,10 @@ static const uint32 kGFFTypes[] = {
 	MKTAG('W', 'M', 'P', ' ')
 };
 
-static const uint32 kVersion32 = MKTAG('V', '3', '.', '2');
-static const uint32 kVersion33 = MKTAG('V', '3', '.', '3');
-static const uint32 kVersion40 = MKTAG('V', '4', '.', '0');
-static const uint32 kVersion41 = MKTAG('V', '4', '.', '1');
+static const uint32_t kVersion32 = MKTAG('V', '3', '.', '2');
+static const uint32_t kVersion33 = MKTAG('V', '3', '.', '3');
+static const uint32_t kVersion40 = MKTAG('V', '4', '.', '0');
+static const uint32_t kVersion41 = MKTAG('V', '4', '.', '1');
 
 enum GFFVersion {
 	kGFFVersionNone,
@@ -117,13 +117,13 @@ GFFDumper::~GFFDumper() {
 }
 
 static GFFVersion identifyGFF(Common::SeekableReadStream &input, bool allowNWNPremium, bool sacFile) {
-	uint32 id = 0xFFFFFFFF, version = 0xFFFFFFFF;
+	uint32_t id = 0xFFFFFFFF, version = 0xFFFFFFFF;
 
 	size_t pos = input.pos();
 
 	if (sacFile) {
 		input.skip(4);
-		uint32 stringLength = input.readUint32LE();
+		uint32_t stringLength = input.readUint32LE();
 		input.skip(stringLength);
 		input.skip(4);
 	}

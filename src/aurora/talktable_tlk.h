@@ -56,37 +56,37 @@ namespace Aurora {
  */
 class TalkTable_TLK : public AuroraFile, public TalkTable {
 public:
-	TalkTable_TLK(Common::Encoding encoding, uint32 languageID);
+	TalkTable_TLK(Common::Encoding encoding, uint32_t languageID);
 	/** Take over this stream and read a TLK out of it. */
 	TalkTable_TLK(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_TLK();
 
 	/** Return the language ID (ungendered) of the talk table. */
-	uint32 getLanguageID() const;
+	uint32_t getLanguageID() const;
 
 	/** Set the language ID (ungendered) of the talk table. */
-	void setLanguageID(uint32 id);
+	void setLanguageID(uint32_t id);
 
-	const std::list<uint32> &getStrRefs() const;
-	bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const;
+	const std::list<uint32_t> &getStrRefs() const;
+	bool getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const;
 
 	/** Return all values associated to a string references in a TLK talk table. */
-	bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
-	              uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
-	              uint32 &soundID) const;
+	bool getEntry(uint32_t strRef, Common::UString &string, Common::UString &soundResRef,
+	              uint32_t &volumeVariance, uint32_t &pitchVariance, float &soundLength,
+	              uint32_t &soundID) const;
 
 	/** Modify or add an entry to the talk table. */
-	void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
-	              uint32 volumeVariance, uint32 pitchVariance, float soundLength,
-	              uint32 soundID);
+	void setEntry(uint32_t strRef, const Common::UString &string, const Common::UString &soundResRef,
+	              uint32_t volumeVariance, uint32_t pitchVariance, float soundLength,
+	              uint32_t soundID);
 
 	/** Write this TLK as a version V3.0 TLK into that stream. */
 	void write30(Common::WriteStream &out) const;
 	/** Write this TLK as a version V4.0 TLK into that stream. */
 	void write40(Common::WriteStream &out) const;
 
-	static uint32 getLanguageID(Common::SeekableReadStream &tlk);
-	static uint32 getLanguageID(const Common::UString &file);
+	static uint32_t getLanguageID(Common::SeekableReadStream &tlk);
+	static uint32_t getLanguageID(const Common::UString &file);
 
 
 private:
@@ -100,18 +100,18 @@ private:
 	/** A talk resource entry. */
 	struct Entry {
 		Common::UString text;
-		uint32 offset;
-		uint32 length;
+		uint32_t offset;
+		uint32_t length;
 
 		// V3
-		uint32 flags;
+		uint32_t flags;
 		Common::UString soundResRef;
-		uint32 volumeVariance; // Unused
-		uint32 pitchVariance; // Unused
+		uint32_t volumeVariance; // Unused
+		uint32_t pitchVariance; // Unused
 		float soundLength; // In seconds
 
 		// V4
-		uint32 soundID;
+		uint32_t soundID;
 
 		Entry();
 	};
@@ -121,15 +121,15 @@ private:
 
 	std::unique_ptr<Common::SeekableReadStream> _tlk;
 
-	uint32 _languageID;
+	uint32_t _languageID;
 
-	std::list<uint32> _strRefs;
+	std::list<uint32_t> _strRefs;
 
 	Entries _entries;
 
 	void load();
 
-	void readEntryTableV3(uint32 stringsOffset);
+	void readEntryTableV3(uint32_t stringsOffset);
 	void readEntryTableV4();
 
 	Common::UString readString(const Entry &entry) const;

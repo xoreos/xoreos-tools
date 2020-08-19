@@ -43,7 +43,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 	if (!tlk)
 		return;
 
-	const uint32 languageID = tlk->getLanguageID();
+	const uint32_t languageID = tlk->getLanguageID();
 
 	XMLWriter xml(output);
 
@@ -52,13 +52,13 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 		xml.addProperty("language", Common::composeString(languageID));
 	xml.breakLine();
 
-	const std::list<uint32> &strRefs = tlk->getStrRefs();
+	const std::list<uint32_t> &strRefs = tlk->getStrRefs();
 
-	for (std::list<uint32>::const_iterator s = strRefs.begin(); s != strRefs.end(); ++s) {
-		const uint32 strRef = *s;
+	for (std::list<uint32_t>::const_iterator s = strRefs.begin(); s != strRefs.end(); ++s) {
+		const uint32_t strRef = *s;
 
 		Common::UString str, sound;
-		uint32 volumeVariance, pitchVariance, soundID;
+		uint32_t volumeVariance, pitchVariance, soundID;
 		float soundLength;
 
 		tlk->getEntry(strRef, str, sound, volumeVariance, pitchVariance, soundLength, soundID);

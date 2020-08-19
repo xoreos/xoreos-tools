@@ -118,7 +118,7 @@ public:
 	struct Declaration {
 		Language language;
 
-		uint32 id;
+		uint32_t id;
 		Common::Encoding encoding;
 		Common::Encoding encodingLocString;
 	};
@@ -132,11 +132,11 @@ public:
 
 	/** Add a supported language for the current game to the LanguageManager,
 	 *  together with its internal (ungendered) language ID and usual encoding. */
-	void addLanguage(Language language, uint32 id, Common::Encoding encoding);
+	void addLanguage(Language language, uint32_t id, Common::Encoding encoding);
 	/** Add a supported language for the current game to the LanguageManager,
 	 *  together with its internal (ungendered) language ID, the usual encoding,
 	 *  and the encoding when reading an embedded LocString string. */
-	void addLanguage(Language language, uint32 id, Common::Encoding encoding,
+	void addLanguage(Language language, uint32_t id, Common::Encoding encoding,
 	                 Common::Encoding encodingLocString);
 	/** Add a supported language for the current game to the LanguageManager,
 	 *  together with its internal (ungendered) language ID and usual encoding. */
@@ -153,13 +153,13 @@ public:
 	 *  If this language ID has no language declared already, this method adds a
 	 *  fake language entry!
 	 */
-	void overrideEncoding(uint32 id, Common::Encoding encoding);
+	void overrideEncoding(uint32_t id, Common::Encoding encoding);
 	/** Override the encodings of a specific (ungendered) language ID.
 	 *
 	 *  If this language ID has no language declared already, this method adds a
 	 *  fake language entry!
 	 */
-	void overrideEncoding(uint32 id, Common::Encoding encoding, Common::Encoding encodingLocString);
+	void overrideEncoding(uint32_t id, Common::Encoding encoding, Common::Encoding encodingLocString);
 
 	/** Return all declared supported languages for the current game. */
 	std::vector<Language> getLanguages() const;
@@ -170,7 +170,7 @@ public:
 	 *  character is not relevant, for example when querying or setting the
 	 *  language the whole game runs.
 	 */
-	uint32 getLanguageID(Language language) const;
+	uint32_t getLanguageID(Language language) const;
 
 	/** Construct the internal language ID for an gendered use of a language.
 	 *
@@ -179,21 +179,21 @@ public:
 	 *  that might change depending on whether the player character is male
 	 *  or female.
 	 */
-	uint32 getLanguageID(Language language, LanguageGender gender) const;
+	uint32_t getLanguageID(Language language, LanguageGender gender) const;
 
 	/** Decode the internal language ID for an ungendered use of a language.
 	 *
 	 *  See getLanguageID() on what constitutes gendered and ungendered
 	 *  language use.
 	 */
-	Language getLanguage(uint32 languageID) const;
+	Language getLanguage(uint32_t languageID) const;
 
 	/** Decode the internal language ID for a gendered use of a language.
 	 *
 	 *  See getLanguageID() on what constitutes gendered and ungendered
 	 *  language use.
 	 */
-	Language getLanguage(uint32 languageID, LanguageGender &gender) const;
+	Language getLanguage(uint32_t languageID, LanguageGender &gender) const;
 
 	/** Decode the internal language ID for a gendered use of a language
 	 *  (and ignore the language gender).
@@ -201,7 +201,7 @@ public:
 	 *  See getLanguageID() on what constitutes gendered and ungendered
 	 *  language use.
 	 */
-	Language getLanguageGendered(uint32 languageID) const;
+	Language getLanguageGendered(uint32_t languageID) const;
 
 	/** Return the encoding used for the given language. */
 	Common::Encoding getEncoding(Language language) const;
@@ -242,15 +242,15 @@ public:
 	static Language parseLanguage(const Common::UString &str);
 
 	/** Convert an ungendered language ID to a gendered language ID. */
-	static uint32 convertLanguageIDToGendered(uint32 languageID, LanguageGender gender);
+	static uint32_t convertLanguageIDToGendered(uint32_t languageID, LanguageGender gender);
 	/** Convert a gendered language ID to an ungendered language ID. */
-	static uint32 convertLanguageIDToUngendered(uint32 languageID);
+	static uint32_t convertLanguageIDToUngendered(uint32_t languageID);
 
 	/** Return the gender of this gendered language ID. */
-	static LanguageGender getLanguageGender(uint32 languageID);
+	static LanguageGender getLanguageGender(uint32_t languageID);
 
 	/** Swap the gender of this gendered language ID. */
-	static uint32 swapLanguageGender(uint32 languageID);
+	static uint32_t swapLanguageGender(uint32_t languageID);
 
 	/** Pre-parse and fix color codes found in UI and dialogue strings in Aurora games.
 	 *
@@ -273,7 +273,7 @@ public:
 	// '---
 
 private:
-	typedef std::map<uint32  , Declaration> LanguageByID;
+	typedef std::map<uint32_t, Declaration> LanguageByID;
 	typedef std::map<Language, Declaration> LanguageByLanguage;
 
 	LanguageByID _langByID;
@@ -283,10 +283,10 @@ private:
 	Language _currentLanguageVoice;
 	LanguageGender _currentGender;
 
-	uint32 _fakeLanguage;
+	uint32_t _fakeLanguage;
 
 	const Declaration *find(Language language) const;
-	const Declaration *find(uint32 id) const;
+	const Declaration *find(uint32_t id) const;
 };
 
 } // End of namespace Aurora

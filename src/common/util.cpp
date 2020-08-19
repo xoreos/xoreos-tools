@@ -94,11 +94,11 @@ void info(const char *s, ...) {
 	// format anyway. However, should we find another system that has this differently,
 	// we might have to do something more here...
 union floatConvert {
-	uint32 dInt;
+	uint32_t dInt;
 	float dFloat;
 };
 
-float convertIEEEFloat(uint32 data) {
+float convertIEEEFloat(uint32_t data) {
 
 	floatConvert conv;
 
@@ -107,7 +107,7 @@ float convertIEEEFloat(uint32 data) {
 	return conv.dFloat;
 }
 
-uint32 convertIEEEFloat(float value) {
+uint32_t convertIEEEFloat(float value) {
 	floatConvert conv;
 
 	conv.dFloat = value;
@@ -121,11 +121,11 @@ uint32 convertIEEEFloat(float value) {
 	// we might have to do something more here...
 
 union doubleConvert {
-	uint64 dInt;
+	uint64_t dInt;
 	double dDouble;
 };
 
-double convertIEEEDouble(uint64 data) {
+double convertIEEEDouble(uint64_t data) {
 	doubleConvert conv;
 
 	conv.dInt = data;
@@ -133,7 +133,7 @@ double convertIEEEDouble(uint64 data) {
 	return conv.dDouble;
 }
 
-uint64 convertIEEEDouble(double value) {
+uint64_t convertIEEEDouble(double value) {
 	doubleConvert conv;
 
 	conv.dDouble = value;
@@ -141,27 +141,27 @@ uint64 convertIEEEDouble(double value) {
 	return conv.dInt;
 }
 
-double readNintendoFixedPoint(uint32 value, bool sign, uint8 iBits, uint8 fBits) {
+double readNintendoFixedPoint(uint32_t value, bool sign, uint8_t iBits, uint8_t fBits) {
 	/* The Nintendo DS uses fixed point values of various formats. This method can
 	 * convert them all into a usual floating point double. */
 
 	assert((iBits + fBits + (sign ? 1 : 0)) <= 32);
 
 	// Masks for the integer, fractional and sign parts
-	const uint32 fMask =  (UINT64_C(1) <<          fBits)  - 1;
-	const uint32 iMask = ((UINT64_C(1) << (iBits + fBits)) - 1) - fMask;
-	const uint32 sMask =   UINT64_C(1) << (iBits + fBits);
+	const uint32_t fMask =  (UINT64_C(1) <<          fBits)  - 1;
+	const uint32_t iMask = ((UINT64_C(1) << (iBits + fBits)) - 1) - fMask;
+	const uint32_t sMask =   UINT64_C(1) << (iBits + fBits);
 
 	// Step of a fractional unit
-	const uint32 fDiv  =  (1 <<          fBits);
+	const uint32_t fDiv  =  (1 <<          fBits);
 
 	// The fractional and integer parts themselves
-	int32 fPart =  value & fMask;
-	int32 iPart = (value & iMask) >> fBits;
+	int32_t fPart =  value & fMask;
+	int32_t iPart = (value & iMask) >> fBits;
 
 	// If this is a negative value, negate the integer part (which is a two's complement)
 	if (sign && ((value & sMask) != 0))
-		iPart = -((int32) ((~iPart & (iMask >> fBits)) + 1));
+		iPart = -((int32_t) ((~iPart & (iMask >> fBits)) + 1));
 
 	return (double)iPart + ((double) fPart) / ((double) fDiv);
 }

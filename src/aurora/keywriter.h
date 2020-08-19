@@ -47,7 +47,7 @@ public:
 	 * @param files the files contained in this BIF/BZF file
 	 * @param size total size of the bif file
 	 */
-	void addBIF(const Common::UString &fileName, const std::list<Common::UString> &files, uint32 size);
+	void addBIF(const Common::UString &fileName, const std::list<Common::UString> &files, uint32_t size);
 
 	/**
 	 * Write the collected information as KEY file to the specified.
@@ -60,7 +60,7 @@ private:
 	struct Entry {
 		Common::UString fileName;
 		std::list<Common::UString> files;
-		uint32 fileSize;
+		uint32_t fileSize;
 	};
 
 	std::list<Entry> _entries;

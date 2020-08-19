@@ -42,7 +42,7 @@ static void setAddressType(Instruction *instr, AddressType type) {
 	instr->addressType = type;
 }
 
-static Instruction *findInstruction(Instructions &instructions, uint32 address) {
+static Instruction *findInstruction(Instructions &instructions, uint32_t address) {
 	Instructions::iterator it = std::lower_bound(instructions.begin(), instructions.end(), address);
 	if ((it == instructions.end()) || (it->address != address))
 		return 0;
@@ -167,7 +167,7 @@ static Common::UString readStringQuoting(Common::SeekableReadStream &ncs, size_t
 		else if (c < 32 || c > 126)
 			str += Common::UString::format("\\x%02X", c);
 		else
-			str += (uint32) c;
+			str += (uint32_t) c;
 	}
 
 	if (length != SIZE_MAX)
@@ -197,7 +197,7 @@ void parseOpcodeConst(Instruction &instr, Common::SeekableReadStream &ncs) {
 			break;
 
 		default:
-			throw Common::Exception("Illegal type for opcode CONST: 0x%02X", (uint8)instr.type);
+			throw Common::Exception("Illegal type for opcode CONST: 0x%02X", (uint8_t)instr.type);
 	}
 
 	instr.argTypes[0] = kOpcodeArgVariable;
@@ -226,7 +226,7 @@ void parseOpcodeNEq(Instruction &instr, Common::SeekableReadStream &ncs) {
 }
 
 void parseOpcodeStore(Instruction &instr, Common::SeekableReadStream &ncs) {
-	instr.args[0] = (uint8) instr.type;
+	instr.args[0] = (uint8_t) instr.type;
 	instr.args[1] = ncs.readUint32BE();
 	instr.args[2] = ncs.readUint32BE();
 
@@ -264,7 +264,7 @@ void parseOpcodeDefault(Instruction &instr, Common::SeekableReadStream &ncs) {
 				break;
 
 			case kOpcodeArgUint32:
-				instr.args[i] = (int32)ncs.readUint32BE();
+				instr.args[i] = (int32_t)ncs.readUint32BE();
 				break;
 
 			default:
@@ -288,7 +288,7 @@ bool parseInstruction(Common::SeekableReadStream &ncs, Instruction &instr) {
 	}
 
 	if (((size_t)instr.opcode >= ARRAYSIZE(kParseFunc)) || !kParseFunc[(size_t)instr.opcode])
-		throw Common::Exception("Invalid opcode 0x%02X", (uint8)instr.opcode);
+		throw Common::Exception("Invalid opcode 0x%02X", (uint8_t)instr.opcode);
 
 	const ParseFunc func = kParseFunc[(size_t)instr.opcode];
 	(*func)(instr, ncs);

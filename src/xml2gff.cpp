@@ -44,7 +44,7 @@
 
 #include "src/util.h"
 
-typedef std::map<uint32, Common::Encoding> EncodingOverrides;
+typedef std::map<uint32_t, Common::Encoding> EncodingOverrides;
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &inFile, Common::UString &outFile,
@@ -97,7 +97,7 @@ bool parseEncodingOverride(const Common::UString &arg, EncodingOverrides &encOve
 	if (sep == arg.end())
 		return false;
 
-	uint32 id = 0xFFFFFFFF;
+	uint32_t id = 0xFFFFFFFF;
 	try {
 		Common::parseString(arg.substr(arg.begin(), sep), id);
 	} catch (...) {

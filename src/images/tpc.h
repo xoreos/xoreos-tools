@@ -61,14 +61,14 @@ private:
 	void readData(Common::SeekableReadStream &tpc, byte encoding);
 	void readTXIData(Common::SeekableReadStream &tpc);
 
-	uint32 getMinDataSize(bool uncompressed, byte encoding);
+	uint32_t getMinDataSize(bool uncompressed, byte encoding);
 	PixelFormat getPixelFormat(bool uncompressed, byte encoding);
 
-	bool checkAnimated(uint32 &width, uint32 &height, uint32 &dataSize);
-	bool checkCubeMap(uint32 &width, uint32 &height);
+	bool checkAnimated(uint32_t &width, uint32_t &height, uint32_t &dataSize);
+	bool checkCubeMap(uint32_t &width, uint32_t &height);
 	void fixupCubeMap();
 
-	static void deSwizzle(byte *dst, const byte *src, uint32 width, uint32 height);
+	static void deSwizzle(byte *dst, const byte *src, uint32_t width, uint32_t height);
 };
 
 } // End of namespace Images

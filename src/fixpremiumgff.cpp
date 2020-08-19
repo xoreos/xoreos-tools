@@ -95,10 +95,10 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	return parser.process(argv);
 }
 
-static const uint32 kVersion32 = MKTAG('V', '3', '.', '2');
-static const uint32 kVersion33 = MKTAG('V', '3', '.', '3');
-static const uint32 kVersion40 = MKTAG('V', '4', '.', '0');
-static const uint32 kVersion41 = MKTAG('V', '4', '.', '1');
+static const uint32_t kVersion32 = MKTAG('V', '3', '.', '2');
+static const uint32_t kVersion33 = MKTAG('V', '3', '.', '3');
+static const uint32_t kVersion40 = MKTAG('V', '4', '.', '0');
+static const uint32_t kVersion41 = MKTAG('V', '4', '.', '1');
 
 void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::UString &id) {
 	if (id.empty()) {
@@ -114,8 +114,8 @@ void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::US
 
 	std::unique_ptr<Common::SeekableReadStream> in(Common::ReadFile::readIntoMemory(inFile));
 
-	const uint32 inID      = in->readUint32BE();
-	const uint32 inVersion = in->readUint32BE();
+	const uint32_t inID      = in->readUint32BE();
+	const uint32_t inVersion = in->readUint32BE();
 
 	if ((inVersion == kVersion32) || (inVersion == kVersion33) ||
 	    (inVersion == kVersion40) || (inVersion == kVersion41)) {
@@ -138,7 +138,7 @@ void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::US
 	if ((FROM_BE_32(inID) < 0x30) || (FROM_BE_32(inID) > 0x12F))
 		throw Common::Exception("File \"%s\" is neither a standard, nor a premium GFF file", inFile.c_str());
 
-	const uint32 value = FROM_BE_32(inID) - 0x30;
+	const uint32_t value = FROM_BE_32(inID) - 0x30;
 
 	status("Repairing \"%s\" to a GFF with an ID of \"%s\" a correction value of %u",
 	       inFile.c_str(), id.c_str(), value);
@@ -155,8 +155,8 @@ void fixPremiumGFF(Common::UString &inFile, Common::UString &outFile, Common::US
 	out.writeUint32BE(kVersion32);
 
 	for (size_t i = 0; i < 6; i++) {
-		const uint32 offset = in->readUint32LE();
-		const uint32 count  = in->readUint32LE();
+		const uint32_t offset = in->readUint32LE();
+		const uint32_t count  = in->readUint32LE();
 
 		if (offset < value)
 			throw Common::Exception("File \"%s\" is neither a standard, nor a premium GFF file", inFile.c_str());

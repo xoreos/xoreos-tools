@@ -31,8 +31,8 @@
 
 namespace Archives {
 
-const char *findDragonAgeFile(uint64 hash);
-const char *findDragonAgeFile(uint64 hash, Common::HashAlgo algo);
+const char *findDragonAgeFile(uint64_t hash);
+const char *findDragonAgeFile(uint64_t hash, Common::HashAlgo algo);
 
 } // End of namespace Archives
 

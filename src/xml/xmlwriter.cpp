@@ -143,7 +143,7 @@ Common::UString XMLWriter::escape(const Common::UString &str) {
 	Common::UString escaped;
 
 	for (Common::UString::iterator s = str.begin(); s != str.end(); ++s) {
-		uint32 c = *s;
+		uint32_t c = *s;
 
 		if      (c == '\"')
 			escaped += "&quot;";

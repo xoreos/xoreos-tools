@@ -33,8 +33,8 @@
 #include "src/aurora/talktable_gff.h"
 #include "src/aurora/language.h"
 
-static const uint32 kTLKID = MKTAG('T', 'L', 'K', ' ');
-static const uint32 kGFFID = MKTAG('G', 'F', 'F', ' ');
+static const uint32_t kTLKID = MKTAG('T', 'L', 'K', ' ');
+static const uint32_t kGFFID = MKTAG('G', 'F', 'F', ' ');
 
 namespace Aurora {
 
@@ -44,11 +44,11 @@ TalkTable::TalkTable(Common::Encoding encoding) : _encoding(encoding) {
 TalkTable::~TalkTable() {
 }
 
-uint32 TalkTable::getLanguageID() const {
+uint32_t TalkTable::getLanguageID() const {
 	return kLanguageInvalid;
 }
 
-void TalkTable::setLanguageID(uint32 UNUSED(id)) {
+void TalkTable::setLanguageID(uint32_t UNUSED(id)) {
 }
 
 TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding encoding) {
@@ -58,7 +58,7 @@ TalkTable *TalkTable::load(Common::SeekableReadStream *tlk, Common::Encoding enc
 
 	size_t pos = tlkStream->pos();
 
-	uint32 id, version;
+	uint32_t id, version;
 	bool utf16le;
 
 	AuroraFile::readHeader(*tlkStream, id, version, utf16le);

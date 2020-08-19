@@ -73,7 +73,7 @@ byte *decompressLZMA1(const byte *data, size_t inputSize, size_t outputSize, boo
 	if (!lzma_filter_decoder_is_supported(filters[0].id))
 		throw Exception("LZMA1 compression not supported");
 
-	uint32 propsSize;
+	uint32_t propsSize;
 	if (lzma_properties_size(&propsSize, &filters[0]) != LZMA_OK)
 		throw Exception("Can't get LZMA1 properties size");
 
@@ -144,7 +144,7 @@ SeekableReadStream *compressLZMA1(ReadStream &input, size_t inputSize) {
 	if (!lzma_filter_encoder_is_supported(filters[0].id))
 		throw Exception("LZMA1 compression not supported");
 
-	uint32 propsSize;
+	uint32_t propsSize;
 	if (lzma_properties_size(&propsSize, &filters[0]) != LZMA_OK)
 		throw Exception("Can't get LZMA1 properties size");
 

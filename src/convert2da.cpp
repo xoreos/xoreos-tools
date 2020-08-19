@@ -123,9 +123,9 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	return parser.process(argv);
 }
 
-static const uint32 k2DAID     = MKTAG('2', 'D', 'A', ' ');
-static const uint32 k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
-static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
+static const uint32_t k2DAID     = MKTAG('2', 'D', 'A', ' ');
+static const uint32_t k2DAIDTab  = MKTAG('2', 'D', 'A', '\t');
+static const uint32_t kGFFID     = MKTAG('G', 'F', 'F', ' ');
 
 void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format format) {
 	std::unique_ptr<Common::WriteStream> out(openFileOrStdOut(outFile));
@@ -143,7 +143,7 @@ void write2DA(Aurora::TwoDAFile &twoDA, const Common::UString &outFile, Format f
 Aurora::TwoDAFile *get2DAGDA(Common::SeekableReadStream *stream) {
 	std::unique_ptr<Common::SeekableReadStream> fStream(stream);
 
-	const uint32 id = Aurora::AuroraFile::readHeaderID(*fStream);
+	const uint32_t id = Aurora::AuroraFile::readHeaderID(*fStream);
 	fStream->seek(0);
 
 	if ((id == k2DAID) || (id == k2DAIDTab))

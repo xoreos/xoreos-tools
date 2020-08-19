@@ -60,21 +60,21 @@ static void writePixel(Common::WriteStream &file, const byte *&data, PixelFormat
 		file.writeByte(data[3]);
 		data += 4;
 	} else if (format == kPixelFormatR5G6B5) {
-		uint16 color = READ_LE_UINT16(data);
+		uint16_t color = READ_LE_UINT16(data);
 		file.writeByte( color & 0x001F);
 		file.writeByte((color & 0x07E0) >>  5);
 		file.writeByte((color & 0xF800) >> 11);
 		file.writeByte(0xFF);
 		data += 2;
 	} else if (format == kPixelFormatA1R5G5B5) {
-		uint16 color = READ_LE_UINT16(data);
+		uint16_t color = READ_LE_UINT16(data);
 		file.writeByte( color & 0x001F);
 		file.writeByte((color & 0x03E0) >>  5);
 		file.writeByte((color & 0x7C00) >> 10);
 		file.writeByte((color & 0x8000) ? 0xFF : 0x00);
 		data += 2;
 	} else if (format == kPixelFormatDepth16) {
-		uint16 color = READ_LE_UINT16(data);
+		uint16_t color = READ_LE_UINT16(data);
 		file.writeByte(color / 128);
 		file.writeByte(color / 128);
 		file.writeByte(color / 128);
@@ -110,7 +110,7 @@ static Common::WriteStream *openTGA(const Common::UString &fileName, int width, 
 static void writeMipMap(Common::WriteStream &stream, const Decoder::MipMap &mipMap, PixelFormat format) {
 	const byte *data = mipMap.data.get();
 
-	uint32 count = mipMap.width * mipMap.height;
+	uint32_t count = mipMap.width * mipMap.height;
 	while (count-- > 0)
 		writePixel(stream, data, format);
 }
@@ -119,8 +119,8 @@ void dumpTGA(const Common::UString &fileName, const Decoder &image) {
 	if ((image.getLayerCount() < 1) || (image.getMipMapCount() < 1))
 		throw Common::Exception("No image");
 
-	int32 width  = image.getMipMap(0, 0).width;
-	int32 height = 0;
+	int32_t width  = image.getMipMap(0, 0).width;
+	int32_t height = 0;
 
 	for (size_t i = 0; i < image.getLayerCount(); i++) {
 		const Decoder::MipMap &mipMap = image.getMipMap(0, i);

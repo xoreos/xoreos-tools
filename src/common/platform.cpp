@@ -134,7 +134,7 @@ enum WindowsVersion {
 	kWindowsVersion10      = 0x000A0000
 };
 
-static bool isWindowsVersionOrGreater(uint16 majorVersion, uint16 minorVersion) {
+static bool isWindowsVersionOrGreater(uint16_t majorVersion, uint16_t minorVersion) {
 	OSVERSIONINFOEX osvi = { sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0 };
 
 	DWORDLONG condition =
@@ -149,10 +149,10 @@ static bool isWindowsVersionOrGreater(uint16 majorVersion, uint16 minorVersion) 
 }
 
 static WindowsVersion getWindowsVersion() {
-	static const int16 kWindowsVersionMax = 20;
+	static const int16_t kWindowsVersionMax = 20;
 
-	for (int16 i = kWindowsVersionMax; i >= 0; i--)
-		for (int16 j = 5; j >= 0; j--)
+	for (int16_t i = kWindowsVersionMax; i >= 0; i--)
+		for (int16_t j = 5; j >= 0; j--)
 			if (isWindowsVersionOrGreater(i, j))
 				return (WindowsVersion) ((i << 16) + j);
 

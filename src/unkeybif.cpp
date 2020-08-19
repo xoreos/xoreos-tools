@@ -62,7 +62,7 @@ const char *kCommandChar[kCommandMAX] = { "l", "e" };
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Command &command, std::list<Common::UString> &files, Aurora::GameID &game);
 
-uint32 getFileID(const Common::UString &fileName);
+uint32_t getFileID(const Common::UString &fileName);
 void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::UString> &keyFiles,
                    std::vector<Common::UString> &bifFiles);
 
@@ -165,7 +165,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	return parser.process(argv);
 }
 
-uint32 getFileID(const Common::UString &fileName) {
+uint32_t getFileID(const Common::UString &fileName) {
 	Common::ReadFile file(fileName);
 
 	return file.readUint32BE();
@@ -178,7 +178,7 @@ void identifyFiles(const std::list<Common::UString> &files, std::vector<Common::
 	dataFiles.reserve(files.size());
 
 	for (std::list<Common::UString>::const_iterator f = files.begin(); f != files.end(); ++f) {
-		uint32 id = getFileID(*f);
+		uint32_t id = getFileID(*f);
 
 		if      (id == MKTAG('K', 'E', 'Y', ' '))
 			keyFiles.push_back(*f);

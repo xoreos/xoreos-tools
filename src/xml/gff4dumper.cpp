@@ -36,7 +36,7 @@
 
 namespace XML {
 
-GFF4Dumper::GFF4Field::GFF4Field(const Aurora::GFF4Struct &s, uint32 f, bool g) :
+GFF4Dumper::GFF4Field::GFF4Field(const Aurora::GFF4Struct &s, uint32_t f, bool g) :
 	strct(&s), field(f), isGeneric(g) {
 
 	if (!strct->getFieldProperties(field, type, label, isList))
@@ -52,7 +52,7 @@ GFF4Dumper::GFF4Dumper() {
 GFF4Dumper::~GFF4Dumper() {
 }
 
-Common::UString GFF4Dumper::findFieldName(uint32 label) const {
+Common::UString GFF4Dumper::findFieldName(uint32_t label) const {
 	FieldNames::const_iterator n = _fieldNames.find(label);
 	if (n == _fieldNames.end())
 		return "";
@@ -90,13 +90,13 @@ void GFF4Dumper::dump(Common::WriteStream &output, Common::SeekableReadStream *i
 	_xml->flush();
 }
 
-bool GFF4Dumper::insertID(uint64 id) {
+bool GFF4Dumper::insertID(uint64_t id) {
 	std::pair<IDSet::iterator, bool> result = _structIDs.insert(id);
 
 	return result.second;
 }
 
-void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32 label,
+void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint32_t label,
                             bool hasIndex, size_t index, bool isGeneric) {
 
 	if (index >= 0xFFFFFFFF)
@@ -125,9 +125,9 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 
 			_xml->breakLine();
 
-			const std::vector<uint32> &fields = strct->getFieldLabels();
+			const std::vector<uint32_t> &fields = strct->getFieldLabels();
 
-			for (std::vector<uint32>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+			for (std::vector<uint32_t>::const_iterator f = fields.begin(); f != fields.end(); ++f)
 				dumpField(*strct, *f, false);
 		} else
 			_xml->addProperty("ref_id", Common::composeString(strct->getID()));
@@ -138,13 +138,13 @@ void GFF4Dumper::dumpStruct(const Aurora::GFF4Struct *strct, bool hasLabel, uint
 }
 
 static const char * const kGFF4FieldTypeNames[] = {
-	"uint8",
+	"uint8_t",
 	"sint8",
-	"uint16",
+	"uint16_t",
 	"sint16",
-	"uint32",
+	"uint32_t",
 	"sint32",
-	"uint64",
+	"uint64_t",
 	"sint64",
 	"float",
 	"double",
@@ -161,7 +161,7 @@ static const char * const kGFF4FieldTypeNames[] = {
 	"ascii"
 };
 
-Common::UString GFF4Dumper::getFieldTypeName(uint32 type, bool isList) const {
+Common::UString GFF4Dumper::getFieldTypeName(uint32_t type, bool isList) const {
 	const char *listString = isList ? "_list" : "";
 	const char *typeString = "invalid";
 	if      (type == Aurora::GFF4Struct::kFieldTypeStruct)
@@ -174,7 +174,7 @@ Common::UString GFF4Dumper::getFieldTypeName(uint32 type, bool isList) const {
 	return Common::UString::format("%s%s", typeString, listString);
 }
 
-void GFF4Dumper::openFieldTag(uint32 type, bool typeList, bool hasLabel, uint32 label,
+void GFF4Dumper::openFieldTag(uint32_t type, bool typeList, bool hasLabel, uint32_t label,
                               bool hasIndex, size_t index, bool isGenericElement) {
 
 	if (index >= 0xFFFFFFFF)
@@ -203,7 +203,7 @@ void GFF4Dumper::closeFieldTag(bool doBreak) {
 }
 
 void GFF4Dumper::dumpFieldUint(const GFF4Field &field, bool isGenericElement) {
-	std::vector<uint64> values;
+	std::vector<uint64_t> values;
 	if (!field.strct->getUint(field.field, values))
 		throw Common::Exception(Common::kReadError);
 
@@ -218,7 +218,7 @@ void GFF4Dumper::dumpFieldUint(const GFF4Field &field, bool isGenericElement) {
 }
 
 void GFF4Dumper::dumpFieldSint(const GFF4Field &field, bool isGenericElement) {
-	std::vector<int64> values;
+	std::vector<int64_t> values;
 	if (!field.strct->getSint(field.field, values))
 		throw Common::Exception(Common::kReadError);
 
@@ -263,7 +263,7 @@ void GFF4Dumper::dumpFieldString(const GFF4Field &field, bool isGenericElement) 
 }
 
 void GFF4Dumper::dumpFieldTlk(const GFF4Field &field, bool isGenericElement) {
-	std::vector<uint32> strRefs;
+	std::vector<uint32_t> strRefs;
 	std::vector<Common::UString> strs;
 
 	if (!field.strct->getTalkString(field.field, _encoding, strRefs, strs))
@@ -328,9 +328,9 @@ void GFF4Dumper::dumpFieldGeneric(const GFF4Field &field) {
 	if (!generic)
 		return;
 
-	const std::vector<uint32> &fields = generic->getFieldLabels();
+	const std::vector<uint32_t> &fields = generic->getFieldLabels();
 
-	for (std::vector<uint32>::const_iterator f = fields.begin(); f != fields.end(); ++f) {
+	for (std::vector<uint32_t>::const_iterator f = fields.begin(); f != fields.end(); ++f) {
 		if (f == fields.begin())
 			_xml->breakLine();
 
@@ -338,7 +338,7 @@ void GFF4Dumper::dumpFieldGeneric(const GFF4Field &field) {
 	}
 }
 
-void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32 field, bool isGeneric) {
+void GFF4Dumper::dumpField(const Aurora::GFF4Struct &strct, uint32_t field, bool isGeneric) {
 	GFF4Field f(strct, field, isGeneric);
 
 	if (f.isList)

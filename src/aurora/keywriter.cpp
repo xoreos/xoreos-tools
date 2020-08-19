@@ -31,8 +31,8 @@
 #include "src/aurora/keywriter.h"
 #include "src/aurora/util.h"
 
-static const uint32 kKEYID = MKTAG('K', 'E', 'Y', ' ');
-static const uint32 kV1ID  = MKTAG('V', '1', ' ', ' ');
+static const uint32_t kKEYID = MKTAG('K', 'E', 'Y', ' ');
+static const uint32_t kV1ID  = MKTAG('V', '1', ' ', ' ');
 
 namespace Aurora {
 
@@ -40,7 +40,7 @@ KEYWriter::KEYWriter() {
 
 }
 
-void KEYWriter::addBIF(const Common::UString &fileName, const std::list<Common::UString> &files, uint32 size) {
+void KEYWriter::addBIF(const Common::UString &fileName, const std::list<Common::UString> &files, uint32_t size) {
 	_entries.emplace_back();
 
 	_entries.back().fileName = fileName;
@@ -55,8 +55,8 @@ void KEYWriter::write(Common::WriteStream &writeStream) {
 	// Number of BIF/BZF files, this KEY file controls
 	writeStream.writeUint32LE(_entries.size());
 
-	uint32 totalCount = 0;
-	uint32 totalFilenameSize = 0;
+	uint32_t totalCount = 0;
+	uint32_t totalFilenameSize = 0;
 	for (const auto &entry : _entries) {
 		totalCount += entry.files.size();
 		totalFilenameSize += entry.fileName.size();
@@ -69,7 +69,7 @@ void KEYWriter::write(Common::WriteStream &writeStream) {
 	writeStream.writeUint32LE(64);
 
 	// Calculate the key table offset.
-	uint32 keyTableOffset = 64;
+	uint32_t keyTableOffset = 64;
 	keyTableOffset += _entries.size() * 12;
 	keyTableOffset += totalFilenameSize;
 
@@ -86,7 +86,7 @@ void KEYWriter::write(Common::WriteStream &writeStream) {
 	writeStream.writeZeros(32);
 
 	// Write file table.
-	uint32 filenameOffset = 64 + _entries.size() * 12;
+	uint32_t filenameOffset = 64 + _entries.size() * 12;
 	for (const auto &entry : _entries) {
 		writeStream.writeUint32LE(entry.fileSize);
 		writeStream.writeUint32LE(filenameOffset);
@@ -102,7 +102,7 @@ void KEYWriter::write(Common::WriteStream &writeStream) {
 	}
 
 	// Write Key table.
-	uint32 x = 0, y = 0;
+	uint32_t x = 0, y = 0;
 	for (const auto &entry : _entries) {
 		y = 0;
 		for (const auto &file : entry.files) {

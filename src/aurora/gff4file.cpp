@@ -36,13 +36,13 @@
 #include "src/aurora/gff4file.h"
 #include "src/aurora/util.h"
 
-static const uint32 kGFFID     = MKTAG('G', 'F', 'F', ' ');
-static const uint32 kVersion40 = MKTAG('V', '4', '.', '0');
-static const uint32 kVersion41 = MKTAG('V', '4', '.', '1');
+static const uint32_t kGFFID     = MKTAG('G', 'F', 'F', ' ');
+static const uint32_t kVersion40 = MKTAG('V', '4', '.', '0');
+static const uint32_t kVersion41 = MKTAG('V', '4', '.', '1');
 
 namespace Aurora {
 
-void GFF4File::Header::read(Common::SeekableReadStream &gff4, uint32 version) {
+void GFF4File::Header::read(Common::SeekableReadStream &gff4, uint32_t version) {
 	platformID   = gff4.readUint32BE();
 
 	const size_t pos = gff4.pos();
@@ -73,7 +73,7 @@ bool GFF4File::Header::isBigEndian() const {
 }
 
 
-GFF4File::GFF4File(Common::SeekableReadStream *gff4, uint32 type) :
+GFF4File::GFF4File(Common::SeekableReadStream *gff4, uint32_t type) :
 	_origStream(gff4), _topLevelStruct(0) {
 
 	assert(_origStream);
@@ -96,15 +96,15 @@ void GFF4File::clear() {
 	_topLevelStruct = 0;
 }
 
-uint32 GFF4File::getType() const {
+uint32_t GFF4File::getType() const {
 	return _header.type;
 }
 
-uint32 GFF4File::getTypeVersion() const {
+uint32_t GFF4File::getTypeVersion() const {
 	return _header.typeVersion;
 }
 
-uint32 GFF4File::getPlatform() const {
+uint32_t GFF4File::getPlatform() const {
 	return _header.platformID;
 }
 
@@ -127,7 +127,7 @@ const GFF4Struct &GFF4File::getTopLevel() const {
 
 // --- Loader ---
 
-void GFF4File::load(uint32 type) {
+void GFF4File::load(uint32_t type) {
 	try {
 
 		loadHeader(type);
@@ -142,7 +142,7 @@ void GFF4File::load(uint32 type) {
 	}
 }
 
-void GFF4File::loadHeader(uint32 type) {
+void GFF4File::loadHeader(uint32_t type) {
 	readHeader(*_origStream);
 
 	if (_id != kGFFID)
@@ -177,11 +177,11 @@ void GFF4File::loadStructs() {
 	 * So while in a GFF3, each individual struct said how its fields
 	 * looked, in a GFF4 this has been sourced out into these templates. */
 
-	static const uint32 kStructTemplateSize = 16;
-	const uint32 structTemplateStart = _stream->pos();
+	static const uint32_t kStructTemplateSize = 16;
+	const uint32_t structTemplateStart = _stream->pos();
 
 	_structTemplates.resize(_header.structCount);
-	for (uint32 i = 0; i < _header.structCount; i++) {
+	for (uint32_t i = 0; i < _header.structCount; i++) {
 		_stream->seek(structTemplateStart + i * kStructTemplateSize);
 
 		StructTemplate &strct = _structTemplates[i];
@@ -191,8 +191,8 @@ void GFF4File::loadStructs() {
 		strct.index = i;
 		strct.label = _stream->readUint32BE();
 
-		const uint32 fieldCount  = _stream->readUint32();
-		const uint32 fieldOffset = _stream->readUint32();
+		const uint32_t fieldCount  = _stream->readUint32();
+		const uint32_t fieldOffset = _stream->readUint32();
 
 		strct.size = _stream->readUint32();
 
@@ -209,12 +209,12 @@ void GFF4File::loadStructs() {
 		// Read the field declarations
 
 		strct.fields.resize(fieldCount);
-		for (uint32 j = 0; j < fieldCount; j++) {
+		for (uint32_t j = 0; j < fieldCount; j++) {
 			StructTemplate::Field &field = strct.fields[j];
 
 			field.label  = _stream->readUint32();
 
-			const uint32 typeAndFlags = _stream->readUint32();
+			const uint32_t typeAndFlags = _stream->readUint32();
 			field.type  = (typeAndFlags & 0x0000FFFF);
 			field.flags = (typeAndFlags & 0xFFFF0000) >> 16;
 
@@ -241,13 +241,13 @@ void GFF4File::loadStrings() {
 	_sharedStrings.resize(_header.stringCount);
 
 	_stream->seek(_header.stringOffset);
-	for (uint32 i = 0; i < _header.stringCount; i++)
+	for (uint32_t i = 0; i < _header.stringCount; i++)
 		_sharedStrings[i] = Common::readString(*_stream, Common::kEncodingUTF8);
 }
 
 // --- Helpers for GFF4Struct ---
 
-void GFF4File::registerStruct(uint64 id, GFF4Struct *strct) {
+void GFF4File::registerStruct(uint64_t id, GFF4Struct *strct) {
 	/* Each struct, on creation, registers itself to the GFF4 files it
 	 * belongs in.
 	 *
@@ -265,11 +265,11 @@ void GFF4File::registerStruct(uint64 id, GFF4Struct *strct) {
 		throw Common::Exception("GFF4: Duplicate struct");
 }
 
-void GFF4File::unregisterStruct(uint64 id) {
+void GFF4File::unregisterStruct(uint64_t id) {
 	_structs.erase(id);
 }
 
-GFF4Struct *GFF4File::findStruct(uint64 id) {
+GFF4Struct *GFF4File::findStruct(uint64_t id) {
 	StructMap::iterator s = _structs.find(id);
 	if (s == _structs.end())
 		return 0;
@@ -277,17 +277,17 @@ GFF4Struct *GFF4File::findStruct(uint64 id) {
 	return s->second;
 }
 
-Common::SeekableSubReadStreamEndian &GFF4File::getStream(uint32 offset) const {
+Common::SeekableSubReadStreamEndian &GFF4File::getStream(uint32_t offset) const {
 	_stream->seek(offset);
 
 	return *_stream;
 }
 
-uint32 GFF4File::getDataOffset() const {
+uint32_t GFF4File::getDataOffset() const {
 	return _header.dataOffset;
 }
 
-const GFF4File::StructTemplate &GFF4File::getStructTemplate(uint32 i) const {
+const GFF4File::StructTemplate &GFF4File::getStructTemplate(uint32_t i) const {
 	if (i >= _structTemplates.size())
 		throw Common::Exception("GFF4: Struct template out of range (%u >= %u)",
 		                        i, (uint) _structTemplates.size());
@@ -299,7 +299,7 @@ bool GFF4File::hasSharedStrings() const {
 	return _header.hasSharedStrings;
 }
 
-Common::UString GFF4File::getSharedString(uint32 i) const {
+Common::UString GFF4File::getSharedString(uint32_t i) const {
 	if (i == 0xFFFFFFFF)
 		return "";
 
@@ -311,7 +311,7 @@ Common::UString GFF4File::getSharedString(uint32 i) const {
 }
 
 
-GFF4Struct::Field::Field(uint32 l, uint16 t, uint16 f, uint32 o, bool g) :
+GFF4Struct::Field::Field(uint32_t l, uint16_t t, uint16_t f, uint32_t o, bool g) :
 	label(l), offset(o), isGeneric(g) {
 
 	isList      = (f & 0x8000) != 0;
@@ -349,7 +349,7 @@ GFF4Struct::Field::Field(uint32 l, uint16 t, uint16 f, uint32 o, bool g) :
 }
 
 
-GFF4Struct::GFF4Struct(GFF4File &parent, uint32 offset, const GFF4File::StructTemplate &tmplt) :
+GFF4Struct::GFF4Struct(GFF4File &parent, uint32_t offset, const GFF4File::StructTemplate &tmplt) :
 	_parent(&parent), _label(tmplt.label), _refCount(0), _fieldCount(0) {
 
 	// Constructor for a real struct, from a template
@@ -384,21 +384,21 @@ GFF4Struct::GFF4Struct(GFF4File &parent, const Field &genericParent) :
 GFF4Struct::~GFF4Struct() {
 }
 
-uint64 GFF4Struct::getID() const {
+uint64_t GFF4Struct::getID() const {
 	return _id;
 }
 
-uint32 GFF4Struct::getRefCount() const {
+uint32_t GFF4Struct::getRefCount() const {
 	return _refCount;
 }
 
-uint32 GFF4Struct::getLabel() const {
+uint32_t GFF4Struct::getLabel() const {
 	return _label;
 }
 
 // --- Loader ---
 
-void GFF4Struct::load(GFF4File &parent, uint32 offset, const GFF4File::StructTemplate &tmplt) {
+void GFF4Struct::load(GFF4File &parent, uint32_t offset, const GFF4File::StructTemplate &tmplt) {
 	/* Loader for a real struct, from a template.
 	 *
 	 * Go through all the fields in the template and create field
@@ -412,7 +412,7 @@ void GFF4Struct::load(GFF4File &parent, uint32 offset, const GFF4File::StructTem
 		_fieldLabels.push_back(field.label);
 
 		// Calculate the offset for the field data, but guard against NULL pointers
-		uint32 fieldOffset = offset + field.offset;
+		uint32_t fieldOffset = offset + field.offset;
 		if ((offset == 0xFFFFFFFF) || (field.offset == 0xFFFFFFFF))
 			fieldOffset = 0xFFFFFFFF;
 
@@ -453,13 +453,13 @@ void GFF4Struct::loadStructs(GFF4File &parent, Field &field) {
 
 	Common::SeekableSubReadStreamEndian &data = parent.getStream(field.offset);
 
-	const uint32 structCount = getListCount(data, field);
-	const uint32 structSize  = field.isReference ? 4 : tmplt.size;
-	const uint32 structStart = data.pos();
+	const uint32_t structCount = getListCount(data, field);
+	const uint32_t structSize  = field.isReference ? 4 : tmplt.size;
+	const uint32_t structStart = data.pos();
 
 	field.structs.resize(structCount, 0);
-	for (uint32 i = 0; i < structCount; i++) {
-		const uint32 offset = getDataOffset(field.isReference, structStart + i * structSize);
+	for (uint32_t i = 0; i < structCount; i++) {
+		const uint32_t offset = getDataOffset(field.isReference, structStart + i * structSize);
 		if (offset == 0xFFFFFFFF)
 			continue;
 
@@ -496,21 +496,21 @@ void GFF4Struct::load(GFF4File &parent, const Field &genericParent) {
 	 * for them in this struct instance. If the element itself is a
 	 * struct, recursively create a new struct instance for it. */
 
-	static const uint32 kGenericSize = 8;
+	static const uint32_t kGenericSize = 8;
 
 	Common::SeekableSubReadStreamEndian &data = parent.getStream(genericParent.offset);
 
-	const uint32 genericCount = genericParent.isList ? data.readUint32() : 1;
-	const uint32 genericStart = data.pos();
+	const uint32_t genericCount = genericParent.isList ? data.readUint32() : 1;
+	const uint32_t genericStart = data.pos();
 
-	for (uint32 i = 0; i < genericCount; i++) {
+	for (uint32_t i = 0; i < genericCount; i++) {
 		data.seek(genericStart + i * kGenericSize);
 
-		const uint32 typeAndFlags = data.readUint32();
-		const uint16 fieldType  = (typeAndFlags & 0x0000FFFF);
-		const uint16 fieldFlags = (typeAndFlags & 0xFFFF0000) >> 16;
+		const uint32_t typeAndFlags = data.readUint32();
+		const uint16_t fieldType  = (typeAndFlags & 0x0000FFFF);
+		const uint16_t fieldFlags = (typeAndFlags & 0xFFFF0000) >> 16;
 
-		const uint32 fieldOffset = getDataOffset(genericParent.isReference, data.pos());
+		const uint32_t fieldOffset = getDataOffset(genericParent.isReference, data.pos());
 
 		if (fieldOffset == 0xFFFFFFFF)
 			continue;
@@ -531,7 +531,7 @@ void GFF4Struct::load(GFF4File &parent, const Field &genericParent) {
 	_fieldCount = genericCount;
 }
 
-uint64 GFF4Struct::generateID(uint32 offset, const GFF4File::StructTemplate *tmplt) {
+uint64_t GFF4Struct::generateID(uint32_t offset, const GFF4File::StructTemplate *tmplt) {
 	/* Generate a unique ID identifying this struct within the GFF4 file.
 	 * The offset is an obvious choice. We also add the template index,
 	 * just to make sure.
@@ -539,7 +539,7 @@ uint64 GFF4Struct::generateID(uint32 offset, const GFF4File::StructTemplate *tmp
 	 * (However, if this struct is actually a mapped generic, there is
 	 * no template index). */
 
-	return (((uint64) offset) << 32) | (tmplt ? tmplt->index : 0xFFFFFFFF);
+	return (((uint64_t) offset) << 32) | (tmplt ? tmplt->index : 0xFFFFFFFF);
 }
 
 // --- Field properties ---
@@ -548,20 +548,20 @@ size_t GFF4Struct::getFieldCount() const {
 	return _fieldCount;
 }
 
-bool GFF4Struct::hasField(uint32 field) const {
+bool GFF4Struct::hasField(uint32_t field) const {
 	return getField(field) != 0;
 }
 
-const std::vector<uint32> &GFF4Struct::getFieldLabels() const {
+const std::vector<uint32_t> &GFF4Struct::getFieldLabels() const {
 	return _fieldLabels;
 }
 
-GFF4Struct::FieldType GFF4Struct::getFieldType(uint32 field) const {
+GFF4Struct::FieldType GFF4Struct::getFieldType(uint32_t field) const {
 	bool isList;
 	return getFieldType(field, isList);
 }
 
-GFF4Struct::FieldType GFF4Struct::getFieldType(uint32 field, bool &isList) const {
+GFF4Struct::FieldType GFF4Struct::getFieldType(uint32_t field, bool &isList) const {
 	const Field *f = getField(field);
 	if (!f)
 		return kFieldTypeNone;
@@ -571,7 +571,7 @@ GFF4Struct::FieldType GFF4Struct::getFieldType(uint32 field, bool &isList) const
 	return f->type;
 }
 
-bool GFF4Struct::getFieldProperties(uint32 field, FieldType &type, uint32 &label, bool &isList) const {
+bool GFF4Struct::getFieldProperties(uint32_t field, FieldType &type, uint32_t &label, bool &isList) const {
 	const Field *f = getField(field);
 	if (!f)
 		return false;
@@ -585,7 +585,7 @@ bool GFF4Struct::getFieldProperties(uint32 field, FieldType &type, uint32 &label
 
 // --- Field value reader helpers ---
 
-const GFF4Struct::Field *GFF4Struct::getField(uint32 field) const {
+const GFF4Struct::Field *GFF4Struct::getField(uint32_t field) const {
 	FieldMap::const_iterator f = _fields.find(field);
 	if (f == _fields.end())
 		return 0;
@@ -593,7 +593,7 @@ const GFF4Struct::Field *GFF4Struct::getField(uint32 field) const {
 	return &f->second;
 }
 
-uint32 GFF4Struct::getDataOffset(bool isReference, uint32 offset) const {
+uint32_t GFF4Struct::getDataOffset(bool isReference, uint32_t offset) const {
 	if (!isReference || (offset == 0xFFFFFFFF))
 		return offset;
 
@@ -606,7 +606,7 @@ uint32 GFF4Struct::getDataOffset(bool isReference, uint32 offset) const {
 	return _parent->getDataOffset() + offset;
 }
 
-uint32 GFF4Struct::getDataOffset(const Field &field) const {
+uint32_t GFF4Struct::getDataOffset(const Field &field) const {
 	if (field.type == kFieldTypeStruct)
 		return 0xFFFFFFFF;
 
@@ -614,22 +614,22 @@ uint32 GFF4Struct::getDataOffset(const Field &field) const {
 }
 
 Common::SeekableSubReadStreamEndian *GFF4Struct::getData(const Field &field) const {
-	const uint32 offset = getDataOffset(field);
+	const uint32_t offset = getDataOffset(field);
 	if (offset == 0xFFFFFFFF)
 		return 0;
 
 	return &_parent->getStream(offset);
 }
 
-Common::SeekableSubReadStreamEndian *GFF4Struct::getField(uint32 fieldID, const Field *&field) const {
+Common::SeekableSubReadStreamEndian *GFF4Struct::getField(uint32_t fieldID, const Field *&field) const {
 	if (!(field = getField(fieldID)))
 		return 0;
 
 	return getData(*field);
 }
 
-uint32 GFF4Struct::getVectorMatrixLength(const Field &field, uint32 minLength, uint32 maxLength) const {
-	uint32 length;
+uint32_t GFF4Struct::getVectorMatrixLength(const Field &field, uint32_t minLength, uint32_t maxLength) const {
+	uint32_t length;
 	if       (field.type == kFieldTypeVector3f)
 		length =  3;
 	else if ((field.type == kFieldTypeVector4f)    ||
@@ -649,11 +649,11 @@ uint32 GFF4Struct::getVectorMatrixLength(const Field &field, uint32 minLength, u
 	return length;
 }
 
-uint32 GFF4Struct::getListCount(Common::SeekableSubReadStreamEndian &data, const Field &field) const {
+uint32_t GFF4Struct::getListCount(Common::SeekableSubReadStreamEndian &data, const Field &field) const {
 	if (!field.isList)
 		return 1;
 
-	const uint32 listOffset = data.readUint32();
+	const uint32_t listOffset = data.readUint32();
 	if (listOffset == 0xFFFFFFFF)
 		return 0;
 
@@ -662,7 +662,7 @@ uint32 GFF4Struct::getListCount(Common::SeekableSubReadStreamEndian &data, const
 	return data.readUint32();
 }
 
-uint32 GFF4Struct::getFieldSize(FieldType type) const {
+uint32_t GFF4Struct::getFieldSize(FieldType type) const {
 	switch (type) {
 		case kFieldTypeUint8:
 		case kFieldTypeSint8:
@@ -713,31 +713,31 @@ uint32 GFF4Struct::getFieldSize(FieldType type) const {
 
 // --- Low-level value readers ---
 
-uint64 GFF4Struct::getUint(Common::SeekableSubReadStreamEndian &data, FieldType type) const {
+uint64_t GFF4Struct::getUint(Common::SeekableSubReadStreamEndian &data, FieldType type) const {
 	switch (type) {
 		case kFieldTypeUint8:
-			return (uint64) data.readByte();
+			return (uint64_t) data.readByte();
 
 		case kFieldTypeSint8:
-			return (uint64) ((int64) data.readSByte());
+			return (uint64_t) ((int64_t) data.readSByte());
 
 		case kFieldTypeUint16:
-			return (uint64) data.readUint16();
+			return (uint64_t) data.readUint16();
 
 		case kFieldTypeSint16:
-			return (uint64) ((int64) data.readSint16());
+			return (uint64_t) ((int64_t) data.readSint16());
 
 		case kFieldTypeUint32:
-			return (uint64) data.readUint32();
+			return (uint64_t) data.readUint32();
 
 		case kFieldTypeSint32:
-			return (uint64) ((int64) data.readSint32());
+			return (uint64_t) ((int64_t) data.readSint32());
 
 		case kFieldTypeUint64:
-			return (uint64) data.readUint64();
+			return (uint64_t) data.readUint64();
 
 		case kFieldTypeSint64:
-			return (uint64) ((int64) data.readSint64());
+			return (uint64_t) ((int64_t) data.readSint64());
 
 		default:
 			break;
@@ -746,31 +746,31 @@ uint64 GFF4Struct::getUint(Common::SeekableSubReadStreamEndian &data, FieldType 
 	throw Common::Exception("GFF4: Field is not an int type");
 }
 
-int64 GFF4Struct::getSint(Common::SeekableSubReadStreamEndian &data, FieldType type) const {
+int64_t GFF4Struct::getSint(Common::SeekableSubReadStreamEndian &data, FieldType type) const {
 	switch (type) {
 		case kFieldTypeUint8:
-			return (int64) ((uint64) data.readByte());
+			return (int64_t) ((uint64_t) data.readByte());
 
 		case kFieldTypeSint8:
-			return (int64) data.readSByte();
+			return (int64_t) data.readSByte();
 
 		case kFieldTypeUint16:
-			return (int64) ((uint64) data.readUint16());
+			return (int64_t) ((uint64_t) data.readUint16());
 
 		case kFieldTypeSint16:
-			return (int64) data.readSint16();
+			return (int64_t) data.readSint16();
 
 		case kFieldTypeUint32:
-			return (int64) ((uint64) data.readUint32());
+			return (int64_t) ((uint64_t) data.readUint32());
 
 		case kFieldTypeSint32:
-			return (int64) data.readSint32();
+			return (int64_t) data.readSint32();
 
 		case kFieldTypeUint64:
-			return (int64) ((uint64) data.readUint64());
+			return (int64_t) ((uint64_t) data.readUint64());
 
 		case kFieldTypeSint64:
-			return (int64) data.readSint64();
+			return (int64_t) data.readSint64();
 
 		default:
 			break;
@@ -822,8 +822,8 @@ Common::UString GFF4Struct::getString(Common::SeekableSubReadStreamEndian &data,
 
 	const size_t offset = data.pos();
 
-	const uint32 length = data.readUint32();
-	const size_t size   = length * lengthMult;
+	const uint32_t length = data.readUint32();
+	const size_t   size   = length * lengthMult;
 
 	try {
 		return Common::readStringFixed(data, encoding, size);
@@ -834,9 +834,9 @@ Common::UString GFF4Struct::getString(Common::SeekableSubReadStreamEndian &data,
 }
 
 Common::UString GFF4Struct::getString(Common::SeekableSubReadStreamEndian &data, Common::Encoding encoding,
-                                      uint32 offset) const {
+                                      uint32_t offset) const {
 
-	const uint32 pos = data.seek(offset);
+	const uint32_t pos = data.seek(offset);
 
 	Common::UString str = getString(data, encoding);
 
@@ -852,7 +852,7 @@ Common::UString GFF4Struct::getString(Common::SeekableSubReadStreamEndian &data,
 		if (_parent->hasSharedStrings())
 			return _parent->getSharedString(data.readUint32());
 
-		uint32 offset = data.pos();
+		uint32_t offset = data.pos();
 		if (!field.isGeneric) {
 			offset = data.readUint32();
 			if (offset == 0xFFFFFFFF)
@@ -872,7 +872,7 @@ Common::UString GFF4Struct::getString(Common::SeekableSubReadStreamEndian &data,
 
 // --- Single value readers ---
 
-uint64 GFF4Struct::getUint(uint32 field, uint64 def) const {
+uint64_t GFF4Struct::getUint(uint32_t field, uint64_t def) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -884,7 +884,7 @@ uint64 GFF4Struct::getUint(uint32 field, uint64 def) const {
 	return getUint(*data, f->type);
 }
 
-int64 GFF4Struct::getSint(uint32 field, int64 def) const {
+int64_t GFF4Struct::getSint(uint32_t field, int64_t def) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -896,11 +896,11 @@ int64 GFF4Struct::getSint(uint32 field, int64 def) const {
 	return getSint(*data, f->type);
 }
 
-bool GFF4Struct::getBool(uint32 field, bool def) const {
+bool GFF4Struct::getBool(uint32_t field, bool def) const {
 	return getUint(field, def) != 0;
 }
 
-double GFF4Struct::getDouble(uint32 field, double def) const {
+double GFF4Struct::getDouble(uint32_t field, double def) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -912,7 +912,7 @@ double GFF4Struct::getDouble(uint32 field, double def) const {
 	return getDouble(*data, f->type);
 }
 
-float GFF4Struct::getFloat(uint32 field, float def) const {
+float GFF4Struct::getFloat(uint32_t field, float def) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -924,7 +924,7 @@ float GFF4Struct::getFloat(uint32 field, float def) const {
 	return getFloat(*data, f->type);
 }
 
-Common::UString GFF4Struct::getString(uint32 field, Common::Encoding encoding,
+Common::UString GFF4Struct::getString(uint32_t field, Common::Encoding encoding,
                                       const Common::UString &def) const {
 
 	const Field *f;
@@ -938,12 +938,12 @@ Common::UString GFF4Struct::getString(uint32 field, Common::Encoding encoding,
 	return getString(*data, *f, encoding);
 }
 
-Common::UString GFF4Struct::getString(uint32 field, const Common::UString &def) const {
+Common::UString GFF4Struct::getString(uint32_t field, const Common::UString &def) const {
 	return getString(field, _parent->getNativeEncoding(), def);
 }
 
-bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
-                               uint32 &strRef, Common::UString &str) const {
+bool GFF4Struct::getTalkString(uint32_t field, Common::Encoding encoding,
+                               uint32_t &strRef, Common::UString &str) const {
 
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
@@ -957,7 +957,7 @@ bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
 
 	strRef = getUint(*data, kFieldTypeUint32);
 
-	const uint32 offset = getUint(*data, kFieldTypeUint32);
+	const uint32_t offset = getUint(*data, kFieldTypeUint32);
 
 	str.clear();
 	if (offset != 0xFFFFFFFF) {
@@ -970,11 +970,11 @@ bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
 	return true;
 }
 
-bool GFF4Struct::getTalkString(uint32 field, uint32 &strRef, Common::UString &str) const {
+bool GFF4Struct::getTalkString(uint32_t field, uint32_t &strRef, Common::UString &str) const {
 	return getTalkString(field, _parent->getNativeEncoding(), strRef, str);
 }
 
-bool GFF4Struct::getVector3(uint32 field, double &v1, double &v2, double &v3) const {
+bool GFF4Struct::getVector3(uint32_t field, double &v1, double &v2, double &v3) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -992,7 +992,7 @@ bool GFF4Struct::getVector3(uint32 field, double &v1, double &v2, double &v3) co
 	return true;
 }
 
-bool GFF4Struct::getVector3(uint32 field, float &v1, float &v2, float &v3) const {
+bool GFF4Struct::getVector3(uint32_t field, float &v1, float &v2, float &v3) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1010,7 +1010,7 @@ bool GFF4Struct::getVector3(uint32 field, float &v1, float &v2, float &v3) const
 	return true;
 }
 
-bool GFF4Struct::getVector4(uint32 field, double &v1, double &v2, double &v3, double &v4) const {
+bool GFF4Struct::getVector4(uint32_t field, double &v1, double &v2, double &v3, double &v4) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1029,7 +1029,7 @@ bool GFF4Struct::getVector4(uint32 field, double &v1, double &v2, double &v3, do
 	return true;
 }
 
-bool GFF4Struct::getVector4(uint32 field, float &v1, float &v2, float &v3, float &v4) const {
+bool GFF4Struct::getVector4(uint32_t field, float &v1, float &v2, float &v3, float &v4) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1048,7 +1048,7 @@ bool GFF4Struct::getVector4(uint32 field, float &v1, float &v2, float &v3, float
 	return true;
 }
 
-bool GFF4Struct::getMatrix4x4(uint32 field, double (&m)[16]) const {
+bool GFF4Struct::getMatrix4x4(uint32_t field, double (&m)[16]) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1057,14 +1057,14 @@ bool GFF4Struct::getMatrix4x4(uint32 field, double (&m)[16]) const {
 	if (f->isList)
 		throw Common::Exception("GFF4: Tried reading list as singular value");
 
-	const uint32 length = getVectorMatrixLength(*f, 16, 16);
-	for (uint32 i = 0; i < length; i++)
+	const uint32_t length = getVectorMatrixLength(*f, 16, 16);
+	for (uint32_t i = 0; i < length; i++)
 		m[i] = getDouble(*data, kFieldTypeFloat32);
 
 	return true;
 }
 
-bool GFF4Struct::getMatrix4x4(uint32 field, float (&m)[16]) const {
+bool GFF4Struct::getMatrix4x4(uint32_t field, float (&m)[16]) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1073,14 +1073,14 @@ bool GFF4Struct::getMatrix4x4(uint32 field, float (&m)[16]) const {
 	if (f->isList)
 		throw Common::Exception("GFF4: Tried reading list as singular value");
 
-	const uint32 length = getVectorMatrixLength(*f, 16, 16);
-	for (uint32 i = 0; i < length; i++)
+	const uint32_t length = getVectorMatrixLength(*f, 16, 16);
+	for (uint32_t i = 0; i < length; i++)
 		m[i] = getFloat(*data, kFieldTypeFloat32);
 
 	return true;
 }
 
-bool GFF4Struct::getVectorMatrix(uint32 field, std::vector<double> &vectorMatrix) const {
+bool GFF4Struct::getVectorMatrix(uint32_t field, std::vector<double> &vectorMatrix) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1089,16 +1089,16 @@ bool GFF4Struct::getVectorMatrix(uint32 field, std::vector<double> &vectorMatrix
 	if (f->isList)
 		throw Common::Exception("GFF4: Tried reading list as singular value");
 
-	const uint32 length = getVectorMatrixLength(*f, 0, 16);
+	const uint32_t length = getVectorMatrixLength(*f, 0, 16);
 
 	vectorMatrix.resize(length);
-	for (uint32 i = 0; i < length; i++)
+	for (uint32_t i = 0; i < length; i++)
 		vectorMatrix[i] = getDouble(*data, kFieldTypeFloat32);
 
 	return true;
 }
 
-bool GFF4Struct::getVectorMatrix(uint32 field, std::vector<float> &vectorMatrix) const {
+bool GFF4Struct::getVectorMatrix(uint32_t field, std::vector<float> &vectorMatrix) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
@@ -1107,10 +1107,10 @@ bool GFF4Struct::getVectorMatrix(uint32 field, std::vector<float> &vectorMatrix)
 	if (f->isList)
 		throw Common::Exception("GFF4: Tried reading list as singular value");
 
-	const uint32 length = getVectorMatrixLength(*f, 0, 16);
+	const uint32_t length = getVectorMatrixLength(*f, 0, 16);
 
 	vectorMatrix.resize(length);
-	for (uint32 i = 0; i < length; i++)
+	for (uint32_t i = 0; i < length; i++)
 		vectorMatrix[i] = getFloat(*data, kFieldTypeFloat32);
 
 	return true;
@@ -1118,82 +1118,82 @@ bool GFF4Struct::getVectorMatrix(uint32 field, std::vector<float> &vectorMatrix)
 
 // --- List value readers ---
 
-bool GFF4Struct::getUint(uint32 field, std::vector<uint64> &list) const {
+bool GFF4Struct::getUint(uint32_t field, std::vector<uint64_t> &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 		list[i] = getUint(*data, f->type);
 
 	return true;
 }
 
-bool GFF4Struct::getSint(uint32 field, std::vector<int64> &list) const {
+bool GFF4Struct::getSint(uint32_t field, std::vector<int64_t> &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 		list[i] = getSint(*data, f->type);
 
 	return true;
 }
 
-bool GFF4Struct::getBool(uint32 field, std::vector<bool> &list) const {
+bool GFF4Struct::getBool(uint32_t field, std::vector<bool> &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 		list[i] = getUint(*data, f->type) != 0;
 
 	return true;
 }
 
-bool GFF4Struct::getDouble(uint32 field, std::vector<double> &list) const {
+bool GFF4Struct::getDouble(uint32_t field, std::vector<double> &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 		list[i] = getDouble(*data, f->type);
 
 	return true;
 }
 
-bool GFF4Struct::getFloat(uint32 field, std::vector<float> &list) const {
+bool GFF4Struct::getFloat(uint32_t field, std::vector<float> &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 		list[i] = getFloat(*data, f->type);
 
 	return true;
 }
 
-bool GFF4Struct::getString(uint32 field, Common::Encoding encoding,
+bool GFF4Struct::getString(uint32_t field, Common::Encoding encoding,
                            std::vector<Common::UString> &list) const {
 
 	const Field *f;
@@ -1207,21 +1207,21 @@ bool GFF4Struct::getString(uint32 field, Common::Encoding encoding,
 		return false;
 	}
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++)
+	for (uint32_t i = 0; i < count; i++)
 		list[i] = getString(*data, *f, encoding);
 
 	return true;
 }
 
-bool GFF4Struct::getString(uint32 field, std::vector<Common::UString> &list) const {
+bool GFF4Struct::getString(uint32_t field, std::vector<Common::UString> &list) const {
 	return getString(field, _parent->getNativeEncoding(), list);
 }
 
-bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
-                               std::vector<uint32> &strRefs, std::vector<Common::UString> &strs) const {
+bool GFF4Struct::getTalkString(uint32_t field, Common::Encoding encoding,
+                               std::vector<uint32_t> &strRefs, std::vector<Common::UString> &strs) const {
 
 
 	const Field *f;
@@ -1232,18 +1232,18 @@ bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
 	if (f->type != kFieldTypeTlkString)
 		throw Common::Exception("GFF4: Field is not of TalkString type");
 
-	const uint32 count = getListCount(*data, *f);
+	const uint32_t count = getListCount(*data, *f);
 
 	strRefs.resize(count);
 	strs.resize(count);
 
-	std::vector<uint32> offsets;
+	std::vector<uint32_t> offsets;
 	offsets.resize(count);
 
-	for (uint32 i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 		strRefs[i] = getUint(*data, kFieldTypeUint32);
 
-		const uint32 offset = getUint(*data, kFieldTypeUint32);
+		const uint32_t offset = getUint(*data, kFieldTypeUint32);
 
 		if (offset != 0xFFFFFFFF) {
 			if (_parent->hasSharedStrings())
@@ -1256,46 +1256,46 @@ bool GFF4Struct::getTalkString(uint32 field, Common::Encoding encoding,
 	return true;
 }
 
-bool GFF4Struct::getTalkString(uint32 field,
-                               std::vector<uint32> &strRefs, std::vector<Common::UString> &strs) const {
+bool GFF4Struct::getTalkString(uint32_t field,
+                               std::vector<uint32_t> &strRefs, std::vector<Common::UString> &strs) const {
 
 	return getTalkString(field, _parent->getNativeEncoding(), strRefs, strs);
 }
 
-bool GFF4Struct::getVectorMatrix(uint32 field, std::vector< std::vector<double> > &list) const {
+bool GFF4Struct::getVectorMatrix(uint32_t field, std::vector< std::vector<double> > &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 length = getVectorMatrixLength(*f, 0, 16);
-	const uint32 count  = getListCount(*data, *f);
+	const uint32_t length = getVectorMatrixLength(*f, 0, 16);
+	const uint32_t count  = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 
 		list[i].resize(length);
-		for (uint32 j = 0; j < length; j++)
+		for (uint32_t j = 0; j < length; j++)
 			list[i][j] = getDouble(*data, kFieldTypeFloat32);
 	}
 
 	return true;
 }
 
-bool GFF4Struct::getVectorMatrix(uint32 field, std::vector< std::vector<float> > &list) const {
+bool GFF4Struct::getVectorMatrix(uint32_t field, std::vector< std::vector<float> > &list) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return false;
 
-	const uint32 length = getVectorMatrixLength(*f, 0, 16);
-	const uint32 count  = getListCount(*data, *f);
+	const uint32_t length = getVectorMatrixLength(*f, 0, 16);
+	const uint32_t count  = getListCount(*data, *f);
 
 	list.resize(count);
-	for (uint32 i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 
 		list[i].resize(length);
-		for (uint32 j = 0; j < length; j++)
+		for (uint32_t j = 0; j < length; j++)
 			list[i][j] = getFloat(*data, kFieldTypeFloat32);
 	}
 
@@ -1304,7 +1304,7 @@ bool GFF4Struct::getVectorMatrix(uint32 field, std::vector< std::vector<float> >
 
 // --- Struct reader ---
 
-const GFF4Struct *GFF4Struct::getStruct(uint32 field) const {
+const GFF4Struct *GFF4Struct::getStruct(uint32_t field) const {
 	const Field *f = getField(field);
 	if (!f)
 		return 0;
@@ -1322,7 +1322,7 @@ const GFF4Struct *GFF4Struct::getStruct(uint32 field) const {
 
 // --- Generic reader ---
 
-const GFF4Struct *GFF4Struct::getGeneric(uint32 field) const {
+const GFF4Struct *GFF4Struct::getGeneric(uint32_t field) const {
 	const Field *f = getField(field);
 	if (!f)
 		return 0;
@@ -1338,7 +1338,7 @@ const GFF4Struct *GFF4Struct::getGeneric(uint32 field) const {
 
 // --- Struct list reader ---
 
-const GFF4List &GFF4Struct::getList(uint32 field) const {
+const GFF4List &GFF4Struct::getList(uint32_t field) const {
 	const Field *f = getField(field);
 	if (!f)
 		throw Common::Exception("GFF4: No such field");
@@ -1351,14 +1351,14 @@ const GFF4List &GFF4Struct::getList(uint32 field) const {
 
 // --- Struct data reader ---
 
-Common::SeekableReadStream *GFF4Struct::getData(uint32 field) const {
+Common::SeekableReadStream *GFF4Struct::getData(uint32_t field) const {
 	const Field *f;
 	Common::SeekableSubReadStreamEndian *data = getField(field, f);
 	if (!data)
 		return 0;
 
-	const uint32 count = getListCount(*data, *f);
-	const uint32 size  = getFieldSize(f->type);
+	const uint32_t count = getListCount(*data, *f);
+	const uint32_t size  = getFieldSize(f->type);
 
 	if ((size == 0) || (count == 0))
 		return 0;

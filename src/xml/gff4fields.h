@@ -28,7 +28,7 @@
 namespace XML {
 
 struct GFF4FieldName {
-	uint32 label;
+	uint32_t label;
 	const char *name;
 };
 

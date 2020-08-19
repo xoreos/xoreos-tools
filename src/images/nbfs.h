@@ -38,14 +38,14 @@ public:
 	/** NBFS are raw paletted images and need a palette. If height, or width
 	 *  and height, are not given, try to calculate them from the stream size. */
 	NBFS(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nbfp,
-	     uint32 width = 0xFFFFFFFF, uint32 height = 0xFFFFFFFF);
+	     uint32_t width = 0xFFFFFFFF, uint32_t height = 0xFFFFFFFF);
 	~NBFS();
 
 private:
-	void load(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nbfp, uint32 width, uint32 height);
+	void load(Common::SeekableReadStream &nbfs, Common::SeekableReadStream &nbfp, uint32_t width, uint32_t height);
 
 	const byte *readPalette(Common::SeekableReadStream &nbfp);
-	void readImage(Common::SeekableReadStream &nbfs, const byte *palette, uint32 width, uint32 height);
+	void readImage(Common::SeekableReadStream &nbfs, const byte *palette, uint32_t width, uint32_t height);
 };
 
 } // End of namespace Images

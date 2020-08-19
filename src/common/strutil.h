@@ -25,6 +25,8 @@
 #ifndef COMMON_STRUTIL_H
 #define COMMON_STRUTIL_H
 
+#include <cstddef>
+
 #include "src/common/types.h"
 
 namespace Common {
@@ -49,7 +51,7 @@ void printStream(MemoryWriteStreamDynamic &stream);
  *  If that fails, print the integer tag in its hexadecimal represention,
  *  so that we at least have something readable in the end.
  */
-UString tagToString(uint32 tag, bool trim = false);
+UString tagToString(uint32_t tag, bool trim = false);
 
 /** Create an elaborate string from an integer tag, for debugging purposes.
  *
@@ -58,7 +60,7 @@ UString tagToString(uint32 tag, bool trim = false);
  *  Otherwise, return
  *  "0xXXXX"
  */
-UString debugTag(uint32 tag, bool trim = false);
+UString debugTag(uint32_t tag, bool trim = false);
 
 /** Parse a string into any POD integer, float/double or bool type.
  *

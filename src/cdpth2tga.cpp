@@ -88,7 +88,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	return parser.process(argv);
 }
 
-static void getDimensions(const Common::UString &twoDAFile, uint32 &width, uint32 &height) {
+static void getDimensions(const Common::UString &twoDAFile, uint32_t &width, uint32_t &height) {
 
 	Common::ReadFile twoDAStream(twoDAFile);
 	Aurora::TwoDAFile twoDA(twoDAStream);
@@ -100,7 +100,7 @@ static void getDimensions(const Common::UString &twoDAFile, uint32 &width, uint3
 void convert(const Common::UString &cdpthFile, const Common::UString &twoDAFile,
              const Common::UString &outFile) {
 
-	uint32 width, height;
+	uint32_t width, height;
 	getDimensions(twoDAFile, width, height);
 
 	Common::ReadFile cdpth(cdpthFile);

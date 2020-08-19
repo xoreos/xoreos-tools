@@ -45,10 +45,10 @@
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &nbfsFile, Common::UString &nbfpFile,
-                      Common::UString &outFile, uint32 &width, uint32 &height);
+                      Common::UString &outFile, uint32_t &width, uint32_t &height);
 
 void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,
-             const Common::UString &outFile, uint32 width, uint32 height);
+             const Common::UString &outFile, uint32_t width, uint32_t height);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
 		int returnValue = 1;
 		Common::UString nbfsFile, nbfpFile, outFile;
-		uint32 width = 0xFFFFFFFF, height = 0xFFFFFFFF;
+		uint32_t width = 0xFFFFFFFF, height = 0xFFFFFFFF;
 
 		if (!parseCommandLine(args, returnValue, nbfsFile, nbfpFile, outFile, width, height))
 			return returnValue;
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &nbfsFile, Common::UString &nbfpFile,
-                      Common::UString &outFile, uint32 &width, uint32 &height) {
+                      Common::UString &outFile, uint32_t &width, uint32_t &height) {
 
 	using Common::CLI::Parser;
 	using Common::CLI::ValGetter;
@@ -85,8 +85,8 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	NoOption nbfsFileOpt(false, new ValGetter<Common::UString &>(nbfsFile, "nbfs"));
 	NoOption nbfpFileOpt(false, new ValGetter<Common::UString &>(nbfpFile, "nbfp"));
 	NoOption outFileOpt(false, new ValGetter<Common::UString &>(outFile, "tga"));
-	NoOption widthOpt(true, new ValGetter<uint32 &>(width, "width"));
-	NoOption heightOpt(true, new ValGetter<uint32 &>(height, "height"));
+	NoOption widthOpt(true, new ValGetter<uint32_t &>(width, "width"));
+	NoOption heightOpt(true, new ValGetter<uint32_t &>(height, "height"));
 	Parser parser(argv[0], "Nintendo raw NBFS image to TGA converter\n", "",
 	              returnValue, makeEndArgs(&nbfsFileOpt, &nbfpFileOpt,
 	              &outFileOpt, &widthOpt, &heightOpt));
@@ -95,7 +95,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 }
 
 void convert(const Common::UString &nbfsFile, const Common::UString &nbfpFile,
-             const Common::UString &outFile, uint32 width, uint32 height) {
+             const Common::UString &outFile, uint32_t width, uint32_t height) {
 
 	Common::ReadFile nbfs(nbfsFile), nbfp(nbfpFile);
 	Images::NBFS image(nbfs, nbfp, width, height);

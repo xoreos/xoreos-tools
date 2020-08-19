@@ -35,7 +35,7 @@ namespace XML {
 
 class GFF3Creator {
 public:
-	static void create(const XML::XMLNode &root, uint32 id, Common::WriteStream &file, uint32 version);
+	static void create(const XML::XMLNode &root, uint32_t id, Common::WriteStream &file, uint32_t version);
 
 private:
 	static void readStructContents(const XMLNode::Children &strctNodes, Aurora::GFF3WriterStructPtr strctPtr);

@@ -38,9 +38,9 @@
 #include "src/aurora/talktable_tlk.h"
 #include "src/aurora/language.h"
 
-static const uint32 kTLKID    = MKTAG('T', 'L', 'K', ' ');
-static const uint32 kVersion3 = MKTAG('V', '3', '.', '0');
-static const uint32 kVersion4 = MKTAG('V', '4', '.', '0');
+static const uint32_t kTLKID    = MKTAG('T', 'L', 'K', ' ');
+static const uint32_t kVersion3 = MKTAG('V', '3', '.', '0');
+static const uint32_t kVersion4 = MKTAG('V', '4', '.', '0');
 
 namespace Aurora {
 
@@ -51,7 +51,7 @@ TalkTable_TLK::Entry::Entry() : offset(0xFFFFFFFF), length(0xFFFFFFFF),
 }
 
 
-TalkTable_TLK::TalkTable_TLK(Common::Encoding encoding, uint32 languageID) :
+TalkTable_TLK::TalkTable_TLK(Common::Encoding encoding, uint32_t languageID) :
 	TalkTable(encoding), _languageID(languageID) {
 
 }
@@ -84,15 +84,15 @@ void TalkTable_TLK::load() {
 		if (_encoding == Common::kEncodingInvalid)
 			_encoding = Common::kEncodingCP1252;
 
-		uint32 stringCount = _tlk->readUint32LE();
+		uint32_t stringCount = _tlk->readUint32LE();
 		_entries.resize(stringCount);
 
 		// V4 added this field; it's right after the header in V3
-		uint32 tableOffset = 20;
+		uint32_t tableOffset = 20;
 		if (_version == kVersion4)
 			tableOffset = _tlk->readUint32LE();
 
-		const uint32 stringsOffset = _tlk->readUint32LE();
+		const uint32_t stringsOffset = _tlk->readUint32LE();
 
 		// Go to the table
 		_tlk->seek(tableOffset);
@@ -109,7 +109,7 @@ void TalkTable_TLK::load() {
 	}
 }
 
-void TalkTable_TLK::readEntryTableV3(uint32 stringsOffset) {
+void TalkTable_TLK::readEntryTableV3(uint32_t stringsOffset) {
 	for (size_t i = 0; i < _entries.size(); i++) {
 		Entry &entry = _entries[i];
 
@@ -165,19 +165,19 @@ Common::UString TalkTable_TLK::readString(const Entry &entry) const {
 	return Common::readString(*parsed, _encoding);
 }
 
-uint32 TalkTable_TLK::getLanguageID() const {
+uint32_t TalkTable_TLK::getLanguageID() const {
 	return _languageID;
 }
 
-void TalkTable_TLK::setLanguageID(uint32 id) {
+void TalkTable_TLK::setLanguageID(uint32_t id) {
 	_languageID = id;
 }
 
-const std::list<uint32> &TalkTable_TLK::getStrRefs() const {
+const std::list<uint32_t> &TalkTable_TLK::getStrRefs() const {
 	return _strRefs;
 }
 
-bool TalkTable_TLK::getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const {
+bool TalkTable_TLK::getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const {
 	if (strRef >= _entries.size())
 		return false;
 
@@ -187,9 +187,9 @@ bool TalkTable_TLK::getString(uint32 strRef, Common::UString &string, Common::US
 	return true;
 }
 
-bool TalkTable_TLK::getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
-                             uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
-                             uint32 &soundID) const {
+bool TalkTable_TLK::getEntry(uint32_t strRef, Common::UString &string, Common::UString &soundResRef,
+                             uint32_t &volumeVariance, uint32_t &pitchVariance, float &soundLength,
+                             uint32_t &soundID) const {
 
 	if (strRef >= _entries.size())
 		return false;
@@ -208,9 +208,9 @@ bool TalkTable_TLK::getEntry(uint32 strRef, Common::UString &string, Common::USt
 	return true;
 }
 
-void TalkTable_TLK::setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
-                             uint32 volumeVariance, uint32 pitchVariance, float soundLength,
-                             uint32 soundID) {
+void TalkTable_TLK::setEntry(uint32_t strRef, const Common::UString &string, const Common::UString &soundResRef,
+                             uint32_t volumeVariance, uint32_t pitchVariance, float soundLength,
+                             uint32_t soundID) {
 
 	if (strRef >= _entries.size()) {
 		for (size_t i = _entries.size(); i < strRef; i++)
@@ -294,7 +294,7 @@ void TalkTable_TLK::write30(Common::WriteStream &out) const {
 	Entries entries;
 	std::unique_ptr<Common::SeekableReadStream> data(collectEntries(entries));
 
-	const uint32 stringsOffset = 20 + entries.size() * 40;
+	const uint32_t stringsOffset = 20 + entries.size() * 40;
 
 	out.writeUint32LE(entries.size());
 	out.writeUint32LE(stringsOffset);
@@ -324,7 +324,7 @@ void TalkTable_TLK::write40(Common::WriteStream &out) const {
 	Entries entries;
 	std::unique_ptr<Common::SeekableReadStream> data(collectEntries(entries));
 
-	const uint32 stringsOffset = 32 + entries.size() * 10;
+	const uint32_t stringsOffset = 32 + entries.size() * 10;
 
 	out.writeUint32LE(entries.size());
 
@@ -346,8 +346,8 @@ void TalkTable_TLK::write40(Common::WriteStream &out) const {
 	out.writeStream(*data);
 }
 
-uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
-	uint32 id, version;
+uint32_t TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
+	uint32_t id, version;
 	bool utf16le;
 
 	AuroraFile::readHeader(tlk, id, version, utf16le);
@@ -358,7 +358,7 @@ uint32 TalkTable_TLK::getLanguageID(Common::SeekableReadStream &tlk) {
 	return tlk.readUint32LE();
 }
 
-uint32 TalkTable_TLK::getLanguageID(const Common::UString &file) {
+uint32_t TalkTable_TLK::getLanguageID(const Common::UString &file) {
 	Common::ReadFile tlk;
 	if (!tlk.open(file))
 		return kLanguageInvalid;

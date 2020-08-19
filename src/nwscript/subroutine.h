@@ -54,7 +54,7 @@ enum SubRoutineType {
 /** A subroutine of NWScript blocks. */
 struct SubRoutine {
 	/** The address that starts this subroutine. */
-	uint32 address;
+	uint32_t address;
 
 	/** The blocks that are inside this subroutine. */
 	std::vector<const Block *> blocks;
@@ -83,7 +83,7 @@ struct SubRoutine {
 	std::vector<const Variable *> returns;
 
 
-	SubRoutine(uint32 addr) : address(addr), entry(0), type(kSubRoutineTypeNone),
+	SubRoutine(uint32_t addr) : address(addr), entry(0), type(kSubRoutineTypeNone),
 		stackAnalyzeState(kStackAnalyzeStateNone) {
 
 	}

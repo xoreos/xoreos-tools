@@ -49,17 +49,17 @@ public:
 	/** Return the list of resources. */
 	const ResourceList &getResources() const;
 
-	uint32 getResourceSize(uint32 index) const override;
+	uint32_t getResourceSize(uint32_t index) const override;
 
 	/** Return a stream of the resource's contents. */
-	Common::SeekableReadStream *getResource(uint32 index, bool tryNoCopy = false) const;
+	Common::SeekableReadStream *getResource(uint32_t index, bool tryNoCopy = false) const;
 
 private:
 	void load();
 
 	struct IResource {
-		uint32 offset;
-		uint32 length;
+		uint32_t offset;
+		uint32_t length;
 	};
 
 	std::unique_ptr<Common::SeekableReadStream> _tws;

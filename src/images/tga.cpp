@@ -83,7 +83,7 @@ void TGA::readHeader(Common::SeekableReadStream &tga, ImageType &imageType, byte
 	tga.seek(0);
 
 	// TGAs have an optional "id" string in the header
-	uint32 idLength = tga.readByte();
+	uint32_t idLength = tga.readByte();
 
 	// Number of colors in the color map / palette
 	if (tga.readByte() != 0)
@@ -150,11 +150,11 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 				// 16bpp TGA is usually ARGB1555, but Sonic's are AGBR1555.
 				// Hopefully Sonic is the only game that needs 16bpp TGAs.
 
-				uint16 count = _mipMaps[0]->width * _mipMaps[0]->height;
+				uint16_t count = _mipMaps[0]->width * _mipMaps[0]->height;
 				byte   *dst  = _mipMaps[0]->data.get();
 
 				while (count--) {
-					uint16 pixel = tga.readUint16LE();
+					uint16_t pixel = tga.readUint16LE();
 
 					*dst++ = (pixel & 0x7C00) >> 7;
 					*dst++ = (pixel & 0x03E0) >> 2;
@@ -173,7 +173,7 @@ void TGA::readData(Common::SeekableReadStream &tga, ImageType imageType, byte pi
 		_mipMaps[0]->data = std::make_unique<byte[]>(_mipMaps[0]->size);
 
 		byte  *data  = _mipMaps[0]->data.get();
-		uint32 count = _mipMaps[0]->width * _mipMaps[0]->height;
+		uint32_t count = _mipMaps[0]->width * _mipMaps[0]->height;
 
 		while (count-- > 0) {
 			byte g = tga.readByte();
@@ -196,17 +196,17 @@ void TGA::readRLE(Common::SeekableReadStream &tga, byte pixelDepth) {
 		throw Common::Exception("Unhandled RLE depth %d", pixelDepth);
 
 	byte  *data  = _mipMaps[0]->data.get();
-	uint32 count = _mipMaps[0]->width * _mipMaps[0]->height;
+	uint32_t count = _mipMaps[0]->width * _mipMaps[0]->height;
 
 	while (count > 0) {
 		byte code = tga.readByte();
-		byte length = MIN<uint32>((code & 0x7F) + 1, count);
+		byte length = MIN<uint32_t>((code & 0x7F) + 1, count);
 
 		count -= length;
 
 		if (code & 0x80) {
 			if (pixelDepth == 32) {
-				uint32 color = tga.readUint32BE();
+				uint32_t color = tga.readUint32BE();
 
 				while (length--) {
 					WRITE_BE_UINT32(data, color);

@@ -36,15 +36,15 @@
 
 #include "src/util.h"
 
-static const uint32 kERFID = MKTAG('E', 'R', 'F', ' ');
-static const uint32 kMODID = MKTAG('M', 'O', 'D', ' ');
-static const uint32 kHAKID = MKTAG('H', 'A', 'K', ' ');
-static const uint32 kSAVID = MKTAG('S', 'A', 'V', ' ');
+static const uint32_t kERFID = MKTAG('E', 'R', 'F', ' ');
+static const uint32_t kMODID = MKTAG('M', 'O', 'D', ' ');
+static const uint32_t kHAKID = MKTAG('H', 'A', 'K', ' ');
+static const uint32_t kSAVID = MKTAG('S', 'A', 'V', ' ');
 
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::ERFWriter::Version &version, Aurora::ERFWriter::Compression &compression,
-                      uint32 id, Aurora::GameID &game);
+                      uint32_t id, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 		Aurora::GameID game = Aurora::kGameIDUnknown;
 
 		int returnValue = 1;
-		uint32 id = kERFID;
+		uint32_t id = kERFID;
 		Common::UString archive;
 		Aurora::ERFWriter::Version version = Aurora::ERFWriter::kERFVersion10;
 		Aurora::ERFWriter::Compression compression = Aurora::ERFWriter::kCompressionNone;
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::ERFWriter::Version &version, Aurora::ERFWriter::Compression &compression,
-                      uint32 id, Aurora::GameID &game) {
+                      uint32_t id, Aurora::GameID &game) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
@@ -116,16 +116,16 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addSpace();
 	parser.addOption("erf", "Set ERF as archive id (default)",
 	                 kContinueParsing,
-	                 makeAssigners(new ValAssigner<uint32>(kERFID, id)));
+	                 makeAssigners(new ValAssigner<uint32_t>(kERFID, id)));
 	parser.addOption("mod", "Set MOD as archive id",
 	                 kContinueParsing,
-	                 makeAssigners(new ValAssigner<uint32>(kMODID, id)));
+	                 makeAssigners(new ValAssigner<uint32_t>(kMODID, id)));
 	parser.addOption("hak", "Set HAK as archive id",
 	                 kContinueParsing,
-	                 makeAssigners(new ValAssigner<uint32>(kHAKID, id)));
+	                 makeAssigners(new ValAssigner<uint32_t>(kHAKID, id)));
 	parser.addOption("sav", "Set SAV as archive id",
 	                 kContinueParsing,
-	                 makeAssigners(new ValAssigner<uint32>(kSAVID, id)));
+	                 makeAssigners(new ValAssigner<uint32_t>(kSAVID, id)));
 	parser.addSpace();
 	parser.addOption("v10", "Generate a V1.0 ERF file (default)",
 	                 kContinueParsing,

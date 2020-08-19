@@ -30,7 +30,7 @@
 
 namespace XML {
 
-static uint32 getGFF3Version(GFFCreator::GFF3Version v) {
+static uint32_t getGFF3Version(GFFCreator::GFF3Version v) {
 	switch (v) {
 		default:
 		case GFFCreator::GFF3Version::V3_2:
@@ -48,7 +48,7 @@ void GFFCreator::create(Common::WriteStream &output, Common::ReadStream &input, 
 	const XMLNode &xmlRoot = xml.getRoot();
 
 	const Common::UString type = xmlRoot.getProperty("type") + "    ";
-	const uint32 typeId = MKTAG(*type.getPosition(0), *type.getPosition(1), *type.getPosition(2), *type.getPosition(3));
+	const uint32_t typeId = MKTAG(*type.getPosition(0), *type.getPosition(1), *type.getPosition(2), *type.getPosition(3));
 
 	if (xmlRoot.getName() == "gff3") {
 		XML::GFF3Creator::create(xmlRoot, typeId, output, getGFF3Version(gff3Version));

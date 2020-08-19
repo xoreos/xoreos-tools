@@ -32,7 +32,7 @@ namespace Archives {
 /** The hash algorithm used for Sonic. */
 static const Common::HashAlgo kSonicHashAlgo = Common::kHashDJB2;
 
-typedef Common::BinSearchValue<uint32, const char *> SonicFileHash;
+typedef Common::BinSearchValue<uint32_t, const char *> SonicFileHash;
 
 /** All currently known Sonic file names, together with their DJB2 hashes.
  *
@@ -8754,7 +8754,7 @@ static const SonicFileHash kSonicFilesHashes[] = {
 	{0xFFFA7BF3, "man_tdlcp_on01.ncgr.small"           }
 };
 
-const char *findSonicFile(uint32 hash) {
+const char *findSonicFile(uint32_t hash) {
 	const SonicFileHash *file = Common::binarySearch(kSonicFilesHashes, ARRAYSIZE(kSonicFilesHashes), hash);
 	if (!file)
 		return 0;
@@ -8762,7 +8762,7 @@ const char *findSonicFile(uint32 hash) {
 	return file->value;
 }
 
-const char *findSonicFile(uint64 hash, Common::HashAlgo algo) {
+const char *findSonicFile(uint64_t hash, Common::HashAlgo algo) {
 	if (algo != kSonicHashAlgo)
 		return 0;
 

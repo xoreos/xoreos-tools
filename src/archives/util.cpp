@@ -47,7 +47,7 @@
 namespace Archives {
 
 static Common::UString findPath(const Common::UString &name, Aurora::FileType type,
-                                uint64 hash, Common::HashAlgo algo) {
+                                uint64_t hash, Common::HashAlgo algo) {
 
 	Common::UString path;
 
@@ -77,10 +77,10 @@ static Common::UString findPath(const Common::UString &name, Aurora::FileType ty
 struct FileEntry {
 	Common::UString file;
 	Common::UString ext;
-	uint32 size;
-	uint32 bifIndex;
+	uint32_t size;
+	uint32_t bifIndex;
 
-	FileEntry(const Common::UString &f = "", const Common::UString &e = "", uint32 s = 0xFFFFFFFF) :
+	FileEntry(const Common::UString &f = "", const Common::UString &e = "", uint32_t s = 0xFFFFFFFF) :
 		file(f), ext(e), size(s), bifIndex(0xFFFFFFFF) { }
 };
 

@@ -127,7 +127,7 @@ Common::UString formatInstruction(const Instruction &instr, Aurora::GameID game 
  *
  *  Always exactly 12 characters long.
  */
-Common::UString formatSubRoutine(uint32 address);
+Common::UString formatSubRoutine(uint32_t address);
 
 /** Format this address to be the name of a subroutine started with STORESTATE.
  *
@@ -135,7 +135,7 @@ Common::UString formatSubRoutine(uint32 address);
  *
  *  Always exactly 12 characters long.
  */
-Common::UString formatStoreState(uint32 address);
+Common::UString formatStoreState(uint32_t address);
 
 /** Format this address to be the name of a jump destination.
  *
@@ -143,7 +143,7 @@ Common::UString formatStoreState(uint32 address);
  *
  *  Always exactly 12 characters long.
  */
-Common::UString formatJumpDestination(uint32 address);
+Common::UString formatJumpDestination(uint32_t address);
 
 /** Format a jump label for the address of this instruction.
  *

@@ -150,7 +150,7 @@ void SSFDumper::dump(Common::WriteStream &output, Common::SeekableReadStream &in
 			if (kLabelsShort[i][0] != '\0')
 				xml.addProperty("label", kLabelsShort[i]);
 
-		const uint32 strRef = ssf.getStrRef(i);
+		const uint32_t strRef = ssf.getStrRef(i);
 		if (strRef != Aurora::kStrRefInvalid)
 			xml.addProperty("strref", Common::composeString(strRef));
 

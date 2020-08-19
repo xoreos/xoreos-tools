@@ -37,7 +37,7 @@ namespace Common {
 
 static const char kBase64Char[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static const uint8 kBase64Values[128] = {
+static const uint8_t kBase64Values[128] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3E, 0xFF, 0xFF, 0xFF, 0x3F,
@@ -53,7 +53,7 @@ static const uint8 kBase64Values[128] = {
  *
  *  Returns false if we ran out of remaining characters in this string.
  */
-static bool writeCharacter(UString &base64, uint32 c, size_t &maxLength) {
+static bool writeCharacter(UString &base64, uint32_t c, size_t &maxLength) {
 	assert(maxLength > 0);
 
 	base64 += c;
@@ -79,7 +79,7 @@ static bool writeCharacters(UString &base64, UString &str, size_t &lineLength) {
 }
 
 /** Find the raw value of a base64-encoded character. */
-static uint8 findCharacterValue(uint32 c) {
+static uint8_t findCharacterValue(uint32_t c) {
 	if ((c >= 128) || (kBase64Values[c] > 0x3F))
 		throw Exception("Invalid base64 character");
 
@@ -106,19 +106,19 @@ static bool encodeBase64(ReadStream &data, UString &base64, size_t maxLength, US
 
 	overhang.clear();
 
-	uint8 n;
+	uint8_t n;
 	byte input[3];
 
 	// Read up to 3 characters at a time
 	while ((n = data.read(input, 3)) != 0) {
-		uint32 code = 0;
+		uint32_t code = 0;
 
 		// Concat the input characters
-		for (uint8 i = 0; i < n; i++)
+		for (uint8_t i = 0; i < n; i++)
 			code |= input[i] << (24 - i * 8);
 
 		// Create up to 4 6-bit base64-characters out of them
-		for (uint8 i = 0; i < (n + 1); i++) {
+		for (uint8_t i = 0; i < (n + 1); i++) {
 			overhang += kBase64Char[(code >> 26) & 0x0000003F];
 			code <<= 6;
 		}
@@ -148,9 +148,9 @@ static void decodeBase64(WriteStream &data, const UString &base64, UString &over
 		overhang += *c;
 
 		if (overhang.size() == 4) {
-			uint32 code = 0;
+			uint32_t code = 0;
 
-			uint8 n = 0;
+			uint8_t n = 0;
 			for (UString::iterator o = overhang.begin(); o != overhang.end(); ++o) {
 				code <<= 6;
 

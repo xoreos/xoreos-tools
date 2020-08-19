@@ -29,7 +29,7 @@
 
 namespace XML {
 
-void GFF3Creator::create(const XML::XMLNode &root, uint32 id, Common::WriteStream &file, uint32 version) {
+void GFF3Creator::create(const XML::XMLNode &root, uint32_t id, Common::WriteStream &file, uint32_t version) {
 	Aurora::GFF3Writer gff3(id, version);
 
 	if (root.getChildren().size() > 1)
@@ -52,15 +52,15 @@ void GFF3Creator::create(const XML::XMLNode &root, uint32 id, Common::WriteStrea
 void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora::GFF3WriterStructPtr strctPtr) {
 	for (const auto &strctNode : strctNodes) {
 		if (strctNode->getName() == "byte") {
-			uint8 value;
+			uint8_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addByte(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "char") {
-			int8 value;
+			int8_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addChar(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "sint16") {
-			int16 value;
+			int16_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addSint16(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "float") {
@@ -72,23 +72,23 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addDouble(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "sint32") {
-			int32 value;
+			int32_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addSint32(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "sint64") {
-			int64 value;
+			int64_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addSint64(strctNode->getProperty("label"), value);
-		} else if (strctNode->getName() == "uint16") {
-			uint16 value;
+		} else if (strctNode->getName() == "uint16_t") {
+			uint16_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addUint16(strctNode->getProperty("label"), value);
-		} else if (strctNode->getName() == "uint32") {
-			uint32 value;
+		} else if (strctNode->getName() == "uint32_t") {
+			uint32_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addUint32(strctNode->getProperty("label"), value);
-		} else if (strctNode->getName() == "uint64") {
-			uint64 value;
+		} else if (strctNode->getName() == "uint64_t") {
+			uint64_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addUint64(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "exostring") {
@@ -109,7 +109,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 				strctPtr->addExoString(strctNode->getProperty("label"), "");
 
 		} else if (strctNode->getName() == "strref") {
-			uint32 value;
+			uint32_t value;
 			Common::parseString(strctNode->findChild("text")->getContent(), value);
 			strctPtr->addStrRef(strctNode->getProperty("label"), value);
 		} else if (strctNode->getName() == "resref") {
@@ -176,7 +176,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 
 			strctPtr->addOrientation(strctNode->getProperty("label"), x, y, z, w);
 		} else if (strctNode->getName() == "locstring") {
-			uint32 strref;
+			uint32_t strref;
 			Aurora::LocString locString;
 
 			Common::parseString(strctNode->getProperty("strref"), strref);
@@ -189,7 +189,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 
 					const XMLNode *text = child->findChild("text");
 
-					uint32 id;
+					uint32_t id;
 					Common::parseString(child->getProperty("language"), id);
 					locString.setStringRawLanguageID(id, text ? text->getContent() : "");
 				}
@@ -201,7 +201,7 @@ void GFF3Creator::readStructContents(const XMLNode::Children &strctNodes, Aurora
 
 			Aurora::GFF3WriterStructPtr strct = nullptr;
 			if (!idText.empty()) {
-				uint32 id;
+				uint32_t id;
 				Common::parseString(idText, id);
 				strct = strctPtr->addStruct(strctNode->getProperty("label"), id);
 			} else
@@ -224,7 +224,7 @@ void GFF3Creator::readListContents(const XMLNode::Children &listNodes, Aurora::G
 
 		Aurora::GFF3WriterStructPtr strct = nullptr;
 		if (!idText.empty()) {
-			uint32 id;
+			uint32_t id;
 			Common::parseString(idText, id);
 			strct = listPtr->addStruct(node->getProperty("label"), id);
 		} else

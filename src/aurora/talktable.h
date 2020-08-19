@@ -55,19 +55,19 @@ class TalkTable : boost::noncopyable {
 public:
 	virtual ~TalkTable();
 
-	virtual uint32 getLanguageID() const;
-	virtual void setLanguageID(uint32 id);
+	virtual uint32_t getLanguageID() const;
+	virtual void setLanguageID(uint32_t id);
 
-	virtual const std::list<uint32> &getStrRefs() const = 0;
-	virtual bool getString(uint32 strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
+	virtual const std::list<uint32_t> &getStrRefs() const = 0;
+	virtual bool getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
 
-	virtual bool getEntry(uint32 strRef, Common::UString &string, Common::UString &soundResRef,
-	                      uint32 &volumeVariance, uint32 &pitchVariance, float &soundLength,
-	                      uint32 &soundID) const = 0;
+	virtual bool getEntry(uint32_t strRef, Common::UString &string, Common::UString &soundResRef,
+	                      uint32_t &volumeVariance, uint32_t &pitchVariance, float &soundLength,
+	                      uint32_t &soundID) const = 0;
 
-	virtual void setEntry(uint32 strRef, const Common::UString &string, const Common::UString &soundResRef,
-	                      uint32 volumeVariance, uint32 pitchVariance, float soundLength,
-	                      uint32 soundID) = 0;
+	virtual void setEntry(uint32_t strRef, const Common::UString &string, const Common::UString &soundResRef,
+	                      uint32_t volumeVariance, uint32_t pitchVariance, float soundLength,
+	                      uint32_t soundID) = 0;
 
 	/** Take over this stream and read a talk table (of either format) out of it. */
 	static TalkTable *load(Common::SeekableReadStream *tlk, Common::Encoding encoding);

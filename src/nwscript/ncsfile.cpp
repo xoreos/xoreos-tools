@@ -34,8 +34,8 @@
 #include "src/nwscript/util.h"
 #include "src/nwscript/controlflow.h"
 
-static const uint32 kNCSID     = MKTAG('N', 'C', 'S', ' ');
-static const uint32 kVersion10 = MKTAG('V', '1', '.', '0');
+static const uint32_t kNCSID     = MKTAG('N', 'C', 'S', ' ');
+static const uint32_t kVersion10 = MKTAG('V', '1', '.', '0');
 
 namespace NWScript {
 
@@ -95,7 +95,7 @@ const SubRoutine *NCSFile::getMainSubRoutine() const {
 	return _specialSubRoutines.mainSub;
 }
 
-const Instruction *NCSFile::findInstruction(uint32 address) const {
+const Instruction *NCSFile::findInstruction(uint32_t address) const {
 	Instructions::const_iterator it = std::lower_bound(_instructions.begin(), _instructions.end(), address);
 	if ((it == _instructions.end()) || (it->address != address))
 		return 0;

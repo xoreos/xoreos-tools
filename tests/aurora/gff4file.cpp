@@ -80,7 +80,7 @@ static const byte kGFF4SingleValues[] = {
 	0x06,0x00,0x00,0x00,0x51,0x00,0x75,0x00,0x75,0x00,0x75,0x00,0x75,0x00,0x78,0x00
 };
 
-static const uint32 kFieldLabelsSingle[] = {
+static const uint32_t kFieldLabelsSingle[] = {
 	256, 257, 258, 259, 260, 261, 262, 263, 512, 513, 514, 768, 769, 770, 771, 772, 1024, 1025, 1026,
 };
 
@@ -165,7 +165,7 @@ GTEST_TEST(GFF4StructSingle, getFieldLabels) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> labels = strct.getFieldLabels();
+	std::vector<uint32_t> labels = strct.getFieldLabels();
 	std::sort(labels.begin(), labels.end());
 
 	for (size_t i = 0; i < ARRAYSIZE(kFieldLabelsSingle); i++)
@@ -203,7 +203,7 @@ GTEST_TEST(GFF4StructSingle, getFieldProperties) {
 
 	for (size_t i = 0; i < ARRAYSIZE(kFieldLabelsSingle); i++) {
 		Aurora::GFF4Struct::FieldType type;
-		uint32 label;
+		uint32_t label;
 		bool isList;
 
 		EXPECT_TRUE(strct.getFieldProperties(kFieldLabelsSingle[i], type, label, isList)) << "At index " << i;
@@ -213,7 +213,7 @@ GTEST_TEST(GFF4StructSingle, getFieldProperties) {
 	}
 
 	Aurora::GFF4Struct::FieldType type;
-	uint32 label;
+	uint32_t label;
 	bool isList;
 
 	EXPECT_FALSE(strct.getFieldProperties(9999, type, label, isList));
@@ -228,10 +228,10 @@ GTEST_TEST(GFF4StructSingle, getUint) {
 	EXPECT_EQ(strct.getUint(260), 25);
 	EXPECT_EQ(strct.getUint(262), 26);
 
-	EXPECT_EQ(strct.getUint(257), (uint64)((int64) -23));
-	EXPECT_EQ(strct.getUint(259), (uint64)((int64) -24));
-	EXPECT_EQ(strct.getUint(261), (uint64)((int64) -25));
-	EXPECT_EQ(strct.getUint(263), (uint64)((int64) -26));
+	EXPECT_EQ(strct.getUint(257), (uint64_t)((int64_t) -23));
+	EXPECT_EQ(strct.getUint(259), (uint64_t)((int64_t) -24));
+	EXPECT_EQ(strct.getUint(261), (uint64_t)((int64_t) -25));
+	EXPECT_EQ(strct.getUint(263), (uint64_t)((int64_t) -26));
 
 	EXPECT_EQ(strct.getUint(9999, 9999), 9999);
 
@@ -334,7 +334,7 @@ GTEST_TEST(GFF4StructSingle, getTalkString) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	uint32 strRef;
+	uint32_t strRef;
 	Common::UString str;
 	EXPECT_TRUE(strct.getTalkString(1025, strRef, str));
 
@@ -350,7 +350,7 @@ GTEST_TEST(GFF4StructSingle, getTalkStringEncoding) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	uint32 strRef;
+	uint32_t strRef;
 	Common::UString str;
 	EXPECT_TRUE(strct.getTalkString(1025, Common::kEncodingUTF16LE, strRef, str));
 
@@ -629,7 +629,7 @@ GTEST_TEST(GFF4StructSingle, getUintList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint64> list;
+	std::vector<uint64_t> list;
 
 	EXPECT_TRUE(strct.getUint(256, list));
 	ASSERT_EQ(list.size(), 1);
@@ -649,19 +649,19 @@ GTEST_TEST(GFF4StructSingle, getUintList) {
 
 	EXPECT_TRUE(strct.getUint(257, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -23));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -23));
 
 	EXPECT_TRUE(strct.getUint(259, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -24));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -24));
 
 	EXPECT_TRUE(strct.getUint(261, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -25));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -25));
 
 	EXPECT_TRUE(strct.getUint(263, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -26));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -26));
 
 	EXPECT_FALSE(strct.getUint(9999, list));
 
@@ -672,7 +672,7 @@ GTEST_TEST(GFF4StructSingle, getSintList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<int64> list;
+	std::vector<int64_t> list;
 
 	EXPECT_TRUE(strct.getSint(256, list));
 	ASSERT_EQ(list.size(), 1);
@@ -844,7 +844,7 @@ GTEST_TEST(GFF4StructSingle, getTalkStringList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> strRefs;
+	std::vector<uint32_t> strRefs;
 	std::vector<Common::UString> strs;
 
 	EXPECT_TRUE(strct.getTalkString(1025, strRefs, strs));
@@ -864,7 +864,7 @@ GTEST_TEST(GFF4StructSingle, getTalkStringEncodingList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4SingleValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> strRefs;
+	std::vector<uint32_t> strRefs;
 	std::vector<Common::UString> strs;
 
 	EXPECT_TRUE(strct.getTalkString(1025, Common::kEncodingUTF16LE, strRefs, strs));
@@ -1084,7 +1084,7 @@ static const byte kGFF4ListValues[] = {
 	0x61,0x00,0x72,0x00,0x30,0x00,0x30,0x00,0x33,0x00
 };
 
-static const uint32 kFieldLabelsList[] = {
+static const uint32_t kFieldLabelsList[] = {
 	256, 257, 258, 259, 260, 261, 262, 263, 512, 513, 514, 768, 769, 770, 771, 772, 1024
 };
 
@@ -1129,7 +1129,7 @@ GTEST_TEST(GFF4StructList, getFieldLabels) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4ListValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> labels = strct.getFieldLabels();
+	std::vector<uint32_t> labels = strct.getFieldLabels();
 	std::sort(labels.begin(), labels.end());
 
 	for (size_t i = 0; i < ARRAYSIZE(kFieldLabelsList); i++)
@@ -1167,7 +1167,7 @@ GTEST_TEST(GFF4StructList, getFieldProperties) {
 
 	for (size_t i = 0; i < ARRAYSIZE(kFieldLabelsList); i++) {
 		Aurora::GFF4Struct::FieldType type;
-		uint32 label;
+		uint32_t label;
 		bool isList;
 
 		EXPECT_TRUE(strct.getFieldProperties(kFieldLabelsList[i], type, label, isList)) << "At index " << i;
@@ -1177,7 +1177,7 @@ GTEST_TEST(GFF4StructList, getFieldProperties) {
 	}
 
 	Aurora::GFF4Struct::FieldType type;
-	uint32 label;
+	uint32_t label;
 	bool isList;
 
 	EXPECT_FALSE(strct.getFieldProperties(9999, type, label, isList));
@@ -1196,7 +1196,7 @@ GTEST_TEST(GFF4StructList, getUint) {
 	EXPECT_THROW(strct.getUint(262), Common::Exception);
 	EXPECT_THROW(strct.getUint(263), Common::Exception);
 
-	std::vector<uint64> list;
+	std::vector<uint64_t> list;
 
 	EXPECT_TRUE(strct.getUint(256, list));
 	ASSERT_EQ(list.size(), 3);
@@ -1224,27 +1224,27 @@ GTEST_TEST(GFF4StructList, getUint) {
 
 	EXPECT_TRUE(strct.getUint(257, list));
 	ASSERT_EQ(list.size(), 3);
-	EXPECT_EQ(list[0], (uint64)((int64) -23));
-	EXPECT_EQ(list[1], (uint64)((int64) -24));
-	EXPECT_EQ(list[2], (uint64)((int64) -25));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -23));
+	EXPECT_EQ(list[1], (uint64_t)((int64_t) -24));
+	EXPECT_EQ(list[2], (uint64_t)((int64_t) -25));
 
 	EXPECT_TRUE(strct.getUint(259, list));
 	ASSERT_EQ(list.size(), 3);
-	EXPECT_EQ(list[0], (uint64)((int64) -33));
-	EXPECT_EQ(list[1], (uint64)((int64) -34));
-	EXPECT_EQ(list[2], (uint64)((int64) -35));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -33));
+	EXPECT_EQ(list[1], (uint64_t)((int64_t) -34));
+	EXPECT_EQ(list[2], (uint64_t)((int64_t) -35));
 
 	EXPECT_TRUE(strct.getUint(261, list));
 	ASSERT_EQ(list.size(), 3);
-	EXPECT_EQ(list[0], (uint64)((int64) -43));
-	EXPECT_EQ(list[1], (uint64)((int64) -44));
-	EXPECT_EQ(list[2], (uint64)((int64) -45));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -43));
+	EXPECT_EQ(list[1], (uint64_t)((int64_t) -44));
+	EXPECT_EQ(list[2], (uint64_t)((int64_t) -45));
 
 	EXPECT_TRUE(strct.getUint(263, list));
 	ASSERT_EQ(list.size(), 3);
-	EXPECT_EQ(list[0], (uint64)((int64) -53));
-	EXPECT_EQ(list[1], (uint64)((int64) -54));
-	EXPECT_EQ(list[2], (uint64)((int64) -55));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -53));
+	EXPECT_EQ(list[1], (uint64_t)((int64_t) -54));
+	EXPECT_EQ(list[2], (uint64_t)((int64_t) -55));
 
 	EXPECT_FALSE(strct.getUint(9999, list));
 
@@ -1264,7 +1264,7 @@ GTEST_TEST(GFF4StructList, getSint) {
 	EXPECT_THROW(strct.getSint(262), Common::Exception);
 	EXPECT_THROW(strct.getSint(263), Common::Exception);
 
-	std::vector<int64> list;
+	std::vector<int64_t> list;
 
 	EXPECT_TRUE(strct.getSint(256, list));
 	ASSERT_EQ(list.size(), 3);
@@ -1807,7 +1807,7 @@ static const byte kGFF4RefValues[] = {
 	0x75,0x00,0x75,0x00,0x75,0x00,0x78,0x00
 };
 
-static const uint32 kFieldLabelsRef[] = {
+static const uint32_t kFieldLabelsRef[] = {
 	256, 257, 258, 259, 260, 261, 262, 263, 512, 513, 514, 768, 769, 770, 771, 772, 1024, 1025, 1026,
 };
 
@@ -1854,7 +1854,7 @@ GTEST_TEST(GFF4StructRef, getFieldLabels) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> labels = strct.getFieldLabels();
+	std::vector<uint32_t> labels = strct.getFieldLabels();
 	std::sort(labels.begin(), labels.end());
 
 	for (size_t i = 0; i < ARRAYSIZE(kFieldLabelsRef); i++)
@@ -1892,7 +1892,7 @@ GTEST_TEST(GFF4StructRef, getFieldProperties) {
 
 	for (size_t i = 0; i < ARRAYSIZE(kFieldLabelsRef); i++) {
 		Aurora::GFF4Struct::FieldType type;
-		uint32 label;
+		uint32_t label;
 		bool isList;
 
 		EXPECT_TRUE(strct.getFieldProperties(kFieldLabelsRef[i], type, label, isList)) << "At index " << i;
@@ -1902,7 +1902,7 @@ GTEST_TEST(GFF4StructRef, getFieldProperties) {
 	}
 
 	Aurora::GFF4Struct::FieldType type;
-	uint32 label;
+	uint32_t label;
 	bool isList;
 
 	EXPECT_FALSE(strct.getFieldProperties(9999, type, label, isList));
@@ -1917,10 +1917,10 @@ GTEST_TEST(GFF4StructRef, getUint) {
 	EXPECT_EQ(strct.getUint(260), 25);
 	EXPECT_EQ(strct.getUint(262), 26);
 
-	EXPECT_EQ(strct.getUint(257), (uint64)((int64) -23));
-	EXPECT_EQ(strct.getUint(259), (uint64)((int64) -24));
-	EXPECT_EQ(strct.getUint(261), (uint64)((int64) -25));
-	EXPECT_EQ(strct.getUint(263), (uint64)((int64) -26));
+	EXPECT_EQ(strct.getUint(257), (uint64_t)((int64_t) -23));
+	EXPECT_EQ(strct.getUint(259), (uint64_t)((int64_t) -24));
+	EXPECT_EQ(strct.getUint(261), (uint64_t)((int64_t) -25));
+	EXPECT_EQ(strct.getUint(263), (uint64_t)((int64_t) -26));
 
 	EXPECT_EQ(strct.getUint(9999, 9999), 9999);
 
@@ -2023,7 +2023,7 @@ GTEST_TEST(GFF4StructRef, getTalkString) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	uint32 strRef;
+	uint32_t strRef;
 	Common::UString str;
 	EXPECT_TRUE(strct.getTalkString(1025, strRef, str));
 
@@ -2039,7 +2039,7 @@ GTEST_TEST(GFF4StructRef, getTalkStringEncoding) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	uint32 strRef;
+	uint32_t strRef;
 	Common::UString str;
 	EXPECT_TRUE(strct.getTalkString(1025, Common::kEncodingUTF16LE, strRef, str));
 
@@ -2318,7 +2318,7 @@ GTEST_TEST(GFF4StructRef, getUintList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint64> list;
+	std::vector<uint64_t> list;
 
 	EXPECT_TRUE(strct.getUint(256, list));
 	ASSERT_EQ(list.size(), 1);
@@ -2338,19 +2338,19 @@ GTEST_TEST(GFF4StructRef, getUintList) {
 
 	EXPECT_TRUE(strct.getUint(257, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -23));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -23));
 
 	EXPECT_TRUE(strct.getUint(259, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -24));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -24));
 
 	EXPECT_TRUE(strct.getUint(261, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -25));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -25));
 
 	EXPECT_TRUE(strct.getUint(263, list));
 	ASSERT_EQ(list.size(), 1);
-	EXPECT_EQ(list[0], (uint64)((int64) -26));
+	EXPECT_EQ(list[0], (uint64_t)((int64_t) -26));
 
 	EXPECT_FALSE(strct.getUint(9999, list));
 
@@ -2361,7 +2361,7 @@ GTEST_TEST(GFF4StructRef, getSintList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<int64> list;
+	std::vector<int64_t> list;
 
 	EXPECT_TRUE(strct.getSint(256, list));
 	ASSERT_EQ(list.size(), 1);
@@ -2533,7 +2533,7 @@ GTEST_TEST(GFF4StructRef, getTalkStringList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> strRefs;
+	std::vector<uint32_t> strRefs;
 	std::vector<Common::UString> strs;
 
 	EXPECT_TRUE(strct.getTalkString(1025, strRefs, strs));
@@ -2553,7 +2553,7 @@ GTEST_TEST(GFF4StructRef, getTalkStringEncodingList) {
 	Aurora::GFF4File gff4(new Common::MemoryReadStream(kGFF4RefValues));
 	const Aurora::GFF4Struct &strct = gff4.getTopLevel();
 
-	std::vector<uint32> strRefs;
+	std::vector<uint32_t> strRefs;
 	std::vector<Common::UString> strs;
 
 	EXPECT_TRUE(strct.getTalkString(1025, Common::kEncodingUTF16LE, strRefs, strs));
@@ -3034,7 +3034,7 @@ GTEST_TEST(GFF4StructShared, getString) {
 
 	EXPECT_STREQ(strct0.getString(256).c_str(), "Foobar");
 
-	uint32 strRef;
+	uint32_t strRef;
 	Common::UString tlkString;
 	EXPECT_TRUE(strct0.getTalkString(257, strRef, tlkString));
 

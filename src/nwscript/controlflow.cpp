@@ -180,7 +180,7 @@ static const Block *getLatestBlock(const std::vector<const Block *> &blocks) {
 }
 
 /** Recursive internal convenience function to be used by findPathMerge(). */
-static void findPathMergeRec(std::vector<const Block *> &merges, std::set<uint32> &visited,
+static void findPathMergeRec(std::vector<const Block *> &merges, std::set<uint32_t> &visited,
                              const Block &block1, const Block &block2) {
 
 	/* We hold the earlier block and recursively descend into the children
@@ -254,7 +254,7 @@ static void findPathMergeRec(std::vector<const Block *> &merges, std::set<uint32
  */
 static const Block *findPathMerge(const Block &block1, const Block &block2) {
 	std::vector<const Block *> merges;
-	std::set<uint32> visited;
+	std::set<uint32_t> visited;
 
 	// Correctly order the two blocks we want to check
 	if (block1.address < block2.address)
@@ -762,7 +762,7 @@ static void verifyBlocks(const Blocks &blocks) {
 	}
 }
 
-static void verifyLoopBlocks(std::set<uint32> &visited, const Block &block,
+static void verifyLoopBlocks(std::set<uint32_t> &visited, const Block &block,
                              const Block &head, const Block &tail, const Block &next) {
 
 	/* Recursively verify that all blocks inside a jump control structure don't
@@ -810,7 +810,7 @@ static void verifyLoop(const Block &head, const Block &tail, const Block &next) 
 	   throw Common::Exception("Loop blocks have no linear path: %08X, %08X, %08X",
 	                           head.address, tail.address, next.address);
 
-	std::set<uint32> visited;
+	std::set<uint32_t> visited;
 	verifyLoopBlocks(visited, head, head, tail, next);
 }
 

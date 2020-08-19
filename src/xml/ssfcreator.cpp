@@ -64,7 +64,7 @@ void SSFCreator::create(Common::WriteStream &output, Common::ReadStream &input,
 		if (text)
 			soundFile = text->getContent();
 
-		uint32 strRef = 0xFFFFFFFF;
+		uint32_t strRef = 0xFFFFFFFF;
 		Common::parseString((*s)->getProperty("strref"), strRef, true);
 
 		ssf.setSound(soundID, soundFile, strRef);

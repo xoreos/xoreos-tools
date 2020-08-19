@@ -30,8 +30,8 @@
 
 namespace Archives {
 
-const char *findSonicFile(uint32 hash);
-const char *findSonicFile(uint64 hash, Common::HashAlgo algo);
+const char *findSonicFile(uint32_t hash);
+const char *findSonicFile(uint64_t hash, Common::HashAlgo algo);
 
 } // End of namespace Archives
 

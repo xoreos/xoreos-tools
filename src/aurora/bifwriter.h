@@ -46,7 +46,7 @@ public:
 	 * @param fileCount the count of files to reserve
 	 * @param writeStream the stream to write to
 	 */
-	BIFWriter(uint32 fileCount, Common::SeekableWriteStream &writeStream);
+	BIFWriter(uint32_t fileCount, Common::SeekableWriteStream &writeStream);
 
 	/**
 	 * Add new data by stream to this BIF file and write also offset,
@@ -60,12 +60,12 @@ public:
 	 * The current total size of this file, needed for the KEY file.
 	 * @return the current total size of this file
 	 */
-	uint32 size();
+	uint32_t size();
 
 private:
-	const uint32 _maxFiles;
-	uint32 _currentFiles;
-	uint32 _dataOffset;
+	const uint32_t _maxFiles;
+	uint32_t _currentFiles;
+	uint32_t _dataOffset;
 	Common::SeekableWriteStream &_writer;
 };
 

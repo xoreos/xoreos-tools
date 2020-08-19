@@ -152,7 +152,7 @@ struct ControlStructure {
 /** A block of NWScript instructions. */
 struct Block {
 	/** The address that starts this block. */
-	uint32 address;
+	uint32_t address;
 
 	/** The instructions making up this block. */
 	std::vector<const Instruction *> instructions;
@@ -173,7 +173,7 @@ struct Block {
 	std::vector<ControlStructure> controls;
 
 
-	Block(uint32 addr) : address(addr), subRoutine(0),
+	Block(uint32_t addr) : address(addr), subRoutine(0),
 		stackAnalyzeState(kStackAnalyzeStateNone) {
 
 	}
