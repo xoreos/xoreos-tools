@@ -58,7 +58,7 @@ public:
 	virtual uint32_t getLanguageID() const;
 	virtual void setLanguageID(uint32_t id);
 
-	virtual const std::list<uint32_t> &getStrRefs() const = 0;
+	virtual std::list<uint32_t> getStrRefs() const = 0;
 	virtual bool getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const = 0;
 
 	virtual bool getEntry(uint32_t strRef, Common::UString &string, Common::UString &soundResRef,

@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "src/common/types.h"
-#include "src/common/ptrmap.h"
 #include "src/common/ustring.h"
 
 #include "src/aurora/types.h"
@@ -63,7 +62,7 @@ public:
 	TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding encoding);
 	~TalkTable_GFF();
 
-	const std::list<uint32_t> &getStrRefs() const;
+	std::list<uint32_t> getStrRefs() const;
 	bool getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const;
 
 	bool getEntry(uint32_t strRef, Common::UString &string, Common::UString &soundResRef,
@@ -79,17 +78,17 @@ private:
 	struct Entry {
 		Common::UString text;
 
-		const GFF4Struct *strct;
+		const GFF4Struct *strct { nullptr };
 
-		Entry(const GFF4Struct *s = 0) : strct(s) { }
+		Entry() = default;
+		Entry(const GFF4Struct *s) : strct(s) { }
+		Entry(const Common::UString &t) : text(t) { }
 	};
 
-	typedef Common::PtrMap<uint32_t, Entry> Entries;
+	typedef std::map<uint32_t, std::unique_ptr<Entry>> Entries;
 
 
 	std::unique_ptr<GFF4File> _gff;
-
-	std::list<uint32_t> _strRefs;
 
 	Entries _entries;
 

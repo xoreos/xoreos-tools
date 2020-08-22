@@ -52,7 +52,7 @@ void TLKDumper::dump(Common::WriteStream &output, Common::SeekableReadStream *in
 		xml.addProperty("language", Common::composeString(languageID));
 	xml.breakLine();
 
-	const std::list<uint32_t> &strRefs = tlk->getStrRefs();
+	std::list<uint32_t> strRefs = tlk->getStrRefs();
 
 	for (std::list<uint32_t>::const_iterator s = strRefs.begin(); s != strRefs.end(); ++s) {
 		const uint32_t strRef = *s;

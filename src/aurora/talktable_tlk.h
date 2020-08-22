@@ -67,7 +67,7 @@ public:
 	/** Set the language ID (ungendered) of the talk table. */
 	void setLanguageID(uint32_t id);
 
-	const std::list<uint32_t> &getStrRefs() const;
+	std::list<uint32_t> getStrRefs() const;
 	bool getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const;
 
 	/** Return all values associated to a string references in a TLK talk table. */

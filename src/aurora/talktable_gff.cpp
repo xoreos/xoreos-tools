@@ -55,8 +55,13 @@ TalkTable_GFF::TalkTable_GFF(Common::SeekableReadStream *tlk, Common::Encoding e
 TalkTable_GFF::~TalkTable_GFF() {
 }
 
-const std::list<uint32_t> &TalkTable_GFF::getStrRefs() const {
-	return _strRefs;
+std::list<uint32_t> TalkTable_GFF::getStrRefs() const {
+	std::list<uint32_t> strRefs;
+
+	for (auto &entry : _entries)
+		strRefs.push_back(entry.first);
+
+	return strRefs;
 }
 
 bool TalkTable_GFF::getString(uint32_t strRef, Common::UString &string, Common::UString &soundResRef) const {
@@ -95,15 +100,7 @@ void TalkTable_GFF::setEntry(uint32_t strRef, const Common::UString &string,
                              uint32_t UNUSED(volumeVariance), uint32_t UNUSED(pitchVariance),
                              float UNUSED(soundLength), uint32_t UNUSED(soundID)) {
 
-	Entries::iterator entry = _entries.find(strRef);
-	if (entry == _entries.end()) {
-		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, new Entry));
-		entry = result.first;
-
-		_strRefs.push_back(strRef);
-	}
-
-	entry->second->text = string;
+	_entries[strRef] = std::make_unique<Entry>(string);
 }
 
 void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
@@ -122,8 +119,6 @@ void TalkTable_GFF::load(Common::SeekableReadStream *tlk) {
 			load05(top);
 		else
 			throw Common::Exception("Unsupported GFF TLK file version %08X", _gff->getTypeVersion());
-
-		_strRefs.sort();
 
 	} catch (Common::Exception &e) {
 		e.add("Unable to load GFF TLK");
@@ -145,13 +140,7 @@ void TalkTable_GFF::load02(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		std::unique_ptr<Entry> entry = std::make_unique<Entry>(*s);
-
-		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, entry.get()));
-		if (result.second)
-			entry.release();
-
-		_strRefs.push_back(strRef);
+		_entries[strRef] = std::make_unique<Entry>(*s);
 	}
 }
 
@@ -171,13 +160,7 @@ void TalkTable_GFF::load05(const GFF4Struct &top) {
 		if (strRef == 0xFFFFFFFF)
 			continue;
 
-		std::unique_ptr<Entry> entry = std::make_unique<Entry>(*s);
-
-		std::pair<Entries::iterator, bool> result = _entries.insert(std::make_pair(strRef, entry.get()));
-		if (result.second)
-			entry.release();
-
-		_strRefs.push_back(strRef);
+		_entries[strRef] = std::make_unique<Entry>(*s);
 	}
 }
 
