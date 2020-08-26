@@ -108,6 +108,9 @@ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
   # We do not yet mark any of our overrides. Let's disable this for now
   set_check_compiler_flag_cxx("-Winconsistent-missing-override" "-Wno-inconsistent-missing-override")
+
+  # Disable warnings about unused static const variables
+  set_check_compiler_flag_cxx("-Wunused-const-variable" "-Wno-unused-const-variable")
 endif()
 
 # platform specific warning settings
