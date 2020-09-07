@@ -117,7 +117,7 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	parser.addOption("2dab", "Convert to binary 2DA", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Format>(kFormat2DAb,
 	                 format)));
-	parser.addOption("cvs", "Convert to CSV", kContinueParsing,
+	parser.addOption("csv", "Convert to CSV", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Format>(kFormatCSV,
 	                 format)));
 	return parser.process(argv);
