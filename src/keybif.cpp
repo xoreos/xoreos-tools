@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
 		std::list<BIFGroup> groups;
 
-		for (const auto& file : files) {
+		for (const auto &file : files) {
 			if (file.endsWith(".bif") || file.endsWith(".bzf")) {
 				BIFGroup group;
 				group.name = file;
@@ -78,7 +78,12 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		for (const auto& group : groups) {
+		for (const auto &group : groups)
+			for (const auto &file : group.files)
+				if (file.equalsIgnoreCase(group.name))
+					throw Common::Exception("Trying to pack file \"%s\" into itself?!?", file.c_str());
+
+		for (const auto &group : groups) {
 			std::printf("Packing %s ... \n", group.name.c_str());
 
 			Common::WriteFile writeBIFFile(group.name);
@@ -90,7 +95,7 @@ int main(int argc, char **argv) {
 				dataFile = std::make_unique<Aurora::BIFWriter>(group.files.size(), writeBIFFile);
 
 			size_t i = 1;
-			for (const auto& file : group.files) {
+			for (const auto &file : group.files) {
 				std::printf("\tPacking %u/%u: %s ... ", (uint)i, static_cast<uint>(group.files.size()), file.c_str());
 				std::fflush(stdout);
 
