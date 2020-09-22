@@ -44,7 +44,7 @@ static const uint32_t kSAVID = MKTAG('S', 'A', 'V', ' ');
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::ERFWriter::Version &version, Aurora::ERFWriter::Compression &compression,
-                      uint32_t id, Aurora::GameID &game);
+                      uint32_t &id, Aurora::GameID &game);
 
 int main(int argc, char **argv) {
 	initPlatform();
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue,
                       Common::UString &archive, std::set<Common::UString> &files,
                       Aurora::ERFWriter::Version &version, Aurora::ERFWriter::Compression &compression,
-                      uint32_t id, Aurora::GameID &game) {
+                      uint32_t &id, Aurora::GameID &game) {
 	using Common::CLI::NoOption;
 	using Common::CLI::kContinueParsing;
 	using Common::CLI::Parser;
