@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
 		if (!parseCommandLine(args, returnValue, archive, files, game))
 			return returnValue;
 
+		for (const auto &file : files)
+			if (file.equalsIgnoreCase(archive))
+				throw Common::Exception("Trying to pack file \"%s\" into itself?!?", file.c_str());
+
 		Common::WriteFile writeFile(archive);
 
 		size_t i = 1;
