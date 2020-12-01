@@ -168,19 +168,24 @@ static void decodeBase64(WriteStream &data, const UString &base64, UString &over
 	}
 }
 
-static size_t countLength(const UString &str) {
-	const size_t dataLength = str.size();
+static size_t countLength(const UString &str, bool partial = false) {
+	size_t dataLength = 0;
+	for (const auto &c : str) {
+		if ((c == '=') || ((c < 128) && kBase64Values[c] <= 0x3F))
+			++dataLength;
+	}
 
-	if ((dataLength % 4) != 0)
-		throw Exception("Invalid length for a base64-encoded string");
+	if (!partial)
+		if ((dataLength % 4) != 0)
+			throw Exception("Invalid length for a base64-encoded string");
 
 	return dataLength;
 }
 
 static size_t countLength(const std::list<UString> &str) {
 	size_t dataLength = 0;
-	for (std::list<UString>::const_iterator s = str.begin(); s != str.end(); ++s)
-		dataLength += s->size();
+	for (const auto &s : str)
+		dataLength += countLength(s, true);
 
 	if ((dataLength % 4) != 0)
 		throw Exception("Invalid length for a base64-encoded string");
