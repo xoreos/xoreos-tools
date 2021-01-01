@@ -77,7 +77,7 @@ static const char *kProjectNameVersionFull = PACKAGE_NAME " " PACKAGE_VERSION XO
 static const char *kProjectURL = "https://xoreos.org/";
 
 static const char *kProjectAuthors =
-	"Copyright (c) 2012-2020 by the xoreos team.\n"
+	"Copyright (c) 2012-2021 by the xoreos team.\n"
 	"Please see the AUTHORS file for details.\n"
 	"\n"
 	"This is free software; see the source for copying conditions.  There is NO\n"
