@@ -66,6 +66,9 @@ Or, if you're running Arch Linux, you can install xoreos-tools directly from the
 Or, if you're running Gentoo Linux, you can install xoreos-tools directly from our
 [overlay](https://github.com/xoreos/gentoo-overlay).
 
+Or, if you're running Fedora, you can install xoreos-tools directly from the [Fedora
+repository](https://apps.fedoraproject.org/packages/xoreos-tools).
+
 Lastly, you can compile xoreos-tools yourself; either from a release source package,
 found on our [downloads page](https://xoreos.org/downloads/index.html), or a
 fresh [repository](https://github.com/xoreos/xoreos-tools) checkout. For details
