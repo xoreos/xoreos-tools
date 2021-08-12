@@ -193,9 +193,13 @@ public:
 	GFF3WriterList(GFF3Writer *parent);
 
 	/** Add a new struct to the list. */
-	GFF3WriterStructPtr addStruct(const Common::UString &label = "");
+	GFF3WriterStructPtr addStruct();
 	/** Add a new struct to the list. */
-	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32_t id);
+	GFF3WriterStructPtr addStruct(uint32_t id);
+	/** Add a new struct to the list. */
+	GFF3WriterStructPtr addStruct(const Common::UString &label);
+	/** Add a new struct to the list. */
+	GFF3WriterStructPtr addStruct(const Common::UString &label, uint32_t id, bool inList = false);
 
 	size_t getSize() const;
 

@@ -226,9 +226,9 @@ void GFF3Creator::readListContents(const XMLNode::Children &listNodes, Aurora::G
 		if (!idText.empty()) {
 			uint32_t id;
 			Common::parseString(idText, id);
-			strct = listPtr->addStruct(node->getProperty("label"), id);
+			strct = listPtr->addStruct(id);
 		} else
-			strct = listPtr->addStruct(node->getProperty("label"));
+			strct = listPtr->addStruct();
 
 		readStructContents(node->getChildren(), strct);
 	}
