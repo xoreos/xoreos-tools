@@ -180,7 +180,6 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 	_mipMaps.reserve(mipMapCount);
 
 	size_t layerCount;
-	uint combinedSize = 0;
 	for (layerCount = 0; layerCount < _layerCount; layerCount++) {
 		uint32_t layerWidth  = width;
 		uint32_t layerHeight = height;
@@ -206,7 +205,6 @@ void TPC::readHeader(Common::SeekableReadStream &tpc, byte &encoding) {
 				break;
 
 			fullDataSize -= mipMap->size;
-			combinedSize += mipMap->size;
 
 			_mipMaps.emplace_back(mipMap.release());
 
