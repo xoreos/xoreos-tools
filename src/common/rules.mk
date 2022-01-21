@@ -59,6 +59,7 @@ src_common_libcommon_la_SOURCES += \
     src/common/cli.h \
     src/common/stringmap.h \
     src/common/string.h \
+    src/common/lzx.h \
     $(EMPTY)
 
 src_common_libcommon_la_SOURCES += \
@@ -88,4 +89,9 @@ src_common_libcommon_la_SOURCES += \
     src/common/cli.cpp \
     src/common/stringmap.cpp \
     src/common/string.cpp \
+    src/common/lzx.cpp \
+    $(EMPTY)
+
+src_common_libcommon_la_LIBADD = \
+    external/mspack/libmspack.la \
     $(EMPTY)
