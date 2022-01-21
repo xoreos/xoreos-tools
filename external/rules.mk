@@ -20,3 +20,5 @@
 # Third-party code.
 
 include external/utf8cpp/rules.mk
+
+include external/mspack/rules.mk
