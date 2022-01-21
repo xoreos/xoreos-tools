@@ -38,6 +38,7 @@
 #include "src/common/blowfish.h"
 #include "src/common/deflate.h"
 #include "src/common/lzma.h"
+#include "src/common/lzx.h"
 
 #include "src/aurora/erffile.h"
 #include "src/aurora/util.h"
@@ -779,6 +780,9 @@ Common::SeekableReadStream *ERFFile::decompress(Common::MemoryReadStream *packed
 		case kCompressionLZMA:
 			return decompressLZMA(std::move(stream), unpackedSize).release();
 
+		case kCompressionXboxLZX:
+			return decompressXboxLZX(std::move(stream), unpackedSize).release();
+
 		case kCompressionBioWareZlib:
 			return decompressBiowareZlib(stream.release(), unpackedSize);
 
@@ -852,6 +856,11 @@ Common::SeekableReadStream *ERFFile::decompressZlib(const byte *compressedData, 
 std::unique_ptr<Common::SeekableReadStream> ERFFile::decompressLZMA(std::unique_ptr<Common::SeekableReadStream> packedStream,
                                                                     uint32_t unpackedSize) const {
 	return Common::decompressERFLZMA(*packedStream, packedStream->size(), unpackedSize);
+}
+
+std::unique_ptr<Common::SeekableReadStream> ERFFile::decompressXboxLZX(std::unique_ptr<Common::SeekableReadStream> packedStream,
+	                                                                   uint32_t unpackedSize) const {
+	return Common::decompressXboxLZX(*packedStream, unpackedSize);
 }
 
 Common::HashAlgo ERFFile::getNameHashAlgo() const {
