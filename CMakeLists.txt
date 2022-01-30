@@ -291,7 +291,9 @@ else(ICONV_SECOND_ARGUMENT_IS_CONST)
   add_definitions(-DICONV_CONST=)
 endif(ICONV_SECOND_ARGUMENT_IS_CONST)
 
+# libmspack
 parse_automake(external/mspack/rules.mk)
+
 
 # -------------------------------------------------------------------------
 # custom unit testing target, because CMake's make test is pretty useless
