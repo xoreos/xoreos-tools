@@ -48,11 +48,11 @@ Currently, the following tools are included:
 CI Status
 ---------
 
-- [![Build status (linux autoconf gcc)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autoconf_gcc.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autoconf_gcc.yml/)
-- [![Build status (linux autoconf clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autoconf_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autoconf_clang.yml/)
+- [![Build status (linux autotools gcc)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autotools_gcc.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autotools_gcc.yml/)
+- [![Build status (linux autotools clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autotools_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_autotools_clang.yml/)
 - [![Build status (linux cmake gcc)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_cmake_gcc.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_cmake_gcc.yml/)
 - [![Build status (linux cmake clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_cmake_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_cmake_clang.yml/)
-- [![Build status (macos autoconf clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_autoconf_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_autoconf_clang.yml/)
+- [![Build status (macos autotools clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_autotools_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_autotools_clang.yml/)
 - [![Build status (macos cmake clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_cmake_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_cmake_clang.yml/)
 - [![Build status (windows cmake msvc)](https://github.com/xoreos/xoreos-tools/actions/workflows/windows_cmake_msvc.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/windows_cmake_msvc.yml/)
 - [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)

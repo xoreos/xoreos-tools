@@ -1,4 +1,4 @@
-name: linux autoconf clang
+name: linux autotools clang
 
 on:
   [push, pull_request]
