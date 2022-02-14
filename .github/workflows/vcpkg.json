@@ -1,0 +1,18 @@
+{
+  "name": "xoreos-tools",
+  "version-string": "latest",
+  "dependencies": [
+    "libiconv",
+    "zlib",
+    "liblzma",
+    "libxml2",
+    "boost-algorithm",
+    "boost-filesystem",
+    "boost-locale",
+    "boost-scope-exit",
+    "boost-smart-ptr",
+    "boost-system",
+    "boost-utility",
+    "boost-uuid"
+  ]
+}

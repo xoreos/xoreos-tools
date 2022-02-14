@@ -54,6 +54,7 @@ CI Status
 - [![Build status (linux cmake clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_cmake_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/linux_cmake_clang.yml/)
 - [![Build status (macos autoconf clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_autoconf_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_autoconf_clang.yml/)
 - [![Build status (macos cmake clang)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_cmake_clang.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/macos_cmake_clang.yml/)
+- [![Build status (windows cmake msvc)](https://github.com/xoreos/xoreos-tools/actions/workflows/windows_cmake_msvc.yml/badge.svg)](https://github.com/xoreos/xoreos-tools/actions/workflows/windows_cmake_msvc.yml/)
 - [![Coverity Status](https://scan.coverity.com/projects/3296/badge.svg)](https://scan.coverity.com/projects/3296)
 
 

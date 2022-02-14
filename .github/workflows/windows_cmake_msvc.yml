@@ -1,0 +1,39 @@
+name: windows cmake msvc
+
+on:
+  [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: lukka/get-cmake@v3.21.2
+
+    - name: Prepare vcpkg
+      id: prepare_vcpkg
+      shell: bash
+      run: |
+        mkdir -vp "${VCPKG_DEFAULT_BINARY_CACHE}"
+        cp -v "${GITHUB_WORKSPACE}"/.github/workflows/vcpkg.json "${GITHUB_WORKSPACE}"/
+        cp -v "${GITHUB_WORKSPACE}"/.github/workflows/CMakePresets.json "${GITHUB_WORKSPACE}"/
+
+    - name: Restore artifacts and set up vcpkg
+      uses: lukka/run-vcpkg@v10.1
+      id: run_vcpkg
+      with:
+        vcpkgGitCommitId: c64c0fdac572ca43ea5ae018fc408ddced50d5b1
+        vcpkgJsonGlob: vcpkg.json
+
+    - name: Run CMake, with vcpkg stage, generate, build and test
+      uses: lukka/run-cmake@v10
+      id: run_cmake
+      with:
+        configurePreset: ninja-multi-vcpkg
+        buildPreset: ninja-multi-vcpkg-debug
+        testPreset: ninja-multi-vcpkg-debug
