@@ -66,7 +66,7 @@ games.
 Convert the 2DA file1.2da into an ASCII 2DA
 .Pa file2.2da :
 .Pp
-.Dl $ convert2da -a file1.2da -o file2.2da
+.Dl $ convert2da -a -o file2.2da file1.2da
 .Pp
 Convert the 2DA file1.2da into an ASCII 2DA on
 .Dv stdout :
@@ -78,13 +78,13 @@ Convert the 2DA
 into a binary 2DA
 .Pa file2.2da :
 .Pp
-.Dl $ convert2da -b file1.2da -o file2.2da
+.Dl $ convert2da -b -o file2.2da file1.2da
 .Pp
 Convert the 2DA
 .Pa file1.2da
 into a CSV file:
 .Pp
-.Dl $ convert2da -c file1.2da -o file2.csv
+.Dl $ convert2da -c -o file2.csv file1.2da
 .Sh SEE ALSO
 .Xr gff2xml 1
 .Pp
