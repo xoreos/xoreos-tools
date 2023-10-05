@@ -12,7 +12,7 @@ jobs:
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: lukka/get-cmake@v3.21.2
 
     - name: Prepare vcpkg
