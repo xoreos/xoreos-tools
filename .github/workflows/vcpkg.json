@@ -13,6 +13,7 @@
     "boost-smart-ptr",
     "boost-system",
     "boost-utility",
-    "boost-uuid"
+    "boost-uuid",
+    "boost-variant"
   ]
 }
