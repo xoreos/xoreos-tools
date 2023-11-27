@@ -35,7 +35,6 @@ EXTRA_DIST += \
     CMakeLists.txt \
     cmake/CMakeAM.cmake \
     cmake/CMakeUninstall.cmake \
-    cmake/FindIconv.cmake \
     cmake/FindLibLZMA.cmake \
     cmake/SetCheckCompilerFlag.cmake \
     cmake/toolchain/i686-windows-mingw.cmake \

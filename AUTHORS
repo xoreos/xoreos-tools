@@ -1,5 +1,5 @@
 xoreos-tools - Tools to help with xoreos development
-Copyright (c) 2012-2022 by the following:
+Copyright (c) 2012-2023 by the following:
 
 Sven Hesse (DrMcCoy) <drmccoy@drmccoy.de>
 Matthew Hoops (clone2727) <clone2727@gmail.com>
@@ -60,9 +60,9 @@ boost.m4
 UTF-8 CPP
 *********
    xoreos-tools uses the lightweight header-only UTF-8 CPP library
-   (<http://utfcpp.sourceforge.net/>) for handling UTF-8 encoded strings.
+   (<https://github.com/nemtrif/utfcpp>) for handling UTF-8 encoded strings.
    UTF-8 CPP is licensed under the Boost Software License. See
-   external/utf8cpp/utf8.h or <https://www.boost.org/users/license.html>
+   external/utf8cpp/LICENSE or <https://www.boost.org/users/license.html>
    for details.
 
 ScummVM code

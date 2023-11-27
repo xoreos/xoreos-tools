@@ -77,6 +77,9 @@ static void deinitXML() {
 
 XMLParser::XMLParser(Common::ReadStream &stream, bool makeLower, const Common::UString &fileName) {
 	initXML();
+	BOOST_SCOPE_EXIT(void) {
+		deinitXML();
+	} BOOST_SCOPE_EXIT_END
 
 	Common::UString parseError;
 	xmlSetGenericErrorFunc(static_cast<void *>(&parseError), errorFuncUString);
@@ -105,8 +108,6 @@ XMLParser::XMLParser(Common::ReadStream &stream, bool makeLower, const Common::U
 		throw Common::Exception("XML document has no root node");
 
 	_rootNode.reset(new XMLNode(*root, makeLower));
-
-	deinitXML();
 }
 
 XMLParser::~XMLParser() {

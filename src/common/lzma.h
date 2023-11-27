@@ -25,6 +25,8 @@
 #ifndef COMMON_LZMA_H
 #define COMMON_LZMA_H
 
+#include <memory>
+
 #include "src/common/types.h"
 
 namespace Common {

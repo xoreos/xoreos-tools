@@ -5,15 +5,15 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     env:
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: lukka/get-cmake@v3.21.2
+    - uses: actions/checkout@v4
+    - uses: lukka/get-cmake@v3.27.6
 
     - name: Prepare vcpkg
       id: prepare_vcpkg
@@ -24,10 +24,10 @@ jobs:
         cp -v "${GITHUB_WORKSPACE}"/.github/workflows/CMakePresets.json "${GITHUB_WORKSPACE}"/
 
     - name: Restore artifacts and set up vcpkg
-      uses: lukka/run-vcpkg@v10.1
+      uses: lukka/run-vcpkg@v11
       id: run_vcpkg
       with:
-        vcpkgGitCommitId: af2287382b1991dbdcb7e5112d236f3323b9dd7a
+        vcpkgGitCommitId: accd79817981f1ce00c6a4164aecf2b2ac699823
         vcpkgJsonGlob: vcpkg.json
 
     - name: Run CMake, with vcpkg stage, generate, build and test

@@ -37,8 +37,6 @@
 #include "src/common/readstream.h"
 #include "src/common/readfile.h"
 #include "src/common/cli.h"
-#include "src/common/writefile.h"
-#include "src/common/filepath.h"
 
 #include "src/aurora/types.h"
 #include "src/aurora/util.h"
@@ -196,12 +194,4 @@ void convert(const Common::UString &inFile, const Common::UString &outFile,
 		image->flipVertically();
 
 	image->dumpTGA(outFile);
-
-	std::unique_ptr<Common::SeekableReadStream> txiData(image->getTXI());
-	if (txiData != nullptr) {
-		Common::WriteFile f(Common::FilePath::changeExtension(outFile, "txi"));
-		f.writeStream(*txiData);
-		f.close();
-	}
-
 }

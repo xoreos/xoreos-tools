@@ -216,9 +216,11 @@ AC_LANG_POP([C++])dnl
         BOOST_CPPFLAGS=
         ;;#(
       *)
-        AC_SUBST([BOOST_CPPFLAGS], ["-I$boost_cv_inc_path"])dnl
+        BOOST_CPPFLAGS="-I$boost_cv_inc_path"
         ;;
     esac
+  BOOST_CPPFLAGS="$BOOST_STD $BOOST_CPPFLAGS"
+  AC_SUBST([BOOST_CPPFLAGS])
   if test x"$boost_cv_inc_path" != xno; then
   AC_DEFINE([HAVE_BOOST], [1],
             [Defined if the requested minimum BOOST version is satisfied])
@@ -1438,6 +1440,9 @@ if test x$boost_cv_inc_path != xno; then
   # I'm not sure about my test for `il' (be careful: Intel's ICC pre-defines
   # the same defines as GCC's).
   for i in \
+    _BOOST_clang_test(17, 0) \
+    _BOOST_clang_test(16, 0) \
+    _BOOST_clang_test(15, 0) \
     _BOOST_clang_test(14, 0) \
     _BOOST_clang_test(13, 0) \
     _BOOST_clang_test(12, 0) \
@@ -1461,14 +1466,25 @@ if test x$boost_cv_inc_path != xno; then
     _BOOST_clang_test(3, 2) \
     _BOOST_clang_test(3, 1) \
     _BOOST_clang_test(3, 0) \
+    _BOOST_gcc_test(13, 2) \
+    _BOOST_gcc_test(13, 1) \
+    _BOOST_gcc_test(13, 0) \
+    _BOOST_gcc_test(12, 3) \
+    _BOOST_gcc_test(12, 2) \
+    _BOOST_gcc_test(12, 1) \
+    _BOOST_gcc_test(12, 0) \
+    _BOOST_gcc_test(11, 4) \
     _BOOST_gcc_test(11, 3) \
     _BOOST_gcc_test(11, 2) \
     _BOOST_gcc_test(11, 1) \
     _BOOST_gcc_test(11, 0) \
+    _BOOST_gcc_test(10, 5) \
+    _BOOST_gcc_test(10, 4) \
     _BOOST_gcc_test(10, 3) \
     _BOOST_gcc_test(10, 2) \
     _BOOST_gcc_test(10, 1) \
     _BOOST_gcc_test(10, 0) \
+    _BOOST_gcc_test(9, 5) \
     _BOOST_gcc_test(9, 4) \
     _BOOST_gcc_test(9, 3) \
     _BOOST_gcc_test(9, 2) \

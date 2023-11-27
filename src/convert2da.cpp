@@ -110,14 +110,14 @@ bool parseCommandLine(const std::vector<Common::UString> &argv, int &returnValue
 	                 kContinueParsing,
 	                 new ValGetter<Common::UString &>(outFile, "file"));
 	parser.addSpace();
-	parser.addOption("2da", "Convert to ASCII 2DA (default)",
+	parser.addOption("2da", 'a', "Convert to ASCII 2DA (default)",
 	                 kContinueParsing,
 	                 makeAssigners(new ValAssigner<Format>(kFormat2DA,
 	                 format)));
-	parser.addOption("2dab", "Convert to binary 2DA", kContinueParsing,
+	parser.addOption("2dab", 'b', "Convert to binary 2DA", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Format>(kFormat2DAb,
 	                 format)));
-	parser.addOption("csv", "Convert to CSV", kContinueParsing,
+	parser.addOption("csv", 'c', "Convert to CSV", kContinueParsing,
 	                 makeAssigners(new ValAssigner<Format>(kFormatCSV,
 	                 format)));
 	return parser.process(argv);
