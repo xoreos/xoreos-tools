@@ -12,7 +12,7 @@ jobs:
 
     - name: Install dependencies
       id: install_dependencies
-      run: brew install automake boost
+      run: brew install automake libtool boost
 
     - name: Set clang as the compiler to use
       id: set_clang
