@@ -127,5 +127,5 @@ void decNCS(const Common::UString &inFile, const Common::UString &outFile, Auror
 	out->flush();
 
 	if (!outFile.empty())
-		status("Deccompiled \"%s\" into \"%s\"", inFile.c_str(), outFile.c_str());
+		status("Decompiled \"%s\" into \"%s\"", inFile.c_str(), outFile.c_str());
 }
