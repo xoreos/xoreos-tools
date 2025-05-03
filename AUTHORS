@@ -70,8 +70,8 @@ ScummVM code
 ************
    xoreos-tools uses some ScummVM (<https://scummvm.org/>) code, most
    prominently the endian, singleton and stream code. ScummVM is licensed under
-   version 2 or later of the GNU General Public License. For the full license
-   text, see doc/LICENSE.GPLv2 or <https://gnu.org/licenses/gpl-2.0.html>.
+   version 3 or later of the GNU General Public License. For the full license
+   text, see doc/LICENSE.GPLv3 or <https://gnu.org/licenses/gpl-3.0.html>.
 
 Nintendo DS formats
 *******************
